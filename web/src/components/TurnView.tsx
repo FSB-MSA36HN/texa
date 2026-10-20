@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Check, ChevronDown, Copy, CornerDownRight, Download, Pencil, RotateCcw, ThumbsDown, ThumbsUp, X } from 'lucide-react'
-import { api, type Bootstrap, type FormField, type Step, type Turn } from '../api'
+import { api, type Bootstrap, type FormField, type Mark, type Step, type Turn } from '../api'
 import { ERROR_HINTS, STEP_LABELS, formatCell, readingChips, rowCurrency, toCsv } from '../format'
 
 type Props = {
@@ -143,11 +143,32 @@ function Body({ turn, boot, onAsk, onRefresh, explainMarks, steps, busy }: Props
 }
 
 /** Marks every value the server substituted from SQL; the model never writes these digits itself. */
-function Marked({ text, cited }: { text: string; cited?: string[] }) {
+function Marked({ text, cited, marks }: { text: string; cited?: string[]; marks?: Mark[] }) {
   if (!cited?.length) return <>{text}</>
+  const byText = new Map((marks ?? []).map((m) => [m.text, m]))
   const esc = cited.map((c) => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
   const parts = text.split(new RegExp(`(${esc.join('|')})`, 'g'))
-  return <>{parts.map((p, i) => (cited.includes(p) ? <mark key={i} className="sql-value text-inherit">{p}</mark> : p))}</>
+  return <>{parts.map((p, i) => (cited.includes(p) ? <Value key={i} text={p} mark={byText.get(p)} /> : p))}</>
+}
+
+/** One cited number. SQL values are highlighted; calculations add a dotted rule and reveal their formula; values the
+ * user stated are only underlined, since they are not data. */
+function Value({ text, mark }: { text: string; mark?: Mark }) {
+  const [open, setOpen] = useState(false)
+  if (!mark || mark.kind === 'sql') return <mark className="sql-value">{text}</mark>
+  if (mark.kind === 'user') return <span className="user-value" title={`${mark.label} (bạn đưa ra)`}>{text}</span>
+  return (
+    <span className="relative inline">
+      <button type="button" onClick={() => setOpen(!open)} onBlur={() => setOpen(false)} aria-expanded={open}
+        aria-label={`${text}: ${mark.label}. Xem cách tính`} className="calc-value sql-value cursor-help">{text}</button>
+      {open && (
+        <span role="tooltip" className="absolute top-full left-0 z-10 mt-1.5 block w-max max-w-[min(26rem,80vw)] rounded-xl border border-rule bg-sheet px-3 py-2 font-sans text-[13px] leading-snug text-ink shadow-lg">
+          <span className="block font-medium">{mark.label}</span>
+          <span className="mt-0.5 block text-lead">= {mark.formula}</span>
+        </span>
+      )}
+    </span>
+  )
 }
 
 function Insight({ turn, explainMarks }: { turn: Turn; explainMarks?: boolean }) {
@@ -155,17 +176,26 @@ function Insight({ turn, explainMarks }: { turn: Turn; explainMarks?: boolean })
   if (!ins) return null
   return (
     <div className="space-y-3">
-      <p className="font-serif text-[1.375rem] leading-snug tracking-[-0.005em] text-ink"><Marked text={ins.headline} cited={ins.cited} /></p>
-      {ins.body.map((b, i) => <p key={i} className="leading-relaxed text-ink/85"><Marked text={b} cited={ins.cited} /></p>)}
+      <p className="font-serif text-[1.375rem] leading-snug tracking-[-0.005em] text-ink"><Marked text={ins.headline} cited={ins.cited} marks={ins.marks} /></p>
+      {ins.body.map((b, i) => <p key={i} className="leading-relaxed text-ink/85"><Marked text={b} cited={ins.cited} marks={ins.marks} /></p>)}
       {ins.caveats.length > 0 && (
-        <ul className="space-y-1 text-sm leading-relaxed text-lead">{ins.caveats.map((c, i) => <li key={i}><Marked text={c} cited={ins.cited} /></li>)}</ul>
+        <ul className="space-y-1 text-sm leading-relaxed text-lead">{ins.caveats.map((c, i) => <li key={i}><Marked text={c} cited={ins.cited} marks={ins.marks} /></li>)}</ul>
       )}
-      {explainMarks && !!ins.cited?.length && (
-        <p className="flex items-center gap-2 pt-1 text-xs text-lead">
-          <span aria-hidden className="inline-block h-2.5 w-5 rounded-sm bg-mark" /> Số được tô lấy thẳng từ kết quả SQL, không do AI viết.
-        </p>
-      )}
+      {(explainMarks || ins.marks?.some((m) => m.kind !== 'sql')) && !!ins.cited?.length && <MarkLegend marks={ins.marks} />}
     </div>
+  )
+}
+
+function MarkLegend({ marks }: { marks?: Mark[] }) {
+  const kinds = new Set((marks ?? []).map((m) => m.kind))
+  if (!kinds.size) kinds.add('sql')
+  return (
+    <p className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs text-lead">
+      {kinds.has('sql') && <span className="flex items-center gap-1.5"><span aria-hidden className="inline-block h-2.5 w-5 rounded-sm bg-mark" /> lấy thẳng từ SQL</span>}
+      {kinds.has('calculation') && <span className="flex items-center gap-1.5"><span aria-hidden className="calc-swatch inline-block h-2.5 w-5 rounded-sm bg-mark" /> Texa tính từ số liệu, bấm để xem công thức</span>}
+      {kinds.has('user') && <span className="flex items-center gap-1.5"><span aria-hidden className="user-value">5,2</span> số bạn đưa ra</span>}
+      <span>Không con số nào do AI tự viết.</span>
+    </p>
   )
 }
 
@@ -405,7 +435,7 @@ function DataTable({ columns, rows, currencyOf }: { columns: Turn['columns'] & {
             <tr key={i} className="border-b border-rule/60 last:border-0 hover:bg-wash/60">
               {columns.map((c) => (
                 <td key={c.name} className={`px-4 py-2 ${c.role === 'metric' ? 'text-right' : ''} ${r[c.name] == null ? 'text-lead' : ''}`}>
-                  {formatCell(r[c.name], c, rowCurrency(r, currencyOf))}</td>
+                  {formatCell(r[c.name], c, c.currency ?? rowCurrency(r, currencyOf))}</td>
               ))}
             </tr>
           ))}

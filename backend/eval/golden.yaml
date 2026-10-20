@@ -6,6 +6,7 @@
 #   filters: [{field, values}] (values compared case-insensitively)
 #   time_kind / days / start / end: the resolved time range
 #   ask: ids of form fields that must be asked
+#   calc: the answer cites at least one number Texa calculated; no_calc: it cites none and no user-given value
 # previous: questions asked first in the same conversation (their answers are not scored).
 - {id: rev_cat_dec, question: "Doanh thu theo danh mục sản phẩm tháng 12/2019 của cosmetics shop", expect: {status: answered, recipe: revenue, selection: [item_category], source_ids: [cosmetics_shop], time_kind: between, start: "2019-12-01", end: "2019-12-31"}}
 - {id: rev_cat_en, question: "Revenue by product category for the cosmetics shop in December 2019", expect: {status: answered, recipe: revenue, selection: [item_category], source_ids: [cosmetics_shop], start: "2019-12-01", end: "2019-12-31"}}
@@ -70,3 +71,10 @@
 - {id: fu_filter, previous: ["Olist orders per month in 2018"], question: "chỉ đơn trả bằng boleto", expect: {status: answered, recipe: orders, filters: [{field: payment_type, values: [boleto]}]}}
 - {id: fu_explain, previous: ["Olist revenue per month in 2018"], question: "Vì sao tháng 11 lại thấp hơn?", expect: {status: discussed}}
 - {id: fu_metric_swap, previous: ["Revenue by payment type on Olist, all data"], question: "now show AOV instead", expect: {status: answered, recipe: aov, selection: [payment_type]}}
+# ---- peaks, conversions and arithmetic on results ----
+- {id: peak_month_both, question: "nếu chỉ nói riêng về mặt số liệu, so sánh cho tôi doanh thu tháng cao nhất của Cosmetic shop và Olist Market shop", expect: {status: answered, recipe_in: [revenue, revenue_usd], selection: [event_month], time_kind: all}}
+- {id: peak_day_shop, question: "Ngày nào cosmetics shop có nhiều người mua nhất?", expect: {status: answered, recipe: buyers, selection: [event_date], source_ids: [cosmetics_shop]}}
+- {id: rev_usd_compare, question: "Compare monthly revenue of both stores in USD, all data", expect: {status: answered, recipe: revenue_usd, selection: [event_month], time_kind: all}}
+- {id: convert_user_rate, question: "Doanh thu Olist năm 2017 quy ra USD theo tỷ giá 3,2 BRL/USD là bao nhiêu?", expect: {status: answered, source_ids: [olist_marketplace], start: "2017-01-01", end: "2017-12-31", calc: true}}
+- {id: growth_calc, previous: ["Doanh thu cosmetics shop theo tháng, toàn bộ dữ liệu"], question: "tháng 1 tăng hay giảm bao nhiêu phần trăm so với tháng 12?", expect: {status: discussed, calc: true}}
+- {id: no_rate_given, previous: ["Doanh thu Olist theo tháng năm 2017"], question: "quy đổi số này sang euro giúp tôi", expect: {no_calc: true}}

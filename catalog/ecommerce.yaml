@@ -109,6 +109,16 @@ metrics:
   - {id: revenue, label: Revenue, description: Sum of purchased item prices (excludes freight) in the source currency., synonyms: [sales, GMV, doanh thu, doanh số], when_to_use: Money from items sold., type: simple, unit: currency, simple: {aggregation: sum, event_role: purchase, field: revenue}}
   - {id: payment_value, label: Payment value, description: Sum of payments (includes freight and installment interest) in the source currency., synonyms: [paid amount, total paid, tiền thanh toán], when_to_use: Money actually paid by customers., type: simple, unit: currency, simple: {aggregation: sum, event_role: payment, field: revenue}}
   - {id: aov, label: Average order value, description: Revenue divided by orders., synonyms: [AOV, giá trị đơn trung bình], type: ratio, unit: currency, ratio: {numerator: revenue, denominator: orders}}
+  - id: revenue_usd
+    label: Revenue in USD
+    description: "Revenue converted to US dollars at each day's exchange rate (FRED daily rates; a USD store is unchanged). Use it to compare or add stores with different currencies."
+    synonyms: [revenue converted to USD, USD revenue, doanh thu quy đổi USD, doanh thu theo USD, quy đổi tiền tệ]
+    when_to_use: Comparing or summing money across stores that report in different currencies.
+    currency: USD
+    type: simple
+    unit: currency
+    simple: {aggregation: sum, event_role: purchase, field: revenue_usd}
+  - {id: aov_usd, label: Average order value in USD, description: Revenue in USD divided by orders., synonyms: [AOV in USD, giá trị đơn trung bình quy đổi USD], type: ratio, unit: currency, currency: USD, ratio: {numerator: revenue_usd, denominator: orders}}
   - {id: arpu, label: Revenue per user, description: Revenue divided by users., synonyms: [ARPU], type: ratio, unit: currency, ratio: {numerator: revenue, denominator: users}}
   - {id: arppu, label: Revenue per buyer, description: Revenue divided by buyers., synonyms: [ARPPU, revenue per paying user], type: ratio, unit: currency, ratio: {numerator: revenue, denominator: buyers}}
   - {id: items_per_order, label: Items per order, description: Purchased items divided by orders., synonyms: [basket size, số sản phẩm mỗi đơn], type: ratio, unit: number, ratio: {numerator: purchases, denominator: orders}}

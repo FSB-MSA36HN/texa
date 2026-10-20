@@ -2,7 +2,7 @@
 INSERT INTO analytics.event_activity (
   event_id, source_id, event_ts, event_date, event_name, user_id, session_id, first_seen_date,
   platform, country, region, city, item_id, item_category, item_brand, item_price, quantity,
-  revenue, currency, ep, up, src_table)
+  revenue, revenue_usd, currency, ep, up, src_table)
 SELECT
   md5(concat_ws('|', event_ts, event_name, product_id, category_id, category_code, brand, price, user_id, user_session)),
   'cosmetics_shop',
@@ -19,6 +19,8 @@ SELECT
   price,
   1,
   -- Non-positive prices are kept as events but carry no revenue (flagged in ep.price_flag).
+  CASE WHEN event_name = 'purchase' AND price > 0 THEN price END,
+  -- This source is already priced in USD; fill it during INSERT to avoid rewriting the mart.
   CASE WHEN event_name = 'purchase' AND price > 0 THEN price END,
   'USD',
   jsonb_strip_nulls(jsonb_build_object(

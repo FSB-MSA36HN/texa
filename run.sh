@@ -47,6 +47,15 @@ echo "==> Backend: uv sync + publish catalog"
 # ponytail: publish lỗi khi chưa nạp dữ liệu (xem README bước 1) — chỉ cảnh báo, không dừng
 (cd backend && uv run texa catalog publish) || echo "!! Publish catalog lỗi — đã nạp dữ liệu chưa?"
 
+# Doanh thu quy USD cần bảng tỷ giá + nạp lại cửa hàng (một lần, xem README bước 1). Chỉ nhắc, không tự chạy.
+fx=$(docker compose exec -T postgres psql -U texa -d texa -tAc \
+  "SELECT (SELECT count(*) FROM analytics.fx_rates) || ' ' || count(revenue_usd) FROM analytics.event_activity" 2>/dev/null || echo "0 0")
+if [ "${fx% *}" = "0" ] || [ "${fx#* }" = "0" ]; then
+  echo "!! Chưa có doanh thu quy USD. Chạy một lần:"
+  echo "   cd pipeline && uv run --python 3.12 --with 'psycopg[binary]' python -m texa_etl.run fx_rates"
+  echo "   rồi với từng cửa hàng: python -m texa_etl.run <olist_marketplace|cosmetics_shop> load_mart refresh_metadata"
+fi
+
 [ -d web/node_modules ] || (cd web && npm install)
 
 echo "==> Chạy API :18000 và Web :15173"

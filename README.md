@@ -30,14 +30,33 @@ cp .env.example .env
 docker compose up -d postgres airflow
 ```
 
-**1. Nạp dữ liệu.** Có hai cách:
+**1. Nạp dữ liệu.** Nạp tỷ giá trước, rồi tới hai cửa hàng (bước nạp cửa hàng dùng tỷ giá để tính `revenue_usd`). Có hai cách:
 
-- **Qua Airflow:** mở Airflow tại http://localhost:18080 (user `admin`; mật khẩu nằm trong `docker compose logs airflow | grep password`) và trigger 2 DAG `ingest_olist_marketplace` và `ingest_cosmetics_shop`.
-- **Không qua Airflow:** chạy cùng các bước đó trực tiếp bằng lệnh sau:
+- **Qua Airflow:** mở Airflow tại http://localhost:18080 (user `admin`; mật khẩu nằm trong `docker compose logs airflow | grep password`), trigger DAG `ingest_fx_rates`, rồi `ingest_olist_marketplace` và `ingest_cosmetics_shop`.
+- **Không qua Airflow:** chạy cùng các bước đó trực tiếp:
+
+```bash
+cd pipeline && uv run --python 3.12 --with 'psycopg[binary]' python -m texa_etl.run fx_rates
+```
 
 ```bash
 cd pipeline && uv run --python 3.12 --with 'psycopg[binary]' python -m texa_etl.run olist_marketplace
 ```
+
+Tỷ giá lấy từ chuỗi [FRED DEXBZUS](https://fred.stlouisfed.org/series/DEXBZUS) (BRL cho 1 USD, hằng ngày, không cần key). Mỗi sự kiện được quy đổi theo tỷ giá đúng ngày của nó (ngày nghỉ dùng ngày giao dịch gần nhất trước đó, trong vòng 7 ngày). `load_mart` tính USD ngay lúc INSERT; Cosmetics vốn dùng USD nên `revenue_usd = revenue`.
+
+Nếu dữ liệu cửa hàng đã có trong mart, dùng `refresh_revenue_usd` để tính lại USD sau khi nạp tỷ giá. Bước này chỉ cập nhật giá trị thay đổi, không xóa và nạp lại toàn bộ sự kiện như `load_mart`. Chạy từ thư mục `Final`:
+
+```bash
+(
+  cd pipeline &&
+  uv run --python 3.12 --with 'psycopg[binary]' python -m texa_etl.run fx_rates &&
+  uv run --python 3.12 --with 'psycopg[binary]' python -m texa_etl.run olist_marketplace refresh_revenue_usd refresh_metadata &&
+  uv run --python 3.12 --with 'psycopg[binary]' python -m texa_etl.run cosmetics_shop refresh_revenue_usd refresh_metadata
+)
+```
+
+`refresh_metadata` vẫn quét dữ liệu để cập nhật vocabulary nên có thể mất thời gian với Cosmetics. Nếu dừng bằng Ctrl+C, bước đang chạy sẽ rollback; những bước trước đã commit vẫn được giữ lại. `KeyboardInterrupt` trong log là do thao tác ngắt này.
 
 Không cần Kaggle API key: bước `download` tự tải dataset public. Nếu muốn tải tay thì đặt file CSV vào `data/landing/<source_id>/`.
 
@@ -63,6 +82,18 @@ Mở http://localhost:15173, bấm ⚙ **Cài đặt**, chọn provider (**Googl
 
 Muốn chạy cả `api` lẫn `web` bằng Docker thì dùng `docker compose up -d`, web sẽ ở http://localhost:15173. Trong trường hợp này hãy đặt `TEXA_SECRET_KEY` trong `.env`; key này dùng để mã hóa API key đã lưu.
 
+## Con số trong câu trả lời
+
+Model không bao giờ tự gõ con số. Mỗi số trong câu trả lời có một trong ba nguồn, và giao diện đánh dấu khác nhau:
+
+| Đánh dấu | Nguồn |
+|---|---|
+| Tô vàng | Lấy thẳng từ kết quả SQL |
+| Tô vàng + gạch chấm (bấm để xem công thức) | Texa tính từ các số trên: model viết công thức (`f_a / u_rate`), Python tính (`backend/texa/derive.py`) |
+| Gạch chân | Số bạn đưa ra trong câu hỏi, ví dụ một tỷ giá. Số model "nhớ" mà bạn chưa gõ sẽ bị loại |
+
+Vì vậy các câu như "quy đổi theo tỷ giá 5,2", "tháng 1 tăng bao nhiêu % so với tháng 12" được trả lời; còn "quy đổi sang euro" khi chưa có tỷ giá euro thì Texa hỏi lại tỷ giá thay vì đoán.
+
 ## Kiểm thử
 
 ```bash
@@ -83,7 +114,7 @@ Golden eval chạy với model thật (cần đã kết nối model trong Cài �
 cd backend && uv run python eval/run_golden.py --runs 3
 ```
 
-Bộ eval có 56 câu tiếng Việt và tiếng Anh. Lệnh in ra accuracy và các case không ổn định; mặc định fail nếu accuracy dưới 90%.
+Bộ eval có 62 câu tiếng Việt và tiếng Anh. Lệnh in ra accuracy và các case không ổn định; mặc định fail nếu accuracy dưới 90%.
 
 ## Bố cục
 

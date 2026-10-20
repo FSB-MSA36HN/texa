@@ -103,6 +103,15 @@ def _history(conversation_id, before_turn) -> list[dict]:
     return list(reversed(rows))
 
 
+def _earlier_questions(turn_id) -> list[str]:
+    """What the user typed earlier in the conversation: numbers they stated there (a rate) may be reused."""
+    if turn_id is None:
+        return []
+    with db.app_conn() as conn:
+        row = conn.execute("SELECT conversation_id FROM app.turns WHERE id = %s", (turn_id,)).fetchone()
+    return [p["question"] for p in _history(row["conversation_id"], turn_id)] if row else []
+
+
 def public_turn(row: dict) -> dict:
     st = dict(row["state"])
     st.pop("candidate", None)
@@ -128,7 +137,7 @@ def _answered(question, result, cat, sources, candidate, model, turn_id, progres
     lang = _lang(candidate)
     request = (candidate or {}).get("answer_request") or {"need": "describe", "ask": ""}
     text = insight.write(question, result, cat, sources, lang=lang, answer_request=request, model=model,
-                         turn_id=turn_id, step=progress)
+                         turn_id=turn_id, step=progress, earlier_questions=_earlier_questions(turn_id))
     return {
         "status": "answered", "language": lang, "insight": text, "variants": variants, "notes": notes,
         "query_spec": result["query_spec"], "compiled_sql": result["compiled_sql"], "columns": result["columns"],
@@ -203,7 +212,8 @@ def _question_work(turn_id: str):
             result = {k: st.get(k) for k in ("query_spec", "compiled_sql", "columns", "rows", "row_count", "partial", "facts",
                                               "model_preview", "warnings", "period", "sources", "currency_of", "unavailable_metrics")}
             text = insight.write(question, result, cat, sources, lang=lang, answer_request=candidate["answer_request"],
-                                 model=model, turn_id=turn_id, step=progress)
+                                 model=model, turn_id=turn_id, step=progress,
+                                 earlier_questions=[p["question"] for p in previous])
             return {"status": "discussed", "insight": text, "based_on": str(prior["id"]), "candidate": candidate,
                     "language": lang, "facts": st.get("facts")}
         return _continue(turn, candidate, {}, progress, cat, sources)

@@ -64,6 +64,11 @@ body {
 .sql-value:nth-of-type(2) { animation-delay: 90ms; }
 .sql-value:nth-of-type(3) { animation-delay: 180ms; }
 @keyframes mark-sweep { from { background-size: 0% 100%; } }
+/* A number Texa computed from cited values: same highlight, plus a dotted rule that says "there is a formula". */
+.calc-value { font: inherit; color: inherit; border-bottom: 1.5px dotted var(--color-ledger); padding-bottom: 0; }
+.calc-swatch { box-shadow: inset 0 -2px 0 0 var(--color-ledger); }
+/* A number the user stated: not data, so no highlight; just a quiet underline. */
+.user-value { text-decoration: underline; text-decoration-color: var(--color-lead); text-underline-offset: 3px; text-decoration-thickness: 1px; }
 
 /* Answers rise in once when they land; nothing else animates on its own. */
 .answer-in { animation: answer-in 320ms ease-out both; }

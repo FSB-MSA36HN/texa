@@ -9,7 +9,7 @@ import pytest
 from texa import llm
 from texa.prompts import INSIGHT_SCHEMA
 
-GOOD = json.dumps({"headline": "h", "body": [], "caveats": [], "follow_ups": []})
+GOOD = json.dumps({"assumptions": [], "calculations": [], "headline": "h", "body": [], "caveats": [], "follow_ups": []})
 
 
 @pytest.fixture

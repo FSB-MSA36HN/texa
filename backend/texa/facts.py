@@ -30,13 +30,16 @@ def compute_facts(rows: list[dict], columns: list[Column], shape: str, partial: 
             return currency_of[row["source"]]
         return next(iter(currencies)) if len(currencies) == 1 else None
 
+    fixed = None  # set per metric: a converted metric's currency, the same for every row
+
     def add(fid, label, value, unit, row=None, kind="number"):
         fact = {"id": fid, "label": label, "value": value, "unit": unit if kind == "number" else "text"}
         if unit == "currency" and kind == "number":
-            fact["currency"] = cur(row)
+            fact["currency"] = fixed or cur(row)
         facts.append(fact)
 
     for m in metrics:
+        fixed = m.currency
         vals = [(r, r[m.name]) for r in rows if isinstance(r.get(m.name), (int, float))]
         if not vals:
             add(f"f_{m.name}_missing", f"{m.label}: no value in the result", "no data", m.unit, kind="text")
@@ -44,7 +47,7 @@ def compute_facts(rows: list[dict], columns: list[Column], shape: str, partial: 
         if not dims or len(rows) == 1:
             add(f"f_{m.name}", m.label, vals[0][1], m.unit, vals[0][0])
             continue
-        single_currency = m.unit != "currency" or len(currencies) == 1
+        single_currency = m.unit != "currency" or len(currencies) == 1 or bool(m.currency)
         total = None
         if m.additive and not partial and single_currency:
             total = sum(v for _, v in vals)

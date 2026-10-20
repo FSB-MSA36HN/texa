@@ -3,7 +3,7 @@
 INSERT INTO analytics.event_activity (
   event_id, source_id, event_ts, event_date, event_name, user_id, session_id, first_seen_date,
   platform, country, region, city, item_id, item_category, item_brand, item_price, quantity,
-  revenue, currency, ep, up, src_table)
+  revenue, revenue_usd, currency, ep, up, src_table)
 WITH orders AS (
   SELECT o.*, c.customer_unique_id AS user_id, c.city, c.state, c.zip_prefix,
          p.payment_type AS main_payment_type
@@ -68,7 +68,14 @@ SELECT
   event_id, 'olist_marketplace', event_ts, (event_ts AT TIME ZONE 'UTC')::date, event_name, user_id, NULL,
   min((event_ts AT TIME ZONE 'UTC')::date) OVER (PARTITION BY user_id),
   'web', 'BR', state, city, item_id, item_category, NULL, item_price, quantity,
-  revenue, 'BRL', jsonb_strip_nulls(ep),
+  revenue,
+  CASE WHEN revenue IS NOT NULL THEN round(revenue / (
+    SELECT r.rate FROM analytics.fx_rates r
+    WHERE r.base = 'USD' AND r.quote = 'BRL'
+      AND r.rate_date <= (event_ts AT TIME ZONE 'UTC')::date
+      AND r.rate_date > (event_ts AT TIME ZONE 'UTC')::date - 7
+    ORDER BY r.rate_date DESC LIMIT 1), 2) END,
+  'BRL', jsonb_strip_nulls(ep),
   jsonb_strip_nulls(jsonb_build_object('customer_state', state, 'customer_zip_prefix', zip_prefix)),
   src_table
 FROM events;

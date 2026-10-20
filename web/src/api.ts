@@ -7,11 +7,12 @@ export type Bootstrap = {
   connection: Connection | null
   providers: { id: string; label: string }[]
 }
-export type Column = { name: string; label: string; role: 'dimension' | 'metric'; unit: string; value_type: string }
+export type Column = { name: string; label: string; role: 'dimension' | 'metric'; unit: string; value_type: string; currency?: string | null }
 export type Choice = { id: string; label: string; description?: string }
 export type FormField = { id: string; label: string; kind: 'single_choice' | 'multi_choice'; required: boolean; allow_other: boolean; default: string[]; choices: Choice[] }
 export type Step = { step: string; status: 'running' | 'done' | 'failed'; ms?: number; note?: string | null }
-export type Insight = { headline: string; body: string[]; caveats: string[]; follow_ups: string[]; cited?: string[] }
+export type Mark = { text: string; kind: 'sql' | 'calculation' | 'user'; label: string; formula?: string }
+export type Insight = { headline: string; body: string[]; caveats: string[]; follow_ups: string[]; cited?: string[]; marks?: Mark[] }
 export type QuerySpec = { source_ids: string[]; shape: string; selection: string[]; recipe: string; metrics: string[]; filters: { field: string; operator: string; values: string[] }[]; time_range: { kind: string; days?: number; start?: string; end?: string } }
 export type Turn = {
   id: string; conversation_id: string; question: string; created_at: string; model: string | null

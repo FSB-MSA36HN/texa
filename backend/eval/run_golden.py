@@ -29,6 +29,11 @@ def score(case: dict, turn: dict) -> list[str]:
     if exp.get("status") and turn["status"] != exp["status"]:
         problems.append(f"status {turn['status']} != {exp['status']} ({st.get('message') or (st.get('error') or {}).get('message', '')})")
         return problems
+    kinds = {m["kind"] for m in ((st.get("insight") or {}).get("marks") or [])}
+    if exp.get("calc") and "calculation" not in kinds:
+        problems.append(f"no calculated number in the answer (marks: {sorted(kinds)})")
+    if exp.get("no_calc") and kinds & {"calculation", "user"}:
+        problems.append(f"used a calculation or user value the user never gave (marks: {sorted(kinds)})")
     if turn["status"] == "needs_clarification":
         asked = {f["id"] for f in st["form"]["fields"]}
         if exp.get("ask") and not set(exp["ask"]) <= asked:

@@ -14,10 +14,18 @@ outcome:
 - "query": the question asks for numbers, rankings, trends, comparisons or lists that the catalog can compute.
 - "conversation": greetings, thanks, or questions about what you can do. Put a short friendly reply in `reply`
   (in the user's language) and up to 3 example questions you can answer in `suggestions`.
+  Every suggestion is a question the USER would ask Texa, written in the user's voice ("X by month"), never a
+  question Texa asks the user.
 - "answer_from_previous": the user asks to explain, summarize or discuss the PREVIOUS RESULT without new numbers
   (e.g. "why?", "explain more", "what does this mean"). Put what they want in answer_request.
 - "unsupported": the question needs a metric or breakdown the catalog does not define, or data no store records.
   Explain why in `reason` (user's language) and give up to 3 answerable alternatives in `suggestions`.
+  Arithmetic ON TOP of catalog numbers is NOT unsupported: converting with a rate the user gives, differences,
+  ratios, growth, shares, "how many times larger". Read the catalog part as a "query" (or "answer_from_previous" when
+  the numbers are already in the PREVIOUS RESULT) and put the extra arithmetic, with any number the user stated, in
+  answer_request.ask. The writer computes it. Only a number the user has not given and the data does not hold (an
+  exchange rate never stated, a target, a price list) makes that part impossible: then still answer the data part
+  and let the writer ask for the missing number.
 
 For "query":
 - recipe: the single metric id asked for. Several metrics (2-4) go in `metrics` and recipe stays "".
@@ -29,6 +37,9 @@ For "query":
   "time_trend" (over days/weeks/months; selection includes a time dimension), "distinct_values" (list values of a
   dimension, no metric), or "unclear".
 - selection: dimension ids to break down by (at most 4). "by month" means a month dimension, "per day" a day one.
+  A question about the highest/lowest/best/worst PERIOD ("the best month", "peak day", "slowest week") needs that
+  period: shape "time_trend" with the matching time dimension, even when no breakdown is asked for. A single total
+  per store cannot say which period was highest.
 - filters: restrict to values the user named. field is a dimension id; copy values exactly as the user wrote them in
   values_mentioned (Texa matches them against the data). A GLOSSARY term with a field and values IS a filter on that
   field with those values.
@@ -84,20 +95,47 @@ SELECT_SCHEMA = {"type": "object", "additionalProperties": False, "required": ["
 INSIGHT_INSTRUCTION = """You are Texa, a data assistant. Write a short answer to the user's question from a query result.
 
 Rules:
-- Every number you mention must be a fact placeholder like [[f_total_x]] taken from FACTS. Never type digits
-  for values, never calculate, round or invent numbers. Dates, ids and names from the data may be written as text.
+- Every number you mention must be a placeholder: [[f_...]] from FACTS, [[u_...]] from `assumptions`, or [[c_...]]
+  from `calculations`. Never type digits for values and never do arithmetic in your head. Dates, ids and names from
+  the data may be written as text.
+- calculations: when the question needs a number the FACTS do not hold directly (a difference, ratio, growth, share,
+  a conversion), declare it: {"id": "c_<name>", "label": what it is, "expr": arithmetic over f_/u_/c_ ids and plain
+  numbers using + - * / and parentheses, "unit": "currency"|"percent"|"count"|"number", "currency": code or ""}.
+  The server computes it; cite it as [[c_<name>]]. A percent is a fraction (0.12 = 12%). Keep currencies honest: only
+  add or compare amounts in the same currency, and give a converted amount the currency it was converted into.
+- assumptions: a number the USER stated in their question or earlier turns that you need (e.g. an exchange rate they
+  gave): {"id": "u_<name>", "label": what it is, "value": the number, "unit": ..., "currency": ...}. Only numbers the
+  user actually wrote; never supply one yourself (no rates, prices or figures from memory). If the question needs a
+  number that is neither in FACTS nor given by the user, say what is missing and ask for it in a caveat.
 - Use FACTS for totals, highest/lowest, changes and shares; use PREVIEW only to name rows or patterns.
+- Describe each fact by what its label says it is. A total over a period is not a peak, a per-row value is not a
+  total. If the result cannot answer part of the question, say so plainly instead of stretching a fact.
 - NULL or missing values mean "no data", never zero. Respect WARNINGS: mention the ones that change how to read the answer.
 - Say which store(s) and which period the answer covers (PERIOD).
 - answer_request.need: "describe" = state the main result; "compare" = contrast the groups/periods; "explain" = give
   plausible reasons only as hypotheses grounded in the dimensions available, and suggest a question to check them.
 - headline: one sentence with the main result. body: 1-4 short sentences adding the most useful detail.
-  caveats: short notes on data limits (may be empty). follow_ups: up to 3 next questions the catalog can answer.
+  caveats: short notes on data limits (may be empty). follow_ups: up to 3 next questions the catalog can answer,
+  each written as the USER would ask Texa ("Revenue by week in December"), never a question to the user.
+- A fact value already carries its unit or currency ("1,234.50 USD", "12.3%"): never repeat the unit after the
+  placeholder ("[[f_x]] USD" is wrong; write "[[f_x]]").
 - Write in the language given by respond_in. Be plain and specific; no filler."""
 
+_DERIVED_ITEM = {"type": "object", "additionalProperties": False, "required": ["id", "label", "unit", "currency"],
+                 "properties": {"id": {"type": "string"}, "label": {"type": "string"},
+                                "unit": {"type": "string", "enum": ["currency", "percent", "count", "number"]},
+                                "currency": {"type": "string"}}}
+
 INSIGHT_SCHEMA = {
-    "type": "object", "additionalProperties": False, "required": ["headline", "body", "caveats", "follow_ups"],
+    "type": "object", "additionalProperties": False,
+    "required": ["assumptions", "calculations", "headline", "body", "caveats", "follow_ups"],
     "properties": {
+        "assumptions": {"type": "array", "maxItems": 8, "items": {**_DERIVED_ITEM,
+            "required": [*_DERIVED_ITEM["required"], "value"],
+            "properties": {**_DERIVED_ITEM["properties"], "value": {"type": "number"}}}},
+        "calculations": {"type": "array", "maxItems": 8, "items": {**_DERIVED_ITEM,
+            "required": [*_DERIVED_ITEM["required"], "expr"],
+            "properties": {**_DERIVED_ITEM["properties"], "expr": {"type": "string"}}}},
         "headline": {"type": "string"},
         "body": {"type": "array", "items": {"type": "string"}, "maxItems": 4},
         "caveats": {"type": "array", "items": {"type": "string"}, "maxItems": 3},

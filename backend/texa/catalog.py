@@ -17,7 +17,7 @@ COLUMNS = {
     "source_id": "text", "event_ts": "timestamp", "event_date": "date", "event_name": "text", "user_id": "text",
     "session_id": "text", "first_seen_date": "date", "platform": "text", "country": "text", "region": "text",
     "city": "text", "item_id": "text", "item_category": "text", "item_brand": "text", "item_price": "number",
-    "quantity": "number", "revenue": "number", "currency": "text",
+    "quantity": "number", "revenue": "number", "revenue_usd": "number", "currency": "text",
 }
 ALWAYS_FILLED = {"source_id", "event_ts", "event_date", "event_name", "user_id", "first_seen_date", "currency"}
 ADDITIVE = {"count_events", "sum"}
@@ -97,6 +97,8 @@ class Metric(Strict):
     synonyms: list[str] = []
     when_to_use: str = ""
     unit: Literal["count", "number", "percent", "currency", "days", "score"]
+    # A money metric that is already converted (e.g. revenue_usd) has one currency for every store.
+    currency: str | None = Field(default=None, pattern=r"^[A-Z]{3}$")
     type: Literal["simple", "ratio", "cohort", "per_day"]
     simple: Simple | None = None
     ratio: Ratio | None = None
@@ -252,6 +254,14 @@ def validate_catalog(raw: dict) -> Catalog:
             errors.append(f"dimension {d.id}: bucket needs ascending edges")
     for m in cat.metrics:
         where = f"metric {m.id}"
+        if m.currency and m.unit != "currency":
+            errors.append(f"{where}: currency {m.currency} is only for unit currency")
+        if m.type == "ratio" and m.unit == "currency":
+            # A money ratio keeps its numerator's currency; one store-currency part makes the whole thing per store.
+            parts = [cat.mets[p] for p in (m.ratio.numerator, m.ratio.denominator) if p in cat.mets]
+            money = {p.currency for p in parts if p.unit == "currency"}
+            if money != {m.currency}:
+                errors.append(f"{where}: currency {m.currency or 'per store'} differs from its parts ({', '.join(sorted(map(str, money)))})")
         if m.type == "simple":
             s = m.simple
             if s.event_role not in cat.roles:

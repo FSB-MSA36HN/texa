@@ -100,6 +100,14 @@ def test_insight_placeholders_and_unknown_facts():
     assert out["cited"] == ["1.234,50 USD"]  # numbers only; text facts are not marked as SQL values
 
 
+def test_insight_drops_unit_repeated_after_placeholder():
+    facts = [{"id": "f_r", "label": "", "value": 13591643.7, "unit": "currency", "currency": "BRL"},
+             {"id": "f_p", "label": "", "value": 0.488, "unit": "percent"}]
+    out, _ = render({"headline": "Peak [[f_r]] BRL, or [[f_r]] (BRL); share [[f_p]] % and [[f_p]] of all.",
+                     "body": [], "caveats": [], "follow_ups": []}, facts, "vi")
+    assert out["headline"] == "Peak 13.591.643,70 BRL, or 13.591.643,70 BRL; share 48,8% and 48,8% of all."
+
+
 def test_format_percent_and_counts():
     assert format_value(0.1234, "percent") == "12.3%"
     assert format_value(1234567, "count", lang="vi") == "1.234.567"
@@ -121,3 +129,43 @@ def test_golden_cases_use_catalog_ids():
         for d in [*e.get("selection", []), *(f["field"] for f in e.get("filters", []))]:
             assert d in CAT.dims, (case["id"], d)
     assert len(cases) >= 50 and len({c["id"] for c in cases}) == len(cases)
+
+
+def test_insight_calculations_use_user_values_only():
+    facts = [{"id": "f_olist", "label": "Olist peak month", "value": 1000.0, "unit": "currency", "currency": "BRL"},
+             {"id": "f_shop", "label": "Shop peak month", "value": 300.0, "unit": "currency", "currency": "USD"}]
+    raw = {"assumptions": [{"id": "u_brl_per_usd", "label": "BRL per USD (given)", "value": 5.0, "unit": "number", "currency": ""},
+                           {"id": "u_invented", "label": "rate from memory", "value": 4.1, "unit": "number", "currency": ""}],
+           "calculations": [{"id": "c_olist_usd", "label": "Olist in USD", "expr": "f_olist / u_brl_per_usd", "unit": "currency", "currency": "USD"},
+                            {"id": "c_gap", "label": "Olist minus shop (USD)", "expr": "c_olist_usd - f_shop", "unit": "currency", "currency": "USD"},
+                            {"id": "c_bad", "label": "x", "expr": "f_olist / u_invented", "unit": "currency", "currency": "USD"}],
+           "headline": "Olist peaked at [[c_olist_usd]], [[c_gap]] above the shop.",
+           "body": ["Using a rate from memory gives [[c_bad]]."], "caveats": [], "follow_ups": []}
+    out, dropped = render(raw, facts, "en", user_text="convert at 5 BRL per USD")
+    assert out["headline"] == "Olist peaked at 200.00 USD, -100.00 USD above the shop."
+    assert out["body"] == [] and dropped == 1  # the invented rate is rejected, so its sentence goes
+    kinds = {m["text"]: m["kind"] for m in out["marks"]}
+    assert kinds == {"200.00 USD": "calculation", "-100.00 USD": "calculation"}
+    assert "Olist peak month (1,000.00 BRL)" in out["marks"][0]["formula"] or "Olist peak month" in out["marks"][1]["formula"]
+
+
+def test_converted_metric_compares_across_currencies():
+    rows = [{"source": "olist_marketplace", "revenue_usd": 300.0}, {"source": "cosmetics_shop", "revenue_usd": 100.0}]
+    cols = [Column("source", "Store", "dimension"), Column("revenue_usd", "Revenue in USD", "metric", "currency", True, "number", "USD")]
+    facts = {f["id"]: f for f in compute_facts(rows, cols, "breakdown", False, {"olist_marketplace": "BRL", "cosmetics_shop": "USD"})}
+    assert facts["f_total_revenue_usd"]["value"] == 400 and facts["f_total_revenue_usd"]["currency"] == "USD"
+    assert facts["f_diff_revenue_usd"]["value"] == 200 and facts["f_max_revenue_usd"]["currency"] == "USD"
+    # The store-currency metric still refuses to add BRL to USD.
+    raw = [{"source": "olist_marketplace", "revenue": 300.0}, {"source": "cosmetics_shop", "revenue": 100.0}]
+    plain = {f["id"] for f in compute_facts(raw, [cols[0], Column("revenue", "Revenue", "metric", "currency", True, "number")],
+                                           "breakdown", False, {"olist_marketplace": "BRL", "cosmetics_shop": "USD"})}
+    assert "f_total_revenue" not in plain and "f_diff_revenue" not in plain
+
+
+def test_money_ratio_must_match_its_parts_currency():
+    bad = yaml.safe_load(yaml.safe_dump(RAW))
+    for m in bad["metrics"]:
+        if m["id"] == "aov_usd":
+            m["ratio"]["numerator"] = "revenue"  # store currency, but the ratio claims USD
+    with pytest.raises(ValueError, match="aov_usd: currency USD differs"):
+        c.validate_catalog(bad)

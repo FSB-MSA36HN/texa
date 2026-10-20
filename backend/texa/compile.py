@@ -19,6 +19,7 @@ class Column:
     unit: str = ""
     additive: bool = False
     value_type: str = "text"
+    currency: str | None = None    # fixed currency of a converted money metric; None = the store's own
 
 
 @dataclass
@@ -213,7 +214,7 @@ def compile_spec(spec: QuerySpec, cat: Catalog, av: Availability) -> Compiled:
                 n, dn = sql.Identifier(m.ratio.numerator), sql.Identifier(m.ratio.denominator)
                 expr = sql.SQL("sum(d.{})::numeric / NULLIF(sum(d.{}), 0)").format(n, dn)
             outer.append(sql.SQL("{} AS {}").format(expr, sql.Identifier(m.id)))
-            columns.append(Column(m.id, m.label, "metric", m.unit, cat.is_additive(m.id), "number"))
+            columns.append(Column(m.id, m.label, "metric", m.unit, cat.is_additive(m.id), "number", m.currency))
         q = sql.SQL("SELECT {} FROM ({}) d{}").format(
             sql.SQL(", ").join(outer), daily, group if not dims else sql.SQL(" GROUP BY {}").format(
                 sql.SQL(", ").join(sql.Identifier(d.id) for d in dims)))
@@ -230,7 +231,7 @@ def compile_spec(spec: QuerySpec, cat: Catalog, av: Availability) -> Compiled:
             select.append(sql.SQL("{} AS {}").format(b.available(m.id, den), sql.Identifier(f"__sample_{m.id}")))
             hidden.append(f"__sample_{m.id}")
         select.append(sql.SQL("{} AS {}").format(b.available(m.id, expr), sql.Identifier(m.id)))
-        columns.append(Column(m.id, m.label, "metric", m.unit, cat.is_additive(m.id), "number"))
+        columns.append(Column(m.id, m.label, "metric", m.unit, cat.is_additive(m.id), "number", m.currency))
     q = sql.SQL("SELECT {} {}{}").format(sql.SQL(", ").join(select), base, group)
     return _finish(b, q, columns, hidden, spec, dims, metrics[0].id, order_hint)
 
@@ -263,7 +264,7 @@ def _compile_cohort(b, spec, cat, dims, metrics, columns, av) -> Compiled:
         t=sql.SQL(T), cw=sql.SQL(" AND ").join(cohort_where), src=b.bind(av.sources), role=b.role_filter(cat.roles[c.event_role]),
         window=window, sel=sql.SQL(", ").join(dim_select) + (sql.SQL(", ") if dim_select else sql.SQL("")),
         mid=sql.Identifier(m.id), mid_raw=sql.SQL(m.id), group=group)
-    columns.append(Column(m.id, m.label, "metric", m.unit, False, "number"))
+    columns.append(Column(m.id, m.label, "metric", m.unit, False, "number", m.currency))
     return _finish(b, q, columns, [f"__sample_{m.id}"], spec, dims, m.id,
                    "time" if spec.shape == "time_trend" else "metric_desc")
 

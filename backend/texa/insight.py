@@ -3,11 +3,13 @@ which the server replaces with formatted values. A sentence citing an unknown fa
 import json
 import re
 
-from . import llm
+from . import derive, llm
 from .facts import format_value
 from .prompts import INSIGHT_INSTRUCTION, INSIGHT_SCHEMA
 
-PLACEHOLDER = re.compile(r"\[\[\s*(f_[A-Za-z0-9_]+)\s*\]\]")
+PLACEHOLDER = re.compile(r"\[\[\s*([fcu]_[A-Za-z0-9_]+)\s*\]\]")
+# A placeholder plus whatever short word or "(word)" the model wrote right after it, to catch a repeated unit.
+PLACEHOLDER_TAIL = re.compile(r"\[\[\s*([fcu]_[A-Za-z0-9_]+)\s*\]\]((?:\s*\(?[A-Za-z%]{1,4}\)?(?![A-Za-z]))?)")
 
 
 def substitute(text: str, facts: dict[str, dict], lang: str) -> str | None:
@@ -20,18 +22,35 @@ def substitute(text: str, facts: dict[str, dict], lang: str) -> str | None:
         if f is None:
             missing = True
             return ""
-        return format_value(f["value"], f["unit"], f.get("currency"), lang)
+        value = format_value(f["value"], f["unit"], f.get("currency"), lang)
+        # The value already ends with its unit; drop a copy the model typed right after the placeholder.
+        unit = value.rsplit(" ", 1)[-1] if " " in value else ("%" if value.endswith("%") else "")
+        tail = m.group(2)
+        if unit and tail.strip().strip("()").strip() == unit:
+            tail = ""
+        return value + tail
 
-    out = PLACEHOLDER.sub(repl, text)
+    out = PLACEHOLDER_TAIL.sub(repl, text)
     return None if missing else out
 
 
-def render(raw: dict, facts: list[dict], lang: str) -> tuple[dict, int]:
-    by_id = {f["id"]: f for f in facts}
-    # Formatted values the text may cite, so the UI can mark numbers that came from SQL (not the model).
-    cited = sorted({format_value(by_id[i]["value"], by_id[i]["unit"], by_id[i].get("currency"), lang)
-                    for i in PLACEHOLDER.findall(" ".join([raw["headline"], *raw["body"], *raw["caveats"]]))
-                    if i in by_id and by_id[i]["unit"] != "text"}, key=len, reverse=True)
+def render(raw: dict, facts: list[dict], lang: str, user_text: str = "") -> tuple[dict, int]:
+    """Substitute placeholders. Values the user stated (u_) and calculations (c_) are added as facts first; any that
+    fail (a number the user never typed, a bad formula) are left out, so sentences citing them are dropped."""
+    given, _ = derive.user_values(raw.get("assumptions") or [], user_text)
+    computed, _ = derive.calculate(raw.get("calculations") or [], facts + given)
+    by_id = {f["id"]: f for f in [*facts, *given, *computed]}
+    shown = PLACEHOLDER.findall(" ".join([raw["headline"], *raw["body"], *raw["caveats"]]))
+
+    def mark(i):
+        f = by_id[i]
+        return {"text": format_value(f["value"], f["unit"], f.get("currency"), lang), "kind": f.get("source", "sql"),
+                "label": f.get("label", ""), **({"formula": _formula(f["formula"], by_id, lang)} if f.get("formula") else {})}
+
+    # Formatted values the text cites and where each came from, so the UI marks SQL values, user values and
+    # calculations differently (and can show a calculation's formula).
+    marks = {m["text"]: m for m in (mark(i) for i in dict.fromkeys(shown) if i in by_id and by_id[i]["unit"] != "text")}
+    cited = sorted(marks, key=len, reverse=True)
     dropped = 0
     body = []
     for sentence in raw["body"]:
@@ -46,7 +65,16 @@ def render(raw: dict, facts: list[dict], lang: str) -> tuple[dict, int]:
         headline = body.pop(0) if body else ""
     caveats = [c for c in (substitute(c, by_id, lang) for c in raw["caveats"]) if c]
     follow_ups = [f for f in raw["follow_ups"] if not PLACEHOLDER.search(f)]
-    return {"headline": headline, "body": body, "caveats": caveats, "follow_ups": follow_ups, "cited": cited}, dropped
+    return {"headline": headline, "body": body, "caveats": caveats, "follow_ups": follow_ups, "cited": cited,
+            "marks": [marks[c] for c in cited], "derived": [*given, *computed]}, dropped
+
+
+def _formula(expr: str, by_id: dict, lang: str) -> str:
+    """The formula with every id replaced by its label and value, for the UI tooltip."""
+    def name(m):
+        f = by_id.get(m.group(0))
+        return f"{f['label']} ({format_value(f['value'], f['unit'], f.get('currency'), lang)})" if f else m.group(0)
+    return re.sub(r"\b[fcu]_[A-Za-z0-9_]+\b", name, expr)
 
 
 def template_answer(result: dict, lang: str) -> dict:
@@ -91,7 +119,7 @@ def build_payload(question: str, result: dict, cat, sources, lang: str, answer_r
 
 
 def write(question: str, result: dict, cat, sources, *, lang: str, answer_request: dict, model: str | None,
-          turn_id=None, step=None) -> dict:
+          turn_id=None, step=None, earlier_questions: list[str] = ()) -> dict:
     prompt = build_payload(question, result, cat, sources, lang, answer_request)
     with step("write_answer") as s:
         for attempt in range(2):
@@ -105,7 +133,7 @@ def write(question: str, result: dict, cat, sources, *, lang: str, answer_reques
                         return template_answer(result, lang)
                     raise
                 continue
-            answer, dropped = render(raw, result["facts"], lang)
+            answer, dropped = render(raw, result["facts"], lang, "\n".join([*earlier_questions, question]))
             if answer["headline"]:
                 if dropped:
                     s.note(f"dropped {dropped} sentence(s) citing unknown facts")

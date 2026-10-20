@@ -53,7 +53,12 @@ HIGH_CARDINALITY = {"item_id", "user_id", "session_id", "ep.order_id", "ep.selle
 VALUE_FIELDS = ["event_name", "platform", "country", "region", "city", "item_category", "item_brand", "currency"]
 MAX_VALUES = 5000
 OPTIONAL_COLUMNS = ["session_id", "platform", "country", "region", "city", "item_id", "item_category",
-                    "item_brand", "item_price", "quantity", "revenue"]
+                    "item_brand", "item_price", "quantity", "revenue", "revenue_usd"]
+
+# Daily exchange rates (not a store): <quote> per 1 USD from FRED, public CSV, no key. Run before the stores so
+# load_mart can fill revenue_usd: python -m texa_etl.run fx_rates
+FX_SERIES = {"BRL": "DEXBZUS"}
+FX_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={series}&cosd=2015-01-01"
 
 
 def connect():
@@ -130,13 +135,32 @@ def stage(source_id):
 
 
 def load_mart(source_id):
+    print(f"[{source_id}] load_mart: rebuilding events (USD conversion included)", flush=True)
     with connect() as conn, conn.cursor() as cur:
+        cur.execute((SQL_DIR / "fx" / "00_schema.sql").read_text())
         cur.execute("DELETE FROM analytics.event_activity WHERE source_id = %s", (source_id,))
         cur.execute((SQL_DIR / "mart" / f"{source_id}.sql").read_text())
-        cur.execute("SELECT count(*) FROM analytics.event_activity WHERE source_id = %s", (source_id,))
-        log(cur, source_id, "load_mart", rows_out=cur.fetchone()[0])
+        cur.execute("SELECT count(*), count(revenue), count(revenue_usd) FROM analytics.event_activity WHERE source_id = %s",
+                    (source_id,))
+        rows, with_revenue, converted = cur.fetchone()
+        note = f"revenue_usd {converted}/{with_revenue}" + ("" if converted == with_revenue else " (missing rates: run fx_rates)")
+        log(cur, source_id, "load_mart", rows_out=rows, note=note)
     with psycopg.connect(DSN, autocommit=True) as conn:
         conn.execute(f"ANALYZE analytics.event_activity_{source_id}")
+
+
+def refresh_revenue_usd(source_id):
+    """Recompute USD amounts in place after loading rates, without rebuilding events."""
+    print(f"[{source_id}] refresh_revenue_usd: converting revenue", flush=True)
+    with connect() as conn, conn.cursor() as cur:
+        cur.execute((SQL_DIR / "fx" / "00_schema.sql").read_text())
+        cur.execute((SQL_DIR / "fx" / "10_revenue_usd.sql").read_text(), {"source_id": source_id})
+        updated = cur.rowcount
+        cur.execute("SELECT count(revenue), count(revenue_usd) FROM analytics.event_activity WHERE source_id = %s",
+                    (source_id,))
+        with_revenue, converted = cur.fetchone()
+        note = f"revenue_usd {converted}/{with_revenue}" + ("" if converted == with_revenue else " (missing rates: run fx_rates)")
+        log(cur, source_id, "refresh_revenue_usd", rows_out=updated, note=note)
 
 
 def quality_checks(source_id):
@@ -217,10 +241,33 @@ def refresh_metadata(source_id):
         log(cur, source_id, "refresh_metadata", note=str(dict(cur.fetchall())))
 
 
-STEPS = {f.__name__: f for f in (download, load_raw, stage, load_mart, quality_checks, refresh_metadata)}
+def load_fx_rates(_=None):
+    """Download each FX series and upsert it; FRED leaves holidays blank ("" or "."), which are skipped."""
+    with connect() as conn, conn.cursor() as cur:
+        cur.execute((SQL_DIR / "fx" / "00_schema.sql").read_text())
+        for quote, series in FX_SERIES.items():
+            url = FX_URL.format(series=series)
+            print(f"[fx_rates] downloading {url}")
+            with urllib.request.urlopen(url, timeout=120) as r:
+                rows = list(csv.reader(r.read().decode("utf-8-sig").splitlines()))
+            parsed = [(d, float(v)) for d, v in rows[1:] if v not in ("", ".")]
+            if not parsed:
+                raise RuntimeError(f"{series}: no rates in the download")
+            cur.executemany(
+                "INSERT INTO analytics.fx_rates (rate_date, base, quote, rate, source) VALUES (%s, 'USD', %s, %s, %s) "
+                "ON CONFLICT (base, quote, rate_date) DO UPDATE SET rate = EXCLUDED.rate, source = EXCLUDED.source",
+                [(d, quote, v, f"FRED {series}") for d, v in parsed])
+            log(cur, "fx_rates", f"load:{quote}", rows_in=len(rows) - 1, rows_out=len(parsed),
+                note=f"{parsed[0][0]}..{parsed[-1][0]}")
+
+
+STEPS = {f.__name__: f for f in (download, load_raw, stage, load_mart, refresh_revenue_usd, quality_checks, refresh_metadata)}
 PIPELINE = ["download", "load_raw", "stage", "load_mart", "refresh_metadata", "quality_checks"]
 
 if __name__ == "__main__":
     source, *steps = sys.argv[1:]
+    if source == "fx_rates":
+        load_fx_rates()
+        sys.exit()
     for step in steps or PIPELINE:
         STEPS[step](source)

@@ -66,7 +66,7 @@ def check_availability(spec: QuerySpec, cat: Catalog, sources: dict[str, Source]
     if spec.metric_ids and all(not av.metric_sources[m] for m in spec.metric_ids):
         raise SpecError("not_tracked", "; ".join(r for g in gaps_by_metric.values() for r in g.values()) + ".")
     currencies = {sources[s].currency for s in av.sources}
-    if len(currencies) > 1 and any(cat.mets[m].unit == "currency" for m in spec.metric_ids):
+    if len(currencies) > 1 and any(cat.mets[m].unit == "currency" and not cat.mets[m].currency for m in spec.metric_ids):
         av.warnings.append(f"Amounts are in different currencies ({', '.join(f'{sources[s].label}: {sources[s].currency}' for s in av.sources)}) and are not converted; compare trends, not totals.")
     return av
 
