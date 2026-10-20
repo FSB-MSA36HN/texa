@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: texa
+      POSTGRES_PASSWORD: texa
+      POSTGRES_DB: texa
+    ports: ["15432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./pipeline/sql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U texa -d texa"]
+      interval: 5s
+      retries: 20
+
+  airflow:
+    image: apache/airflow:2.10.5-python3.12
+    command: standalone
+    depends_on:
+      postgres: {condition: service_healthy}
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://texa:texa@postgres:5432/airflow
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      _PIP_ADDITIONAL_REQUIREMENTS: "psycopg[binary]==3.2.*"
+      TEXA_DW_DSN: postgresql://texa:texa@postgres:5432/texa
+      TEXA_LANDING_DIR: /opt/texa/data/landing
+      TEXA_SQL_DIR: /opt/texa/pipeline/sql
+      PYTHONPATH: /opt/texa/pipeline
+      REES46_MONTHS: ${REES46_MONTHS:-2019-Dec,2020-Jan}
+    ports: ["18080:8080"]
+    volumes:
+      - ./pipeline/dags:/opt/airflow/dags:ro
+      - ./pipeline:/opt/texa/pipeline:ro
+      - ./data:/opt/texa/data
+
+  api:
+    build: ./backend
+    depends_on:
+      postgres: {condition: service_healthy}
+    env_file: [{path: .env, required: false}]
+    environment:
+      TEXA_DB_DSN: postgresql://texa:texa@postgres:5432/texa
+      TEXA_READER_DSN: postgresql://texa_reader:texa_reader@postgres:5432/texa
+    ports: ["18000:8000"]
+    volumes:
+      - ./catalog:/app/catalog:ro
+
+  web:
+    build: ./web
+    depends_on: [api]
+    ports: ["15173:80"]
+
+volumes:
+  pgdata:

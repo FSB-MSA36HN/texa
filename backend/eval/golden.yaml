@@ -1,0 +1,72 @@
+# Golden questions: what Texa should read from each question (live model, scored by eval/run_golden.py).
+# expect keys are checked only when present:
+#   status: answered | needs_clarification | refused | conversation | discussed
+#   recipe / metrics / selection / source_ids: exact (order-insensitive for lists)
+#   recipe_in: any of these metrics is accepted (ways of counting)
+#   filters: [{field, values}] (values compared case-insensitively)
+#   time_kind / days / start / end: the resolved time range
+#   ask: ids of form fields that must be asked
+# previous: questions asked first in the same conversation (their answers are not scored).
+- {id: rev_cat_dec, question: "Doanh thu theo danh mục sản phẩm tháng 12/2019 của cosmetics shop", expect: {status: answered, recipe: revenue, selection: [item_category], source_ids: [cosmetics_shop], time_kind: between, start: "2019-12-01", end: "2019-12-31"}}
+- {id: rev_cat_en, question: "Revenue by product category for the cosmetics shop in December 2019", expect: {status: answered, recipe: revenue, selection: [item_category], source_ids: [cosmetics_shop], start: "2019-12-01", end: "2019-12-31"}}
+- {id: daily_buyers, question: "Số người mua mỗi ngày của cosmetics shop trong 30 ngày gần nhất", expect: {status: answered, recipe: buyers, selection: [event_date], time_kind: last_n_days, days: 30}}
+- {id: weekly_orders_olist, question: "Olist orders per week in the last 90 days", expect: {status: answered, recipe: orders, selection: [event_week], source_ids: [olist_marketplace], days: 90}}
+- {id: monthly_rev_2018, question: "Doanh thu Olist theo tháng năm 2018", expect: {status: answered, recipe_in: [revenue, payment_value], selection: [event_month], source_ids: [olist_marketplace], start: "2018-01-01", end: "2018-12-31"}}
+- {id: aov_total, question: "AOV của Olist toàn thời gian là bao nhiêu?", expect: {status: answered, recipe: aov, source_ids: [olist_marketplace], time_kind: all}}
+- {id: aov_payment, question: "Average order value by payment type on Olist, all time", expect: {status: answered, recipe: aov, selection: [payment_type], time_kind: all}}
+- {id: late_by_state, question: "Bang nào có tỉ lệ giao hàng trễ cao nhất năm 2017?", expect: {status: answered, recipe: late_delivery_rate, selection: [region], source_ids: [olist_marketplace], start: "2017-01-01", end: "2017-12-31"}}
+- {id: late_infer_store, question: "What is the late delivery rate over all data?", expect: {status: answered, recipe: late_delivery_rate, source_ids: [olist_marketplace]}}
+- {id: review_score_cat, question: "Điểm đánh giá trung bình theo danh mục sản phẩm của Olist, toàn bộ dữ liệu", expect: {status: answered, recipe: avg_review_score, selection: [item_category]}}
+- {id: neg_review_rate, question: "Tỉ lệ review tiêu cực theo tháng năm 2018 của Olist", expect: {status: answered, recipe: negative_review_rate, selection: [event_month]}}
+- {id: delivery_days, question: "Average delivery time by customer state for Olist in 2018", expect: {status: answered, recipe: avg_delivery_days, selection: [region]}}
+- {id: delivery_range, question: "Phân bố đơn đã giao theo khoảng thời gian giao hàng, Olist toàn thời gian", expect: {status: answered, recipe: delivered_orders, selection: [delivery_days_range]}}
+- {id: cancel_rate, question: "Cancel rate per month on Olist in 2017", expect: {status: answered, recipe: cancel_rate, selection: [event_month]}}
+- {id: installments, question: "Số kỳ trả góp trung bình theo phương thức thanh toán của Olist, toàn bộ dữ liệu", expect: {status: answered, recipe: avg_installments, selection: [payment_type]}}
+- {id: funnel_week, question: "View to cart rate and cart to purchase rate by week for the cosmetics shop, last 30 days", expect: {status: answered, metrics: [view_to_cart_rate, cart_to_purchase_rate], selection: [event_week]}}
+- {id: abandonment, question: "Tỉ lệ bỏ giỏ hàng của cosmetics shop 30 ngày gần nhất", expect: {status: answered, recipe: cart_abandonment_rate, days: 30}}
+- {id: views_brand, question: "Top brands by product views in January 2020 (cosmetics)", expect: {status: answered, recipe: product_views, selection: [item_brand], start: "2020-01-01", end: "2020-01-31"}}
+- {id: buyers_brand, question: "Thương hiệu nào có nhiều người mua nhất tháng 1/2020 ở cosmetics shop?", expect: {status: answered, recipe: buyers, selection: [item_brand]}}
+- {id: price_range, question: "Số sản phẩm bán ra theo khoảng giá ở cosmetics shop, toàn bộ dữ liệu", expect: {status: answered, recipe: purchases, selection: [price_range]}}
+- {id: arppu, question: "Revenue per buyer for the cosmetics shop in the last 7 days", expect: {status: answered, recipe: arppu, days: 7}}
+- {id: items_per_order, question: "Mỗi đơn Olist có trung bình bao nhiêu sản phẩm? toàn bộ dữ liệu", expect: {status: answered, recipe: items_per_order}}
+- {id: sessions_daily, question: "Daily sessions of the cosmetics shop over the last 14 days", expect: {status: answered, recipe: sessions, selection: [event_date], days: 14}}
+- {id: avg_daily_users, question: "Người dùng trung bình mỗi ngày của cosmetics shop tháng 12/2019", expect: {status: answered, recipe: avg_daily_users}}
+- {id: new_returning, question: "New vs returning users per day for the cosmetics shop, last 14 days", expect: {status: answered, recipe: users, selection: [event_date, user_type]}}
+- {id: retention_d7, question: "7 day retention of the cosmetics shop by first seen week, all data", expect: {status: answered, recipe_in: [retention_d7, retention_d7_on_day], selection: [first_seen_week]}}
+- {id: repeat_purchase, question: "Tỉ lệ mua lại trong 30 ngày của khách Olist theo tháng đầu tiên, năm 2017", expect: {status: answered, recipe: repeat_purchase_rate_d30, selection: [first_seen_month]}}
+- {id: list_events, question: "Olist ghi nhận những sự kiện gì?", expect: {status: answered, selection: [event_name], source_ids: [olist_marketplace]}}
+- {id: list_payment_types, question: "What payment types exist in Olist?", expect: {status: answered, selection: [payment_type]}}
+# ---- filters and value matching ----
+- {id: sp_revenue, question: "Doanh thu Olist ở São Paulo theo tháng năm 2018", expect: {status: answered, filters: [{field: region, values: [SP]}], selection: [event_month]}}
+- {id: boleto_orders, question: "Number of boleto orders per month on Olist in 2018", expect: {status: answered, recipe: orders, filters: [{field: payment_type, values: [boleto]}]}}
+- {id: credit_card_aov, question: "AOV các đơn trả bằng thẻ tín dụng của Olist, toàn thời gian", expect: {status: answered, recipe: aov, filters: [{field: payment_type, values: [credit_card]}]}}
+- {id: two_states, question: "Compare revenue of RJ and MG on Olist in 2018", expect: {status: answered, filters: [{field: region, values: [RJ, MG]}], selection: [region]}}
+- {id: city_typo, question: "Đơn hàng Olist ở thành phố sao paolo năm 2018", expect: {status: needs_clarification, ask: ["filter:city"]}}
+- {id: brand_filter, question: "Revenue of brand runail per week at the cosmetics shop, last 30 days", expect: {status: answered, filters: [{field: item_brand, values: [runail]}]}}
+- {id: score_filter, question: "Số review 1 sao theo tháng của Olist năm 2018", expect: {status: answered, recipe: reviews, filters: [{field: review_score, values: ["1"]}]}}
+# ---- clarification ----
+- {id: ask_store, question: "Doanh thu theo tháng, toàn bộ dữ liệu", expect: {status: needs_clarification, ask: [source]}}
+- {id: ask_period, question: "Olist revenue by category", expect: {status: needs_clarification, ask: [time_range]}}
+- {id: ask_both, question: "Số người mua theo tuần", expect: {status: needs_clarification, ask: [source, time_range]}}
+- {id: conversion_variant, question: "Tỉ lệ chuyển đổi của cosmetics shop 30 ngày gần nhất", expect: {status: answered, recipe_in: [buyer_conversion_rate, view_to_purchase_rate]}}
+- {id: revenue_variant, question: "Olist sales in the last 30 days", expect: {status: answered, recipe_in: [revenue, payment_value]}}
+# ---- refusals ----
+- {id: olist_carts, question: "Số lượt thêm vào giỏ của Olist 30 ngày gần nhất", expect: {status: refused}}
+- {id: cosmetics_reviews, question: "Average review score of the cosmetics shop, all time", expect: {status: refused}}
+- {id: profit, question: "Lợi nhuận ròng theo tháng của Olist", expect: {status: refused}}
+- {id: roas, question: "What is the ROAS of our marketing campaigns?", expect: {status: refused}}
+- {id: too_many, question: "Show revenue, orders, buyers, AOV, cancel rate and reviews for Olist in 2018", expect: {status: refused}}
+- {id: weather, question: "Thời tiết Hà Nội hôm nay thế nào?", expect: {status: refused}}
+# ---- conversation ----
+- {id: hello, question: "Xin chào", expect: {status: conversation}}
+- {id: capabilities, question: "What can you do?", expect: {status: conversation}}
+- {id: thanks, question: "cảm ơn nhé", expect: {status: conversation}}
+# ---- multi-store ----
+- {id: compare_aov, question: "So sánh AOV giữa 2 cửa hàng, toàn bộ dữ liệu", expect: {status: answered, recipe: aov, source_ids: [cosmetics_shop, olist_marketplace]}}
+- {id: compare_buyers, question: "Buyers in each store over all their data", expect: {status: answered, recipe: buyers, source_ids: [cosmetics_shop, olist_marketplace]}}
+# ---- follow-ups ----
+- {id: fu_by_week, previous: ["Doanh thu cosmetics shop theo ngày 30 ngày gần nhất"], question: "còn theo tuần thì sao?", expect: {status: answered, recipe: revenue, selection: [event_week], source_ids: [cosmetics_shop], days: 30}}
+- {id: fu_other_store, previous: ["Buyers per month for the cosmetics shop, all data"], question: "and for Olist?", expect: {status: answered, recipe: buyers, selection: [event_month], source_ids: [olist_marketplace]}}
+- {id: fu_filter, previous: ["Olist orders per month in 2018"], question: "chỉ đơn trả bằng boleto", expect: {status: answered, recipe: orders, filters: [{field: payment_type, values: [boleto]}]}}
+- {id: fu_explain, previous: ["Olist revenue per month in 2018"], question: "Vì sao tháng 11 lại thấp hơn?", expect: {status: discussed}}
+- {id: fu_metric_swap, previous: ["Revenue by payment type on Olist, all data"], question: "now show AOV instead", expect: {status: answered, recipe: aov, selection: [payment_type]}}

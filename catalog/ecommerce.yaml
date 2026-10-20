@@ -1,0 +1,169 @@
+# =============================================================================
+# Texa semantic catalog: e-commerce starter (file version 1)
+# =============================================================================
+# Structured business definitions over analytics.event_activity. Texa's compiler
+# turns them into SQL; the AI only reads ids, labels, synonyms and descriptions
+# to pick what a question means. Nothing here is a prompt and nothing is SQL.
+#
+# Publish:  texa catalog publish catalog/ecommerce.yaml
+# Coverage: texa catalog coverage
+#
+# Sources log different event names for the same business action (cosmetics
+# "purchase" vs olist "order_purchased"); event_roles map one action to every
+# spelling. A source that never logs a role's events cannot answer a metric
+# built on it: Texa refuses with the reason instead of returning 0.
+# =============================================================================
+version: 1
+table: analytics.event_activity
+
+# -----------------------------------------------------------------------------
+# Event roles: one business action -> the event names that record it
+# -----------------------------------------------------------------------------
+event_roles:
+  - {id: any_event, label: Any tracked event, description: "Every logged event. Cosmetics: views, carts, purchases. Olist: order lifecycle, payments and reviews (Olist only logs users who ordered).",
+     events: [view, cart, remove_from_cart, purchase, order_purchased, order_approved, order_shipped, order_delivered, order_canceled, payment_made, review_submitted]}
+  - {id: product_view, label: Product view, description: A product page was viewed., events: [view]}
+  - {id: add_to_cart, label: Add to cart, description: A product was added to the cart., events: [cart]}
+  - {id: remove_from_cart, label: Remove from cart, description: A product was removed from the cart., events: [remove_from_cart]}
+  - id: purchase
+    label: Item purchased
+    description: One purchased item line; the item price is the revenue. Each source logs one of the spellings.
+    alternatives: true
+    events: [purchase, order_purchased]
+  - {id: order_approved, label: Order approved, description: Payment of an order was approved., events: [order_approved]}
+  - {id: order_shipped, label: Order shipped, description: The order was handed to the carrier., events: [order_shipped]}
+  - {id: order_delivered, label: Order delivered, description: The order reached the customer; carries ep.delivery_days and ep.is_late., events: [order_delivered]}
+  - id: late_delivery
+    label: Late delivery
+    description: A delivery that arrived after the estimated date.
+    events: [order_delivered]
+    event_conditions: {order_delivered: [{field: ep.is_late, operator: "=", values: ["true"]}]}
+  - {id: order_canceled, label: Order canceled, description: "The order was canceled (dated at purchase time: the source has no cancellation time).", events: [order_canceled]}
+  - {id: payment, label: Payment, description: One payment of an order (an order may be paid in several payments); revenue is the paid amount., events: [payment_made]}
+  - {id: review, label: Review, description: A customer review of an order with ep.review_score 1-5., events: [review_submitted]}
+  - id: negative_review
+    label: Negative review
+    description: A review scored 1 or 2.
+    events: [review_submitted]
+    event_conditions: {review_submitted: [{field: ep.review_score, operator: IN, values: ["1", "2"]}]}
+
+# -----------------------------------------------------------------------------
+# Dimensions: what a result can be broken down or filtered by
+# -----------------------------------------------------------------------------
+dimensions:
+  - {id: event_date, label: Day, kind: time, field: event_date, grain: day, synonyms: [date, daily, by day, ngày]}
+  - {id: event_week, label: Week, kind: time, field: event_date, grain: week, synonyms: [weekly, by week, tuần]}
+  - {id: event_month, label: Month, kind: time, field: event_date, grain: month, synonyms: [monthly, by month, tháng]}
+  - {id: first_seen_date, label: First seen day, description: Day the user first appeared in the source (their cohort day)., kind: time, field: first_seen_date, grain: day, synonyms: [cohort day, acquisition date, signup date]}
+  - {id: first_seen_week, label: First seen week, kind: time, field: first_seen_date, grain: week, synonyms: [cohort week]}
+  - {id: first_seen_month, label: First seen month, kind: time, field: first_seen_date, grain: month, synonyms: [cohort month]}
+  - {id: source, label: Store, description: Which data source (store) the event came from., kind: source, synonyms: [shop, store, data source, nguồn, cửa hàng]}
+  - {id: event_name, label: Event name, description: Raw event name as the source logs it., field: event_name, synonyms: [event, event type, sự kiện]}
+  - {id: item_category, label: Product category, description: Top-level product category., field: item_category, synonyms: [category, danh mục, ngành hàng]}
+  - {id: category_path, label: Full category path, description: "Full category path such as appliances.environment.vacuum (cosmetics shop).", field: ep.category_path, synonyms: [subcategory, category code]}
+  - {id: item_brand, label: Brand, field: item_brand, synonyms: [brand, thương hiệu, nhãn hàng]}
+  - {id: item_id, label: Product, description: Product id., field: item_id, synonyms: [product, product id, sản phẩm, sku]}
+  - {id: country, label: Country, field: country, synonyms: [market, quốc gia]}
+  - {id: region, label: Customer state, description: "Customer state / region code (e.g. SP, RJ).", field: region, synonyms: [state, region, province, bang, tỉnh]}
+  - {id: city, label: Customer city, field: city, synonyms: [city, thành phố]}
+  - {id: seller_state, label: Seller state, description: State of the seller that sold the item., field: ep.seller_state, synonyms: [seller region]}
+  - {id: payment_type, label: Payment type, description: "Payment method: credit_card, boleto, voucher, debit_card.", field: ep.payment_type, synonyms: [payment method, phương thức thanh toán]}
+  - {id: installments, label: Installments, description: Number of payment installments., field: ep.installments, cast: number, synonyms: [số kỳ trả góp]}
+  - {id: review_score, label: Review score, description: Review score 1-5., field: ep.review_score, cast: number, synonyms: [rating, stars, điểm đánh giá]}
+  - {id: order_status, label: Order status, field: ep.order_status, synonyms: [status, trạng thái đơn]}
+  - {id: price_range, label: Price range, description: Item price ranges in the source currency., kind: bucket, field: item_price, edges: [5, 10, 25, 50, 100, 250], synonyms: [price band, khoảng giá]}
+  - {id: delivery_days_range, label: Delivery time range, description: Days from purchase to delivery as ranges., kind: bucket, field: ep.delivery_days, edges: [3, 7, 14, 21, 30], synonyms: [delivery time bucket]}
+  - {id: user_type, label: New or returning user, description: "new = the event happened on the user's first day in the source; returning = a later day.", kind: user_type, synonyms: [new vs returning, khách mới, khách cũ]}
+  - {id: days_since_first_seen, label: Days since first seen, description: Event day minus the user's first day (0 = first day)., kind: days_since, synonyms: [user age, day N]}
+
+# -----------------------------------------------------------------------------
+# Metrics
+# -----------------------------------------------------------------------------
+metrics:
+  # ---------------- Traffic ----------------
+  - {id: users, label: Users, description: Distinct users with any event in the period., synonyms: [active users, customers, người dùng, khách hàng], type: simple, unit: count, simple: {aggregation: count_users, event_role: any_event}}
+  - {id: events, label: Events, description: Number of logged events of any kind., synonyms: [event count, số sự kiện], type: simple, unit: count, simple: {aggregation: count_events, event_role: any_event}}
+  - {id: avg_daily_users, label: Average daily users, description: Users of each day averaged over the days with data., synonyms: [average DAU, DAU trung bình], type: per_day, unit: count, per_day: {metric: users, statistic: avg}}
+  - {id: sessions, label: Sessions, description: Distinct sessions (cosmetics shop only)., synonyms: [visits, phiên], type: simple, unit: count, simple: {aggregation: count_distinct, event_role: any_event, field: session_id}}
+  # ---------------- Funnel ----------------
+  - {id: product_views, label: Product views, synonyms: [views, page views, lượt xem], type: simple, unit: count, simple: {aggregation: count_events, event_role: product_view}}
+  - {id: viewers, label: Users who viewed, description: Distinct users with a product view., synonyms: [viewers], type: simple, unit: count, simple: {aggregation: count_users, event_role: product_view}}
+  - {id: add_to_carts, label: Add-to-carts, synonyms: [cart adds, thêm vào giỏ], type: simple, unit: count, simple: {aggregation: count_events, event_role: add_to_cart}}
+  - {id: cart_users, label: Users who added to cart, synonyms: [carters], type: simple, unit: count, simple: {aggregation: count_users, event_role: add_to_cart}}
+  - {id: cart_removals, label: Cart removals, synonyms: [removes from cart, bỏ khỏi giỏ], type: simple, unit: count, simple: {aggregation: count_events, event_role: remove_from_cart}}
+  - {id: purchases, label: Items purchased, description: Purchased item lines (one per item)., synonyms: [purchases, items sold, sản phẩm bán ra, lượt mua], type: simple, unit: count, simple: {aggregation: count_events, event_role: purchase}}
+  - {id: buyers, label: Buyers, description: Distinct users with at least one purchase., synonyms: [paying users, payers, purchasers, người mua], type: simple, unit: count, simple: {aggregation: count_users, event_role: purchase}}
+  - id: orders
+    label: Orders
+    description: "Distinct orders containing purchased items. Cosmetics shop has no order id, so a session with purchases counts as one order."
+    synonyms: [order count, số đơn, đơn hàng]
+    type: simple
+    unit: count
+    simple: {aggregation: count_distinct, event_role: purchase, field: ep.order_id}
+  - {id: view_to_cart_rate, label: View to cart rate, description: Users who added to cart divided by users who viewed., synonyms: [add to cart rate], type: ratio, unit: percent, ratio: {numerator: cart_users, denominator: viewers}}
+  - {id: cart_to_purchase_rate, label: Cart to purchase rate, description: Buyers divided by users who added to cart., synonyms: [checkout conversion], type: ratio, unit: percent, ratio: {numerator: buyers, denominator: cart_users}}
+  - {id: cart_abandonment_rate, label: Cart abandonment rate, description: 1 - buyers / users who added to cart., synonyms: [abandoned carts, tỉ lệ bỏ giỏ], type: ratio, unit: percent, ratio: {numerator: buyers, denominator: cart_users, form: complement}}
+  - {id: buyer_conversion_rate, label: Buyer conversion rate, description: Buyers divided by users (share of users who bought)., synonyms: [conversion rate, CVR, tỉ lệ chuyển đổi], when_to_use: Conversion of people into buyers., type: ratio, unit: percent, ratio: {numerator: buyers, denominator: users}}
+  - {id: view_to_purchase_rate, label: View to purchase rate, description: Purchased items divided by product views (event-level conversion)., synonyms: [purchase per view], when_to_use: Conversion of product views into purchases., type: ratio, unit: percent, ratio: {numerator: purchases, denominator: product_views}}
+  # ---------------- Revenue ----------------
+  - {id: revenue, label: Revenue, description: Sum of purchased item prices (excludes freight) in the source currency., synonyms: [sales, GMV, doanh thu, doanh số], when_to_use: Money from items sold., type: simple, unit: currency, simple: {aggregation: sum, event_role: purchase, field: revenue}}
+  - {id: payment_value, label: Payment value, description: Sum of payments (includes freight and installment interest) in the source currency., synonyms: [paid amount, total paid, tiền thanh toán], when_to_use: Money actually paid by customers., type: simple, unit: currency, simple: {aggregation: sum, event_role: payment, field: revenue}}
+  - {id: aov, label: Average order value, description: Revenue divided by orders., synonyms: [AOV, giá trị đơn trung bình], type: ratio, unit: currency, ratio: {numerator: revenue, denominator: orders}}
+  - {id: arpu, label: Revenue per user, description: Revenue divided by users., synonyms: [ARPU], type: ratio, unit: currency, ratio: {numerator: revenue, denominator: users}}
+  - {id: arppu, label: Revenue per buyer, description: Revenue divided by buyers., synonyms: [ARPPU, revenue per paying user], type: ratio, unit: currency, ratio: {numerator: revenue, denominator: buyers}}
+  - {id: items_per_order, label: Items per order, description: Purchased items divided by orders., synonyms: [basket size, số sản phẩm mỗi đơn], type: ratio, unit: number, ratio: {numerator: purchases, denominator: orders}}
+  - {id: avg_item_price, label: Average item price, description: Average price of purchased items., synonyms: [average selling price, giá bán trung bình], type: simple, unit: currency, simple: {aggregation: avg, event_role: purchase, field: item_price}}
+  - {id: avg_installments, label: Average installments, description: Average number of installments per payment., type: simple, unit: number, simple: {aggregation: avg, event_role: payment, field: ep.installments}}
+  # ---------------- Fulfilment and satisfaction ----------------
+  - {id: canceled_orders, label: Canceled orders, synonyms: [cancellations, đơn hủy], type: simple, unit: count, simple: {aggregation: count_distinct, event_role: order_canceled, field: ep.order_id}}
+  - {id: cancel_rate, label: Cancel rate, description: Canceled orders divided by orders., synonyms: [cancellation rate, tỉ lệ hủy], type: ratio, unit: percent, ratio: {numerator: canceled_orders, denominator: orders}}
+  - {id: delivered_orders, label: Delivered orders, type: simple, unit: count, simple: {aggregation: count_distinct, event_role: order_delivered, field: ep.order_id}}
+  - {id: late_deliveries, label: Late deliveries, type: simple, unit: count, simple: {aggregation: count_distinct, event_role: late_delivery, field: ep.order_id}}
+  - {id: late_delivery_rate, label: Late delivery rate, description: Late deliveries divided by delivered orders., synonyms: [on-time rate, giao trễ], type: ratio, unit: percent, ratio: {numerator: late_deliveries, denominator: delivered_orders}}
+  - {id: avg_delivery_days, label: Average delivery time, description: Average days from purchase to delivery., synonyms: [delivery time, thời gian giao hàng], type: simple, unit: days, simple: {aggregation: avg, event_role: order_delivered, field: ep.delivery_days}}
+  - {id: reviews, label: Reviews, type: simple, unit: count, simple: {aggregation: count_events, event_role: review}}
+  - {id: avg_review_score, label: Average review score, description: Average review score (1-5)., synonyms: [rating, CSAT, điểm đánh giá trung bình], type: simple, unit: score, simple: {aggregation: avg, event_role: review, field: ep.review_score}}
+  - {id: negative_reviews, label: Negative reviews, type: simple, unit: count, simple: {aggregation: count_events, event_role: negative_review}}
+  - {id: negative_review_rate, label: Negative review rate, description: Reviews scored 1-2 divided by all reviews., synonyms: [bad review rate], type: ratio, unit: percent, ratio: {numerator: negative_reviews, denominator: reviews}}
+  # ---------------- Cohorts (anchored on first_seen_date) ----------------
+  - {id: retention_d1, label: D1 retention, description: Share of users first seen in the period who had any event exactly 1 day later., synonyms: [day 1 retention, R1], type: cohort, unit: percent, cohort: {event_role: any_event, day: 1, window: on_day}}
+  - {id: retention_d7, label: 7-day return rate, description: Share of users first seen in the period who came back (any event) within 1-7 days., synonyms: [D7 retention, 7 day retention, giữ chân 7 ngày], type: cohort, unit: percent, cohort: {event_role: any_event, day: 7, window: within}}
+  - {id: retention_d7_on_day, label: D7 retention (exact day), description: Share of users first seen in the period who had any event exactly 7 days later., synonyms: [D7 retention exact], type: cohort, unit: percent, cohort: {event_role: any_event, day: 7, window: on_day}}
+  - {id: retention_d30, label: 30-day return rate, description: Share of users first seen in the period who came back (any event) within 1-30 days., synonyms: [D30 retention, 30 day retention], type: cohort, unit: percent, cohort: {event_role: any_event, day: 30, window: within}}
+  - {id: repeat_purchase_rate_d30, label: 30-day repeat purchase rate, description: Share of users first seen in the period who purchased again within 1-30 days after their first day., synonyms: [repeat purchase, mua lại, repurchase rate], type: cohort, unit: percent, cohort: {event_role: purchase, day: 30, window: within}}
+  - {id: repeat_purchase_rate_d90, label: 90-day repeat purchase rate, description: Share of users first seen in the period who purchased again within 1-90 days after their first day., synonyms: [90 day repurchase], type: cohort, unit: percent, cohort: {event_role: purchase, day: 90, window: within}}
+
+# Ways of counting one term: Texa answers with the stated (or first) member and offers a switch.
+variant_groups:
+  - {id: conversion, label: Conversion, metrics: [buyer_conversion_rate, view_to_purchase_rate]}
+  - {id: revenue_variants, label: Revenue, metrics: [revenue, payment_value]}
+  - {id: retention_d7_variants, label: D7 retention, metrics: [retention_d7, retention_d7_on_day]}
+
+# Same meaning, different source: the order id of cosmetics shop is its session.
+field_mappings:
+  - {field: ep.order_id, source: cosmetics_shop, to: session_id}
+
+glossary:
+  - {id: aov_term, label: AOV, description: Average order value (see the aov metric)., synonyms: [average basket value]}
+  - {id: gmv, label: GMV, description: Gross merchandise value; here the revenue metric (item prices without freight)., synonyms: []}
+  - {id: funnel, label: Funnel, description: "view -> add to cart -> purchase; only cosmetics shop logs views and carts.", synonyms: [phễu]}
+  - {id: boleto, label: Boleto, description: Brazilian bank slip payment method (payment_type boleto)., synonyms: [], field: payment_type, values: [boleto]}
+  - {id: sao_paulo, label: São Paulo, description: The state of São Paulo (customer state SP)., synonyms: [sao paulo, SP], field: region, values: [SP]}
+  - {id: rio, label: Rio de Janeiro, description: The state of Rio de Janeiro (customer state RJ)., synonyms: [rio de janeiro, RJ], field: region, values: [RJ]}
+  - {id: credit_card, label: Credit card, description: Credit card payments., synonyms: [thẻ tín dụng, card], field: payment_type, values: [credit_card]}
+
+# Reviewed question -> reading pairs: few-shot examples and golden regression cases.
+verified_questions:
+  - {id: revenue_by_category, question: "Revenue by product category", shape: breakdown, selection: [item_category], recipe: revenue}
+  - {id: daily_buyers, question: "Daily buyers", shape: time_trend, selection: [event_date], recipe: buyers}
+  - {id: funnel_rates, question: "View to cart and cart to purchase rate by week", shape: time_trend, selection: [event_week], metrics: [view_to_cart_rate, cart_to_purchase_rate]}
+  - {id: aov_by_payment, question: "Average order value by payment type", shape: breakdown, selection: [payment_type], recipe: aov}
+  - {id: late_by_state, question: "Which states have the highest late delivery rate?", shape: breakdown, selection: [region], recipe: late_delivery_rate}
+  - {id: list_events, question: "What events does this store track?", shape: distinct_values, selection: [event_name]}
+  - {id: repeat_by_cohort, question: "30-day repeat purchase rate by first seen month", shape: time_trend, selection: [first_seen_month], recipe: repeat_purchase_rate_d30}
+
+data_notes: []
+
+policy:
+  min_sample: 30
+  ask_when_missing: []

@@ -1,0 +1,10 @@
+.env
+data/landing/
+backend/.venv/
+backend/.secret_key
+**/__pycache__/
+.pytest_cache/
+web/node_modules/
+web/dist/
+.run.pid
+.claude/
