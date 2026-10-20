@@ -2,10 +2,18 @@ import { useState } from 'react'
 import { Loader2, X } from 'lucide-react'
 import { api, type Bootstrap } from '../api'
 
+const KEY_HINT: Record<string, string> = { gemini: 'AIza…', anthropic: 'sk-ant-…', openai: 'sk-…' }
+const BASE_URL_HINT: Record<string, string> = {
+  gemini: 'https://generativelanguage.googleapis.com',
+  anthropic: 'https://api.anthropic.com',
+  openai: 'https://api.openai.com/v1  ·  vd. https://litellm.congty.vn/v1',
+}
+
 export function SettingsModal({ boot, onClose, onSaved }: { boot: Bootstrap; onClose: () => void; onSaved: () => void }) {
   const conn = boot.connection
   const [provider, setProvider] = useState(conn?.provider ?? 'gemini')
   const [apiKey, setApiKey] = useState('')
+  const [baseUrl, setBaseUrl] = useState(conn?.base_url ?? '')
   const [models, setModels] = useState<{ id: string; label: string }[]>((conn?.allowed_models ?? []).map((id) => ({ id, label: id })))
   const [allowed, setAllowed] = useState<string[]>(conn?.allowed_models ?? [])
   const [defaultModel, setDefaultModel] = useState(conn?.default_model ?? '')
@@ -14,24 +22,25 @@ export function SettingsModal({ boot, onClose, onSaved }: { boot: Bootstrap; onC
   const [lang, setLang] = useState(conn?.answer_language ?? 'auto')
   const [busy, setBusy] = useState<'' | 'discover' | 'save'>('')
   const [error, setError] = useState('')
-  const savedKey = !!conn?.has_key && !conn.from_env
+  const savedKey = !!conn?.has_key && !conn.from_env && conn.provider === provider
+  const hint = KEY_HINT[provider] ?? ''
 
   const discover = async () => {
     setBusy('discover'); setError('')
     try {
-      const { models } = await api.discover(provider, apiKey)
+      const { models } = await api.discover(provider, apiKey, baseUrl)
       setModels(models)
       if (!allowed.length) {
-        const pick = models.filter((m) => /flash|pro/.test(m.id)).slice(0, 4).map((m) => m.id)
+        const pick = models.slice(0, 4).map((m) => m.id)
         setAllowed(pick)
-        setDefaultModel(pick.find((m) => m.includes('flash')) ?? pick[0] ?? '')
+        setDefaultModel(pick[0] ?? '')
       }
     } catch (e) { setError((e as Error).message) } finally { setBusy('') }
   }
   const save = async () => {
     setBusy('save'); setError('')
     try {
-      await api.saveConnection({ provider, api_key: apiKey || undefined, allowed_models: allowed, default_model: defaultModel || null,
+      await api.saveConnection({ provider, api_key: apiKey || undefined, base_url: baseUrl.trim() || null, allowed_models: allowed, default_model: defaultModel || null,
         max_output_tokens: maxOut, daily_token_limit: daily, answer_language: lang })
       onSaved()
     } catch (e) { setError((e as Error).message) } finally { setBusy('') }
@@ -53,18 +62,23 @@ export function SettingsModal({ boot, onClose, onSaved }: { boot: Bootstrap; onC
         <div className="space-y-5 text-sm">
           <label className="block space-y-1.5">
             <span className="font-medium">Provider</span>
-            <select value={provider} onChange={(e) => setProvider(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950">
+            <select value={provider} onChange={(e) => { setProvider(e.target.value); setModels([]); setAllowed([]); setDefaultModel('') }} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950">
               {boot.providers.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
-              <option disabled>OpenAI (sắp có)</option>
-              <option disabled>Anthropic Claude (sắp có)</option>
             </select>
           </label>
           <label className="block space-y-1.5">
             <span className="font-medium">API key</span>
             <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off"
-              placeholder={savedKey ? 'Đã lưu an toàn – nhập key mới để thay' : conn?.from_env ? 'Đang dùng GEMINI_API_KEY từ môi trường' : 'AIza…'}
+              placeholder={savedKey ? 'Đã lưu an toàn – nhập key mới để thay' : conn?.from_env && conn.provider === provider ? 'Đang dùng key từ biến môi trường' : hint}
               className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950" />
             <span className="text-xs text-slate-500">Key được mã hóa trước khi lưu và không bao giờ gửi lại trình duyệt.</span>
+          </label>
+          <label className="block space-y-1.5">
+            <span className="font-medium">Base URL <span className="font-normal text-slate-400">(tùy chọn)</span></span>
+            <input type="url" value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} autoComplete="off"
+              placeholder={BASE_URL_HINT[provider] ?? ''}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950" />
+            <span className="text-xs text-slate-500">Để trống để gọi thẳng provider. Điền URL gateway của tổ chức (LiteLLM, OpenRouter, Azure, proxy nội bộ…) nếu gateway dùng chung API với provider đã chọn.</span>
           </label>
           <button onClick={discover} disabled={busy !== '' || (!apiKey && !conn)}
             className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:hover:bg-slate-800">

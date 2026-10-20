@@ -127,7 +127,7 @@ export default function App() {
           {allowed.length > 0 && (
             <select aria-label="Model" value={activeModel} onChange={(e) => { setModel(e.target.value); write('texa.model', e.target.value) }}
               className="max-w-[45vw] truncate rounded-lg border border-slate-200 bg-transparent px-2 py-1 text-sm dark:border-slate-700">
-              {allowed.map((m) => <option key={m} value={m}>Gemini · {m}</option>)}
+              {allowed.map((m) => <option key={m} value={m}>{boot?.providers.find((p) => p.id === boot.connection?.provider)?.label.split(' (')[0] ?? ''} · {m}</option>)}
             </select>
           )}
           <button aria-label="Texa biết gì" title="Texa biết gì" onClick={() => setCatalogOpen(true)} className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"><BookOpen className="h-5 w-5" /></button>
@@ -136,7 +136,7 @@ export default function App() {
 
         {boot && !boot.connection && (
           <div className="flex items-center justify-center gap-3 bg-indigo-50 px-4 py-2 text-sm text-indigo-900 dark:bg-indigo-950/50 dark:text-indigo-200">
-            Thêm Gemini API key để bắt đầu.
+            Kết nối một model (Gemini, Claude, OpenAI hoặc gateway) để bắt đầu.
             <button onClick={() => setSettings(true)} className="rounded-md bg-indigo-600 px-3 py-1 font-medium text-white hover:bg-indigo-700">Mở Cài đặt</button>
           </div>
         )}

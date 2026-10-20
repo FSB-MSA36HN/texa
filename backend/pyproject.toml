@@ -9,6 +9,8 @@ dependencies = [
   "pydantic>=2.9",
   "pyyaml>=6",
   "google-genai>=1.30",
+  "anthropic>=0.70",
+  "openai>=1.100",
   "cryptography>=43",
   "jsonschema>=4.23",
 ]

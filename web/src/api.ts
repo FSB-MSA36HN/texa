@@ -1,6 +1,6 @@
 export type Source = { id: string; label: string; description: string; currency: string; min_date: string; max_date: string; row_count: number; user_count: number }
 export type CatalogEntry = { id: string; label: string; description: string; unit?: string; synonyms: string[] }
-export type Connection = { provider: string; allowed_models: string[]; default_model: string | null; max_output_tokens: number; daily_token_limit: number; answer_language: string; from_env?: boolean; has_key: boolean }
+export type Connection = { provider: string; base_url: string | null; allowed_models: string[]; default_model: string | null; max_output_tokens: number; daily_token_limit: number; answer_language: string; from_env?: boolean; has_key: boolean }
 export type Bootstrap = {
   sources: Source[]
   catalog: { version?: number; metrics?: CatalogEntry[]; dimensions?: CatalogEntry[]; examples?: string[]; error?: string }
@@ -59,8 +59,8 @@ export const api = {
   fullResult: (id: string) => call<{ columns: Column[]; rows: Record<string, unknown>[]; row_count: number; partial: boolean }>(`/api/turns/${id}/full-result`),
   saveConnection: (body: Partial<Connection> & { api_key?: string }) => call<Connection>('/api/model-connection', { method: 'PUT', json: body }),
   deleteConnection: () => call('/api/model-connection', { method: 'DELETE' }),
-  discover: (provider: string, api_key?: string) =>
-    call<{ models: { id: string; label: string }[] }>('/api/model-connection/discover', { method: 'POST', json: { provider, api_key: api_key || null } }),
+  discover: (provider: string, api_key?: string, base_url?: string) =>
+    call<{ models: { id: string; label: string }[] }>('/api/model-connection/discover', { method: 'POST', json: { provider, api_key: api_key || null, base_url: base_url || null } }),
 }
 
 /** Follow a running turn: step events while it works, then the saved turn. Returns a stop function. */

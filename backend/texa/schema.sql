@@ -57,6 +57,8 @@ CREATE TABLE IF NOT EXISTS app.model_connection (
   answer_language   text NOT NULL DEFAULT 'auto',
   updated_at        timestamptz NOT NULL DEFAULT now()
 );
+-- Optional endpoint override: an organisation gateway / proxy speaking the provider's API.
+ALTER TABLE app.model_connection ADD COLUMN IF NOT EXISTS base_url text;
 
 -- Token ledger; never stores prompt or response text.
 CREATE TABLE IF NOT EXISTS app.llm_usage (

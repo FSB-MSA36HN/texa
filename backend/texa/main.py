@@ -87,7 +87,7 @@ def _public_connection():
     conn = llm.get_connection()
     if conn is None:
         return None
-    return {k: conn.get(k) for k in ("provider", "allowed_models", "default_model", "max_output_tokens",
+    return {k: conn.get(k) for k in ("provider", "base_url", "allowed_models", "default_model", "max_output_tokens",
                                      "daily_token_limit", "answer_language", "from_env")} | {"has_key": True}
 
 
@@ -102,7 +102,7 @@ class AskBody(BaseModel):
 @app.post("/api/questions")
 def post_question(body: AskBody):
     if llm.get_connection() is None:
-        raise llm.LLMError("NO_KEY", "No model is connected. Add a Gemini API key in Settings.")
+        raise llm.LLMError("NO_KEY", "No model is connected. Add an API key in Settings.")
     return answer.ask(body.question, body.conversation_id, body.model, body.source_ids or None)
 
 
@@ -232,6 +232,7 @@ def delete_conversation(conversation_id: str):
 class ConnectionBody(BaseModel):
     provider: str = "gemini"
     api_key: str | None = Field(default=None, max_length=500)
+    base_url: str | None = Field(default=None, max_length=500, pattern=r"^(https?://\S+)?$")
     allowed_models: list[str] = Field(default=[], max_length=50)
     default_model: str | None = None
     max_output_tokens: int = Field(default=8192, ge=256, le=65536)
@@ -248,7 +249,7 @@ def get_connection():
 def put_connection(body: ConnectionBody):
     if body.default_model and body.allowed_models and body.default_model not in body.allowed_models:
         raise SpecError("invalid_connection", "The default model must be one of the allowed models.")
-    llm.save_connection(body.provider, body.api_key, body.allowed_models, body.default_model, body.max_output_tokens,
+    llm.save_connection(body.provider, body.api_key, body.base_url, body.allowed_models, body.default_model, body.max_output_tokens,
                         body.daily_token_limit, body.answer_language)
     return _public_connection()
 
@@ -262,14 +263,17 @@ def delete_connection():
 class DiscoverBody(BaseModel):
     provider: str = "gemini"
     api_key: str | None = Field(default=None, max_length=500)
+    base_url: str | None = Field(default=None, max_length=500, pattern=r"^(https?://\S+)?$")
 
 
 @app.post("/api/model-connection/discover")
 def discover(body: DiscoverBody):
-    key = body.api_key or (llm.get_connection(with_key=True) or {}).get("api_key")
+    saved = llm.get_connection(with_key=True) or {}
+    # A saved key is only reused for the provider it was saved for.
+    key = body.api_key or (saved.get("api_key") if saved.get("provider") == body.provider else None)
     if not key:
         raise llm.LLMError("NO_KEY", "Enter an API key first.")
-    return {"models": llm.discover_models(body.provider, key)}
+    return {"models": llm.discover_models(body.provider, key, body.base_url)}
 
 
 @app.get("/api/usage")

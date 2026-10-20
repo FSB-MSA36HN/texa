@@ -57,7 +57,9 @@ cd backend && uv run uvicorn texa.main:app --port 18000
 cd web && npm install && npm run dev
 ```
 
-Mở http://localhost:15173, bấm ⚙ **Cài đặt**, nhập Gemini API key, bấm "Kiểm tra key & tải danh sách model", chọn model rồi Lưu.
+Mở http://localhost:15173, bấm ⚙ **Cài đặt**, chọn provider (**Google Gemini**, **Anthropic Claude** hoặc **OpenAI**), nhập API key, bấm "Kiểm tra key & tải danh sách model", chọn model rồi Lưu.
+
+**Gateway của tổ chức:** chọn provider có API giống gateway (đa số gateway như LiteLLM, OpenRouter, Azure OpenAI, vLLM… tương thích OpenAI), điền key do gateway cấp và **Base URL** của gateway (ví dụ `https://litellm.congty.vn/v1`). Nếu gateway không hỗ trợ `json_schema`, Texa tự chuyển sang JSON mode và vẫn kiểm tra kết quả theo schema. Cũng có thể đặt sẵn trong `.env`: `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GEMINI_API_KEY`, cùng `TEXA_BASE_URL` và `TEXA_DEFAULT_MODEL`.
 
 Muốn chạy cả `api` lẫn `web` bằng Docker thì dùng `docker compose up -d`, web sẽ ở http://localhost:15173. Trong trường hợp này hãy đặt `TEXA_SECRET_KEY` trong `.env`; key này dùng để mã hóa API key đã lưu.
 
@@ -75,7 +77,7 @@ Cần đã nạp warehouse. Bộ test gồm:
 - so số liệu của compiler với SQL viết tay;
 - luồng hội thoại với model giả.
 
-Golden eval chạy với model thật (cần đã kết nối model trong Cài đặt, hoặc đặt `GEMINI_API_KEY`):
+Golden eval chạy với model thật (cần đã kết nối model trong Cài đặt, hoặc đặt một trong các key ở `.env`):
 
 ```bash
 cd backend && uv run python eval/run_golden.py --runs 3

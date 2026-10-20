@@ -13,7 +13,7 @@ export const STEP_LABELS: Record<string, string> = {
 }
 
 export const ERROR_HINTS: Record<string, string> = {
-  NO_KEY: 'Chưa kết nối model. Mở Cài đặt để thêm Gemini API key.',
+  NO_KEY: 'Chưa kết nối model. Mở Cài đặt để thêm API key.',
   AUTH: 'API key bị từ chối. Kiểm tra lại key trong Cài đặt.',
   QUOTA: 'Provider báo hết hạn mức. Thử lại sau ít phút.',
   DAILY_LIMIT: 'Đã dùng hết ngân sách token hôm nay.',
