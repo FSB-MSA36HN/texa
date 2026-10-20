@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { AlertTriangle, Ban, Check, ChevronDown, ChevronRight, Copy, Download, Loader2, RotateCcw, Square, ThumbsDown, ThumbsUp, X } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
+import { Check, ChevronDown, Copy, CornerDownRight, Download, Pencil, RotateCcw, ThumbsDown, ThumbsUp, X } from 'lucide-react'
 import { api, type Bootstrap, type FormField, type Step, type Turn } from '../api'
 import { ERROR_HINTS, STEP_LABELS, formatCell, readingChips, rowCurrency, toCsv } from '../format'
 
@@ -9,108 +9,288 @@ type Props = {
   boot: Bootstrap
   onAsk: (q: string) => void
   onRefresh: (turnId: string) => void
+  onEdit?: (turnId: string, question: string) => Promise<void>
+  busy?: boolean
+  explainMarks?: boolean
 }
 
-export function TurnView({ turn, steps, boot, onAsk, onRefresh }: Props) {
+const softBtn = 'inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-sm text-lead transition-colors hover:bg-wash hover:text-ink'
+
+export function TurnView({ turn, steps, boot, onAsk, onRefresh, onEdit, busy, explainMarks }: Props) {
+  const [editing, setEditing] = useState(false)
+  const done = turn.status !== 'running'
   return (
-    <div className="space-y-3">
-      <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-2xl rounded-br-md bg-indigo-600 px-4 py-2.5 text-white whitespace-pre-wrap">{turn.question}</div>
-      </div>
-      <div className="flex gap-3">
-        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-xs font-bold text-white">T</div>
-        <div className="min-w-0 flex-1 space-y-3">
-          {(turn.status === 'running' || steps.length > 0) && <RunProgress steps={steps} running={turn.status === 'running'} onStop={() => api.cancel(turn.id)} />}
-          <Body turn={turn} boot={boot} onAsk={onAsk} onRefresh={onRefresh} />
+    <section className="space-y-5">
+      {editing && onEdit
+        ? <EditQuestion question={turn.question} onCancel={() => setEditing(false)} onSave={(q) => onEdit(turn.id, q).then(() => setEditing(false))} />
+        : (
+          <div className="group flex flex-col items-end gap-1">
+            <p className="max-w-[85%] rounded-[20px] bg-wash px-4 py-2.5 leading-relaxed whitespace-pre-wrap">{turn.question}</p>
+            <div className="flex gap-0.5 text-lead opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100">
+              <CopyButton text={turn.question} label="Chép câu hỏi" />
+              {onEdit && <IconAction label="Sửa câu hỏi" disabled={busy} onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /></IconAction>}
+            </div>
+          </div>
+        )}
+      <div className="min-w-0 space-y-4">
+        {turn.status === 'running' && <Working steps={steps} onStop={() => api.cancel(turn.id)} />}
+        <div key={turn.status} className={done ? 'answer-in' : ''}>
+          <Body turn={turn} boot={boot} onAsk={onAsk} onRefresh={onRefresh} explainMarks={explainMarks} steps={steps} busy={busy} />
         </div>
       </div>
+    </section>
+  )
+}
+
+function IconAction({ label, onClick, disabled, children, on }: { label: string; onClick: () => void; disabled?: boolean; children: ReactNode; on?: boolean }) {
+  return (
+    <button aria-label={label} title={label} onClick={onClick} disabled={disabled} aria-pressed={on}
+      className={`rounded-lg p-1.5 transition-colors hover:bg-wash disabled:pointer-events-none disabled:opacity-30 ${on ? 'text-ledger' : 'hover:text-ink'}`}>
+      {children}
+    </button>
+  )
+}
+
+function CopyButton({ text, label }: { text: string; label: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <IconAction label={copied ? 'Đã chép' : label} onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500) }}>
+      {copied ? <Check className="h-4 w-4 text-ledger" /> : <Copy className="h-4 w-4" />}
+    </IconAction>
+  )
+}
+
+function EditQuestion({ question, onSave, onCancel }: { question: string; onSave: (q: string) => Promise<void>; onCancel: () => void }) {
+  const [value, setValue] = useState(question)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const save = async () => {
+    if (!value.trim() || saving) return
+    setSaving(true)
+    setError('')
+    try { await onSave(value.trim()) } catch (e) { setError((e as Error).message); setSaving(false) }
+  }
+  return (
+    <div className="ml-auto w-full max-w-[85%] rounded-[20px] border border-ledger/40 bg-sheet p-3">
+      <textarea autoFocus value={value} onChange={(e) => setValue(e.target.value)} maxLength={2000} aria-label="Sửa câu hỏi"
+        ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 200)}px` } }}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') onCancel()
+          if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); save() }
+        }}
+        className="w-full resize-none bg-transparent px-1 leading-relaxed outline-none" />
+      <div className="mt-2 flex items-center gap-2">
+        <p className="flex-1 text-xs text-lead">Các câu hỏi sau câu này sẽ bị xóa.</p>
+        <button onClick={onCancel} className="rounded-full px-3 py-1.5 text-sm transition-colors hover:bg-wash">Hủy</button>
+        <button onClick={save} disabled={!value.trim() || saving}
+          className="rounded-full bg-ledger px-3.5 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40 dark:text-paper">
+          {saving ? 'Đang gửi…' : 'Gửi lại'}</button>
+      </div>
+      {error && <p role="alert" className="mt-2 text-sm text-rose-700 dark:text-rose-300">{error}</p>}
     </div>
   )
 }
 
-function Body({ turn, boot, onAsk, onRefresh }: Omit<Props, 'steps'>) {
+/** Plain text of an answer, for the copy button: what the user reads, without the table. */
+function answerText(turn: Turn): string {
+  const ins = turn.insight
+  if (ins) return [ins.headline, ...ins.body, ...ins.caveats].filter(Boolean).join('\n\n')
+  return turn.message ?? turn.form?.message ?? ''
+}
+
+function Body({ turn, boot, onAsk, onRefresh, explainMarks, steps, busy }: Props) {
+  const retry = () => api.retry(turn.id).then(() => onRefresh(turn.id))
   switch (turn.status) {
     case 'running':
       return null
     case 'conversation':
       return (
-        <div className="space-y-3">
-          <p className="whitespace-pre-wrap leading-relaxed">{turn.message}</p>
-          <Chips items={turn.suggestions} onPick={onAsk} />
+        <div className="space-y-4">
+          <p className="leading-relaxed whitespace-pre-wrap">{turn.message}</p>
+          <FollowUps items={turn.suggestions} onPick={onAsk} />
+          <Footer turn={turn} steps={steps} onRetry={retry} busy={busy} />
         </div>
       )
     case 'needs_clarification':
       return <ClarifyForm turn={turn} onSent={() => onRefresh(turn.id)} />
     case 'refused':
       return (
-        <div className="space-y-3 rounded-xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-900/60 dark:bg-rose-950/40">
-          <div className="flex gap-2 text-rose-800 dark:text-rose-200"><Ban className="mt-0.5 h-4 w-4 shrink-0" /><p>{turn.message}</p></div>
-          {!!turn.suggestions?.length && <p className="text-sm text-slate-600 dark:text-slate-400">Bạn có thể hỏi:</p>}
-          <Chips items={turn.suggestions} onPick={onAsk} />
+        <div className="space-y-4">
+          <p className="leading-relaxed">{turn.message}</p>
+          <FollowUps items={turn.suggestions} onPick={onAsk} label="Có thể hỏi thay" />
+          <Footer turn={turn} steps={steps} onRetry={retry} busy={busy} />
         </div>
       )
     case 'error':
     case 'cancelled':
       return (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-100">
-          <AlertTriangle className="h-4 w-4 shrink-0" />
-          <span className="flex-1">{turn.status === 'cancelled' ? 'Đã dừng.' : ERROR_HINTS[turn.error?.code ?? ''] ?? turn.error?.message}</span>
-          <button className="inline-flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700"
-            onClick={() => api.retry(turn.id).then(() => onRefresh(turn.id))}><RotateCcw className="h-3.5 w-3.5" /> Thử lại</button>
+        <div className="flex flex-wrap items-center gap-3 border-l-2 border-amber-500 py-1 pl-4">
+          <span className="flex-1 leading-relaxed">{turn.status === 'cancelled' ? 'Đã dừng câu hỏi này.' : ERROR_HINTS[turn.error?.code ?? ''] ?? turn.error?.message}</span>
+          <button className={softBtn} disabled={busy} onClick={retry}><RotateCcw className="h-3.5 w-3.5" /> Hỏi lại</button>
         </div>
       )
     case 'discussed':
-      return <><InsightBlock turn={turn} onAsk={onAsk} /><Feedback turn={turn} /></>
+      return (
+        <div className="space-y-5">
+          <Insight turn={turn} explainMarks={explainMarks} />
+          <FollowUps items={turn.insight?.follow_ups} onPick={onAsk} />
+          <Footer turn={turn} steps={steps} onRetry={retry} busy={busy} />
+        </div>
+      )
     case 'answered':
-      return <ResultCard turn={turn} boot={boot} onAsk={onAsk} onRefresh={onRefresh} />
+      return <Answer turn={turn} boot={boot} onAsk={onAsk} onRefresh={onRefresh} explainMarks={explainMarks} steps={steps} busy={busy} />
   }
 }
 
-function Chips({ items, onPick }: { items?: string[]; onPick: (q: string) => void }) {
-  if (!items?.length) return null
+/** Marks every value the server substituted from SQL; the model never writes these digits itself. */
+function Marked({ text, cited }: { text: string; cited?: string[] }) {
+  if (!cited?.length) return <>{text}</>
+  const esc = cited.map((c) => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  const parts = text.split(new RegExp(`(${esc.join('|')})`, 'g'))
+  return <>{parts.map((p, i) => (cited.includes(p) ? <mark key={i} className="sql-value text-inherit">{p}</mark> : p))}</>
+}
+
+function Insight({ turn, explainMarks }: { turn: Turn; explainMarks?: boolean }) {
+  const ins = turn.insight
+  if (!ins) return null
   return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((s) => (
-        <button key={s} onClick={() => onPick(s)}
-          className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-left text-sm text-slate-700 hover:border-indigo-400 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-indigo-500 dark:hover:text-indigo-300">{s}</button>
-      ))}
+    <div className="space-y-3">
+      <p className="font-serif text-[1.375rem] leading-snug tracking-[-0.005em] text-ink"><Marked text={ins.headline} cited={ins.cited} /></p>
+      {ins.body.map((b, i) => <p key={i} className="leading-relaxed text-ink/85"><Marked text={b} cited={ins.cited} /></p>)}
+      {ins.caveats.length > 0 && (
+        <ul className="space-y-1 text-sm leading-relaxed text-lead">{ins.caveats.map((c, i) => <li key={i}><Marked text={c} cited={ins.cited} /></li>)}</ul>
+      )}
+      {explainMarks && !!ins.cited?.length && (
+        <p className="flex items-center gap-2 pt-1 text-xs text-lead">
+          <span aria-hidden className="inline-block h-2.5 w-5 rounded-sm bg-mark" /> Số được tô lấy thẳng từ kết quả SQL, không do AI viết.
+        </p>
+      )}
     </div>
   )
 }
 
-function RunProgress({ steps, running, onStop }: { steps: Step[]; running: boolean; onStop: () => void }) {
+function Answer({ turn, boot, onAsk, onRefresh, explainMarks, steps, busy }: Props) {
+  const empty = !turn.row_count
+  // With no rows, the insight already explains why; the server's English "no rows" note would only repeat it.
+  const notes = [...(turn.notes ?? []), ...(turn.warnings ?? [])].filter((w) => !(empty && w.startsWith('No rows match')))
+  return (
+    <div className="space-y-5">
+      <Insight turn={turn} explainMarks={explainMarks} />
+      {notes.length > 0 && (
+        <ul className="space-y-1.5 border-l-2 border-amber-400 pl-4 text-sm leading-relaxed text-ink/80">
+          {notes.map((w, i) => <li key={i}>{w}</li>)}
+        </ul>
+      )}
+      {!empty && <ResultPanel turn={turn} />}
+      <FollowUps items={turn.insight?.follow_ups} onPick={onAsk} />
+      <Footer turn={turn} steps={steps} onRetry={() => api.retry(turn.id).then(() => onRefresh(turn.id))} busy={busy}
+        details={<Computed turn={turn} boot={boot} onRefresh={onRefresh} />} />
+    </div>
+  )
+}
+
+/** The technical reading of a result: metric (and its variants), breakdowns, period, sources, SQL. */
+function Computed({ turn, boot, onRefresh }: { turn: Turn; boot: Bootstrap; onRefresh: (id: string) => void }) {
+  const [copied, setCopied] = useState(false)
+  const spec = turn.query_spec!
+  const [metric, ...rest] = readingChips(spec, boot, turn.period)
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-1.5 text-[13px]">
+        <span className="mr-0.5 text-lead">Đã tính</span>
+        {turn.variants && turn.variants.length > 1 ? (
+          <label className="relative inline-flex items-center rounded-md border border-rule bg-sheet text-ink/80 transition-colors hover:border-ledger/40">
+            <span className="sr-only">Cách tính</span>
+            <select value={spec.recipe} onChange={(e) => api.variant(turn.id, e.target.value).then(() => onRefresh(turn.id))}
+              className="cursor-pointer appearance-none bg-transparent py-0.5 pr-6 pl-2 outline-none">
+              {turn.variants.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-1.5 h-3 w-3" />
+          </label>
+        ) : <span className="rounded-md border border-rule bg-sheet px-2 py-0.5 text-ink/80">{metric}</span>}
+        {rest.map((c) => <span key={c} className="rounded-md border border-rule bg-sheet px-2 py-0.5 text-ink/80">{c}</span>)}
+      </div>
+      {turn.compiled_sql && (
+        <div className="overflow-hidden rounded-xl border border-rule">
+          <div className="flex items-center justify-between border-b border-rule bg-sheet px-3 py-1">
+            <span className="text-xs text-lead">SQL</span>
+            <button onClick={() => { navigator.clipboard.writeText(turn.compiled_sql ?? ''); setCopied(true); setTimeout(() => setCopied(false), 1500) }}
+              className={`${softBtn} -mr-2 text-xs`}>
+              {copied ? <Check className="h-3.5 w-3.5 text-ledger" /> : <Copy className="h-3.5 w-3.5" />} {copied ? 'Đã chép' : 'Chép SQL'}</button>
+          </div>
+          <pre className="scroll-thin max-h-72 overflow-auto bg-wash px-3 py-3 font-mono text-[12.5px] leading-relaxed text-ink/90"><code>{prettySql(turn.compiled_sql)}</code></pre>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function FollowUps({ items, onPick, label }: { items?: string[]; onPick: (q: string) => void; label?: string }) {
+  if (!items?.length) return null
+  return (
+    <div className="space-y-1">
+      {label && <p className="text-sm text-lead">{label}</p>}
+      <ul className="divide-y divide-rule border-y border-rule">
+        {items.map((s) => (
+          <li key={s}>
+            <button onClick={() => onPick(s)} className="group flex w-full items-start gap-2.5 py-2 text-left text-[15px] text-ink/85 transition-colors hover:text-ledger-ink">
+              <CornerDownRight className="mt-1 h-3.5 w-3.5 shrink-0 text-lead transition-colors group-hover:text-ledger" />{s}</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+function Working({ steps, onStop }: { steps: Step[]; onStop: () => void }) {
+  const latest = new Map<string, Step>()
+  for (const s of steps) if (s.step !== 'result') latest.set(s.step, s)
+  const current = [...latest.values()].reverse().find((s) => s.status === 'running')
+  return (
+    <div className="flex items-center gap-3 text-[15px] text-lead" aria-live="polite">
+      <span className="dots flex gap-1" aria-hidden>{[0, 1, 2].map((i) => <span key={i} className="h-1.5 w-1.5 rounded-full bg-ledger" />)}</span>
+      <span>{STEP_LABELS[current?.step ?? ''] ?? 'Đang đọc câu hỏi'}…</span>
+      <button onClick={onStop} className={`${softBtn} ml-auto`}><X className="h-3.5 w-3.5" /> Dừng</button>
+    </div>
+  )
+}
+
+/** Thumbs, timing and the run log, quiet under each finished answer. */
+function Footer({ turn, steps, onRetry, busy, details }: { turn: Turn; steps: Step[]; onRetry: () => void; busy?: boolean; details?: ReactNode }) {
   const [open, setOpen] = useState(false)
-  // One row per step: the latest status wins.
   const latest = new Map<string, Step>()
   for (const s of steps) if (s.step !== 'result') latest.set(s.step, s)
   const list = [...latest.values()]
-  const current = [...list].reverse().find((s) => s.status === 'running')
   const total = list.reduce((a, s) => a + (s.ms ?? 0), 0)
+  const hasDetails = !!details || list.length > 0
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/70 text-sm dark:border-slate-800 dark:bg-slate-900/60">
-      <div className="flex items-center gap-2 px-3 py-2">
-        <button className="flex flex-1 items-center gap-2 text-left text-slate-600 dark:text-slate-400" onClick={() => setOpen(!open)}>
-          {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          {running ? <Loader2 className="h-4 w-4 animate-spin text-indigo-500" /> : <Check className="h-4 w-4 text-emerald-500" />}
-          <span>{running ? `${STEP_LABELS[current?.step ?? ''] ?? 'Đang xử lý'}…` : `Xong ${list.length} bước · ${(total / 1000).toFixed(1)} giây`}</span>
-        </button>
-        {running && (
-          <button onClick={onStop} className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-2 py-0.5 text-xs text-slate-600 hover:bg-white dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-            <Square className="h-3 w-3" /> Dừng</button>
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-0.5 text-lead">
+        <CopyButton text={answerText(turn)} label="Chép câu trả lời" />
+        <IconAction label="Hỏi lại" disabled={busy} onClick={onRetry}><RotateCcw className="h-4 w-4" /></IconAction>
+        <Feedback turn={turn} />
+        {hasDetails && (
+          <button onClick={() => setOpen(!open)} aria-expanded={open} className={`${softBtn} ml-auto text-xs`}>
+            Chi tiết{list.length > 0 && ` · ${(total / 1000).toFixed(1)} giây`}
+            <ChevronDown className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} /></button>
         )}
       </div>
       {open && (
-        <ol className="space-y-1 border-t border-slate-200 px-3 py-2 dark:border-slate-800">
-          {list.map((s) => (
-            <li key={s.step} className="flex items-center gap-2">
-              {s.status === 'running' ? <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-500" />
-                : s.status === 'done' ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <X className="h-3.5 w-3.5 text-rose-500" />}
-              <span className="w-40 shrink-0">{STEP_LABELS[s.step] ?? s.step}</span>
-              <span className="flex-1 truncate text-slate-500">{s.note}</span>
-              {s.ms !== undefined && <span className="tabular-nums text-slate-400">{s.ms} ms</span>}
-            </li>
-          ))}
-        </ol>
+        <div className="answer-in space-y-3 rounded-xl bg-wash/60 p-3">
+          {details}
+          {list.length > 0 && (
+            <ol className="space-y-1 text-[13px]">
+              {list.map((s) => (
+                <li key={s.step} className="flex items-center gap-2.5">
+                  {s.status === 'failed' ? <X className="h-3.5 w-3.5 text-rose-500" /> : <Check className="h-3.5 w-3.5 text-ledger" />}
+                  <span className="w-36 shrink-0 text-ink/85">{STEP_LABELS[s.step] ?? s.step}</span>
+                  <span className="flex-1 truncate text-lead">{s.note}</span>
+                  {s.ms !== undefined && <span className="text-lead">{s.ms} ms</span>}
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
       )}
     </div>
   )
@@ -138,126 +318,73 @@ function ClarifyForm({ turn, onSent }: { turn: Turn; onSent: () => void }) {
     }
   }
   return (
-    <div className="space-y-4 rounded-xl border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
-      <p className="font-medium text-amber-900 dark:text-amber-100">{turn.form?.message}</p>
+    <div className="space-y-5">
+      <p className="leading-relaxed">{turn.form?.message}</p>
       {fields.map((f) => (
         <fieldset key={f.id} className="space-y-2">
-          <legend className="text-sm text-slate-700 dark:text-slate-300">{f.label}</legend>
+          <legend className="mb-2 text-sm text-lead">{f.label}</legend>
           <div className="flex flex-wrap gap-2">
             {f.choices.map((c) => {
               const on = values[f.id]?.includes(c.id)
               return (
                 <button key={c.id} type="button" aria-pressed={on} title={c.description} onClick={() => toggle(f, c.id)}
-                  className={`rounded-lg border px-3 py-1.5 text-sm transition ${on ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-300 bg-white hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-900'}`}>
-                  {f.kind === 'multi_choice' && <span className="mr-1.5">{on ? '☑' : '☐'}</span>}
+                  className={`rounded-full border px-3.5 py-1.5 text-sm transition-colors ${on ? 'border-ledger bg-ledger text-white dark:text-paper' : 'border-rule bg-sheet hover:border-ledger/40'}`}>
                   {c.label}
-                  {c.description && <span className={`ml-1.5 text-xs ${on ? 'text-indigo-100' : 'text-slate-500'}`}>{c.description}</span>}
+                  {c.description && <span className={`ml-1.5 text-xs ${on ? 'opacity-80' : 'text-lead'}`}>{c.description}</span>}
                 </button>
               )
             })}
           </div>
           {f.allow_other && (
-            <input value={other[f.id] ?? ''} onChange={(e) => setOther((o) => ({ ...o, [f.id]: e.target.value }))} placeholder="Khác…" maxLength={200}
-              className="w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900" />
+            <input value={other[f.id] ?? ''} onChange={(e) => setOther((o) => ({ ...o, [f.id]: e.target.value }))} placeholder="Ý khác…" maxLength={200} aria-label={`${f.label}: ý khác`}
+              className="w-full max-w-xs rounded-lg border border-rule bg-sheet px-3 py-1.5 text-sm outline-none focus:border-ledger/50" />
           )}
         </fieldset>
       ))}
-      {error && <p className="text-sm text-rose-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">{error}</p>}
       <button disabled={!ready || sending} onClick={send}
-        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40">
-        {sending ? 'Đang gửi…' : 'Tiếp tục'}</button>
+        className="rounded-full bg-ledger px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 dark:text-paper">
+        {sending ? 'Đang tính…' : 'Tính với lựa chọn này'}</button>
     </div>
   )
 }
 
-function InsightBlock({ turn, onAsk }: { turn: Turn; onAsk: (q: string) => void }) {
-  const ins = turn.insight
-  if (!ins) return null
-  return (
-    <div className="space-y-2">
-      <p className="text-[15px] font-semibold leading-relaxed">{ins.headline}</p>
-      {ins.body.map((b, i) => <p key={i} className="leading-relaxed text-slate-700 dark:text-slate-300">{b}</p>)}
-      {ins.caveats.length > 0 && (
-        <ul className="space-y-1 text-sm text-slate-500">{ins.caveats.map((c, i) => <li key={i}>• {c}</li>)}</ul>
-      )}
-      <div className="pt-1"><Chips items={ins.follow_ups} onPick={onAsk} /></div>
-    </div>
-  )
-}
-
-function ResultCard({ turn, boot, onAsk, onRefresh }: Omit<Props, 'steps'>) {
-  const [tab, setTab] = useState<'table' | 'sql'>('table')
+function ResultPanel({ turn }: { turn: Turn }) {
   const [full, setFull] = useState<{ rows: Record<string, unknown>[]; partial: boolean } | null>(null)
   const [loadingFull, setLoadingFull] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [page, setPage] = useState(0)
   const columns = turn.columns ?? []
   const rows = full?.rows ?? turn.rows ?? []
-  const spec = turn.query_spec!
-  const current = spec.recipe
+  const more = rows.length < (turn.row_count ?? 0)
+  const pages = Math.max(1, Math.ceil(rows.length / PAGE))
 
   const loadFull = async () => {
     setLoadingFull(true)
     try { setFull(await api.fullResult(turn.id)) } finally { setLoadingFull(false) }
   }
   const download = async () => {
-    const data = full ?? (rows.length < (turn.row_count ?? 0) ? await api.fullResult(turn.id) : { rows })
-    const blob = new Blob(['﻿' + toCsv(columns, data.rows)], { type: 'text/csv;charset=utf-8' })
+    const data = full ?? (more ? await api.fullResult(turn.id) : { rows })
+    const blob = new Blob(['\ufeff' + toCsv(columns, data.rows)], { type: 'text/csv;charset=utf-8' })
     const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'texa-result.csv' })
     a.click()
     URL.revokeObjectURL(a.href)
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-1.5 text-xs">
-        <span className="text-slate-500">Texa hiểu là:</span>
-        {readingChips(spec, boot, turn.period).map((c) => (
-          <span key={c} className="rounded-md bg-slate-100 px-2 py-0.5 text-slate-700 dark:bg-slate-800 dark:text-slate-300">{c}</span>
-        ))}
-        {turn.variants && turn.variants.length > 1 && (
-          <select value={current} onChange={(e) => api.variant(turn.id, e.target.value).then(() => onRefresh(turn.id))}
-            className="rounded-md border border-slate-300 bg-white px-1.5 py-0.5 dark:border-slate-700 dark:bg-slate-900" title="Cách tính">
-            {turn.variants.map((v) => <option key={v.id} value={v.id}>Cách tính: {v.label}</option>)}
-          </select>
+    <div className="overflow-hidden rounded-2xl border border-rule bg-sheet">
+      <DataTable columns={columns} rows={rows.slice(page * PAGE, page * PAGE + PAGE)} currencyOf={turn.currency_of} />
+      <div className="flex items-center justify-end gap-3 border-t border-rule px-4 py-1.5">
+        {pages > 1 && (
+          <span className="mr-auto flex items-center gap-1 text-xs text-lead">
+            <button aria-label="Trang trước" disabled={page === 0} onClick={() => setPage(page - 1)} className="rounded-md px-2 py-1 hover:bg-wash disabled:opacity-30">‹</button>
+            {page + 1} / {pages}
+            <button aria-label="Trang sau" disabled={page >= pages - 1} onClick={() => setPage(page + 1)} className="rounded-md px-2 py-1 hover:bg-wash disabled:opacity-30">›</button>
+          </span>
         )}
+        <span className="text-xs text-lead">{rows.length}{more || turn.partial ? ` / ${turn.row_count}${turn.partial ? '+' : ''}` : ''} dòng</span>
+        {more && <button onClick={loadFull} disabled={loadingFull} className="text-xs font-medium text-ledger-ink hover:underline">{loadingFull ? 'Đang tải…' : 'Xem hết'}</button>}
+        <button onClick={download} className={`${softBtn} -mr-2 text-xs`}><Download className="h-3.5 w-3.5" /> Tải CSV</button>
       </div>
-
-      <InsightBlock turn={{ ...turn, insight: turn.insight && { ...turn.insight, follow_ups: [] } }} onAsk={onAsk} />
-
-      {[...(turn.notes ?? []), ...(turn.warnings ?? [])].length > 0 && (
-        <ul className="space-y-1 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-          {[...(turn.notes ?? []), ...(turn.warnings ?? [])].map((w, i) => <li key={i} className="flex gap-2"><AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />{w}</li>)}
-        </ul>
-      )}
-
-      <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-1 border-b border-slate-200 bg-slate-50 px-2 py-1.5 text-sm dark:border-slate-800 dark:bg-slate-900">
-          {(['table', 'sql'] as const).map((k) => (
-            <button key={k} onClick={() => setTab(k)}
-              className={`rounded-md px-3 py-1 ${tab === k ? 'bg-white font-medium shadow-sm dark:bg-slate-800' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}>
-              {k === 'table' ? 'Bảng' : 'SQL'}</button>
-          ))}
-          <span className="flex-1" />
-          {tab === 'table' && <>
-            <span className="px-2 text-xs text-slate-500">{rows.length} / {turn.row_count}{turn.partial ? '+' : ''} dòng</span>
-            {rows.length < (turn.row_count ?? 0) && (
-              <button onClick={loadFull} disabled={loadingFull} className="rounded-md px-2 py-1 text-xs text-indigo-600 hover:bg-white dark:text-indigo-400 dark:hover:bg-slate-800">
-                {loadingFull ? 'Đang tải…' : 'Tải full'}</button>
-            )}
-            <button onClick={download} title="Tải CSV" className="rounded-md p-1 text-slate-500 hover:bg-white dark:hover:bg-slate-800"><Download className="h-4 w-4" /></button>
-          </>}
-          {tab === 'sql' && (
-            <button onClick={() => { navigator.clipboard.writeText(turn.compiled_sql ?? ''); setCopied(true); setTimeout(() => setCopied(false), 1500) }}
-              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-600 hover:bg-white dark:text-slate-300 dark:hover:bg-slate-800">
-              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />} {copied ? 'Đã copy' : 'Copy'}</button>
-          )}
-        </div>
-        {tab === 'table' ? <DataTable columns={columns} rows={rows} currencyOf={turn.currency_of} />
-          : <pre className="scroll-thin max-h-80 overflow-auto bg-slate-950 p-4 text-xs leading-relaxed text-slate-100"><code>{prettySql(turn.compiled_sql ?? '')}</code></pre>}
-      </div>
-
-      {!!turn.insight?.follow_ups.length && <Chips items={turn.insight.follow_ups} onPick={onAsk} />}
-      <Feedback turn={turn} />
     </div>
   )
 }
@@ -265,38 +392,25 @@ function ResultCard({ turn, boot, onAsk, onRefresh }: Omit<Props, 'steps'>) {
 const PAGE = 20
 
 function DataTable({ columns, rows, currencyOf }: { columns: Turn['columns'] & {}; rows: Record<string, unknown>[]; currencyOf?: Record<string, string> }) {
-  const [page, setPage] = useState(0)
-  const pages = Math.max(1, Math.ceil(rows.length / PAGE))
-  const view = rows.slice(page * PAGE, page * PAGE + PAGE)
-  if (!rows.length) return <p className="p-4 text-sm text-slate-500">Không có dòng nào.</p>
   return (
-    <div>
-      <div className="scroll-thin max-h-96 overflow-auto">
-        <table className="w-full text-sm">
-          <thead className="sticky top-0 bg-white dark:bg-slate-950">
-            <tr>{columns.map((c) => (
-              <th key={c.name} className={`border-b border-slate-200 px-3 py-2 font-medium text-slate-600 dark:border-slate-800 dark:text-slate-400 ${c.role === 'metric' ? 'text-right' : 'text-left'}`}>{c.label}</th>
-            ))}</tr>
-          </thead>
-          <tbody>
-            {view.map((r, i) => (
-              <tr key={i} className="odd:bg-slate-50/60 dark:odd:bg-slate-900/40">
-                {columns.map((c) => (
-                  <td key={c.name} className={`px-3 py-1.5 ${c.role === 'metric' ? 'text-right tabular-nums' : ''} ${r[c.name] == null ? 'text-slate-400' : ''}`}>
-                    {formatCell(r[c.name], c, rowCurrency(r, currencyOf))}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {pages > 1 && (
-        <div className="flex items-center justify-end gap-2 border-t border-slate-200 px-3 py-1.5 text-xs dark:border-slate-800">
-          <button disabled={page === 0} onClick={() => setPage(page - 1)} className="rounded px-2 py-0.5 hover:bg-slate-100 disabled:opacity-30 dark:hover:bg-slate-800">‹</button>
-          <span className="tabular-nums text-slate-500">{page + 1} / {pages}</span>
-          <button disabled={page >= pages - 1} onClick={() => setPage(page + 1)} className="rounded px-2 py-0.5 hover:bg-slate-100 disabled:opacity-30 dark:hover:bg-slate-800">›</button>
-        </div>
-      )}
+    <div className="scroll-thin max-h-96 overflow-auto">
+      <table className="w-full text-sm">
+        <thead className="sticky top-0 bg-sheet">
+          <tr>{columns.map((c) => (
+            <th key={c.name} scope="col" className={`border-b border-rule px-4 py-2.5 text-[13px] font-medium text-lead ${c.role === 'metric' ? 'text-right' : 'text-left'}`}>{c.label}</th>
+          ))}</tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} className="border-b border-rule/60 last:border-0 hover:bg-wash/60">
+              {columns.map((c) => (
+                <td key={c.name} className={`px-4 py-2 ${c.role === 'metric' ? 'text-right' : ''} ${r[c.name] == null ? 'text-lead' : ''}`}>
+                  {formatCell(r[c.name], c, rowCurrency(r, currencyOf))}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
@@ -316,19 +430,22 @@ function Feedback({ turn }: { turn: Turn }) {
     setAsking(false)
     setSent(true)
   }
+  const thumb = (on: boolean, label: string, icon: ReactNode, onClick: () => void) => (
+    <IconAction label={label} on={on} onClick={onClick}>{icon}</IconAction>
+  )
   return (
-    <div className="flex flex-wrap items-center gap-2 text-slate-400">
-      <button aria-label="Hữu ích" onClick={() => send('up')} className={`rounded p-1 hover:bg-slate-100 dark:hover:bg-slate-800 ${rating === 'up' ? 'text-emerald-500' : ''}`}><ThumbsUp className="h-4 w-4" /></button>
-      <button aria-label="Chưa đúng" onClick={() => setAsking(!asking)} className={`rounded p-1 hover:bg-slate-100 dark:hover:bg-slate-800 ${rating === 'down' ? 'text-rose-500' : ''}`}><ThumbsDown className="h-4 w-4" /></button>
-      {sent && !asking && <span className="text-xs">Cảm ơn góp ý!</span>}
+    <>
+      {thumb(rating === 'up', 'Đúng ý', <ThumbsUp className="h-4 w-4" />, () => send('up'))}
+      {thumb(rating === 'down', 'Chưa đúng', <ThumbsDown className="h-4 w-4" />, () => setAsking(!asking))}
+      {sent && !asking && <span className="ml-1 text-xs">Đã ghi nhận</span>}
       {asking && (
-        <div className="flex w-full gap-2">
-          <input autoFocus value={comment} onChange={(e) => setComment(e.target.value)} maxLength={1000} placeholder="Chỗ nào chưa đúng?"
-            onKeyDown={(e) => e.key === 'Enter' && send('down', comment)}
-            className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200" />
-          <button onClick={() => send('down', comment)} className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm text-white dark:bg-slate-200 dark:text-slate-900">Gửi</button>
-        </div>
+        <form className="ml-1 flex flex-1 gap-2" onSubmit={(e) => { e.preventDefault(); send('down', comment) }}>
+          <input autoFocus value={comment} onChange={(e) => setComment(e.target.value)} maxLength={1000} placeholder="Chỗ nào chưa đúng?" aria-label="Góp ý"
+            className="min-w-0 flex-1 rounded-lg border border-rule bg-sheet px-3 py-1 text-sm text-ink outline-none focus:border-ledger/50" />
+          <button className="rounded-lg bg-ink px-3 py-1 text-sm text-paper">Gửi góp ý</button>
+        </form>
       )}
-    </div>
+    </>
   )
 }
+

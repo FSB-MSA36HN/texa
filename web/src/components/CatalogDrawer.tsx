@@ -1,40 +1,56 @@
-import { useState } from 'react'
-import { X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Search, X } from 'lucide-react'
 import type { Bootstrap, CatalogEntry } from '../api'
 
 export function CatalogDrawer({ boot, onClose, onInsert }: { boot: Bootstrap; onClose: () => void; onInsert: (text: string) => void }) {
   const [q, setQ] = useState('')
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
   const match = (e: CatalogEntry) => !q || [e.id, e.label, e.description, ...e.synonyms].join(' ').toLowerCase().includes(q.toLowerCase())
-  const section = (title: string, items: CatalogEntry[] = []) => (
-    <section>
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">{title} ({items.filter(match).length})</h3>
-      <ul className="space-y-1">
-        {items.filter(match).map((e) => (
-          <li key={e.id}>
-            <button onClick={() => onInsert(e.label)} className="w-full rounded-lg px-2 py-1.5 text-left hover:bg-slate-100 dark:hover:bg-slate-800">
-              <span className="font-medium">{e.label}</span>
-              {e.description && <span className="block text-xs text-slate-500">{e.description}</span>}
-            </button>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )
+  const section = (title: string, items: CatalogEntry[] = []) => {
+    const shown = items.filter(match)
+    if (!shown.length) return null
+    return (
+      <section>
+        <h3 className="mb-1 px-2 text-sm font-medium text-lead">{title}</h3>
+        <ul>
+          {shown.map((e) => (
+            <li key={e.id}>
+              <button onClick={() => onInsert(e.label)} className="w-full rounded-lg px-2 py-2 text-left transition-colors hover:bg-wash">
+                <span className="font-medium text-ink">{e.label}</span>
+                {e.description && <span className="mt-0.5 block text-[13px] leading-snug text-lead">{e.description}</span>}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+  const sections = [section('Chỉ số đo được', boot.catalog.metrics), section('Chia nhỏ hoặc lọc theo', boot.catalog.dimensions)]
   return (
-    <div className="fixed inset-0 z-30 flex justify-end bg-black/30" onClick={onClose}>
-      <aside onClick={(e) => e.stopPropagation()} aria-label="Texa biết gì"
-        className="flex h-full w-full max-w-sm flex-col bg-white shadow-xl dark:bg-slate-900">
-        <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-slate-800">
-          <h2 className="font-semibold">Texa biết gì</h2>
-          <button aria-label="Đóng" onClick={onClose} className="rounded p-1 hover:bg-slate-100 dark:hover:bg-slate-800"><X className="h-5 w-5" /></button>
+    <div className="fixed inset-0 z-30 flex justify-end bg-ink/20" onClick={onClose}>
+      <aside onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Texa đo được gì"
+        className="flex h-full w-full max-w-sm flex-col border-l border-rule bg-paper shadow-2xl">
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <div>
+            <h2 className="font-serif text-xl">Texa đo được gì</h2>
+            <p className="text-sm text-lead">Bấm một mục để thêm vào câu hỏi.</p>
+          </div>
+          <button aria-label="Đóng" onClick={onClose} className="rounded-lg p-1.5 text-lead transition-colors hover:bg-wash hover:text-ink"><X className="h-5 w-5" /></button>
         </div>
-        <div className="p-4 pb-2">
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm chỉ số, chiều dữ liệu…"
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950" />
+        <div className="px-5 pb-3">
+          <label className="flex items-center gap-2 rounded-xl border border-rule bg-sheet px-3 focus-within:border-ledger/50">
+            <Search className="h-4 w-4 text-lead" />
+            <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm doanh thu, danh mục…" aria-label="Tìm trong danh mục"
+              className="flex-1 bg-transparent py-2 text-sm outline-none" />
+          </label>
         </div>
-        <div className="scroll-thin flex-1 space-y-5 overflow-y-auto p-4 pt-2 text-sm">
-          {section('Chỉ số', boot.catalog.metrics)}
-          {section('Chia theo / lọc theo', boot.catalog.dimensions)}
+        <div className="scroll-thin flex-1 space-y-5 overflow-y-auto px-3 pb-5 text-sm">
+          {sections}
+          {sections.every((s) => !s) && <p className="px-2 text-lead">Không có mục nào khớp “{q}”.</p>}
         </div>
       </aside>
     </div>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { BookOpen, Database, Menu, MessageSquarePlus, SendHorizontal, Settings, Trash2 } from 'lucide-react'
+import { ArrowUp, BookOpen, ChevronDown, PanelLeft, Plus, Settings, Trash2 } from 'lucide-react'
 import { api, followTurn, type Bootstrap, type ConversationSummary, type Step, type Turn } from './api'
 import { TurnView } from './components/TurnView'
 import { SettingsModal } from './components/SettingsModal'
@@ -7,6 +7,7 @@ import { CatalogDrawer } from './components/CatalogDrawer'
 
 const read = (k: string) => { try { return localStorage.getItem(k) } catch { return null } }
 const write = (k: string, v: string) => { try { localStorage.setItem(k, v) } catch { /* private mode */ } }
+const iconBtn = 'rounded-lg p-2 text-lead transition-colors hover:bg-wash hover:text-ink'
 
 export default function App() {
   const [boot, setBoot] = useState<Bootstrap | null>(null)
@@ -22,6 +23,7 @@ export default function App() {
   const [catalogOpen, setCatalogOpen] = useState(false)
   const [sidebar, setSidebar] = useState(() => window.innerWidth >= 768)
   const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState('')
   const followers = useRef<Record<string, () => void>>({})
   const bottom = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -29,6 +31,8 @@ export default function App() {
   const loadBoot = useCallback(() => api.bootstrap().then((b) => { setBoot(b); setBootError('') }).catch((e) => setBootError(e.message)), [])
   const loadConversations = useCallback(() => api.conversations().then(setConversations).catch(() => {}), [])
   useEffect(() => { loadBoot(); loadConversations() }, [loadBoot, loadConversations])
+  // Focus the question box on desktop only; on phones it would pop the keyboard over the page.
+  useEffect(() => { if (window.matchMedia('(pointer: fine)').matches) inputRef.current?.focus() }, [])
 
   const allowed = boot?.connection?.allowed_models ?? []
   const activeModel = allowed.includes(model) ? model : boot?.connection?.default_model ?? ''
@@ -47,8 +51,9 @@ export default function App() {
     followers.current = {}
     setActiveId(id)
     setSteps({})
+    setSendError('')
     if (!window.matchMedia('(min-width: 768px)').matches) setSidebar(false)
-    if (!id) { setTurns([]); return }
+    if (!id) { setTurns([]); setTimeout(() => inputRef.current?.focus()); return }
     const conv = await api.conversation(id)
     setTurns(conv.turns)
     conv.turns.filter((t) => t.status === 'running').forEach((t) => follow(t.id))
@@ -59,19 +64,33 @@ export default function App() {
     if (!q || sending) return
     if (!boot?.connection) { setSettings(true); return }
     setSending(true)
+    setSendError('')
     try {
       const { turn_id, conversation_id } = await api.ask(q, activeId, activeModel || null, scope ? [scope] : [])
       if (!activeId) setActiveId(conversation_id)
       setTurns((ts) => [...ts, { id: turn_id, conversation_id, question: q, status: 'running', created_at: new Date().toISOString(), model: activeModel, feedback: null }])
       setInput('')
+      if (inputRef.current) inputRef.current.style.height = 'auto'
       follow(turn_id)
       loadConversations()
     } catch (e) {
-      alert((e as Error).message)
+      setSendError((e as Error).message)
     } finally {
       setSending(false)
       inputRef.current?.focus()
     }
+  }
+
+  // Rewind: the edited turn reruns with its new question; every later turn is dropped.
+  const editTurn = async (turnId: string, question: string) => {
+    await api.edit(turnId, question)
+    setTurns((ts) => {
+      const i = ts.findIndex((t) => t.id === turnId)
+      ts.slice(i + 1).forEach((t) => { followers.current[t.id]?.(); delete followers.current[t.id] })
+      return ts.slice(0, i + 1).map((t) => (t.id === turnId ? { ...t, question } : t))
+    })
+    follow(turnId)
+    loadConversations()
   }
 
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, [turns.length, steps])
@@ -82,86 +101,90 @@ export default function App() {
   }, [openConversation])
 
   const running = turns.some((t) => t.status === 'running')
+  const empty = turns.length === 0
+  const firstAnswered = turns.find((t) => t.status === 'answered' || t.status === 'discussed')?.id
+
+  const composer = (
+    <Composer inputRef={inputRef} value={input} onChange={setInput} onSend={() => send()} busy={sending || running}
+      large={empty} error={sendError}
+      tools={allowed.length > 0 && (
+        <Picker label="Model" quiet value={activeModel} onChange={(v) => { setModel(v); write('texa.model', v) }}
+          options={allowed.map((m) => ({ value: m, label: m }))} />
+      )} />
+  )
 
   return (
     <div className="flex h-full">
       {sidebar && (
         <>
-          <div className="fixed inset-0 z-10 bg-black/30 md:hidden" onClick={() => setSidebar(false)} />
-          <aside className="fixed inset-y-0 left-0 z-20 flex w-72 flex-col border-r border-slate-200 bg-slate-50 md:static dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center gap-2 p-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-500 font-bold text-white">T</div>
-              <span className="text-lg font-semibold">Texa</span>
+          <div className="fixed inset-0 z-10 bg-ink/20 md:hidden" onClick={() => setSidebar(false)} />
+          <aside className="fixed inset-y-0 left-0 z-20 flex w-64 flex-col border-r border-rule bg-paper md:static">
+            <div className="flex items-center justify-between px-3 pt-3 pb-2">
+              <Wordmark />
+              <button aria-label="Ẩn thanh bên" onClick={() => setSidebar(false)} className={iconBtn}><PanelLeft className="h-[18px] w-[18px]" /></button>
             </div>
-            <div className="px-3">
-              <button onClick={() => openConversation(null)} className="flex w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-950">
-                <MessageSquarePlus className="h-4 w-4" /> Chat mới <kbd className="ml-auto text-xs text-slate-400">⌘K</kbd></button>
+            <div className="px-2">
+              <button onClick={() => openConversation(null)}
+                className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-wash">
+                <Plus className="h-4 w-4" /> Cuộc hỏi mới <kbd className="ml-auto font-sans text-xs text-lead">⌘K</kbd></button>
             </div>
-            <nav className="scroll-thin mt-3 flex-1 space-y-0.5 overflow-y-auto px-3 pb-3 text-sm">
-              {conversations.length === 0 && <p className="px-2 py-4 text-slate-400">Chưa có hội thoại.</p>}
+            <nav aria-label="Lịch sử" className="scroll-thin mt-4 flex-1 overflow-y-auto px-2 pb-3 text-sm">
+              {conversations.length > 0 && <p className="px-2.5 pb-1.5 text-xs text-lead">Gần đây</p>}
               {conversations.map((c) => (
-                <div key={c.id} className={`group flex items-center rounded-lg ${c.id === activeId ? 'bg-indigo-50 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-200' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
-                  <button onClick={() => openConversation(c.id)} className="flex-1 truncate px-2 py-2 text-left" title={c.title}>{c.title}</button>
-                  <button aria-label="Xóa hội thoại" className="mr-1 hidden rounded p-1 text-slate-400 hover:text-rose-600 group-hover:block"
-                    onClick={async () => { if (confirm('Xóa hội thoại này?')) { await api.deleteConversation(c.id); if (c.id === activeId) openConversation(null); loadConversations() } }}>
+                <div key={c.id} className={`group flex items-center rounded-lg transition-colors ${c.id === activeId ? 'bg-wash text-ink' : 'text-ink/80 hover:bg-wash/70'}`}>
+                  <button onClick={() => openConversation(c.id)} className="flex-1 truncate px-2.5 py-1.5 text-left" title={c.title}>{c.title}</button>
+                  <button aria-label={`Xóa “${c.title}”`} className="mr-1 rounded p-1 text-lead opacity-0 transition-opacity hover:text-rose-600 focus:opacity-100 group-hover:opacity-100"
+                    onClick={async () => { if (confirm('Xóa cuộc hỏi này?')) { await api.deleteConversation(c.id); if (c.id === activeId) openConversation(null); loadConversations() } }}>
                     <Trash2 className="h-3.5 w-3.5" /></button>
                 </div>
               ))}
             </nav>
+            <div className="border-t border-rule p-2">
+              <button onClick={() => setCatalogOpen(true)} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-ink/80 transition-colors hover:bg-wash">
+                <BookOpen className="h-4 w-4 text-lead" /> Texa đo được gì</button>
+              <button onClick={() => setSettings(true)} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-ink/80 transition-colors hover:bg-wash">
+                <Settings className="h-4 w-4 text-lead" /> Cài đặt model</button>
+            </div>
           </aside>
         </>
       )}
 
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-2 border-b border-slate-200 px-3 py-2 dark:border-slate-800">
-          <button aria-label="Mở danh sách hội thoại" onClick={() => setSidebar(!sidebar)} className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"><Menu className="h-5 w-5" /></button>
-          <label className="flex items-center gap-1.5 text-sm">
-            <Database className="h-4 w-4 text-slate-400" />
-            <select aria-label="Nguồn dữ liệu" value={scope} onChange={(e) => { setScope(e.target.value); write('texa.scope', e.target.value) }}
-              className="rounded-lg border border-slate-200 bg-transparent px-2 py-1 dark:border-slate-700">
-              <option value="">Tất cả nguồn</option>
-              {boot?.sources.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-            </select>
-          </label>
-          <span className="flex-1" />
-          {allowed.length > 0 && (
-            <select aria-label="Model" value={activeModel} onChange={(e) => { setModel(e.target.value); write('texa.model', e.target.value) }}
-              className="max-w-[45vw] truncate rounded-lg border border-slate-200 bg-transparent px-2 py-1 text-sm dark:border-slate-700">
-              {allowed.map((m) => <option key={m} value={m}>{boot?.providers.find((p) => p.id === boot.connection?.provider)?.label.split(' (')[0] ?? ''} · {m}</option>)}
-            </select>
-          )}
-          <button aria-label="Texa biết gì" title="Texa biết gì" onClick={() => setCatalogOpen(true)} className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"><BookOpen className="h-5 w-5" /></button>
-          <button aria-label="Cài đặt" title="Cài đặt" onClick={() => setSettings(true)} className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"><Settings className="h-5 w-5" /></button>
+        <header className="flex items-center gap-1 px-3 py-2.5">
+          {!sidebar && <>
+            <button aria-label="Hiện thanh bên" onClick={() => setSidebar(true)} className={iconBtn}><PanelLeft className="h-[18px] w-[18px]" /></button>
+            <button aria-label="Cuộc hỏi mới" onClick={() => openConversation(null)} className={iconBtn}><Plus className="h-[18px] w-[18px]" /></button>
+          </>}
+          <Picker label="Nguồn dữ liệu" value={scope} onChange={(v) => { setScope(v); write('texa.scope', v) }}
+            options={[{ value: '', label: 'Mọi nguồn' }, ...(boot?.sources ?? []).map((s) => ({ value: s.id, label: s.label }))]} />
         </header>
 
         {boot && !boot.connection && (
-          <div className="flex items-center justify-center gap-3 bg-indigo-50 px-4 py-2 text-sm text-indigo-900 dark:bg-indigo-950/50 dark:text-indigo-200">
-            Kết nối một model (Gemini, Claude, OpenAI hoặc gateway) để bắt đầu.
-            <button onClick={() => setSettings(true)} className="rounded-md bg-indigo-600 px-3 py-1 font-medium text-white hover:bg-indigo-700">Mở Cài đặt</button>
+          <div className="mx-auto mt-1 flex w-[min(42rem,calc(100%-2rem))] items-center gap-3 rounded-xl border border-rule bg-sheet px-4 py-3 text-sm">
+            <span className="flex-1">Kết nối một model để bắt đầu hỏi.</span>
+            <button onClick={() => setSettings(true)} className="rounded-lg bg-ledger px-3 py-1.5 font-medium text-white transition-opacity hover:opacity-90 dark:text-paper">Kết nối model</button>
           </div>
         )}
-        {bootError && <div className="bg-rose-50 px-4 py-2 text-center text-sm text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">Không kết nối được API: {bootError}</div>}
+        {bootError && (
+          <p role="alert" className="mx-auto mt-1 w-[min(42rem,calc(100%-2rem))] rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
+            Không gọi được API ({bootError}). Kiểm tra backend đang chạy ở cổng 18000.</p>
+        )}
 
-        <div className="scroll-thin flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-3xl space-y-8 px-4 py-6">
-            {turns.length === 0 && boot && <EmptyState boot={boot} onAsk={send} />}
-            {turns.map((t) => <TurnView key={t.id} turn={t} steps={steps[t.id] ?? []} boot={boot!} onAsk={send} onRefresh={follow} />)}
-            <div ref={bottom} />
+        {empty ? (
+          <div className="flex flex-1 flex-col items-center justify-center px-4 pb-[12vh]">
+            {boot && <EmptyState boot={boot} onAsk={send} composer={composer} />}
           </div>
-        </div>
-
-        <div className="px-4 pb-4">
-          <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-2xl border border-slate-300 bg-white p-2 shadow-sm focus-within:border-indigo-500 dark:border-slate-700 dark:bg-slate-900">
-            <textarea ref={inputRef} value={input} rows={1} maxLength={2000}
-              onChange={(e) => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = `${Math.min(e.target.scrollHeight, 192)}px` }}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send() } }}
-              placeholder="Hỏi Texa về dữ liệu… (vd: doanh thu theo danh mục tháng 12/2019)"
-              aria-label="Câu hỏi" className="max-h-48 flex-1 resize-none bg-transparent px-2 py-2 outline-none" />
-            <button aria-label="Gửi" disabled={!input.trim() || sending || running} onClick={() => send()}
-              className="rounded-xl bg-indigo-600 p-2.5 text-white hover:bg-indigo-700 disabled:opacity-30"><SendHorizontal className="h-4 w-4" /></button>
-          </div>
-          <p className="mx-auto mt-1.5 max-w-3xl text-center text-xs text-slate-400">Texa chỉ tính các chỉ số đã định nghĩa trong catalog; mọi con số đến từ SQL, không do AI tự viết.</p>
-        </div>
+        ) : (
+          <>
+            <div className="scroll-thin flex-1 overflow-y-auto">
+              <div className="mx-auto max-w-[44rem] space-y-10 px-4 pt-6 pb-10">
+                {turns.map((t) => <TurnView key={t.id} turn={t} steps={steps[t.id] ?? []} boot={boot!} onAsk={send} onRefresh={follow} onEdit={editTurn} busy={running} explainMarks={t.id === firstAnswered} />)}
+                <div ref={bottom} />
+              </div>
+            </div>
+            <div className="px-4 pb-4">{composer}</div>
+          </>
+        )}
       </main>
 
       {settings && boot && <SettingsModal boot={boot} onClose={() => setSettings(false)} onSaved={() => { setSettings(false); loadBoot() }} />}
@@ -170,36 +193,86 @@ export default function App() {
   )
 }
 
-function EmptyState({ boot, onAsk }: { boot: Bootstrap; onAsk: (q: string) => void }) {
-  const examples = [
-    'Doanh thu theo danh mục sản phẩm tháng 12/2019 của cosmetics shop',
-    'Tỉ lệ giao hàng trễ theo bang của Olist năm 2018',
-    'Phễu xem → giỏ → mua theo tuần trong 30 ngày gần nhất',
-    'So sánh AOV giữa 2 cửa hàng',
-    ...(boot.catalog.examples ?? []).slice(0, 2),
-  ]
-  const fmt = new Intl.NumberFormat('vi-VN')
+function Wordmark() {
   return (
-    <div className="space-y-8 pt-8">
-      <div className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-xl font-bold text-white">T</div>
-        <h1 className="text-2xl font-semibold">Xin chào, mình là Texa</h1>
-        <p className="mt-1 text-slate-500">Hỏi bằng ngôn ngữ tự nhiên — Texa dựng SQL từ semantic catalog, chạy trên dữ liệu thật và tóm tắt insight.</p>
+    <span className="flex items-center gap-2 px-1.5 text-[17px] font-semibold tracking-tight">
+      <span aria-hidden className="relative inline-flex h-6 w-6 items-center justify-center">
+        <span className="absolute inset-x-0 bottom-0.5 h-2.5 rounded-sm bg-mark" />
+        <span className="relative font-serif text-[19px] leading-none text-ledger-ink">T</span>
+      </span>
+      Texa
+    </span>
+  )
+}
+
+function Picker({ label, value, options, onChange, quiet }: {
+  label: string; value: string; options: { value: string; label: string }[]; onChange: (v: string) => void; quiet?: boolean
+}) {
+  return (
+    <label className={`relative inline-flex items-center rounded-lg text-sm transition-colors hover:bg-wash ${quiet ? 'text-lead hover:text-ink' : 'text-ink'}`}>
+      <span className="sr-only">{label}</span>
+      <select value={value} onChange={(e) => onChange(e.target.value)}
+        className={`field-sizing-content max-w-[42vw] cursor-pointer appearance-none truncate bg-transparent py-1.5 pr-7 pl-2.5 outline-none ${quiet ? '' : 'font-medium'}`}>
+        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-2 h-3.5 w-3.5 opacity-70" />
+    </label>
+  )
+}
+
+function Composer({ inputRef, value, onChange, onSend, busy, large, error, tools }: {
+  inputRef: React.RefObject<HTMLTextAreaElement | null>; value: string; onChange: (v: string) => void; onSend: () => void
+  busy: boolean; large: boolean; error: string; tools?: React.ReactNode
+}) {
+  const ready = value.trim() && !busy
+  return (
+    <div className="mx-auto w-full max-w-[44rem]">
+      <div onClick={(e) => { if (e.target === e.currentTarget) inputRef.current?.focus() }}
+        className={`flex cursor-text flex-col rounded-[22px] border border-rule bg-sheet p-2 pl-4 shadow-[0_1px_2px_rgba(22,24,29,.04),0_8px_24px_-12px_rgba(22,24,29,.12)] transition-colors focus-within:border-ledger/50 ${large ? 'min-h-[7.5rem]' : ''}`}>
+        <textarea ref={inputRef} value={value} rows={1} maxLength={2000}
+          onChange={(e) => { onChange(e.target.value); e.target.style.height = 'auto'; e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px` }}
+          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); onSend() } }}
+          placeholder={large ? "Hỏi về doanh thu, đơn hàng, khách hàng…" : "Hỏi tiếp…"}
+          aria-label="Câu hỏi" className="max-h-[200px] flex-1 resize-none bg-transparent py-2 pr-2 text-[15px] leading-relaxed outline-none placeholder:text-lead/80" />
+        <div className="flex items-center justify-end gap-1">
+          {tools}
+          <button aria-label="Gửi câu hỏi" disabled={!ready} onClick={onSend}
+            className="rounded-full bg-ledger p-2 text-white transition-[opacity,transform] enabled:hover:opacity-90 enabled:active:scale-95 disabled:bg-rule disabled:text-lead dark:text-paper">
+            <ArrowUp className="h-[18px] w-[18px]" strokeWidth={2.25} /></button>
+        </div>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {boot.sources.map((s) => (
-          <div key={s.id} className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-            <div className="flex items-center justify-between"><span className="font-medium">{s.label}</span><span className="text-xs text-slate-400">{s.currency}</span></div>
-            <p className="mt-1 line-clamp-2 text-sm text-slate-500">{s.description}</p>
-            <p className="mt-2 text-xs text-slate-400">{s.min_date} → {s.max_date} · {fmt.format(s.row_count)} sự kiện · {fmt.format(s.user_count)} người dùng</p>
-          </div>
-        ))}
-      </div>
-      <div className="flex flex-wrap justify-center gap-2">
+      {error && <p role="alert" className="mt-2 px-4 text-sm text-rose-700 dark:text-rose-300">{error}</p>}
+    </div>
+  )
+}
+
+function EmptyState({ boot, onAsk, composer }: { boot: Bootstrap; onAsk: (q: string) => void; composer: React.ReactNode }) {
+  const examples = [
+    'Doanh thu theo danh mục tháng 12/2019',
+    'Tỉ lệ giao trễ theo bang của Olist',
+    'Phễu xem → giỏ → mua theo tuần',
+    'So sánh giá trị đơn trung bình hai cửa hàng',
+    ...(boot.catalog.examples ?? []),
+  ].slice(0, 4)
+  return (
+    <div className="w-full max-w-[44rem]">
+      <h1 className="mb-7 text-center font-serif text-[2rem] leading-tight tracking-[-0.01em] text-ink sm:text-[2.4rem]">Hôm nay bạn muốn đo gì?</h1>
+      {composer}
+      <ul className="mt-4 flex flex-wrap justify-center gap-2">
         {examples.map((q) => (
-          <button key={q} onClick={() => onAsk(q)} className="rounded-full border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:border-indigo-400 hover:text-indigo-700 dark:border-slate-700 dark:text-slate-300 dark:hover:text-indigo-300">{q}</button>
+          <li key={q}>
+            <button onClick={() => onAsk(q)}
+              className="rounded-full border border-rule px-3.5 py-1.5 text-sm text-ink/80 transition-colors hover:border-ledger/40 hover:bg-sheet hover:text-ink">{q}</button>
+          </li>
         ))}
-      </div>
+      </ul>
+      {boot.sources.length > 0 && (
+        <p className="mt-8 text-center text-sm text-lead">
+          Đang có dữ liệu của {boot.sources.map((s, i) => (
+            <span key={s.id}>{i > 0 && (i === boot.sources.length - 1 ? ' và ' : ', ')}<span className="text-ink/80" title={`${s.min_date} – ${s.max_date}`}>{s.label}</span></span>
+          ))}.
+        </p>
+      )}
     </div>
   )
 }

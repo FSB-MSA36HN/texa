@@ -28,6 +28,10 @@ def substitute(text: str, facts: dict[str, dict], lang: str) -> str | None:
 
 def render(raw: dict, facts: list[dict], lang: str) -> tuple[dict, int]:
     by_id = {f["id"]: f for f in facts}
+    # Formatted values the text may cite, so the UI can mark numbers that came from SQL (not the model).
+    cited = sorted({format_value(by_id[i]["value"], by_id[i]["unit"], by_id[i].get("currency"), lang)
+                    for i in PLACEHOLDER.findall(" ".join([raw["headline"], *raw["body"], *raw["caveats"]]))
+                    if i in by_id and by_id[i]["unit"] != "text"}, key=len, reverse=True)
     dropped = 0
     body = []
     for sentence in raw["body"]:
@@ -42,15 +46,16 @@ def render(raw: dict, facts: list[dict], lang: str) -> tuple[dict, int]:
         headline = body.pop(0) if body else ""
     caveats = [c for c in (substitute(c, by_id, lang) for c in raw["caveats"]) if c]
     follow_ups = [f for f in raw["follow_ups"] if not PLACEHOLDER.search(f)]
-    return {"headline": headline, "body": body, "caveats": caveats, "follow_ups": follow_ups}, dropped
+    return {"headline": headline, "body": body, "caveats": caveats, "follow_ups": follow_ups, "cited": cited}, dropped
 
 
 def template_answer(result: dict, lang: str) -> dict:
     """Used when the writer fails twice: a plain sentence built from the first facts."""
     facts = [f for f in result["facts"] if f["id"] != "f_rows" and f["unit"] != "text"][:3]
-    parts = [f"{f['label']}: {format_value(f['value'], f['unit'], f.get('currency'), lang)}" for f in facts]
+    values = [format_value(f["value"], f["unit"], f.get("currency"), lang) for f in facts]
+    parts = [f"{f['label']}: {v}" for f, v in zip(facts, values)]
     return {"headline": "; ".join(parts) or ("No rows." if not lang.startswith("vi") else "Không có dữ liệu."),
-            "body": [], "caveats": [], "follow_ups": []}
+            "body": [], "caveats": [], "follow_ups": [], "cited": values}
 
 
 def build_payload(question: str, result: dict, cat, sources, lang: str, answer_request: dict) -> str:

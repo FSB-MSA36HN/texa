@@ -1,6 +1,80 @@
 @import "tailwindcss";
 
+/* "Ledger" palette: cool paper, ink, one ledger-green accent, and a highlighter reserved for SQL values. */
+@theme {
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Newsreader", ui-serif, Georgia, serif;
+
+  --color-paper: #FAFAF7;
+  --color-sheet: #FFFFFF;
+  --color-ink: #16181D;
+  --color-lead: #6B6F78;
+  --color-rule: #E6E5DF;
+  --color-wash: #F1F0EB;
+  --color-ledger: #0F5F4D;
+  --color-ledger-ink: #0B4A3C;
+  --color-mark: #E9F26A;
+}
+
 :root { color-scheme: light dark; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #121418;
+    --color-sheet: #181B20;
+    --color-ink: #ECEDEA;
+    --color-lead: #9599A1;
+    --color-rule: #2A2E35;
+    --color-wash: #1F2328;
+    --color-ledger: #4FB394;
+    --color-ledger-ink: #7FD3B8;
+    --color-mark: #5C6118;
+  }
+}
+
 html, body, #root { height: 100%; }
-body { @apply bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-.scroll-thin { scrollbar-width: thin; }
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "tnum" 1, "cv11" 1;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--color-mark); color: var(--color-ink); }
+:where(button, a, select, summary, [role="tab"]):focus-visible { outline: 2px solid var(--color-ledger); outline-offset: 2px; }
+/* Text fields show focus through their container border instead of a second ring. */
+:where(textarea, input):focus-visible { outline: none; }
+.scroll-thin { scrollbar-width: thin; scrollbar-color: var(--color-rule) transparent; }
+
+/* The signature: a value computed by SQL is marked like a highlighter stroke, swept in once. */
+.sql-value {
+  color: inherit;
+  text-decoration: none;
+  background-color: transparent;
+  background-image: linear-gradient(transparent 12%, var(--color-mark) 12%, var(--color-mark) 88%, transparent 88%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  border-radius: 2px;
+  padding: 0 0.15em;
+  margin: 0 -0.05em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  animation: mark-sweep 520ms cubic-bezier(.2, .7, .2, 1) both;
+}
+.sql-value:nth-of-type(2) { animation-delay: 90ms; }
+.sql-value:nth-of-type(3) { animation-delay: 180ms; }
+@keyframes mark-sweep { from { background-size: 0% 100%; } }
+
+/* Answers rise in once when they land; nothing else animates on its own. */
+.answer-in { animation: answer-in 320ms ease-out both; }
+@keyframes answer-in { from { opacity: 0; transform: translateY(4px); } }
+
+/* Typing indicator for the running state. */
+.dots span { animation: dot 1.2s infinite ease-in-out; }
+.dots span:nth-child(2) { animation-delay: .15s; }
+.dots span:nth-child(3) { animation-delay: .3s; }
+@keyframes dot { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sql-value, .answer-in, .dots span { animation: none; }
+}

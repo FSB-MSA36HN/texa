@@ -238,6 +238,27 @@ def retry(turn_id: str) -> None:
     _start(turn_id, _question_work(turn_id))
 
 
+def edit(turn_id: str, question: str) -> list[str]:
+    """Rewind: replace this turn's question, drop every later turn of the conversation, and run it again.
+    Returns the ids of the dropped turns."""
+    question = question.strip()
+    if not question or len(question) > 2000:
+        raise SpecError("invalid_question", "Ask a question of at most 2000 characters.")
+    turn = load_turn(turn_id)
+    with db.app_conn() as conn:
+        later = [str(r["id"]) for r in conn.execute(
+            "SELECT id FROM app.turns WHERE conversation_id = %s AND created_at > %s",
+            (turn["conversation_id"], turn["created_at"])).fetchall()]
+        if any(RUNS.get(t) and not RUNS[t].done for t in [turn_id, *later]):
+            raise SpecError("busy", "Stop the running question before editing.")
+        conn.execute("DELETE FROM app.turns WHERE id = ANY(%s::uuid[])", (later,))
+        conn.execute("UPDATE app.turns SET question = %s, state = jsonb_build_object('scope', state->'scope'), "
+                     "status = 'running', updated_at = now() WHERE id = %s", (question, turn_id))
+        conn.execute("UPDATE app.conversations SET updated_at = now() WHERE id = %s", (turn["conversation_id"],))
+    _start(turn_id, _question_work(turn_id))
+    return later
+
+
 def switch_variant(turn_id: str, metric_id: str) -> None:
     turn = load_turn(turn_id)
     st = turn["state"]

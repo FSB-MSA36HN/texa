@@ -1,4 +1,6 @@
 """End-to-end turn flow with a scripted model (no provider calls): interpret -> clarify -> SQL -> insight."""
+import time
+
 import pytest
 
 from texa import answer, llm
@@ -98,3 +100,27 @@ def test_unknown_ids_from_model_are_rejected(model):
                                     time_range={"kind": "all", "days": 0, "start": "", "end": ""})
     out = answer.ask_cli("profit margin")
     assert out["status"] == "error" and out["error"]["code"] == "MODEL_OUTPUT_INVALID"
+
+
+def test_edit_rewinds_the_conversation(model):
+    script, _ = model
+    script["interpret"] = candidate(outcome="conversation", reply="Hi.")
+
+    def settle(turn_id):
+        for _ in range(100):
+            if answer.RUNS[turn_id].done:
+                return
+            time.sleep(0.05)
+
+    first = answer.ask("hello", None, None, None)
+    settle(first["turn_id"])
+    second = answer.ask("and again", first["conversation_id"], None, None)
+    settle(second["turn_id"])
+
+    dropped = answer.edit(first["turn_id"], "hello, edited")
+    settle(first["turn_id"])
+    assert dropped == [second["turn_id"]]
+    with pytest.raises(LookupError):
+        answer.load_turn(second["turn_id"])
+    edited = answer.load_turn(first["turn_id"])
+    assert edited["question"] == "hello, edited" and edited["status"] == "conversation"

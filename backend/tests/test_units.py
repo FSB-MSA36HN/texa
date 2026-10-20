@@ -97,6 +97,7 @@ def test_insight_placeholders_and_unknown_facts():
                            "body": ["Made up [[f_nope]].", "Fine."], "caveats": [], "follow_ups": []}, facts, "vi")
     assert out["headline"] == "Revenue reached 1.234,50 USD, led by apparel."
     assert out["body"] == ["Fine."] and dropped == 1
+    assert out["cited"] == ["1.234,50 USD"]  # numbers only; text facts are not marked as SQL values
 
 
 def test_format_percent_and_counts():

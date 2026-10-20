@@ -11,7 +11,7 @@ export type Column = { name: string; label: string; role: 'dimension' | 'metric'
 export type Choice = { id: string; label: string; description?: string }
 export type FormField = { id: string; label: string; kind: 'single_choice' | 'multi_choice'; required: boolean; allow_other: boolean; default: string[]; choices: Choice[] }
 export type Step = { step: string; status: 'running' | 'done' | 'failed'; ms?: number; note?: string | null }
-export type Insight = { headline: string; body: string[]; caveats: string[]; follow_ups: string[] }
+export type Insight = { headline: string; body: string[]; caveats: string[]; follow_ups: string[]; cited?: string[] }
 export type QuerySpec = { source_ids: string[]; shape: string; selection: string[]; recipe: string; metrics: string[]; filters: { field: string; operator: string; values: string[] }[]; time_range: { kind: string; days?: number; start?: string; end?: string } }
 export type Turn = {
   id: string; conversation_id: string; question: string; created_at: string; model: string | null
@@ -53,6 +53,7 @@ export const api = {
   turn: (id: string) => call<Turn>(`/api/turns/${id}`),
   answer: (id: string, answers: Record<string, string[]>) => call(`/api/turns/${id}/answer`, { method: 'POST', json: { answers } }),
   retry: (id: string) => call(`/api/turns/${id}/retry`, { method: 'POST' }),
+  edit: (id: string, question: string) => call<{ dropped: string[] }>(`/api/turns/${id}/edit`, { method: 'POST', json: { question } }),
   cancel: (id: string) => call(`/api/turns/${id}/cancel`, { method: 'POST' }),
   variant: (id: string, metric_id: string) => call(`/api/turns/${id}/variant`, { method: 'POST', json: { metric_id } }),
   feedback: (id: string, rating: 'up' | 'down', comment = '') => call(`/api/turns/${id}/feedback`, { method: 'POST', json: { rating, comment } }),

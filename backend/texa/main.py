@@ -157,6 +157,15 @@ def post_retry(turn_id: str):
     return {"ok": True}
 
 
+class EditBody(BaseModel):
+    question: str = Field(min_length=1, max_length=2000)
+
+
+@app.post("/api/turns/{turn_id}/edit")
+def post_edit(turn_id: str, body: EditBody):
+    return {"dropped": answer.edit(turn_id, body.question)}
+
+
 @app.post("/api/turns/{turn_id}/cancel")
 def post_cancel(turn_id: str):
     return {"cancelled": answer.cancel(turn_id)}

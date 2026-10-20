@@ -52,83 +52,83 @@ export function SettingsModal({ boot, onClose, onSaved }: { boot: Bootstrap; onC
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-ink/25 p-4 backdrop-blur-[2px]" onClick={onClose}>
       <div role="dialog" aria-modal="true" aria-label="Cài đặt" onClick={(e) => e.stopPropagation()}
-        className="scroll-thin max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+        className="scroll-thin max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-rule bg-paper p-7 shadow-2xl">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Cài đặt model</h2>
-          <button aria-label="Đóng" onClick={onClose} className="rounded p-1 hover:bg-slate-100 dark:hover:bg-slate-800"><X className="h-5 w-5" /></button>
+          <h2 className="font-serif text-2xl">Kết nối model</h2>
+          <button aria-label="Đóng" onClick={onClose} className="rounded-lg p-1.5 text-lead transition-colors hover:bg-wash hover:text-ink"><X className="h-5 w-5" /></button>
         </div>
         <div className="space-y-5 text-sm">
           <label className="block space-y-1.5">
-            <span className="font-medium">Provider</span>
-            <select value={provider} onChange={(e) => { setProvider(e.target.value); setModels([]); setAllowed([]); setDefaultModel('') }} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950">
+            <span className="font-medium text-ink">Provider</span>
+            <select value={provider} onChange={(e) => { setProvider(e.target.value); setModels([]); setAllowed([]); setDefaultModel('') }} className="w-full rounded-xl border border-rule bg-sheet px-3 py-2 outline-none focus:border-ledger/50">
               {boot.providers.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
           </label>
           <label className="block space-y-1.5">
-            <span className="font-medium">API key</span>
+            <span className="font-medium text-ink">API key</span>
             <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} autoComplete="off"
               placeholder={savedKey ? 'Đã lưu an toàn – nhập key mới để thay' : conn?.from_env && conn.provider === provider ? 'Đang dùng key từ biến môi trường' : hint}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950" />
-            <span className="text-xs text-slate-500">Key được mã hóa trước khi lưu và không bao giờ gửi lại trình duyệt.</span>
+              className="w-full rounded-xl border border-rule bg-sheet px-3 py-2 outline-none focus:border-ledger/50" />
+            <span className="text-xs text-lead">Key được mã hóa trước khi lưu và không bao giờ gửi lại trình duyệt.</span>
           </label>
           <label className="block space-y-1.5">
-            <span className="font-medium">Base URL <span className="font-normal text-slate-400">(tùy chọn)</span></span>
+            <span className="font-medium text-ink">Base URL <span className="font-normal text-lead">(tùy chọn)</span></span>
             <input type="url" value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} autoComplete="off"
               placeholder={BASE_URL_HINT[provider] ?? ''}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950" />
-            <span className="text-xs text-slate-500">Để trống để gọi thẳng provider. Điền URL gateway của tổ chức (LiteLLM, OpenRouter, Azure, proxy nội bộ…) nếu gateway dùng chung API với provider đã chọn.</span>
+              className="w-full rounded-xl border border-rule bg-sheet px-3 py-2 outline-none focus:border-ledger/50" />
+            <span className="text-xs text-lead">Chỉ điền khi đi qua gateway của tổ chức.</span>
           </label>
           <button onClick={discover} disabled={busy !== '' || (!apiKey && !conn)}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-1.5 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:hover:bg-slate-800">
-            {busy === 'discover' && <Loader2 className="h-4 w-4 animate-spin" />} Kiểm tra key & tải danh sách model</button>
+            className="inline-flex items-center gap-2 rounded-full border border-rule bg-sheet px-3.5 py-1.5 transition-colors hover:border-ledger/40 disabled:opacity-40">
+            {busy === 'discover' && <Loader2 className="h-4 w-4 animate-spin" />} Kiểm tra key và tải danh sách model</button>
 
           {models.length > 0 && (
             <div className="space-y-1.5">
-              <span className="font-medium">Model được phép dùng</span>
-              <div className="scroll-thin max-h-48 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2 dark:border-slate-700">
+              <span className="font-medium text-ink">Model được phép dùng</span>
+              <div className="scroll-thin max-h-48 space-y-1 overflow-y-auto rounded-xl border border-rule bg-sheet p-2">
                 {models.map((m) => (
-                  <label key={m.id} className="flex items-center gap-2 rounded px-1 py-0.5 hover:bg-slate-50 dark:hover:bg-slate-800">
-                    <input type="checkbox" checked={allowed.includes(m.id)} onChange={() => toggle(m.id)} />
-                    <span>{m.label}</span><span className="text-xs text-slate-400">{m.id}</span>
+                  <label key={m.id} className="flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-wash">
+                    <input type="checkbox" className="accent-[var(--color-ledger)]" checked={allowed.includes(m.id)} onChange={() => toggle(m.id)} />
+                    <span>{m.label}</span>{m.label !== m.id && <span className="text-xs text-lead">{m.id}</span>}
                   </label>
                 ))}
               </div>
             </div>
           )}
           <label className="block space-y-1.5">
-            <span className="font-medium">Model mặc định</span>
-            <select value={defaultModel} onChange={(e) => setDefaultModel(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950">
+            <span className="font-medium text-ink">Model mặc định</span>
+            <select value={defaultModel} onChange={(e) => setDefaultModel(e.target.value)} className="w-full rounded-xl border border-rule bg-sheet px-3 py-2 outline-none focus:border-ledger/50">
               <option value="">—</option>
               {allowed.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
           </label>
           <div className="grid grid-cols-2 gap-3">
             <label className="block space-y-1.5">
-              <span className="font-medium">Token output tối đa / lần gọi</span>
+              <span className="font-medium text-ink">Token output tối đa / lần gọi</span>
               <input type="number" min={256} max={65536} value={maxOut} onChange={(e) => setMaxOut(+e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950" />
+                className="w-full rounded-xl border border-rule bg-sheet px-3 py-2 outline-none focus:border-ledger/50" />
             </label>
             <label className="block space-y-1.5">
-              <span className="font-medium">Token / ngày (0 = không giới hạn)</span>
+              <span className="font-medium text-ink">Token / ngày (0 = không giới hạn)</span>
               <input type="number" min={0} value={daily} onChange={(e) => setDaily(+e.target.value)}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950" />
+                className="w-full rounded-xl border border-rule bg-sheet px-3 py-2 outline-none focus:border-ledger/50" />
             </label>
           </div>
           <label className="block space-y-1.5">
-            <span className="font-medium">Ngôn ngữ trả lời</span>
-            <select value={lang} onChange={(e) => setLang(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950">
+            <span className="font-medium text-ink">Ngôn ngữ trả lời</span>
+            <select value={lang} onChange={(e) => setLang(e.target.value)} className="w-full rounded-xl border border-rule bg-sheet px-3 py-2 outline-none focus:border-ledger/50">
               <option value="auto">Theo ngôn ngữ câu hỏi</option><option value="vi">Tiếng Việt</option><option value="en">English</option>
             </select>
           </label>
-          {error && <p className="rounded-lg bg-rose-50 px-3 py-2 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">{error}</p>}
+          {error && <p className="rounded-xl bg-rose-50 px-3 py-2 text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">{error}</p>}
           <div className="flex justify-end gap-2 pt-2">
-            {savedKey && <button onClick={() => api.deleteConnection().then(onSaved)} className="mr-auto rounded-lg px-3 py-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40">Ngắt kết nối</button>}
-            <button onClick={onClose} className="rounded-lg px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">Hủy</button>
+            {savedKey && <button onClick={() => api.deleteConnection().then(onSaved)} className="mr-auto rounded-full px-3 py-2 text-rose-700 transition-colors hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/40">Ngắt kết nối</button>}
+            <button onClick={onClose} className="rounded-full px-4 py-2 transition-colors hover:bg-wash">Hủy</button>
             <button onClick={save} disabled={busy !== '' || (!apiKey && !savedKey) || !defaultModel}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-40">
-              {busy === 'save' && <Loader2 className="h-4 w-4 animate-spin" />} Lưu</button>
+              className="inline-flex items-center gap-2 rounded-full bg-ledger px-4 py-2 font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40 dark:text-paper">
+              {busy === 'save' && <Loader2 className="h-4 w-4 animate-spin" />} Lưu kết nối</button>
           </div>
         </div>
       </div>
