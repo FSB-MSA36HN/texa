@@ -114,7 +114,25 @@ Golden eval chạy với model thật (cần đã kết nối model trong Cài �
 cd backend && uv run python eval/run_golden.py --runs 3
 ```
 
-Bộ eval có 62 câu tiếng Việt và tiếng Anh. Lệnh in ra accuracy và các case không ổn định; mặc định fail nếu accuracy dưới 90%.
+Bộ eval có **63 case tiếng Việt và tiếng Anh**. Chạy `--runs 3` tạo 189 lượt chấm; lệnh in ra tỷ lệ pass và các case lúc pass, lúc fail. Ngưỡng mặc định là 90%; đây là ngưỡng mục tiêu, không phải kết quả đã đạt.
+
+### Evaluation đối chiếu những gì?
+
+| Lớp kiểm tra | Đối tượng đối chiếu | Phạm vi |
+|---|---|---|
+| Compiler tests | **Kết quả thực thi** của SQL compiler sinh với SQL tham chiếu viết tay, trên cùng warehouse | Kiểm tra các case tính toán đã viết test; input đã là QuerySpec, không cần model thật |
+| Golden eval với model thật | **Status và một số trường của QuerySpec cuối** với kỳ vọng viết tay trong `backend/eval/golden.yaml` | Chỉ chấm các trường `expect` được khai báo và được hàm `score()` hỗ trợ; không so toàn bộ JSON |
+| Unit / scripted flow tests | Output và hành vi của module/pipeline với assertions viết sẵn | Kiểm tra validator, facts, placeholder, hỏi lại, từ chối…; không dùng để đo độ chính xác của model thật |
+
+Golden hiện **không so chuỗi SQL**, **không đối chiếu bảng số liệu với đáp án chuẩn**, và **không chấm toàn bộ lời nhận xét**. QuerySpec được chấm là kết quả sau khi Python làm rõ/chuẩn hóa/validate cách hiểu của model, không phải chỉ JSON thô model trả về.
+
+Ví dụ minh họa: nếu `expect` chỉ ghi `status: answered`, `recipe: revenue`, `selection: [event_month]`, thì case chỉ yêu cầu trả lời thành công, dùng metric doanh thu và chia theo tháng. Chọn sai nguồn hoặc sai năm vẫn có thể pass vì nguồn/thời gian chưa được khai báo để chấm. Thêm `source_ids`, `start`, `end` vào `expect` sẽ kiểm tra thêm những phần đó. Bộ chấm hiện chưa kiểm tra trực tiếp `shape`, `limit`, `contract_version`, `time_range.field`, operator của filter hay cấm mọi filter dư. Các kiểm tra hợp lệ của validator là một lớp khác, không thay thế việc đối chiếu với ý định đúng.
+
+Mỗi case được tính pass/fail theo các phép kiểm tra đang triển khai, không cộng điểm lẻ cho từng trường. **Ví dụ giả định** chạy một lượt: 60 case pass, 3 case fail → `60/63 = 95,2%`. Ba case fail là các case bị phát hiện vi phạm ít nhất một điều kiện; log nêu khác biệt cụ thể. Con số này có nghĩa **95,2% case đạt kỳ vọng được kiểm tra trong lần chạy**, không có nghĩa 95,2% mọi số liệu/lời trả lời đều đúng. Xem thêm các giới hạn scoring trong tài liệu chi tiết.
+
+**Câu trả lời ngắn khi thuyết trình/phỏng vấn:** “Texa đánh giá theo lớp: compiler được kiểm tra bằng đối chiếu kết quả thực thi với SQL viết tay; model thật được đánh giá bằng golden cases, so trạng thái và các trường QuerySpec được khai báo trước. Golden chưa so toàn bộ QuerySpec hay kết quả SQL. Điểm là tỷ lệ case đạt các kỳ vọng được kiểm tra.”
+
+Chi tiết: [Evaluation methods](presentation/EVALUATION_METHODS.md), gồm ví dụ chấm từng trường, cách tính điểm, giới hạn và câu hỏi phỏng vấn thường gặp.
 
 ## Bố cục
 
