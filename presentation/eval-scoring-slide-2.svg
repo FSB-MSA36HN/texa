@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <defs>
+    <g id="ok"><circle r="18" fill="#1f8a7e"/><path d="M-7,0 l5,5 l9,-10" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g id="no"><circle r="18" fill="#c0504d"/><path d="M-6,-6 l12,12 M6,-6 l-12,12" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
+    <g id="okS"><circle r="14" fill="#1f8a7e"/><path d="M-6,0 l4,4 l8,-8" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+  </defs>
+  <rect width="1920" height="1080" fill="#fff"/>
+
+  <text x="90" y="70" font-size="22" font-weight="700" fill="#1f8a7e">TEXA  •  Phần 4 - Evaluation</text>
+  <text x="90" y="142" font-size="54" font-weight="700" fill="#14284b">Ví dụ chấm một câu và cách tổng hợp kết quả</text>
+
+  <!-- LEFT: worked example -->
+  <rect x="90" y="200" width="910" height="80" rx="40" fill="#fff" stroke="#b9c6d6" stroke-width="2"/>
+  <text x="545" y="249" font-size="23" font-style="italic" fill="#14284b" text-anchor="middle">“Doanh thu theo danh mục tháng 12/2019 của cosmetics shop”</text>
+
+  <rect x="90" y="310" width="910" height="60" rx="10" fill="#14284b"/>
+  <g font-size="20" font-weight="700" fill="#fff">
+    <text x="110" y="348">Trường</text>
+    <text x="290" y="348">Expect (người viết)</text>
+    <text x="590" y="348">Hệ thống trả ra</text>
+    <text x="935" y="348" text-anchor="middle">Khớp</text>
+  </g>
+  <g font-family="Menlo, monospace" font-size="17" fill="#14284b">
+    <rect x="90" y="370" width="910" height="64" fill="#fff"/>
+    <rect x="90" y="434" width="910" height="64" fill="#eef2f7"/>
+    <rect x="90" y="498" width="910" height="64" fill="#fff"/>
+    <rect x="90" y="562" width="910" height="64" fill="#eef2f7"/>
+    <rect x="90" y="626" width="910" height="64" fill="#fff"/>
+    <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="20" font-weight="700">
+      <text x="110" y="409">status</text><text x="110" y="473">recipe</text><text x="110" y="537">selection</text><text x="110" y="601">source_ids</text><text x="110" y="665">time_range</text>
+    </g>
+    <text x="290" y="409">answered</text><text x="590" y="409">answered</text>
+    <text x="290" y="473">revenue</text><text x="590" y="473">revenue</text>
+    <text x="290" y="537">[item_category]</text><text x="590" y="537">[item_category]</text>
+    <text x="290" y="601">[cosmetics_shop]</text><text x="590" y="601">[cosmetics_shop]</text>
+    <text x="290" y="665">2019-12-01→12-31</text><text x="590" y="665">2019-12-01→12-31</text>
+  </g>
+  <use href="#okS" x="935" y="402"/><use href="#okS" x="935" y="466"/><use href="#okS" x="935" y="530"/><use href="#okS" x="935" y="594"/><use href="#okS" x="935" y="658"/>
+  <rect x="90" y="370" width="910" height="320" fill="none" stroke="#d5dde8" stroke-width="2"/>
+
+  <rect x="90" y="706" width="910" height="64" rx="10" fill="#e3f3f0" stroke="#1f8a7e" stroke-width="2"/>
+  <use href="#okS" x="124" y="738"/>
+  <text x="152" y="746" font-size="23" font-weight="700" fill="#14284b">ĐẠT: cả 5 trường đều khớp</text>
+
+  <rect x="90" y="790" width="910" height="110" rx="10" fill="#fbeaea" stroke="#c0504d" stroke-width="1.5"/>
+  <text x="114" y="832" font-size="20" fill="#14284b">Nếu hệ thống hiểu thành <tspan font-weight="700">tháng 11/2019</tspan>:</text>
+  <text x="114" y="870" font-size="20" fill="#14284b">time_range lệch → <tspan font-weight="700" fill="#c0504d">TRƯỢT</tspan>, dù 4 trường còn lại đều đúng</text>
+
+  <!-- RIGHT: aggregation -->
+  <rect x="1060" y="200" width="770" height="700" rx="16" fill="#fff" stroke="#d5dde8" stroke-width="2"/>
+  <text x="1090" y="250" font-size="28" font-weight="700" fill="#14284b">Mỗi câu chạy nhiều lần (dự kiến 3)</text>
+
+  <rect x="1076" y="482" width="738" height="52" rx="10" fill="#fff4e5" stroke="#e8a33d" stroke-width="1.5"/>
+  <g font-size="18" fill="#5b6b80" text-anchor="middle">
+    <text x="1500" y="300">Lần 1</text><text x="1610" y="300">Lần 2</text><text x="1720" y="300">Lần 3</text>
+  </g>
+  <g font-family="Menlo, monospace" font-size="18" fill="#14284b">
+    <text x="1100" y="346">rev_cat_dec</text>
+    <text x="1100" y="402">ask_both</text>
+    <text x="1100" y="458">olist_carts</text>
+    <text x="1100" y="514">fu_by_week</text>
+    <text x="1100" y="570">sp_revenue</text>
+  </g>
+  <g font-size="15" fill="#5b6b80">
+    <text x="1290" y="346">hỏi chỉ số</text><text x="1290" y="402">hỏi lại</text><text x="1290" y="458">từ chối</text><text x="1290" y="514">hỏi nối tiếp</text><text x="1290" y="570">bộ lọc</text>
+  </g>
+  <use href="#ok" x="1500" y="340"/><use href="#ok" x="1610" y="340"/><use href="#ok" x="1720" y="340"/>
+  <use href="#ok" x="1500" y="396"/><use href="#ok" x="1610" y="396"/><use href="#ok" x="1720" y="396"/>
+  <use href="#ok" x="1500" y="452"/><use href="#ok" x="1610" y="452"/><use href="#ok" x="1720" y="452"/>
+  <use href="#ok" x="1500" y="508"/><use href="#no" x="1610" y="508"/><use href="#ok" x="1720" y="508"/>
+  <use href="#ok" x="1500" y="564"/><use href="#ok" x="1610" y="564"/><use href="#ok" x="1720" y="564"/>
+  <text x="1090" y="614" font-size="16" font-style="italic" fill="#5b6b80">Minh họa cách tính, chưa phải kết quả thực nghiệm</text>
+
+  <line x1="1090" y1="636" x2="1800" y2="636" stroke="#e3e8ef" stroke-width="2"/>
+  <g font-size="21" fill="#14284b">
+    <text x="1090" y="678"><tspan font-weight="700">Tỷ lệ đạt</tspan> = lượt đạt / tổng lượt</text>
+    <text x="1090" y="710" font-size="19" fill="#5b6b80">VD trên: 14 / 15 = 93,3%</text>
+    <text x="1090" y="758"><tspan font-weight="700">Không ổn định</tspan> = lúc đạt, lúc trượt <tspan font-size="19" fill="#b26d00">(hàng tô vàng)</tspan></text>
+    <text x="1090" y="806"><tspan font-weight="700">Ngưỡng 90%:</tspan> thấp hơn → lệnh chạy báo lỗi,</text>
+    <text x="1090" y="838">chặn bản sửa làm hệ thống kém đi</text>
+  </g>
+
+  <!-- limitations -->
+  <rect x="90" y="930" width="1740" height="100" rx="16" fill="#eef2f7"/>
+  <text x="120" y="972" font-size="20" font-weight="700" fill="#14284b">Giới hạn hiện tại</text>
+  <g font-size="19" fill="#14284b">
+    <text x="120" y="1008">• Chỉ chấm trường có trong expect</text>
+    <text x="560" y="1008">• Hỏi thừa không bị phạt</text>
+    <text x="900" y="1008">• Chưa chấm con số kết quả và lời nhận xét → kế hoạch 120 câu held-out</text>
+  </g>
+</svg>
