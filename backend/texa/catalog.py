@@ -1,6 +1,8 @@
 """Semantic catalog: typed definitions, cross-reference validation, publish, and what each source logs."""
 import hashlib
 import json
+import re
+import math
 import time
 from functools import cached_property
 from typing import Literal
@@ -21,6 +23,16 @@ COLUMNS = {
 }
 ALWAYS_FILLED = {"source_id", "event_ts", "event_date", "event_name", "user_id", "first_seen_date", "currency"}
 ADDITIVE = {"count_events", "sum"}
+_NESTED_FIELD = re.compile(r"^(ep|up)\.([a-zA-Z0-9_]+)(?:\.([a-zA-Z0-9_]+))?$")
+
+
+def nested_field_parts(field: str) -> tuple[str, tuple[str, ...]] | None:
+    """Parse a bounded JSON object path (one or two keys) rooted at ep/up."""
+    match = _NESTED_FIELD.fullmatch(field)
+    if not match:
+        return None
+    side, first, second = match.groups()
+    return side, (first,) if second is None else (first, second)
 
 
 class Strict(BaseModel):
@@ -150,11 +162,13 @@ class VerifiedQuestion(Strict):
 class Policy(Strict):
     min_sample: int = 30
     ask_when_missing: list[str] = []
+    max_sources: int = Field(default=3, ge=1, le=3)
 
 
 class Catalog(Strict):
     version: int
     table: str
+    allowed_sources: list[str] = []
     event_roles: list[EventRole]
     dimensions: list[Dimension]
     metrics: list[Metric]
@@ -219,6 +233,8 @@ class Catalog(Strict):
 def field_type(field: str, cast: str = "text") -> str:
     if field in COLUMNS:
         return COLUMNS[field]
+    if nested_field_parts(field):
+        return "number" if cast == "number" else "text"
     return "number" if cast == "number" else "text"
 
 
@@ -230,7 +246,7 @@ def validate_catalog(raw: dict) -> Catalog:
     def check_field(where, field):
         if field in COLUMNS:
             return
-        if field.startswith(("ep.", "up.")) and len(field) > 3 and field[3:].replace("_", "").isalnum():
+        if nested_field_parts(field):
             return
         errors.append(f"{where}: unknown field {field!r} (use a column of {cat.table} or ep.<key>/up.<key>)")
 
@@ -239,6 +255,8 @@ def validate_catalog(raw: dict) -> Catalog:
         ids = [i.id for i in items]
         for dup in {i for i in ids if ids.count(i) > 1}:
             errors.append(f"duplicate {kind} id {dup!r}")
+    if len(set(cat.allowed_sources)) != len(cat.allowed_sources) or any(not s for s in cat.allowed_sources):
+        errors.append("allowed_sources must contain unique non-empty source ids")
     for role in cat.event_roles:
         for event, conds in role.event_conditions.items():
             if event not in role.events:
@@ -252,6 +270,8 @@ def validate_catalog(raw: dict) -> Catalog:
             errors.append(f"dimension {d.id}: time dimension needs a date field")
         if d.kind == "bucket" and (len(d.edges) < 1 or d.edges != sorted(d.edges)):
             errors.append(f"dimension {d.id}: bucket needs ascending edges")
+        if d.cast == "number" and nested_field_parts(d.field) and not all(math.isfinite(v) for v in d.edges):
+            errors.append(f"dimension {d.id}: numeric nested field cast requires finite values")
     for m in cat.metrics:
         where = f"metric {m.id}"
         if m.currency and m.unit != "currency":
@@ -272,6 +292,11 @@ def validate_catalog(raw: dict) -> Catalog:
                 check_field(where, s.field)
                 if s.aggregation in ("sum", "avg") and s.field in COLUMNS and COLUMNS[s.field] != "number":
                     errors.append(f"{where}: {s.aggregation} needs a numeric field, {s.field} is {COLUMNS[s.field]}")
+                path = nested_field_parts(s.field)
+                if s.aggregation in ("sum", "avg") and path and len(path[1]) == 2:
+                    declared = any(d.kind == "field" and d.field == s.field and d.cast == "number" for d in cat.dimensions)
+                    if not declared:
+                        errors.append(f"{where}: nested {s.aggregation} field {s.field} needs a numeric dimension declaration with cast: number")
             for c in s.conditions:
                 check_field(where, c.field)
         elif m.type == "ratio":
@@ -327,6 +352,7 @@ class Source(BaseModel):
     max_date: str | None
     row_count: int
     user_count: int
+    snapshot_version: str = ""
     events: set[str] = set()
     ep_keys: set[str] = set()
     up_keys: set[str] = set()
@@ -338,10 +364,13 @@ class Source(BaseModel):
             return True
         if field in COLUMNS:
             return field in self.columns
-        if field.startswith("ep."):
-            return field[3:] in self.ep_keys
-        if field.startswith("up."):
-            return field[3:] in self.up_keys
+        path = nested_field_parts(field)
+        if path:
+            side, keys = path
+            known = self.ep_keys if side == "ep" else self.up_keys
+            # A profiler may represent nested paths as dotted keys. Accept legacy root keys
+            # only for one-level paths; never infer arbitrary descendants from a parent key.
+            return ".".join(keys) in known or (len(keys) == 1 and keys[0] in known)
         return False
 
     def logs_role(self, role: EventRole) -> list[str]:
@@ -362,7 +391,8 @@ def load_sources(max_age: float = 300) -> dict[str, Source]:
         r["source_id"]: Source(
             id=r["source_id"], label=r["label"], description=r["description"], currency=r["currency"],
             min_date=str(r["min_date"]) if r["min_date"] else None, max_date=str(r["max_date"]) if r["max_date"] else None,
-            row_count=r["row_count"] or 0, user_count=r["user_count"] or 0)
+            row_count=r["row_count"] or 0, user_count=r["user_count"] or 0,
+            snapshot_version=str(r.get("last_loaded_at") or ""))
         for r in regs
     }
     for v in vocab:
@@ -381,6 +411,13 @@ def load_sources(max_age: float = 300) -> dict[str, Source]:
             s.values.setdefault(v["field"], {})[v["value"].lower()] = v["value"]
     _sources_cache = (time.monotonic(), sources)
     return sources
+
+
+def scoped_sources(cat: Catalog, sources: dict[str, Source]) -> dict[str, Source]:
+    """Apply an optional per-catalog source allowlist; empty retains legacy behavior."""
+    if not cat.allowed_sources:
+        return sources
+    return {sid: source for sid, source in sources.items() if sid in cat.allowed_sources}
 
 
 # ---------------------------------------------------------------------------

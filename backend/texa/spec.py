@@ -62,7 +62,11 @@ def validate_spec(raw: dict, cat: Catalog, sources: dict[str, Source]) -> QueryS
 
     if spec.contract_version != cat.contract_version:
         raise SpecError("stale_catalog", "The catalog changed since this question was read. Ask again.")
+    if len(spec.source_ids) > cat.policy.max_sources:
+        raise SpecError("source_scope", f"Ask about at most {cat.policy.max_sources} dataset(s) at a time.")
     for sid in spec.source_ids:
+        if cat.allowed_sources and sid not in cat.allowed_sources:
+            raise SpecError("source_scope", f"Dataset {sid!r} is outside the published product scope.")
         if sid not in sources:
             raise SpecError("unknown_source", f"Unknown store {sid!r}.")
     if len(set(spec.source_ids)) != len(spec.source_ids):

@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 from psycopg import sql
 
-from .catalog import COLUMNS, Catalog, Condition, Dimension, EventRole, Metric
+from .catalog import COLUMNS, Catalog, Condition, Dimension, EventRole, Metric, nested_field_parts
 from .sanity import Availability
 from .spec import QuerySpec
 
@@ -45,15 +45,21 @@ class _Builder:
     def raw_field(self, f: str, alias: str = "e") -> sql.Composable:
         if f in COLUMNS:
             return sql.SQL("{}.{}").format(sql.Identifier(alias), sql.Identifier(f))
-        side, key = f.split(".", 1)
-        return sql.SQL("({}.{} ->> {})").format(sql.Identifier(alias), sql.Identifier(side), sql.Literal(key))
+        parts = nested_field_parts(f)
+        if parts is None:
+            raise ValueError(f"field is not a permitted catalog path: {f!r}")
+        side, keys = parts
+        expr = sql.SQL("{}.{} ").format(sql.Identifier(alias), sql.Identifier(side))
+        for key in keys[:-1]:
+            expr += sql.SQL("-> {}").format(sql.Literal(key))
+        return sql.SQL("({} ->> {})").format(expr, sql.Literal(keys[-1]))
 
     def field(self, f: str, number: bool = False, alias: str = "e") -> sql.Composable:
         """A catalog field, mapped per store (e.g. cosmetics ep.order_id -> session_id)."""
         mapped = {s: self.cat.mapped_field(f, s) for s in self.av.sources}
         if len(set(mapped.values())) == 1:
             expr = self.raw_field(next(iter(mapped.values())), alias)
-            numeric_column = next(iter(mapped.values())) in COLUMNS
+            numeric_column = next(iter(mapped.values())) in COLUMNS and COLUMNS[next(iter(mapped.values()))] == "number"
         else:
             whens = sql.SQL(" ").join(
                 sql.SQL("WHEN {} THEN ({})::text").format(sql.Literal(s), self.raw_field(m, alias)) for s, m in mapped.items())

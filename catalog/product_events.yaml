@@ -211,6 +211,7 @@ metrics:
 policy:
   min_sample: 30
   ask_when_missing: []
+  max_sources: 1
 data_notes:
 - scope: One e-commerce event dataset per question; no cross-store totals, currencies,
     orders, arrays or causal claims.
