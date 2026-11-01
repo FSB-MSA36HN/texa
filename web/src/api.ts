@@ -24,6 +24,10 @@ export type Turn = {
   row_count?: number; partial?: boolean; warnings?: string[]; notes?: string[]; variants?: Choice[]
   period?: Record<string, { start: string; end: string; data_start: string; data_end: string }>
   currency_of?: Record<string, string>; sources?: string[]
+  context?: { relation: string; references: string[]; questions?: string[] }
+  dataset_version?: string
+  based_on?: string
+  metric_definitions?: { id: string; label: string; description: string }[]
   error?: { code: string; message: string; retryable: boolean } | null
 }
 export type ConversationSummary = { id: string; title: string; updated_at: string }

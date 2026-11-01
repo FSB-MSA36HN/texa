@@ -205,6 +205,7 @@ function Answer({ turn, boot, onAsk, onRefresh, explainMarks, steps, busy }: Pro
   const notes = [...(turn.notes ?? []), ...(turn.warnings ?? [])].filter((w) => !(empty && w.startsWith('No rows match')))
   return (
     <div className="space-y-5">
+      <QueryReading turn={turn} boot={boot} />
       <Insight turn={turn} explainMarks={explainMarks} />
       {notes.length > 0 && (
         <ul className="space-y-1.5 border-l-2 border-amber-400 pl-4 text-sm leading-relaxed text-ink/80">
@@ -216,6 +217,24 @@ function Answer({ turn, boot, onAsk, onRefresh, explainMarks, steps, busy }: Pro
       <Footer turn={turn} steps={steps} onRetry={() => api.retry(turn.id).then(() => onRefresh(turn.id))} busy={busy}
         details={<Computed turn={turn} boot={boot} onRefresh={onRefresh} />} />
     </div>
+  )
+}
+
+/** Business interpretation stays visible without opening technical SQL details. */
+function QueryReading({ turn, boot }: { turn: Turn; boot: Bootstrap }) {
+  if (!turn.query_spec) return null
+  const chips = readingChips(turn.query_spec, boot, turn.period)
+  const inherited = turn.context?.relation === 'followup'
+  return (
+    <aside aria-label="Cách hiểu câu hỏi" className="space-y-2 rounded-xl border border-rule bg-wash/40 px-3 py-2.5 text-sm">
+      <p className="font-medium">Phạm vi tính</p>
+      <div className="flex flex-wrap gap-1.5">
+        {chips.filter(Boolean).map((chip, i) => <span key={i} className="rounded-md bg-sheet px-2 py-0.5 text-ink/80">{chip}</span>)}
+      </div>
+      {turn.metric_definitions?.map((metric) => <p key={metric.id} className="text-xs leading-relaxed text-lead">{metric.label}: {metric.description}</p>)}
+      {inherited && <p className="text-xs text-lead">Tiếp nối: {turn.context?.questions?.slice(-1)[0] ?? 'kết quả trước đã chọn'}</p>}
+      {turn.dataset_version && <p className="text-xs text-lead">Phiên bản dữ liệu: {turn.dataset_version}</p>}
+    </aside>
   )
 }
 

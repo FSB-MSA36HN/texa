@@ -62,6 +62,7 @@ def bootstrap():
     sources = catalog.load_sources(max_age=0)
     try:
         cat = catalog.published()
+        sources = catalog.scoped_sources(cat, sources)
         cat_info = {
             "version": cat.contract_version,
             "metrics": [{"id": m.id, "label": m.label, "description": m.description, "unit": m.unit, "synonyms": m.synonyms}
