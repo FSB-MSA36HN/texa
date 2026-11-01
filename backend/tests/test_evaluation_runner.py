@@ -49,3 +49,23 @@ def test_direct_dialogue_empty_sql_cannot_pass_as_answer(runner, monkeypatch):
         assert record["dialogue_success"] is False
     finally:
         output.unlink(missing_ok=True)
+
+
+def test_dialogue_gold_requires_independent_reference_rows(runner, monkeypatch):
+    records = []
+    monkeypatch.setattr(runner, 'write_result', lambda _, row: records.append(row))
+    monkeypatch.setattr(runner, 'score_expected_result', lambda *a: {'status': 'ok', 'result_correct': True})
+    dialogues = [{'id': 'missing', 'turns': [
+        {'action': 'conversation'}, {'action': 'answer', 'gold_sql': 'SELECT 1'}]}]
+    args = SimpleNamespace()
+    assert runner.validate_dialogue_gold(args, 'unused', dialogues, Path('unused')) == 1
+    assert records[-1]['answer_turns'] == 1
+    assert records[-1]['actions_validated'] is False
+    dialogues[0]['turns'][1]['expected_result'] = {'columns': ['value'], 'rows': [[1]]}
+    assert runner.validate_dialogue_gold(args, 'unused', dialogues, Path('unused')) == 0
+
+
+def test_dataset_directory_selects_manifest_as_well_as_cases(runner):
+    args = SimpleNamespace(dataset_dir=str(runner.ROOT / 'data/benchmark/v2'))
+    assert runner.dataset_path(args, 'manifest.yaml') == runner.ROOT / 'data/benchmark/v2/manifest.yaml'
+    assert runner.dataset_path(SimpleNamespace(), 'cases.yaml') == runner.CASES_PATH

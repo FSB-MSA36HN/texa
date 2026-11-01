@@ -42,12 +42,37 @@ def prompt_for(case: dict, manifest: dict) -> str:
             "\nQuestion:\n" + case["question"])
 
 
+def dataset_path(args, name: str) -> Path:
+    directory = getattr(args, "dataset_dir", None)
+    return (_project_path(directory) if directory else MANIFEST_PATH.parent) / name
+
+
+def validate_dialogue_gold(args, dsn: str, dialogues: list[dict], output: Path) -> int:
+    """Validate SQL/reference tables only; this does not score memory or actions."""
+    results = []
+    for dialogue in dialogues:
+        for number, turn in enumerate(dialogue["turns"], 1):
+            if turn["action"] not in {"answer", "clarification_answer"}:
+                continue
+            if not turn.get("gold_sql") or "expected_result" not in turn:
+                result = {"status": "missing_gold", "result_correct": False}
+            else:
+                result = score_expected_result(dsn, turn["gold_sql"],
+                    turn["expected_result"] | {"ordered": turn.get("ordered", False)})
+            result.update(dialogue_id=dialogue["id"], turn=number, method="gold")
+            results.append(result)
+            write_result(output, result)
+    passed = sum(bool(r["result_correct"]) for r in results)
+    write_result(output, {"type": "dialogue_gold_summary", "answer_turns": len(results), "correct": passed,
+                          "actions_validated": False})
+    print(f"dialogue gold SQL/reference tables: {passed}/{len(results)}; raw: {output}")
+    return int(not results or passed != len(results))
+
+
 def run(args) -> int:
     if args.compare_results:
         compare_results_files(*args.compare_results)
         return 0
-    if args.dialogues and args.method == "gold":
-        raise SystemExit("--method gold validates single-turn SQL/result pairs; use a provider method for dialogue rollout.")
     dsn = os.environ.get("TEXA_BENCHMARK_DSN")
     if not dsn:
         raise SystemExit("Set TEXA_BENCHMARK_DSN to the isolated texa_benchmark database (read-only role).")
@@ -56,12 +81,12 @@ def run(args) -> int:
     if args.method == "texa" and not args.memory_mode:
         os.environ["TEXA_MEMORY_MODE"] = "structured"
     args.engine = server_metadata(dsn)
-    manifest = yaml.safe_load(MANIFEST_PATH.read_text(encoding="utf-8"))
+    manifest = yaml.safe_load(dataset_path(args, "manifest.yaml").read_text(encoding="utf-8"))
     if args.memory_mode:
         os.environ["TEXA_MEMORY_MODE"] = args.memory_mode
     if args.dialogues:
         return run_dialogues(args, dsn)
-    cases = load_cases(_project_path(args.cases) if args.cases else CASES_PATH)
+    cases = load_cases(_project_path(args.cases) if args.cases else dataset_path(args, "cases.yaml"))
     validate_split_is_family_disjoint(cases)
     cases = [c for c in cases if c["split"] == args.split]
     if not cases:
@@ -268,13 +293,15 @@ def run_dialogues(args, dsn: str) -> int:
     import yaml
     from texa import answer, db
 
-    dialogues_path = _project_path(args.dialogues) if isinstance(args.dialogues, str) else ROOT / "data" / "benchmark" / "dialogues.yaml"
+    dialogues_path = _project_path(args.dialogues) if isinstance(args.dialogues, str) else dataset_path(args, "dialogues.yaml")
     dialogues = yaml.safe_load(dialogues_path.read_text(encoding="utf-8"))
     if args.split:
         dialogues = [d for d in dialogues if d["split"] == args.split]
     if not dialogues:
         raise SystemExit("No dialogue scenarios match the selected split.")
     output = _project_path(args.output)
+    if args.method == "gold":
+        return validate_dialogue_gold(args, dsn, dialogues, output)
     if args.method == "direct":
         return run_direct_dialogues(args, dsn, dialogues, output)
     successes = 0
@@ -390,7 +417,7 @@ def run_direct_dialogues(args, dsn: str, dialogues: list[dict], output: Path) ->
     """B1 baseline: raw last-six user/assistant messages, no structured state."""
     import yaml
 
-    manifest = yaml.safe_load(MANIFEST_PATH.read_text(encoding="utf-8"))
+    manifest = yaml.safe_load(dataset_path(args, "manifest.yaml").read_text(encoding="utf-8"))
     passed = 0
     usage_by_dialogue = []
     for dialogue in dialogues:
@@ -482,6 +509,7 @@ def main() -> None:
     parser.add_argument("--model")
     parser.add_argument("--method", choices=("direct", "texa", "gold"), default="direct",
                         help="direct is raw LLM-to-SQL; texa runs the current system; gold validates frozen SQL/results.")
+    parser.add_argument("--dataset-dir", help="Directory containing manifest/cases/dialogues YAML (default: pilot)")
     parser.add_argument("--cases", help="Optional case YAML path")
     parser.add_argument("--output", default=str(ROOT / "backend" / "eval" / "results" / f"run-{time.time_ns()}.jsonl"))
     parser.add_argument("--dialogues", nargs="?", const=True, default=False,
