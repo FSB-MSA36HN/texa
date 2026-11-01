@@ -1,6 +1,10 @@
 # Texa
 
-Texa là một hệ thống chat Text-to-SQL chạy trên semantic catalog, dựng lại theo cách DIego của Inwave hoạt động. Bạn đặt câu hỏi bằng ngôn ngữ tự nhiên; model chỉ chọn id trong catalog để tạo **QuerySpec**. Sau đó Python validate spec, compile ra SQL có tham số, chạy SQL bằng role chỉ đọc và tính sẵn các con số (facts). Cuối cùng model viết nhận xét, nhưng mọi con số trong đó đều phải trỏ tới placeholder `[[fact_id]]` và server sẽ thay giá trị thật vào.
+Texa là trợ lý hỏi đáp dữ liệu hội thoại dành cho **PM/PO của một sản phẩm thương mại điện tử**. Người dùng hỏi về hành vi và kết quả sản phẩm; LLM chọn định nghĩa trong semantic catalog để tạo QuerySpec, Python validate và compile SQL PostgreSQL, sau đó câu trả lời sử dụng facts từ dữ liệu.
+
+Scope hiện tại đang được triển khai theo [kế hoạch refinement](PLAN_REFINEMENT_EVENT_CONVERSATIONAL_QA.md): một dataset event mỗi câu hỏi, 8 metric, nested object có giới hạn; memory có cấu trúc và đánh giá kết quả thực thi. Không phải nền tảng tích hợp mọi database hoặc báo cáo tài chính. PM/PO là persona giả thuyết cần kiểm chứng bằng task walkthrough; quản lý là nhóm người dùng phụ.
+
+Catalog bản sản phẩm là `catalog/product_events.yaml`; `catalog/ecommerce.yaml` giữ để chạy regression cũ. Chỉ catalog được publish mới có hiệu lực trong DB đã tồn tại. Những giới hạn và lệnh kiểm tra cập nhật nằm trong [scope contract](docs/PRODUCT_SCOPE.md).
 
 Thiết kế chi tiết nằm ở [PLAN.md](PLAN.md).
 

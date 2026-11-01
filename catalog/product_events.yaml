@@ -1,0 +1,216 @@
+# Product analytics scope. Legacy catalog remains ecommerce.yaml.
+version: 1
+table: analytics.event_activity
+allowed_sources:
+- cosmetics_shop
+- event_benchmark
+event_roles:
+- id: any_event
+  label: Any tracked event
+  description: Logged events in the selected e-commerce product. Active users are
+    observed users, not all registered users.
+  events:
+  - view
+  - cart
+  - remove_from_cart
+  - purchase
+- id: product_view
+  label: Product view
+  description: A product page was viewed.
+  events:
+  - view
+- id: purchase
+  label: Item purchased
+  description: One purchased item line. Not an order and not a session.
+  alternatives: true
+  events:
+  - purchase
+dimensions:
+- id: event_date
+  label: Day
+  kind: time
+  field: event_date
+  grain: day
+  synonyms:
+  - date
+  - daily
+  - by day
+  - ngày
+- id: event_week
+  label: Week
+  kind: time
+  field: event_date
+  grain: week
+  synonyms:
+  - weekly
+  - by week
+  - tuần
+- id: event_month
+  label: Month
+  kind: time
+  field: event_date
+  grain: month
+  synonyms:
+  - monthly
+  - by month
+  - tháng
+- id: source
+  label: Store
+  description: Which data source (store) the event came from.
+  kind: source
+  synonyms:
+  - shop
+  - store
+  - data source
+  - nguồn
+  - cửa hàng
+- id: event_name
+  label: Event name
+  description: Raw event name as the source logs it.
+  field: event_name
+  synonyms:
+  - event
+  - event type
+  - sự kiện
+- id: item_category
+  label: Product category
+  description: Top-level product category.
+  field: item_category
+  synonyms:
+  - category
+  - danh mục
+  - ngành hàng
+- id: item_brand
+  label: Brand
+  field: item_brand
+  synonyms:
+  - brand
+  - thương hiệu
+  - nhãn hàng
+- id: device_type
+  label: Thiết bị
+  description: Scalar device type from a nested object; missing or JSON null groups
+    as SQL NULL.
+  field: ep.device.type
+  synonyms:
+  - thiết bị
+  - device
+  - device type
+- id: campaign_channel
+  label: Kênh chiến dịch
+  description: Nested campaign channel; synthetic benchmark only when the real source
+    does not track it.
+  field: ep.campaign.channel
+  synonyms:
+  - kênh
+  - campaign channel
+  - channel
+metrics:
+- id: users
+  label: Users
+  description: Distinct users with any event in the period.
+  synonyms:
+  - active users
+  - customers
+  - người dùng
+  - khách hàng
+  type: simple
+  unit: count
+  simple:
+    aggregation: count_users
+    event_role: any_event
+- id: events
+  label: Events
+  description: Number of logged events of any kind.
+  synonyms:
+  - event count
+  - số sự kiện
+  type: simple
+  unit: count
+  simple:
+    aggregation: count_events
+    event_role: any_event
+- id: sessions
+  label: Sessions
+  description: Distinct sessions (cosmetics shop only).
+  synonyms:
+  - visits
+  - phiên
+  type: simple
+  unit: count
+  simple:
+    aggregation: count_distinct
+    event_role: any_event
+    field: session_id
+- id: viewers
+  label: Users who viewed
+  description: Distinct users with a product view.
+  synonyms:
+  - viewers
+  type: simple
+  unit: count
+  simple:
+    aggregation: count_users
+    event_role: product_view
+- id: purchases
+  label: Items purchased
+  description: Purchased item lines (one per item).
+  synonyms:
+  - purchases
+  - items sold
+  - sản phẩm bán ra
+  - lượt mua
+  type: simple
+  unit: count
+  simple:
+    aggregation: count_events
+    event_role: purchase
+- id: buyers
+  label: Buyers
+  description: Distinct users with at least one purchase.
+  synonyms:
+  - paying users
+  - payers
+  - purchasers
+  - người mua
+  type: simple
+  unit: count
+  simple:
+    aggregation: count_users
+    event_role: purchase
+- id: buyer_conversion_rate
+  label: Buyer conversion rate
+  description: Distinct buyers / distinct active users in the selected period. This
+    is a period-level buyer/user ratio, not an ordered funnel conversion.
+  synonyms:
+  - conversion rate
+  - CVR
+  - tỉ lệ chuyển đổi
+  when_to_use: Conversion of people into buyers.
+  type: ratio
+  unit: percent
+  ratio:
+    numerator: buyers
+    denominator: users
+- id: revenue
+  label: Revenue
+  description: Sum of revenue on purchase item events, in the selected dataset currency;
+    excludes tax, freight and refunds unless recorded. Not accounting revenue.
+  synonyms:
+  - sales
+  - GMV
+  - doanh thu
+  - doanh số
+  when_to_use: Money from items sold.
+  type: simple
+  unit: currency
+  simple:
+    aggregation: sum
+    event_role: purchase
+    field: revenue
+policy:
+  min_sample: 30
+  ask_when_missing: []
+data_notes:
+- scope: One e-commerce event dataset per question; no cross-store totals, currencies,
+    orders, arrays or causal claims.

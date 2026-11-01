@@ -1,3 +1,5 @@
+> **Tài liệu kiến trúc cũ, giữ để tham chiếu.** Scope triển khai hiện hành nằm trong [kế hoạch refinement](PLAN_REFINEMENT_EVENT_CONVERSATIONAL_QA.md) và [product contract](docs/PRODUCT_SCOPE.md). Các nguồn tham chiếu lịch sử bên dưới không phải phụ thuộc và không được truy cập trong đợt triển khai này.
+
 # Texa: hệ thống Text-to-SQL dùng semantic catalog (học theo DIego)
 
 > Khi được duyệt, file này được copy thành `/Users/thanhhigk/Study/NLP/Final/PLAN.md` (bước đầu tiên của M0).
