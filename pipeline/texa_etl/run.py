@@ -12,6 +12,7 @@ import zipfile
 from pathlib import Path
 
 import psycopg
+from psycopg import sql
 
 DSN = os.environ.get("TEXA_DW_DSN", "postgresql://texa:texa@localhost:15432/texa")
 LANDING = Path(os.environ.get("TEXA_LANDING_DIR", Path(__file__).resolve().parents[2] / "data" / "landing"))
@@ -180,6 +181,55 @@ def quality_checks(source_id):
         raise RuntimeError(f"{source_id} quality checks failed:\n" + "\n".join(failures))
 
 
+_JSON_KEY = re.compile(r"^[A-Za-z0-9_]+$")
+
+
+def nested_scalar_paths(rows, max_depth=2):
+    """Return bounded dotted paths to scalar JSON values; arrays/objects are never leaves."""
+    paths = set()
+
+    def visit(value, prefix, depth):
+        if not isinstance(value, dict):
+            return
+        for key, child in value.items():
+            if not isinstance(key, str) or not _JSON_KEY.fullmatch(key):
+                continue
+            path = (*prefix, key)
+            if len(path) > max_depth:
+                continue
+            if isinstance(child, dict):
+                if len(path) < max_depth:
+                    visit(child, path, depth + 1)
+            elif isinstance(child, list) or child is None:
+                continue
+            elif isinstance(child, (str, int, float, bool)):
+                paths.add(".".join(path))
+
+    for row in rows:
+        visit(row, (), 0)
+    return sorted(paths)
+
+
+def _nested_path_expr(side, dotted_path):
+    """Create JSON extraction from a validated dotted path, with keys bound as SQL literals."""
+    keys = dotted_path.split(".")
+    if side not in {"ep", "up"} or not 1 <= len(keys) <= 2 or any(not _JSON_KEY.fullmatch(k) for k in keys):
+        raise ValueError("invalid nested JSON path")
+    if len(keys) == 1:
+        return sql.SQL("e.{} ->> {}").format(sql.Identifier(side), sql.Literal(keys[0]))
+    return sql.SQL("e.{} -> {} ->> {}").format(sql.Identifier(side), sql.Literal(keys[0]), sql.Literal(keys[1]))
+
+
+def _high_cardinality(field):
+    """Recognize identifier leaves even when nested under a source-specific object."""
+    if field in HIGH_CARDINALITY:
+        return True
+    if field.startswith(("ep.", "up.")):
+        leaf = field.rsplit(".", 1)[-1]
+        return any(item.rsplit(".", 1)[-1] == leaf for item in HIGH_CARDINALITY)
+    return False
+
+
 def refresh_metadata(source_id):
     src = SOURCES[source_id]
     with connect() as conn, conn.cursor() as cur:
@@ -208,6 +258,35 @@ def refresh_metadata(source_id):
                 f"SELECT %(s)s, '{kind}', '{field}', v.* FROM ({select}) v",
                 {"s": source_id},
             )
+        # A root key is a scalar field only when its values are scalar consistently.
+        # Parent objects and arrays remain traversal containers, not selectable fields.
+        cur.execute(
+            "DELETE FROM analytics.vocabulary v USING analytics.event_activity e "
+            "WHERE v.source_id=%s AND e.source_id=v.source_id AND v.kind IN ('ep_key','up_key') "
+            "AND ((v.kind='ep_key' AND e.ep ? v.value AND jsonb_typeof(e.ep -> v.value) IN ('object','array')) "
+            "OR (v.kind='up_key' AND e.up ? v.value AND jsonb_typeof(e.up -> v.value) IN ('object','array'))) ",
+            (source_id,),
+        )
+        cur.execute("DELETE FROM analytics.vocabulary WHERE source_id=%s AND kind IN ('ep_key','up_key') "
+                    "AND value !~ '^[A-Za-z0-9_]+$'", (source_id,))
+        # Discover nested objects from the bounded event sample. Key paths are metadata
+        # only; values are later profiled through bound JSON keys, never interpolated SQL.
+        cur.execute("SELECT ep, up FROM analytics.event_activity WHERE source_id = %s LIMIT 10000", (source_id,))
+        samples = cur.fetchall()
+        for side, kind in (("ep", "ep_key"), ("up", "up_key")):
+            paths = [p for p in nested_scalar_paths((row[0 if side == "ep" else 1] or {}) for row in samples)
+                     if len(p.split(".")) == 2]
+            for path in paths:
+                expr = _nested_path_expr(side, path)
+                query = sql.SQL(
+                    "INSERT INTO analytics.vocabulary (source_id, kind, field, value, event_count, last_seen) "
+                    "SELECT %s, %s, %s, %s, count(*), max(event_date) "
+                    "FROM analytics.event_activity e WHERE source_id = %s AND {} IS NOT NULL "
+                    "ON CONFLICT (source_id, kind, field, value) DO UPDATE SET "
+                    "event_count = EXCLUDED.event_count, last_seen = EXCLUDED.last_seen"
+                ).format(expr)
+                cur.execute(
+                    query, (source_id, kind, side, path, source_id))
         # Optional top-level columns a source actually fills (cosmetics has no geography, olist no brand).
         cur.execute(
             "INSERT INTO analytics.vocabulary (source_id, kind, field, value, event_count, last_seen) "
@@ -218,23 +297,27 @@ def refresh_metadata(source_id):
             + ") t WHERE n > 0",
             {"s": source_id},
         )
-        # Values of low-cardinality fields: top-level columns plus every ep/up key not marked high-cardinality.
+        # Values of low-cardinality fields: top-level columns plus discovered ep/up paths.
         cur.execute("SELECT field || '.' || value FROM analytics.vocabulary WHERE source_id = %s AND kind IN ('ep_key','up_key')", (source_id,))
         fields = VALUE_FIELDS + [r[0] for r in cur.fetchall()]
         for field in fields:
-            if field in HIGH_CARDINALITY:
+            if _high_cardinality(field):
                 continue
-            expr = f"({field.split('.')[0]} ->> '{field.split('.', 1)[1]}')" if "." in field else field
+            if "." in field:
+                side, path = field.split(".", 1)
+                expr = _nested_path_expr(side, path)
+            else:
+                expr = sql.SQL("{} ").format(sql.Identifier(field))
             cur.execute(
-                f"""
+                sql.SQL("""
                 WITH v AS (
                   SELECT {expr} AS value, count(*) AS n, max(event_date) AS last_seen
-                  FROM analytics.event_activity WHERE source_id = %(s)s AND {expr} IS NOT NULL GROUP BY 1
+                  FROM analytics.event_activity e WHERE source_id = %(s)s AND {expr} IS NOT NULL GROUP BY 1
                 )
                 INSERT INTO analytics.vocabulary (source_id, kind, field, value, event_count, last_seen)
                 SELECT %(s)s, 'value', %(f)s, value, n, last_seen FROM v
-                WHERE (SELECT count(*) FROM v) <= {MAX_VALUES}
-                """,
+                WHERE (SELECT count(*) FROM v) <= {max_values}
+                """).format(expr=expr, max_values=sql.Literal(MAX_VALUES)),
                 {"s": source_id, "f": field},
             )
         cur.execute("SELECT kind, count(*) FROM analytics.vocabulary WHERE source_id = %s GROUP BY kind ORDER BY kind", (source_id,))

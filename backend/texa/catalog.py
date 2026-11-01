@@ -428,9 +428,10 @@ def fingerprint(raw: dict) -> str:
 
 
 def check_against_sources(cat: Catalog, sources: dict[str, Source]) -> list[str]:
-    """Events no source logs are almost always typos; refuse to publish them."""
+    """Require each role to be observed, not every optional event alias in a snapshot."""
+    sources = scoped_sources(cat, sources)
     logged = set().union(*(s.events for s in sources.values())) if sources else set()
-    return [f"event role {r.id}: no source logs {e!r}" for r in cat.event_roles for e in r.events if e not in logged]
+    return [f"event role {r.id}: no in-scope source logs any of {r.events!r}" for r in cat.event_roles if not logged.intersection(r.events)]
 
 
 def publish(path=db.CATALOG_PATH) -> int:

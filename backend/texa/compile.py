@@ -70,17 +70,21 @@ class _Builder:
         return expr
 
     def condition(self, c: Condition) -> sql.Composable:
-        number = c.operator in (">", ">=", "<", "<=")
+        number = c.operator in (">", ">=", "<", "<=") or any(
+            d.field == c.field and d.value_type == "number" for d in self.cat.dimensions)
+        if c.operator == "CONTAINS":
+            number = False
         x = self.field(c.field, number=number)
+        values = [float(v) for v in c.values] if number else c.values
         if c.operator == "IN":
-            return sql.SQL("{} = ANY({})").format(x, self.bind(c.values))
+            return sql.SQL("{} = ANY({})").format(x, self.bind(values))
         if c.operator == "NOT IN":
-            return sql.SQL("({} IS NULL OR {} <> ALL({}))").format(x, x, self.bind(c.values))
+            return sql.SQL("({} IS NULL OR {} <> ALL({}))").format(x, x, self.bind(values))
         if c.operator == "CONTAINS":
             return sql.SQL("strpos(lower({}::text), lower({})) > 0").format(x, self.bind(c.values[0]))
         if c.operator == "!=":
-            return sql.SQL("{} IS DISTINCT FROM {}").format(x, self.bind(c.values[0]))
-        value = float(c.values[0]) if number else c.values[0]
+            return sql.SQL("{} IS DISTINCT FROM {}").format(x, self.bind(values[0]))
+        value = values[0]
         return sql.SQL("{} {} {}").format(x, sql.SQL(c.operator), self.bind(value))
 
     def role_filter(self, role: EventRole) -> sql.Composable:
