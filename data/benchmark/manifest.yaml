@@ -1,6 +1,5 @@
 name: texa-product-events-pilot
 version: 1
-seed: 731904
 engine: server version is captured with each run; local pilot PostgreSQL 16.2 (container
   target is 17)
 source_id: event_benchmark
@@ -81,3 +80,5 @@ limitations: 'This is a deterministic synthetic pilot, not an external benchmark
   only.
 
   '
+provenance: Hand-authored deterministic SQL fixture for this project; no random generator
+  or external dataset is used in the pilot.

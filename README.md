@@ -9,14 +9,20 @@ Catalog bản sản phẩm là `catalog/product_events.yaml`; `catalog/ecommerce
 Thiết kế chi tiết nằm ở [PLAN.md](PLAN.md).
 
 ```
-data/landing  ──Airflow ETL──►  analytics.event_activity (1 bảng thống nhất, 2 nguồn)
-                                analytics.source_registry / vocabulary
-catalog/ecommerce.yaml ──publish──► app.catalog_versions
-web (React)  ◄──SSE──  api (FastAPI): context → interpret (LLM) → clarify → validate → check data
-                                       → compile SQL → run (read-only) → facts → insight (LLM)
+event snapshot ──metadata refresh──► analytics.event_activity (một nguồn mỗi câu hỏi)
+                                    source_registry / nested vocabulary
+catalog/product_events.yaml ──publish──► app.catalog_versions
+web (React) ◄──SSE── api: structured memory → interpret → clarify → validate
+                         → PostgreSQL compiler → read-only run → facts → insight
 ```
 
+## Bản triển khai hiện tại
+
+Đã bổ sung structured memory, hỗ trợ nested object hai key, source scope và thông tin cách tính trên giao diện. [Trạng thái triển khai và kiểm chứng](docs/IMPLEMENTATION_STATUS.md) phân biệt rõ tính năng đã có với thí nghiệm còn phải chạy. [Benchmark pilot](data/benchmark/README.md) có SQL gold, direct LLM baseline và hội thoại. Chưa có điểm độ chính xác model thật.
+
 ## Chạy nhanh (dev)
+
+Các lệnh FX/Olist bên dưới là luồng dữ liệu/regression cũ. Scope sản phẩm dùng Cosmetics hoặc benchmark riêng; không cần nạp Olist để dùng catalog sản phẩm.
 
 TEXA dùng cổng riêng, tách khỏi Inwave và DI Platform:
 
@@ -67,7 +73,7 @@ Không cần Kaggle API key: bước `download` tự tải dataset public. Nếu
 **2. Publish catalog.** Lệnh `coverage` cho biết mỗi nguồn trả lời được những metric nào.
 
 ```bash
-cd backend && uv sync && uv run texa catalog publish && uv run texa catalog coverage
+cd backend && uv sync && uv run texa catalog publish ../catalog/product_events.yaml && uv run texa catalog coverage
 ```
 
 **3. Chạy API và web.**
