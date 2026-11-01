@@ -1,5 +1,7 @@
 # Synthetic event benchmark pilot
 
+The expanded [v2 dataset](v2/README.md) contains 104 single-turn cases, 12 dialogues and a richer 96-event fixture. Select it explicitly with `--dataset-dir ../data/benchmark/v2` from `backend`; default commands below preserve pilot regression behavior.
+
 This pilot contains 24 single-turn questions (12 dev, 12 test), six annotated dialogue scenarios, and a deterministic 12-row event fixture. It exercises evaluator behavior and elementary event/nested-path distinctions; it is not evidence of broad product accuracy or a substitute for a larger held-out evaluation.
 
 The fixture uses the project's fixed `analytics.event_activity` table and one `event_benchmark` partition. Load it only into an isolated database named `texa_benchmark` after applying the normal project database bootstrap:

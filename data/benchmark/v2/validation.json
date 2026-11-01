@@ -1,0 +1,23 @@
+{
+  "cases": 104,
+  "splits": {
+    "dev": 41,
+    "test": 63
+  },
+  "families": 11,
+  "dialogues": 12,
+  "answer_turns": 30,
+  "actions": {
+    "answer": 29,
+    "clarify": 1,
+    "clarification_answer": 1,
+    "conversation": 8,
+    "refuse": 1
+  },
+  "sha256": {
+    "fixture.sql": "081f6675aaa1d203d2ec96452b2a7ca1a2e13a856e270cabcaebfa63a96ae5e3",
+    "cases.yaml": "35bf21538f53c202c105e76b55ed6be2a708c7387d8df9ebf03771632c6edc7e",
+    "dialogues.yaml": "9e537555898ecd2e7de7ced7348537db626174d6b3d19e3a7cf7bc9debf84754",
+    "manifest.yaml": "ecd1ea667d8e171d77445a15f2195502b4cf6c87c7a5dcb30cade61856c247da"
+  }
+}

@@ -1,0 +1,47 @@
+name: texa-product-events-v2
+version: 2
+engine: PostgreSQL 16+; evaluator records the actual version per run
+source_id: event_benchmark
+timezone: UTC
+date_semantics: event_date UTC; explicit date ranges are inclusive and translated to BETWEEN
+grain: one row in analytics.event_activity is one product event
+fixture_rows: 96
+schema: >-
+  analytics.event_activity: event_id text, source_id text, event_ts timestamptz, event_date date,
+  event_name text, user_id text, session_id text, item_category text, revenue numeric, ep jsonb, up jsonb.
+  Filter every query to source_id='event_benchmark'. Nested scalar paths: ep.device.type (text),
+  ep.campaign.channel (text), ep.product.category (text), ep.checkout.amount (numeric text).
+  Missing keys and explicit JSON null produce SQL NULL. Arrays are out of scope.
+metric_definitions: >-
+  events=count of event rows; users=distinct user_id; sessions=distinct session_id;
+  viewers=distinct users with a view event; buyers=distinct users with a purchase event;
+  purchases=count of purchase event rows; revenue=sum(revenue) on purchase events, empty sum is 0;
+  buyer_conversion_rate=buyers/users, with zero denominator NULL. Purchases are not assumed to be orders.
+  Breakdown metrics are conditional aggregates so a dimension group may have zero qualifying events.
+  Group values are those observed after query filters. Grouping counts event rows unless asked for distinct users.
+output_aliases:
+  metrics: {events: events, users: users, sessions: sessions, viewers: viewers, buyers: buyers,
+            purchases: purchases, revenue: revenue, buyer_conversion_rate: buyer_conversion_rate}
+  dimensions: {event_date: event_date, device_type: device_type, campaign_channel: campaign_channel,
+               item_category: item_category}
+direct_baseline: Same schema, metrics and aliases; direct LLM to SQL only, without resolver/linker/correction context.
+interaction_policy: >-
+  Both system and direct baseline use the same bounded interaction contract: eight catalog metrics,
+  one selected source, nested scalar fields only, no arrays, joins, forecasts, or arbitrary measures.
+  A missing reporting period requires clarification of time_range; explicit all-time scope is answerable.
+  An ambiguous reference requires a reference-turn clarification; irrelevant social text receives a brief
+  conversational response and should not replace the active analytical topic.
+result_policy:
+  row_order: unordered unless a case explicitly requests ranking
+  numeric_absolute_tolerance: 1.0e-06
+  numeric_relative_tolerance: 1.0e-06
+split_policy: >-
+  Single-turn dev/test are family-disjoint. Test holds out query-template families, not all primitives,
+  business meanings, or dimensions. Dialogues are stratified diagnostics and may reuse query primitives.
+limitations: >-
+  Deterministic synthetic data authored for this product; not representative of production customers or an external benchmark.
+  Results measure correctness only within this bounded schema and scope. No live-model accuracy is implied by gold validation.
+provenance: >-
+  Frozen deterministic generator in generate.py. Gold SQL is generated from declarative metric/query specifications;
+  expected_result tables are computed separately from source event records using Python reference aggregation.
+case_counts: {single_turn_total: 104, dev: 41, test: 63, dialogues: 12, dialogue_longest_turns: 10}

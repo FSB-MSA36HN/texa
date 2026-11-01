@@ -1,0 +1,2159 @@
+- id: v2_dev_window_events
+  split: dev
+  family: dev_date_window
+  question: Cho biết lượt sự kiện từ ngày 29/1 đến hết ngày 2/2/2025.
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date BETWEEN '2025-01-29' AND '2025-02-02'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 68
+  in_scope: true
+  intent: dev_date_window
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_filter_events_device_type
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết lượt sự kiện khi loại thiết bị là desktop.
+  gold_sql: 'SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id=''event_benchmark''
+    AND ep #>> ''{device,type}''=''desktop'''
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 25
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_events_campaign_channel
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết lượt sự kiện khi kênh tiếp thị là email.
+  gold_sql: 'SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id=''event_benchmark''
+    AND ep #>> ''{campaign,channel}''=''email'''
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 17
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_events_item_category
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết lượt sự kiện khi danh mục sản phẩm là home.
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    item_category='home'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 18
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_window_users
+  split: dev
+  family: dev_date_window
+  question: Cho biết người dùng riêng biệt từ ngày 29/1 đến hết ngày 2/2/2025.
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND event_date BETWEEN '2025-01-29' AND '2025-02-02'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  in_scope: true
+  intent: dev_date_window
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_filter_users_device_type
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết người dùng riêng biệt khi loại thiết bị là tablet.
+  gold_sql: 'SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id=''event_benchmark''
+    AND ep #>> ''{device,type}''=''tablet'''
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 8
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_users_campaign_channel
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết người dùng riêng biệt khi kênh tiếp thị là referral.
+  gold_sql: 'SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id=''event_benchmark''
+    AND ep #>> ''{campaign,channel}''=''referral'''
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 13
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_users_item_category
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết người dùng riêng biệt khi danh mục sản phẩm là clearance.
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND item_category='clearance'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 1
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_window_sessions
+  split: dev
+  family: dev_date_window
+  question: Cho biết phiên truy cập từ ngày 29/1 đến hết ngày 2/2/2025.
+  gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND event_date BETWEEN '2025-01-29' AND '2025-02-02'
+  expected_result:
+    columns:
+    - sessions
+    rows:
+    - - 25
+  in_scope: true
+  intent: dev_date_window
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_filter_sessions_device_type
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết phiên truy cập khi loại thiết bị là unknown.
+  gold_sql: 'SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id=''event_benchmark''
+    AND ep #>> ''{device,type}''=''unknown'''
+  expected_result:
+    columns:
+    - sessions
+    rows:
+    - - 14
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_sessions_campaign_channel
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết phiên truy cập khi kênh tiếp thị là paid.
+  gold_sql: 'SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id=''event_benchmark''
+    AND ep #>> ''{campaign,channel}''=''paid'''
+  expected_result:
+    columns:
+    - sessions
+    rows:
+    - - 13
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_sessions_item_category
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết phiên truy cập khi danh mục sản phẩm là shoes.
+  gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND item_category='shoes'
+  expected_result:
+    columns:
+    - sessions
+    rows:
+    - - 15
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_window_viewers
+  split: dev
+  family: dev_date_window
+  question: Cho biết người đã xem từ ngày 29/1 đến hết ngày 2/2/2025.
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='view')::bigint AS viewers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date BETWEEN '2025-01-29' AND '2025-02-02'
+  expected_result:
+    columns:
+    - viewers
+    rows:
+    - - 19
+  in_scope: true
+  intent: dev_date_window
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_filter_viewers_device_type
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết người đã xem khi loại thiết bị là mobile.
+  gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''view'')::bigint AS viewers FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND ep #>> ''{device,type}''=''mobile'''
+  expected_result:
+    columns:
+    - viewers
+    rows:
+    - - 7
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_viewers_campaign_channel
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết người đã xem khi kênh tiếp thị là organic.
+  gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''view'')::bigint AS viewers FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND ep #>> ''{campaign,channel}''=''organic'''
+  expected_result:
+    columns:
+    - viewers
+    rows:
+    - - 9
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_viewers_item_category
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết người đã xem khi danh mục sản phẩm là books.
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='view')::bigint AS viewers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND item_category='books'
+  expected_result:
+    columns:
+    - viewers
+    rows:
+    - - 7
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_window_buyers
+  split: dev
+  family: dev_date_window
+  question: Cho biết người mua từ ngày 29/1 đến hết ngày 2/2/2025.
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date BETWEEN '2025-01-29' AND '2025-02-02'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 10
+  in_scope: true
+  intent: dev_date_window
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_filter_buyers_device_type
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết người mua khi loại thiết bị là desktop.
+  gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND ep #>> ''{device,type}''=''desktop'''
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 4
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_buyers_campaign_channel
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết người mua khi kênh tiếp thị là email.
+  gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND ep #>> ''{campaign,channel}''=''email'''
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 1
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_buyers_item_category
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết người mua khi danh mục sản phẩm là toys.
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND item_category='toys'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 7
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_window_purchases
+  split: dev
+  family: dev_date_window
+  question: Cho biết lượt mua từ ngày 29/1 đến hết ngày 2/2/2025.
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date BETWEEN '2025-01-29' AND '2025-02-02'
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 16
+  in_scope: true
+  intent: dev_date_window
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_filter_purchases_device_type
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết lượt mua khi loại thiết bị là tablet.
+  gold_sql: 'SELECT count(*) FILTER (WHERE event_name=''purchase'')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND ep #>> ''{device,type}''=''tablet'''
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 5
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_purchases_campaign_channel
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết lượt mua khi kênh tiếp thị là referral.
+  gold_sql: 'SELECT count(*) FILTER (WHERE event_name=''purchase'')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND ep #>> ''{campaign,channel}''=''referral'''
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 6
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_purchases_item_category
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết lượt mua khi danh mục sản phẩm là home.
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND item_category='home'
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 6
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_window_revenue
+  split: dev
+  family: dev_date_window
+  question: Cho biết doanh thu từ mua hàng từ ngày 29/1 đến hết ngày 2/2/2025.
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date BETWEEN '2025-01-29' AND '2025-02-02'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 810
+  in_scope: true
+  intent: dev_date_window
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_filter_revenue_device_type
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết doanh thu từ mua hàng khi loại thiết bị là unknown.
+  gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND ep #>> ''{device,type}''=''unknown'''
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 215
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_revenue_campaign_channel
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết doanh thu từ mua hàng khi kênh tiếp thị là paid.
+  gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND ep #>> ''{campaign,channel}''=''paid'''
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 360
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_revenue_item_category
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết doanh thu từ mua hàng khi danh mục sản phẩm là clearance.
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND item_category='clearance'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 0
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_window_buyer_conversion_rate
+  split: dev
+  family: dev_date_window
+  question: Cho biết tỷ lệ người mua trên người dùng từ ngày 29/1 đến hết ngày 2/2/2025.
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::numeric / nullif(count(DISTINCT
+    user_id),0) AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id='event_benchmark' AND event_date
+    BETWEEN '2025-01-29' AND '2025-02-02'
+  expected_result:
+    columns:
+    - buyer_conversion_rate
+    rows:
+    - - 0.5263157894736842
+  in_scope: true
+  intent: dev_date_window
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_filter_buyer_conversion_rate_device_type
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết tỷ lệ người mua trên người dùng khi loại thiết bị là mobile.
+  gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::numeric / nullif(count(DISTINCT
+    user_id),0) AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id=''event_benchmark'' AND ep
+    #>> ''{device,type}''=''mobile'''
+  expected_result:
+    columns:
+    - buyer_conversion_rate
+    rows:
+    - - 0.4166666666666667
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_buyer_conversion_rate_campaign_channel
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết tỷ lệ người mua trên người dùng khi kênh tiếp thị là organic.
+  gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::numeric / nullif(count(DISTINCT
+    user_id),0) AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id=''event_benchmark'' AND ep
+    #>> ''{campaign,channel}''=''organic'''
+  expected_result:
+    columns:
+    - buyer_conversion_rate
+    rows:
+    - - 0.2857142857142857
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - dev
+- id: v2_dev_filter_buyer_conversion_rate_item_category
+  split: dev
+  family: dev_attribute_filters
+  question: Trong toàn bộ dữ liệu, cho biết tỷ lệ người mua trên người dùng khi danh mục sản phẩm là shoes.
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::numeric / nullif(count(DISTINCT
+    user_id),0) AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id='event_benchmark' AND item_category='shoes'
+  expected_result:
+    columns:
+    - buyer_conversion_rate
+    rows:
+    - - 0.3333333333333333
+  in_scope: true
+  intent: dev_attribute_filters
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_test_break_events_device_type
+  split: test
+  family: test_breakdown_device_type
+  question: Trong toàn bộ dữ liệu, phân tích lượt sự kiện theo loại thiết bị.
+  gold_sql: 'SELECT ep #>> ''{device,type}'' AS device_type, count(*)::bigint AS events FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - device_type
+    - events
+    rows:
+    - - desktop
+      - 25
+    - - mobile
+      - 22
+    - - tablet
+      - 20
+    - - unknown
+      - 21
+    - - null
+      - 8
+  in_scope: true
+  intent: test_breakdown_device_type
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_events_campaign_channel
+  split: test
+  family: test_breakdown_campaign_channel
+  question: Trong toàn bộ dữ liệu, phân tích lượt sự kiện theo kênh tiếp thị.
+  gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(*)::bigint AS events FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - campaign_channel
+    - events
+    rows:
+    - - email
+      - 17
+    - - organic
+      - 26
+    - - paid
+      - 25
+    - - referral
+      - 22
+    - - null
+      - 6
+  in_scope: true
+  intent: test_breakdown_campaign_channel
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_events_item_category
+  split: test
+  family: test_breakdown_item_category
+  question: Trong toàn bộ dữ liệu, phân tích lượt sự kiện theo danh mục sản phẩm.
+  gold_sql: SELECT item_category, count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+    GROUP BY 1 ORDER BY 1
+  expected_result:
+    columns:
+    - item_category
+    - events
+    rows:
+    - - books
+      - 24
+    - - clearance
+      - 1
+    - - home
+      - 18
+    - - shoes
+      - 21
+    - - toys
+      - 32
+  in_scope: true
+  intent: test_breakdown_item_category
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_break_users_device_type
+  split: test
+  family: test_breakdown_device_type
+  question: Trong toàn bộ dữ liệu, phân tích người dùng riêng biệt theo loại thiết bị.
+  gold_sql: 'SELECT ep #>> ''{device,type}'' AS device_type, count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - device_type
+    - users
+    rows:
+    - - desktop
+      - 17
+    - - mobile
+      - 12
+    - - tablet
+      - 8
+    - - unknown
+      - 12
+    - - null
+      - 7
+  in_scope: true
+  intent: test_breakdown_device_type
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_users_campaign_channel
+  split: test
+  family: test_breakdown_campaign_channel
+  question: Trong toàn bộ dữ liệu, phân tích người dùng riêng biệt theo kênh tiếp thị.
+  gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(DISTINCT user_id)::bigint AS users
+    FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - campaign_channel
+    - users
+    rows:
+    - - email
+      - 12
+    - - organic
+      - 14
+    - - paid
+      - 15
+    - - referral
+      - 13
+    - - null
+      - 6
+  in_scope: true
+  intent: test_breakdown_campaign_channel
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_users_item_category
+  split: test
+  family: test_breakdown_item_category
+  question: Trong toàn bộ dữ liệu, phân tích người dùng riêng biệt theo danh mục sản phẩm.
+  gold_sql: SELECT item_category, count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+    GROUP BY 1 ORDER BY 1
+  expected_result:
+    columns:
+    - item_category
+    - users
+    rows:
+    - - books
+      - 14
+    - - clearance
+      - 1
+    - - home
+      - 11
+    - - shoes
+      - 12
+    - - toys
+      - 17
+  in_scope: true
+  intent: test_breakdown_item_category
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_break_sessions_device_type
+  split: test
+  family: test_breakdown_device_type
+  question: Trong toàn bộ dữ liệu, phân tích phiên truy cập theo loại thiết bị.
+  gold_sql: 'SELECT ep #>> ''{device,type}'' AS device_type, count(DISTINCT session_id)::bigint AS sessions FROM
+    analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - device_type
+    - sessions
+    rows:
+    - - desktop
+      - 17
+    - - mobile
+      - 18
+    - - tablet
+      - 16
+    - - unknown
+      - 14
+    - - null
+      - 8
+  in_scope: true
+  intent: test_breakdown_device_type
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_sessions_campaign_channel
+  split: test
+  family: test_breakdown_campaign_channel
+  question: Trong toàn bộ dữ liệu, phân tích phiên truy cập theo kênh tiếp thị.
+  gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(DISTINCT session_id)::bigint AS sessions
+    FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - campaign_channel
+    - sessions
+    rows:
+    - - email
+      - 13
+    - - organic
+      - 14
+    - - paid
+      - 13
+    - - referral
+      - 16
+    - - null
+      - 5
+  in_scope: true
+  intent: test_breakdown_campaign_channel
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_sessions_item_category
+  split: test
+  family: test_breakdown_item_category
+  question: Trong toàn bộ dữ liệu, phân tích phiên truy cập theo danh mục sản phẩm.
+  gold_sql: SELECT item_category, count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE
+    source_id='event_benchmark' GROUP BY 1 ORDER BY 1
+  expected_result:
+    columns:
+    - item_category
+    - sessions
+    rows:
+    - - books
+      - 19
+    - - clearance
+      - 1
+    - - home
+      - 13
+    - - shoes
+      - 15
+    - - toys
+      - 17
+  in_scope: true
+  intent: test_breakdown_item_category
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_break_viewers_device_type
+  split: test
+  family: test_breakdown_device_type
+  question: Trong toàn bộ dữ liệu, phân tích người đã xem theo loại thiết bị.
+  gold_sql: 'SELECT ep #>> ''{device,type}'' AS device_type, count(DISTINCT user_id) FILTER (WHERE event_name=''view'')::bigint
+    AS viewers FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - device_type
+    - viewers
+    rows:
+    - - desktop
+      - 10
+    - - mobile
+      - 7
+    - - tablet
+      - 5
+    - - unknown
+      - 8
+    - - null
+      - 2
+  in_scope: true
+  intent: test_breakdown_device_type
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_viewers_campaign_channel
+  split: test
+  family: test_breakdown_campaign_channel
+  question: Trong toàn bộ dữ liệu, phân tích người đã xem theo kênh tiếp thị.
+  gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(DISTINCT user_id) FILTER (WHERE event_name=''view'')::bigint
+    AS viewers FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - campaign_channel
+    - viewers
+    rows:
+    - - email
+      - 7
+    - - organic
+      - 9
+    - - paid
+      - 8
+    - - referral
+      - 7
+    - - null
+      - 4
+  in_scope: true
+  intent: test_breakdown_campaign_channel
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_viewers_item_category
+  split: test
+  family: test_breakdown_item_category
+  question: Trong toàn bộ dữ liệu, phân tích người đã xem theo danh mục sản phẩm.
+  gold_sql: SELECT item_category, count(DISTINCT user_id) FILTER (WHERE event_name='view')::bigint AS viewers FROM
+    analytics.event_activity WHERE source_id='event_benchmark' GROUP BY 1 ORDER BY 1
+  expected_result:
+    columns:
+    - item_category
+    - viewers
+    rows:
+    - - books
+      - 7
+    - - clearance
+      - 1
+    - - home
+      - 5
+    - - shoes
+      - 8
+    - - toys
+      - 12
+  in_scope: true
+  intent: test_breakdown_item_category
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_break_buyers_device_type
+  split: test
+  family: test_breakdown_device_type
+  question: Trong toàn bộ dữ liệu, phân tích người mua theo loại thiết bị.
+  gold_sql: 'SELECT ep #>> ''{device,type}'' AS device_type, count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::bigint
+    AS buyers FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - device_type
+    - buyers
+    rows:
+    - - desktop
+      - 4
+    - - mobile
+      - 5
+    - - tablet
+      - 3
+    - - unknown
+      - 4
+    - - null
+      - 4
+  in_scope: true
+  intent: test_breakdown_device_type
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_buyers_campaign_channel
+  split: test
+  family: test_breakdown_campaign_channel
+  question: Trong toàn bộ dữ liệu, phân tích người mua theo kênh tiếp thị.
+  gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::bigint
+    AS buyers FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - campaign_channel
+    - buyers
+    rows:
+    - - email
+      - 1
+    - - organic
+      - 4
+    - - paid
+      - 5
+    - - referral
+      - 6
+    - - null
+      - 1
+  in_scope: true
+  intent: test_breakdown_campaign_channel
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_buyers_item_category
+  split: test
+  family: test_breakdown_item_category
+  question: Trong toàn bộ dữ liệu, phân tích người mua theo danh mục sản phẩm.
+  gold_sql: SELECT item_category, count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers
+    FROM analytics.event_activity WHERE source_id='event_benchmark' GROUP BY 1 ORDER BY 1
+  expected_result:
+    columns:
+    - item_category
+    - buyers
+    rows:
+    - - books
+      - 5
+    - - clearance
+      - 0
+    - - home
+      - 6
+    - - shoes
+      - 4
+    - - toys
+      - 7
+  in_scope: true
+  intent: test_breakdown_item_category
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_break_purchases_device_type
+  split: test
+  family: test_breakdown_device_type
+  question: Trong toàn bộ dữ liệu, phân tích lượt mua theo loại thiết bị.
+  gold_sql: 'SELECT ep #>> ''{device,type}'' AS device_type, count(*) FILTER (WHERE event_name=''purchase'')::bigint
+    AS purchases FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - device_type
+    - purchases
+    rows:
+    - - desktop
+      - 4
+    - - mobile
+      - 5
+    - - tablet
+      - 5
+    - - unknown
+      - 4
+    - - null
+      - 4
+  in_scope: true
+  intent: test_breakdown_device_type
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_purchases_campaign_channel
+  split: test
+  family: test_breakdown_campaign_channel
+  question: Trong toàn bộ dữ liệu, phân tích lượt mua theo kênh tiếp thị.
+  gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(*) FILTER (WHERE event_name=''purchase'')::bigint
+    AS purchases FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - campaign_channel
+    - purchases
+    rows:
+    - - email
+      - 2
+    - - organic
+      - 6
+    - - paid
+      - 7
+    - - referral
+      - 6
+    - - null
+      - 1
+  in_scope: true
+  intent: test_breakdown_campaign_channel
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_purchases_item_category
+  split: test
+  family: test_breakdown_item_category
+  question: Trong toàn bộ dữ liệu, phân tích lượt mua theo danh mục sản phẩm.
+  gold_sql: SELECT item_category, count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='event_benchmark' GROUP BY 1 ORDER BY 1
+  expected_result:
+    columns:
+    - item_category
+    - purchases
+    rows:
+    - - books
+      - 5
+    - - clearance
+      - 0
+    - - home
+      - 6
+    - - shoes
+      - 4
+    - - toys
+      - 7
+  in_scope: true
+  intent: test_breakdown_item_category
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_break_revenue_device_type
+  split: test
+  family: test_breakdown_device_type
+  question: Trong toàn bộ dữ liệu, phân tích doanh thu từ mua hàng theo loại thiết bị.
+  gold_sql: 'SELECT ep #>> ''{device,type}'' AS device_type, coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric
+    AS revenue FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - device_type
+    - revenue
+    rows:
+    - - desktop
+      - 275
+    - - mobile
+      - 335
+    - - tablet
+      - 130
+    - - unknown
+      - 215
+    - - null
+      - 120
+  in_scope: true
+  intent: test_breakdown_device_type
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_revenue_campaign_channel
+  split: test
+  family: test_breakdown_campaign_channel
+  question: Trong toàn bộ dữ liệu, phân tích doanh thu từ mua hàng theo kênh tiếp thị.
+  gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric
+    AS revenue FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - campaign_channel
+    - revenue
+    rows:
+    - - email
+      - 60
+    - - organic
+      - 365
+    - - paid
+      - 360
+    - - referral
+      - 290
+    - - null
+      - 0
+  in_scope: true
+  intent: test_breakdown_campaign_channel
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_revenue_item_category
+  split: test
+  family: test_breakdown_item_category
+  question: Trong toàn bộ dữ liệu, phân tích doanh thu từ mua hàng theo danh mục sản phẩm.
+  gold_sql: SELECT item_category, coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue
+    FROM analytics.event_activity WHERE source_id='event_benchmark' GROUP BY 1 ORDER BY 1
+  expected_result:
+    columns:
+    - item_category
+    - revenue
+    rows:
+    - - books
+      - 165
+    - - clearance
+      - 0
+    - - home
+      - 280
+    - - shoes
+      - 195
+    - - toys
+      - 435
+  in_scope: true
+  intent: test_breakdown_item_category
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_break_buyer_conversion_rate_device_type
+  split: test
+  family: test_breakdown_device_type
+  question: Trong toàn bộ dữ liệu, phân tích tỷ lệ người mua trên người dùng theo loại thiết bị.
+  gold_sql: 'SELECT ep #>> ''{device,type}'' AS device_type, count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::numeric
+    / nullif(count(DISTINCT user_id),0) AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id=''event_benchmark''
+    GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - device_type
+    - buyer_conversion_rate
+    rows:
+    - - desktop
+      - 0.23529411764705882
+    - - mobile
+      - 0.4166666666666667
+    - - tablet
+      - 0.375
+    - - unknown
+      - 0.3333333333333333
+    - - null
+      - 0.5714285714285714
+  in_scope: true
+  intent: test_breakdown_device_type
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_buyer_conversion_rate_campaign_channel
+  split: test
+  family: test_breakdown_campaign_channel
+  question: Trong toàn bộ dữ liệu, phân tích tỷ lệ người mua trên người dùng theo kênh tiếp thị.
+  gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::numeric
+    / nullif(count(DISTINCT user_id),0) AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id=''event_benchmark''
+    GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - campaign_channel
+    - buyer_conversion_rate
+    rows:
+    - - email
+      - 0.08333333333333333
+    - - organic
+      - 0.2857142857142857
+    - - paid
+      - 0.3333333333333333
+    - - referral
+      - 0.46153846153846156
+    - - null
+      - 0.16666666666666666
+  in_scope: true
+  intent: test_breakdown_campaign_channel
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_break_buyer_conversion_rate_item_category
+  split: test
+  family: test_breakdown_item_category
+  question: Trong toàn bộ dữ liệu, phân tích tỷ lệ người mua trên người dùng theo danh mục sản phẩm.
+  gold_sql: SELECT item_category, count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::numeric / nullif(count(DISTINCT
+    user_id),0) AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id='event_benchmark' GROUP BY
+    1 ORDER BY 1
+  expected_result:
+    columns:
+    - item_category
+    - buyer_conversion_rate
+    rows:
+    - - books
+      - 0.35714285714285715
+    - - clearance
+      - 0.0
+    - - home
+      - 0.5454545454545454
+    - - shoes
+      - 0.3333333333333333
+    - - toys
+      - 0.4117647058823529
+  in_scope: true
+  intent: test_breakdown_item_category
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_27_events
+  split: test
+  family: test_date_edges
+  question: Báo cáo lượt sự kiện trong ngày 27/1/2025.
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date='2025-01-27'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 14
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_27_buyers
+  split: test
+  family: test_date_edges
+  question: Báo cáo người mua trong ngày 27/1/2025.
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date='2025-01-27'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 4
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_27_revenue
+  split: test
+  family: test_date_edges
+  question: Báo cáo doanh thu từ mua hàng trong ngày 27/1/2025.
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date='2025-01-27'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 150
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_27_users
+  split: test
+  family: test_date_edges
+  question: Báo cáo người dùng riêng biệt trong ngày 27/1/2025.
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND event_date='2025-01-27'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 11
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_31_events
+  split: test
+  family: test_date_edges
+  question: Báo cáo lượt sự kiện trong ngày 31/1/2025.
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date='2025-01-31'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 14
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_31_buyers
+  split: test
+  family: test_date_edges
+  question: Báo cáo người mua trong ngày 31/1/2025.
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date='2025-01-31'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 2
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_31_revenue
+  split: test
+  family: test_date_edges
+  question: Báo cáo doanh thu từ mua hàng trong ngày 31/1/2025.
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date='2025-01-31'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 55
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_31_users
+  split: test
+  family: test_date_edges
+  question: Báo cáo người dùng riêng biệt trong ngày 31/1/2025.
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND event_date='2025-01-31'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 9
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_01_events
+  split: test
+  family: test_date_edges
+  question: Báo cáo lượt sự kiện trong ngày 1/2/2025.
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date='2025-02-01'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 14
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_01_buyers
+  split: test
+  family: test_date_edges
+  question: Báo cáo người mua trong ngày 1/2/2025.
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date='2025-02-01'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 3
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_01_revenue
+  split: test
+  family: test_date_edges
+  question: Báo cáo doanh thu từ mua hàng trong ngày 1/2/2025.
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date='2025-02-01'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 280
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_01_users
+  split: test
+  family: test_date_edges
+  question: Báo cáo người dùng riêng biệt trong ngày 1/2/2025.
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND event_date='2025-02-01'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 9
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_02_events
+  split: test
+  family: test_date_edges
+  question: Báo cáo lượt sự kiện trong ngày 2/2/2025.
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date='2025-02-02'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 13
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_02_buyers
+  split: test
+  family: test_date_edges
+  question: Báo cáo người mua trong ngày 2/2/2025.
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date='2025-02-02'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 2
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_02_revenue
+  split: test
+  family: test_date_edges
+  question: Báo cáo doanh thu từ mua hàng trong ngày 2/2/2025.
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date='2025-02-02'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 40
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_day_02_users
+  split: test
+  family: test_date_edges
+  question: Báo cáo người dùng riêng biệt trong ngày 2/2/2025.
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND event_date='2025-02-02'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 9
+  in_scope: true
+  intent: test_date_edges
+  difficulty: easy
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_event_view_events
+  split: test
+  family: test_event_conditionals
+  question: Trong toàn bộ dữ liệu, có bao nhiêu lượt sự kiện gắn với sự kiện xem sản phẩm?
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_name='view'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 41
+  in_scope: true
+  intent: test_event_conditionals
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_event_view_users
+  split: test
+  family: test_event_conditionals
+  question: Trong toàn bộ dữ liệu, có bao nhiêu người dùng riêng biệt gắn với sự kiện xem sản phẩm?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND event_name='view'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  in_scope: true
+  intent: test_event_conditionals
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_event_cart_events
+  split: test
+  family: test_event_conditionals
+  question: Trong toàn bộ dữ liệu, có bao nhiêu lượt sự kiện gắn với sự kiện thêm vào giỏ hàng?
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_name='cart'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 25
+  in_scope: true
+  intent: test_event_conditionals
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_event_cart_users
+  split: test
+  family: test_event_conditionals
+  question: Trong toàn bộ dữ liệu, có bao nhiêu người dùng riêng biệt gắn với sự kiện thêm vào giỏ hàng?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND event_name='cart'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 13
+  in_scope: true
+  intent: test_event_conditionals
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_event_purchase_events
+  split: test
+  family: test_event_conditionals
+  question: Trong toàn bộ dữ liệu, có bao nhiêu lượt sự kiện gắn với sự kiện mua hàng?
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_name='purchase'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 22
+  in_scope: true
+  intent: test_event_conditionals
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_event_purchase_users
+  split: test
+  family: test_event_conditionals
+  question: Trong toàn bộ dữ liệu, có bao nhiêu người dùng riêng biệt gắn với sự kiện mua hàng?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND event_name='purchase'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 12
+  in_scope: true
+  intent: test_event_conditionals
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_event_remove_from_cart_events
+  split: test
+  family: test_event_conditionals
+  question: Trong toàn bộ dữ liệu, có bao nhiêu lượt sự kiện gắn với sự kiện xóa khỏi giỏ hàng?
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_name='remove_from_cart'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 8
+  in_scope: true
+  intent: test_event_conditionals
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_event_remove_from_cart_users
+  split: test
+  family: test_event_conditionals
+  question: Trong toàn bộ dữ liệu, có bao nhiêu người dùng riêng biệt gắn với sự kiện xóa khỏi giỏ hàng?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND event_name='remove_from_cart'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 5
+  in_scope: true
+  intent: test_event_conditionals
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_empty_events
+  split: test
+  family: test_empty_aggregate
+  question: Cho biết lượt sự kiện ngày 3/2/2025 (ngày không có sự kiện nào).
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date='2025-02-03'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 0
+  in_scope: true
+  intent: test_empty_aggregate
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_empty_users
+  split: test
+  family: test_empty_aggregate
+  question: Cho biết người dùng riêng biệt ngày 3/2/2025 (ngày không có sự kiện nào).
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND event_date='2025-02-03'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 0
+  in_scope: true
+  intent: test_empty_aggregate
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_empty_sessions
+  split: test
+  family: test_empty_aggregate
+  question: Cho biết phiên truy cập ngày 3/2/2025 (ngày không có sự kiện nào).
+  gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id='event_benchmark'
+    AND event_date='2025-02-03'
+  expected_result:
+    columns:
+    - sessions
+    rows:
+    - - 0
+  in_scope: true
+  intent: test_empty_aggregate
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_empty_viewers
+  split: test
+  family: test_empty_aggregate
+  question: Cho biết người đã xem ngày 3/2/2025 (ngày không có sự kiện nào).
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='view')::bigint AS viewers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date='2025-02-03'
+  expected_result:
+    columns:
+    - viewers
+    rows:
+    - - 0
+  in_scope: true
+  intent: test_empty_aggregate
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_empty_buyers
+  split: test
+  family: test_empty_aggregate
+  question: Cho biết người mua ngày 3/2/2025 (ngày không có sự kiện nào).
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date='2025-02-03'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 0
+  in_scope: true
+  intent: test_empty_aggregate
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_empty_purchases
+  split: test
+  family: test_empty_aggregate
+  question: Cho biết lượt mua ngày 3/2/2025 (ngày không có sự kiện nào).
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date='2025-02-03'
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 0
+  in_scope: true
+  intent: test_empty_aggregate
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_empty_revenue
+  split: test
+  family: test_empty_aggregate
+  question: Cho biết doanh thu từ mua hàng ngày 3/2/2025 (ngày không có sự kiện nào).
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date='2025-02-03'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 0
+  in_scope: true
+  intent: test_empty_aggregate
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_empty_buyer_conversion_rate
+  split: test
+  family: test_empty_aggregate
+  question: Cho biết tỷ lệ người mua trên người dùng ngày 3/2/2025 (ngày không có sự kiện nào).
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::numeric / nullif(count(DISTINCT
+    user_id),0) AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id='event_benchmark' AND event_date='2025-02-03'
+  expected_result:
+    columns:
+    - buyer_conversion_rate
+    rows:
+    - - null
+  in_scope: true
+  intent: test_empty_aggregate
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_purchase_filter_device_type
+  split: test
+  family: test_purchase_nested_filters
+  question: Trong toàn bộ dữ liệu, có bao nhiêu người mua hàng khi loại thiết bị là desktop?
+  gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND event_name=''purchase'' AND ep #>> ''{device,type}''=''desktop'''
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 4
+  in_scope: true
+  intent: test_purchase_nested_filters
+  difficulty: hard
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_purchase_filter_campaign_channel
+  split: test
+  family: test_purchase_nested_filters
+  question: Trong toàn bộ dữ liệu, có bao nhiêu người mua hàng khi kênh tiếp thị là email?
+  gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND event_name=''purchase'' AND ep #>> ''{campaign,channel}''=''email'''
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 1
+  in_scope: true
+  intent: test_purchase_nested_filters
+  difficulty: hard
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_purchase_filter_item_category
+  split: test
+  family: test_purchase_nested_filters
+  question: Trong toàn bộ dữ liệu, có bao nhiêu người mua hàng khi danh mục sản phẩm là home?
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_name='purchase' AND item_category='home'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 6
+  in_scope: true
+  intent: test_purchase_nested_filters
+  difficulty: hard
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_dev_compound_01
+  split: dev
+  family: dev_compound_filters
+  question: Trong toàn bộ dữ liệu, cho biết doanh thu từ mua hàng với loại thiết bị là desktop đồng thời kênh tiếp
+    thị là email.
+  gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND ep #>> ''{device,type}''=''desktop'' AND ep #>> ''{campaign,channel}''=''email'''
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 0
+  in_scope: true
+  intent: dev_compound_filters
+  difficulty: hard
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_compound_02
+  split: dev
+  family: dev_compound_filters
+  question: Trong toàn bộ dữ liệu, cho biết người mua với kênh tiếp thị là email đồng thời danh mục sản phẩm là
+    home.
+  gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND ep #>> ''{campaign,channel}''=''email'' AND item_category=''home'''
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 1
+  in_scope: true
+  intent: dev_compound_filters
+  difficulty: hard
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_compound_03
+  split: dev
+  family: dev_compound_filters
+  question: Trong toàn bộ dữ liệu, cho biết lượt sự kiện với danh mục sản phẩm là home đồng thời loại thiết bị là
+    mobile.
+  gold_sql: 'SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id=''event_benchmark''
+    AND item_category=''home'' AND ep #>> ''{device,type}''=''mobile'''
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 7
+  in_scope: true
+  intent: dev_compound_filters
+  difficulty: hard
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_compound_04
+  split: dev
+  family: dev_compound_filters
+  question: Trong toàn bộ dữ liệu, cho biết người dùng riêng biệt với loại thiết bị là mobile đồng thời kênh tiếp
+    thị là organic.
+  gold_sql: 'SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id=''event_benchmark''
+    AND ep #>> ''{device,type}''=''mobile'' AND ep #>> ''{campaign,channel}''=''organic'''
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 2
+  in_scope: true
+  intent: dev_compound_filters
+  difficulty: hard
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_compound_05
+  split: dev
+  family: dev_compound_filters
+  question: Trong toàn bộ dữ liệu, cho biết doanh thu từ mua hàng với kênh tiếp thị là organic đồng thời danh mục
+    sản phẩm là books.
+  gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND ep #>> ''{campaign,channel}''=''organic'' AND item_category=''books'''
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 30
+  in_scope: true
+  intent: dev_compound_filters
+  difficulty: hard
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_compound_06
+  split: dev
+  family: dev_compound_filters
+  question: Trong toàn bộ dữ liệu, cho biết người mua với danh mục sản phẩm là books đồng thời loại thiết bị là
+    unknown.
+  gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND item_category=''books'' AND ep #>> ''{device,type}''=''unknown'''
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 0
+  in_scope: true
+  intent: dev_compound_filters
+  difficulty: hard
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_compound_07
+  split: dev
+  family: dev_compound_filters
+  question: Trong toàn bộ dữ liệu, cho biết lượt sự kiện với loại thiết bị là unknown đồng thời kênh tiếp thị là
+    paid.
+  gold_sql: 'SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id=''event_benchmark''
+    AND ep #>> ''{device,type}''=''unknown'' AND ep #>> ''{campaign,channel}''=''paid'''
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 5
+  in_scope: true
+  intent: dev_compound_filters
+  difficulty: hard
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_compound_08
+  split: dev
+  family: dev_compound_filters
+  question: Trong toàn bộ dữ liệu, cho biết người dùng riêng biệt với kênh tiếp thị là paid đồng thời danh mục sản
+    phẩm là clearance.
+  gold_sql: 'SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id=''event_benchmark''
+    AND ep #>> ''{campaign,channel}''=''paid'' AND item_category=''clearance'''
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 0
+  in_scope: true
+  intent: dev_compound_filters
+  difficulty: hard
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_dev_compound_09
+  split: dev
+  family: dev_compound_filters
+  question: Trong toàn bộ dữ liệu, cho biết doanh thu từ mua hàng với danh mục sản phẩm là clearance đồng thời loại
+    thiết bị là tablet.
+  gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND item_category=''clearance'' AND ep #>> ''{device,type}''=''tablet'''
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 0
+  in_scope: true
+  intent: dev_compound_filters
+  difficulty: hard
+  tags:
+  - event
+  - relational_dimension
+  - dev
+- id: v2_test_top_revenue_item_category
+  split: test
+  family: test_top_k_ranking
+  question: Trong toàn bộ dữ liệu, xếp hạng top 3 danh mục sản phẩm theo doanh thu từ mua hàng từ cao xuống thấp.
+  gold_sql: SELECT item_category, coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue
+    FROM analytics.event_activity WHERE source_id='event_benchmark' GROUP BY 1 ORDER BY revenue DESC, item_category
+    ASC NULLS LAST LIMIT 3
+  expected_result:
+    columns:
+    - item_category
+    - revenue
+    rows:
+    - - toys
+      - 435
+    - - home
+      - 280
+    - - shoes
+      - 195
+  in_scope: true
+  ordered: true
+  top_k: 3
+  intent: test_top_k_ranking
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
+- id: v2_test_top_buyers_device_type
+  split: test
+  family: test_top_k_ranking
+  question: Trong toàn bộ dữ liệu, xếp hạng top 3 loại thiết bị theo người mua từ cao xuống thấp.
+  gold_sql: 'SELECT ep #>> ''{device,type}'' AS device_type, count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::bigint
+    AS buyers FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY buyers DESC,
+    device_type ASC NULLS LAST LIMIT 3'
+  expected_result:
+    columns:
+    - device_type
+    - buyers
+    rows:
+    - - mobile
+      - 5
+    - - desktop
+      - 4
+    - - unknown
+      - 4
+  in_scope: true
+  ordered: true
+  top_k: 3
+  intent: test_top_k_ranking
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_top_events_campaign_channel
+  split: test
+  family: test_top_k_ranking
+  question: Trong toàn bộ dữ liệu, xếp hạng top 3 kênh tiếp thị theo lượt sự kiện từ cao xuống thấp.
+  gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(*)::bigint AS events FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY events DESC, campaign_channel ASC NULLS LAST LIMIT 3'
+  expected_result:
+    columns:
+    - campaign_channel
+    - events
+    rows:
+    - - organic
+      - 26
+    - - paid
+      - 25
+    - - referral
+      - 22
+  in_scope: true
+  ordered: true
+  top_k: 3
+  intent: test_top_k_ranking
+  difficulty: medium
+  tags:
+  - event
+  - nested_scalar
+  - test
+- id: v2_test_top_purchases_item_category
+  split: test
+  family: test_top_k_ranking
+  question: Trong toàn bộ dữ liệu, xếp hạng top 2 danh mục sản phẩm theo lượt mua từ cao xuống thấp.
+  gold_sql: SELECT item_category, count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='event_benchmark' GROUP BY 1 ORDER BY purchases DESC, item_category ASC NULLS LAST LIMIT 2
+  expected_result:
+    columns:
+    - item_category
+    - purchases
+    rows:
+    - - toys
+      - 7
+    - - home
+      - 6
+  in_scope: true
+  ordered: true
+  top_k: 2
+  intent: test_top_k_ranking
+  difficulty: medium
+  tags:
+  - event
+  - relational_dimension
+  - test
