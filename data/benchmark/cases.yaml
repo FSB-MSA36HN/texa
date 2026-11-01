@@ -1,0 +1,327 @@
+- id: dev_events_total
+  split: dev
+  family: event_totals
+  question: Có bao nhiêu sự kiện trong toàn bộ dữ liệu?
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE
+    source_id='event_benchmark'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 12
+  in_scope: true
+- id: dev_users_total
+  split: dev
+  family: event_totals
+  question: Có bao nhiêu người dùng khác nhau trong toàn bộ dữ liệu?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 5
+  in_scope: true
+- id: dev_sessions_total
+  split: dev
+  family: event_totals
+  question: Tổng cộng có bao nhiêu phiên trong toàn bộ dữ liệu?
+  gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - sessions
+    rows:
+    - - 6
+  in_scope: true
+- id: dev_purchases_total
+  split: dev
+  family: event_totals
+  question: Có bao nhiêu lượt mua hàng trong toàn bộ dữ liệu?
+  gold_sql: SELECT count(*)::bigint AS purchases FROM analytics.event_activity WHERE
+    source_id='event_benchmark' AND event_name='purchase'
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 4
+  in_scope: true
+- id: dev_buyers_total
+  split: dev
+  family: event_totals
+  question: Có bao nhiêu khách đã mua trong toàn bộ dữ liệu?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_name='purchase'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 3
+  in_scope: true
+- id: dev_revenue_total
+  split: dev
+  family: event_totals
+  question: Doanh thu từ mua hàng trong toàn bộ dữ liệu là bao nhiêu?
+  gold_sql: SELECT sum(revenue)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_name='purchase'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 135
+  in_scope: true
+- id: dev_buyer_user_ratio
+  split: dev
+  family: event_totals
+  question: Tỷ lệ người mua trên tổng số người dùng trong toàn bộ dữ liệu là bao nhiêu?
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::numeric
+    / nullif(count(DISTINCT user_id),0) AS buyer_conversion_rate FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - buyer_conversion_rate
+    rows:
+    - - 0.6
+  in_scope: true
+- id: dev_device_event_counts
+  split: dev
+  family: nested_scalar
+  question: Đếm sự kiện theo loại thiết bị trong toàn bộ dữ liệu.
+  gold_sql: 'SELECT ep #>> ''{device,type}'' AS device_type, count(*)::bigint AS events
+    FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER
+    BY 1'
+  expected_result:
+    columns:
+    - device_type
+    - events
+    rows:
+    - - desktop
+      - 3
+    - - mobile
+      - 6
+    - - tablet
+      - 3
+  in_scope: true
+- id: dev_paid_events
+  split: dev
+  family: nested_scalar
+  question: Có bao nhiêu sự kiện thuộc kênh paid trong toàn bộ dữ liệu?
+  gold_sql: 'SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE
+    source_id=''event_benchmark'' AND ep #>> ''{campaign,channel}''=''paid'''
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 6
+  in_scope: true
+- id: dev_category_users
+  split: dev
+  family: nested_scalar
+  question: Có bao nhiêu người xem mỗi danh mục sản phẩm trong toàn bộ dữ liệu?
+  gold_sql: SELECT item_category, count(DISTINCT user_id)::bigint AS viewers FROM
+    analytics.event_activity WHERE source_id='event_benchmark' AND event_name='view'
+    GROUP BY 1 ORDER BY 1
+  expected_result:
+    columns:
+    - item_category
+    - viewers
+    rows:
+    - - books
+      - 2
+    - - shoes
+      - 2
+    - - toys
+      - 1
+  in_scope: true
+- id: dev_paid_buyers
+  split: dev
+  family: nested_scalar
+  question: Có bao nhiêu người đã mua qua kênh paid trong toàn bộ dữ liệu?
+  gold_sql: 'SELECT count(DISTINCT user_id)::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND event_name=''purchase'' AND ep #>> ''{campaign,channel}''=''paid'''
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 2
+  in_scope: true
+- id: dev_checkout_sum
+  split: dev
+  family: nested_scalar
+  question: Tổng giá trị checkout ghi trong payload trên toàn bộ dữ liệu là bao nhiêu?
+  gold_sql: 'SELECT sum((ep #>> ''{checkout,amount}'')::numeric) AS checkout_amount
+    FROM analytics.event_activity WHERE source_id=''event_benchmark'' AND event_name=''purchase'''
+  expected_result:
+    columns:
+    - checkout_amount
+    rows:
+    - - 135
+  in_scope: false
+- id: test_jan1_events
+  split: test
+  family: date_window
+  question: Ngày 1 tháng 1 năm 2025 có bao nhiêu event?
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE
+    source_id='event_benchmark' AND event_date='2025-01-01'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 4
+  in_scope: true
+- id: test_jan2_revenue
+  split: test
+  family: date_window
+  question: Doanh thu mua hàng ngày 2/1/2025 là bao nhiêu?
+  gold_sql: SELECT sum(revenue)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_name='purchase' AND event_date='2025-01-02'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 85
+  in_scope: true
+- id: test_jan1_3_buyers
+  split: test
+  family: date_window
+  question: Từ ngày 1 đến hết ngày 3 tháng 1 năm 2025 có bao nhiêu người mua?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_name='purchase' AND event_date BETWEEN
+    '2025-01-01' AND '2025-01-03'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 3
+  in_scope: true
+- id: test_views_jan3
+  split: test
+  family: date_window
+  question: Đếm sự kiện có event_name là view vào ngày 3/1/2025.
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE
+    source_id='event_benchmark' AND event_name='view' AND event_date='2025-01-03'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 2
+  in_scope: true
+- id: test_revenue_jan1_2
+  split: test
+  family: date_window
+  question: Tổng doanh thu trong hai ngày đầu tháng 1 năm 2025 là bao nhiêu?
+  gold_sql: SELECT sum(revenue)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_name='purchase' AND event_date BETWEEN
+    '2025-01-01' AND '2025-01-02'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 125
+  in_scope: true
+- id: test_jan2_sessions
+  split: test
+  family: date_window
+  question: Ngày 2/1/2025 có bao nhiêu session khác nhau?
+  gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date='2025-01-02'
+  expected_result:
+    columns:
+    - sessions
+    rows:
+    - - 2
+  in_scope: true
+- id: test_paid_device_events
+  split: test
+  family: nested_grouping
+  question: Đếm event theo loại thiết bị trong kênh paid trên toàn bộ dữ liệu.
+  gold_sql: 'SELECT ep #>> ''{device,type}'' AS device_type, count(*)::bigint AS events
+    FROM analytics.event_activity WHERE source_id=''event_benchmark'' AND ep #>> ''{campaign,channel}''=''paid''
+    GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - device_type
+    - events
+    rows:
+    - - mobile
+      - 3
+    - - tablet
+      - 3
+  in_scope: true
+- id: test_category_revenue
+  split: test
+  family: nested_grouping
+  question: Doanh thu mua hàng theo danh mục sản phẩm trên toàn bộ dữ liệu.
+  gold_sql: SELECT item_category, sum(revenue)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_name='purchase' GROUP BY 1 ORDER BY
+    1
+  expected_result:
+    columns:
+    - item_category
+    - revenue
+    rows:
+    - - books
+      - 25
+    - - shoes
+      - 100
+    - - toys
+      - 10
+  in_scope: true
+- id: test_channel_buyers
+  split: test
+  family: nested_grouping
+  question: Số người mua riêng biệt theo campaign channel trên toàn bộ dữ liệu.
+  gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(DISTINCT
+    user_id) FILTER (WHERE event_name=''purchase'')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+  expected_result:
+    columns:
+    - campaign_channel
+    - buyers
+    rows:
+    - - email
+      - 1
+    - - organic
+      - 1
+    - - paid
+      - 2
+    - - referral
+      - 0
+  in_scope: true
+- id: test_mobile_revenue
+  split: test
+  family: nested_grouping
+  question: Doanh thu từ mua hàng trên thiết bị mobile trong toàn bộ dữ liệu?
+  gold_sql: 'SELECT sum(revenue)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND event_name=''purchase'' AND ep #>> ''{device,type}''=''mobile'''
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 100
+  in_scope: true
+- id: test_tablet_purchase_count
+  split: test
+  family: nested_grouping
+  question: Có bao nhiêu lượt mua bằng tablet trong toàn bộ dữ liệu?
+  gold_sql: 'SELECT count(*)::bigint AS purchases FROM analytics.event_activity WHERE
+    source_id=''event_benchmark'' AND event_name=''purchase'' AND ep #>> ''{device,type}''=''tablet'''
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 1
+  in_scope: true
+- id: test_organic_shoes_buyers
+  split: test
+  family: nested_grouping
+  question: Có bao nhiêu người mua giày từ kênh organic trong toàn bộ dữ liệu?
+  gold_sql: 'SELECT count(DISTINCT user_id)::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id=''event_benchmark'' AND event_name=''purchase'' AND ep #>> ''{campaign,channel}''=''organic''
+    AND item_category=''shoes'''
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 0
+  in_scope: true

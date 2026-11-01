@@ -1,0 +1,83 @@
+name: texa-product-events-pilot
+version: 1
+seed: 731904
+engine: server version is captured with each run; local pilot PostgreSQL 16.2 (container
+  target is 17)
+source_id: event_benchmark
+timezone: UTC
+date_semantics: event_date UTC; explicit ranges are inclusive in natural language
+  and translated to SQL BETWEEN
+grain: one row in analytics.event_activity is one product event
+fixture_rows: 12
+schema: 'analytics.event_activity: event_id text, source_id text, event_ts timestamptz,
+
+  event_date date, event_name text, user_id text, session_id text, first_seen_date
+  date,
+
+  platform text, country text, region text, city text, item_id text, item_category
+  text,
+
+  item_brand text, item_price numeric, quantity int, revenue numeric, currency text,
+
+  ep jsonb, up jsonb. Filter every query to source_id = ''event_benchmark''.
+
+  Nested paths: ep.device.type (text), ep.campaign.channel (text),
+
+  ep.checkout.amount (numeric text). Product category is also materialized in
+
+  item_category for the shared Texa compiler contract.
+
+  '
+metric_definitions: 'events = count event rows; users = distinct user_id; sessions
+  = distinct session_id;
+
+  viewers = distinct users with event_name=''view''; buyers = distinct users
+
+  with event_name=''purchase''; purchases = count event rows with event_name=''purchase'';
+
+  revenue = sum(revenue) on purchase events only; buyer_conversion_rate = buyers/users.
+
+  Device and campaign are attributes on each event; grouping counts events unless
+  the
+
+  question explicitly asks for distinct users.
+
+
+  Breakdowns include every dimension value observed after question filters, even when
+  a metric has zero qualifying events. Use conditional aggregates, with revenue 0
+  for these groups. Event counts filtered to event_name=view use the events alias;
+  distinct viewers use viewers.
+
+  '
+output_aliases:
+  metrics:
+    events: events
+    users: users
+    sessions: sessions
+    viewers: viewers
+    buyers: buyers
+    purchases: purchases
+    revenue: revenue
+    buyer_conversion_rate: buyer_conversion_rate
+  dimensions:
+    event_date: event_date
+    device_type: device_type
+    campaign_channel: campaign_channel
+    item_category: item_category
+  diagnostic_only:
+    checkout_amount: checkout_amount
+direct_baseline: same model, same manifest schema/metric definitions, SQL only; no
+  resolver, schema-linking model, correction loop, or system-generated SQL context.
+result_policy:
+  row_order: unordered unless case ordered=true
+  numeric_absolute_tolerance: 1.0e-06
+  numeric_relative_tolerance: 1.0e-06
+split_policy: dev/test are disjoint by scenario family; test is frozen and must not
+  be used for prompt tuning
+limitations: 'This is a deterministic synthetic pilot, not an external benchmark or
+  user study.
+
+  The 12-row fixture validates evaluator mechanics and basic semantic distinctions
+  only.
+
+  '
