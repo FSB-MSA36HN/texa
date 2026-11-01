@@ -7,6 +7,7 @@ This intentionally makes live calls only when explicitly invoked.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import sys
 import time
@@ -82,6 +83,10 @@ def run(args) -> int:
         os.environ["TEXA_MEMORY_MODE"] = "structured"
     args.engine = server_metadata(dsn)
     manifest = yaml.safe_load(dataset_path(args, "manifest.yaml").read_text(encoding="utf-8"))
+    args.engine["benchmark"] = {
+        "name": manifest.get("name"), "version": manifest.get("version"),
+        "sha256": {name: hashlib.sha256(dataset_path(args, name).read_bytes()).hexdigest()
+                   for name in ("manifest.yaml", "fixture.sql", "cases.yaml", "dialogues.yaml")}}
     if args.memory_mode:
         os.environ["TEXA_MEMORY_MODE"] = args.memory_mode
     if args.dialogues:
@@ -176,7 +181,7 @@ def compare_results_files(left_path: str, right_path: str) -> dict:
         for row in rows:
             if row.get("type") == "dialogue":
                 key, value = row.get("id"), row.get("dialogue_success")
-                family = "dialogue"
+                family = str(key)
             elif row.get("type") == "single_turn_summary":
                 continue
             else:
@@ -430,6 +435,7 @@ def run_direct_dialogues(args, dsn: str, dialogues: list[dict], output: Path) ->
             prior = "\n".join(history[-12:])
             prompt = (f"DATABASE CONTEXT\n{manifest['schema']}\n\nMETRIC DEFINITIONS\n{manifest['metric_definitions']}\n\n"
                       f"OUTPUT ALIASES (use exact aliases)\n{yaml.safe_dump(manifest['output_aliases'], sort_keys=True, allow_unicode=True)}\n\n"
+                      f"INTERACTION POLICY\n{manifest.get('interaction_policy', '')}\n\n"
                       f"DIALOGUE (oldest first, at most six prior turns)\n{prior}\n\nLATEST USER MESSAGE\n{question}")
             started = time.monotonic()
             try:
@@ -511,7 +517,7 @@ def main() -> None:
                         help="direct is raw LLM-to-SQL; texa runs the current system; gold validates frozen SQL/results.")
     parser.add_argument("--dataset-dir", help="Directory containing manifest/cases/dialogues YAML (default: pilot)")
     parser.add_argument("--cases", help="Optional case YAML path")
-    parser.add_argument("--output", default=str(ROOT / "backend" / "eval" / "results" / f"run-{time.time_ns()}.jsonl"))
+    parser.add_argument("--output", default=str(ROOT / "backend" / "eval" / "results" / f"run-{time.time_ns()}-{uuid.uuid4().hex[:12]}.jsonl"))
     parser.add_argument("--dialogues", nargs="?", const=True, default=False,
                         help="Run annotated dialogue rollouts instead of single-turn cases.")
     parser.add_argument("--turn-timeout", type=int, default=150)

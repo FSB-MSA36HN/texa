@@ -69,3 +69,18 @@ def test_dataset_directory_selects_manifest_as_well_as_cases(runner):
     args = SimpleNamespace(dataset_dir=str(runner.ROOT / 'data/benchmark/v2'))
     assert runner.dataset_path(args, 'manifest.yaml') == runner.ROOT / 'data/benchmark/v2/manifest.yaml'
     assert runner.dataset_path(SimpleNamespace(), 'cases.yaml') == runner.CASES_PATH
+
+
+def test_dialogue_comparison_resamples_individual_dialogues(runner):
+    import json
+    paths = [runner.ROOT / '.runtime' / f'test-dialogue-paired-{side}.jsonl' for side in ('left', 'right')]
+    try:
+        for path, successes in zip(paths, [(False, True), (True, True)]):
+            path.write_text('\n'.join(json.dumps({'type': 'dialogue', 'id': key, 'dialogue_success': success})
+                                      for key, success in zip(('d1', 'd2'), successes)))
+        result = runner.compare_results_files(*(str(path) for path in paths))
+        assert result['strata'] == 2
+        assert result['ci95_low'] < result['ci95_high']
+    finally:
+        for path in paths:
+            path.unlink(missing_ok=True)

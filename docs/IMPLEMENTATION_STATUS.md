@@ -71,8 +71,16 @@ Do not point these tests at a normal application database. They use the project-
 
 ## Still requiring empirical or manual work
 
-1. Pilot is 24 single-turn cases and six dialogues, not the larger 120-case/24-dialogue benchmark proposed for the final report. Expansion needs independently reviewed gold and a newly frozen split; do not generate paraphrases just to inflate sample size.
+1. Benchmark v2 now contains 104 single-turn cases (41 dev / 63 test), 12 diagnostic dialogues and a deterministic 96-event fixture; the original 24-case pilot remains available. All 104 single-turn and 30 answer-bearing dialogue gold queries match independent Python result tables on PostgreSQL 16.2. Annotation hashes are frozen. This is smaller than the initially proposed 120-case/24-dialogue target; the cases are generated from bounded templates and need external/human validation before research conclusions. See `data/benchmark/v2/README.md`.
 2. Persona walkthroughs and independent gold review have not been performed. The persona and benchmark validity remain hypotheses with documented limits.
 3. No real-model B0/B1/S1 runs or cost/latency comparison has been performed. Model credentials and a chosen model are required for the provided live commands. No 90% accuracy claim is made.
 4. Retrieval currently uses deterministic cues and lexical topic matching. The tests validate selected behaviors, not general conversational understanding. Evaluate and tune only on dev.
 5. Arrays, DuckDB, AST-based free SQL generation and self-correction remain optional P1 scope, intentionally excluded from this implementation.
+
+## Dataset v2 expansion
+
+Added inclusive cross-month windows, independent dimension assignments, nested missing/JSON-null fields, no-purchase groups, zero-revenue purchases, empty populations, compound filters and deterministic top-k. Dialogues cover slot correction, social noise, topic changes and return after 7/9 intervening turn positions. Each answer carries literal expected results; clarification/refusal actions are scored only in live rollouts, not counted in SQL gold accuracy.
+
+The runner selects versioned data/manifest together, records content hashes and validates dialogue gold without provider calls. The integrity checker verifies IDs, result shapes, split labels, duplicate cross-split SQL and valid prior-turn references. Dialogue patterns overlap across splits and remain diagnostic; do not claim unseen conversational-family generalization.
+
+Expansion verification: focused evaluator/dataset tests **18 passed**; default full backend tests **93 passed, 24 skipped** (DB opt-ins absent). No frontend changes or model calls. Full backend verification with metadata/product integration enabled against the restored pilot: **99 passed, 19 skipped**. The remaining skips require the original two-source warehouse.
