@@ -349,7 +349,10 @@ def switch_variant(turn_id: str, metric_id: str) -> None:
     _set_running(turn_id)
 
     def work(progress):
-        cat, sources = catalog_mod.published(), catalog_mod.load_sources()
+        cat = catalog_mod.published()
+        sources = catalog_mod.scoped_sources(cat, catalog_mod.load_sources(max_age=0))
+        if st.get("dataset_version") not in (None, _snapshot(sources)):
+            raise SpecError("stale_data", "The dataset changed since this result. Ask the question again.")
         result = run_spec(spec, cat, sources, progress)
         return _answered(turn["question"], result, cat, sources, st.get("candidate"), turn["model"], turn_id, progress,
                          st.get("variants") or [], st.get("notes") or [])
@@ -361,7 +364,11 @@ def full_result(turn_id: str) -> dict:
     st = load_turn(turn_id)["state"]
     if not st.get("query_spec"):
         raise SpecError("no_result", "This turn has no query to run.")
-    result = run_spec(dict(st["query_spec"]) | {"limit": db.RESULT_LIMIT})
+    cat = catalog_mod.published()
+    sources = catalog_mod.scoped_sources(cat, catalog_mod.load_sources(max_age=0))
+    if st.get("dataset_version") not in (None, _snapshot(sources)):
+        raise SpecError("stale_data", "The dataset changed since this result. Ask the question again.")
+    result = run_spec(dict(st["query_spec"]) | {"limit": db.RESULT_LIMIT}, cat, sources)
     return {"columns": result["columns"], "rows": result["rows"], "row_count": result["row_count"], "partial": result["partial"]}
 
 

@@ -19,17 +19,17 @@ FOLLOWUP_CUES = {
 RETURN_CUES = {"back to", "return to", "go back to", "quay lại", "trở lại", "noi lai", "nói lại", "earlier", "before"}
 EXPLICIT_NEW_CUES = {"new question", "different topic", "chủ đề khác", "câu hỏi khác", "đổi chủ đề"}
 EXPLANATION_CUES = {"why", "explain", "what does this mean", "tại sao", "vì sao", "giải thích", "ý nghĩa"}
-BREAKDOWN_PREFIX_CUES = {"chia theo", "break down by", "broken down by", "by", "theo"}
+BREAKDOWN_PREFIX_CUES = {"chia theo", "break down by", "broken down by", "by", "theo", "tính theo", "không,", "actually", "no,"}
 STOP_WORDS = {
     "the", "a", "an", "is", "are", "of", "for", "in", "on", "by", "to", "and", "or", "what", "how",
-    "show", "me", "please", "data", "all", "last", "month", "week", "day", "doanh", "thu", "theo", "cua",
+    "show", "me", "please", "data", "all", "last", "month", "week", "day", "theo", "cua",
     "của", "cho", "toi", "tôi", "la", "là", "bao", "nhieu", "nhiều", "so", "số", "tren", "trên", "ve", "về",
 }
 
 
 def _fold(text: str) -> str:
     text = unicodedata.normalize("NFKD", str(text).lower())
-    return "".join(ch for ch in text if not unicodedata.combining(ch))
+    return "".join(ch for ch in text if not unicodedata.combining(ch)).replace("đ", "d")
 
 
 def _words(text: str) -> set[str]:
@@ -150,7 +150,10 @@ def apply_turn(committed: dict | None, turn: dict, *, catalog_version: int | Non
 
 
 def _score(question: str, turn: dict) -> float:
-    q = _words(question)
+    query = _fold(question)
+    for cue in sorted(RETURN_CUES | EXPLANATION_CUES | BREAKDOWN_PREFIX_CUES, key=len, reverse=True):
+        query = re.sub(rf"(?<![a-z0-9_]){re.escape(_fold(cue))}(?![a-z0-9_])", " ", query)
+    q = _words(query)
     t = _topic(turn)
     if not q or not t:
         return 0.0
@@ -202,7 +205,7 @@ def select_context(history: list[dict], question: str, *, catalog_version: int |
     elif returning and relevant:
         chosen = scored[0][2]
         relation = "followup"
-    elif relevant and top_score >= 0.5 and followup:
+    elif explanation and relevant and top_score >= 0.5:
         chosen = scored[0][2]
         relation = "followup"
     elif explanation and len(answered) == 1:
@@ -234,7 +237,7 @@ def select_context(history: list[dict], question: str, *, catalog_version: int |
     # A standalone, sufficiently specified query starts fresh even if it shares
     # broad words/source identifiers with older turns. Explicit topic switches
     # likewise receive no prior result text in their prompt context.
-    context_candidates = relevant if relation == "followup" else []
+    context_candidates = relevant if relation == "followup" and (returning or explanation) else []
     for t in (context_candidates[:max_turns] if context_candidates else ([chosen] if chosen else [])):
         if t is not None and t not in selected:
             selected.append(t)

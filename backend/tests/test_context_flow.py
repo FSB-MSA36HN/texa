@@ -1,9 +1,37 @@
 """DB-free tests for conversational context selection and prompt rendering."""
 from copy import deepcopy
+import pytest
 
 from texa import answer, interpret
 from texa.progress import Progress
+from texa.spec import SpecError
 from tests.test_units import CAT, SOURCES
+
+
+def test_full_result_rejects_changed_snapshot_before_executing(monkeypatch):
+    monkeypatch.setattr(answer, "load_turn", lambda _: {"state": {"query_spec": {"recipe": "revenue"}, "dataset_version": "old"}})
+    monkeypatch.setattr(answer.catalog_mod, "published", lambda: CAT)
+    monkeypatch.setattr(answer.catalog_mod, "load_sources", lambda **_: SOURCES)
+    monkeypatch.setattr(answer, "_snapshot", lambda _: "new")
+    monkeypatch.setattr(answer, "run_spec", lambda *_: pytest.fail("stale result must not execute"))
+    with pytest.raises(SpecError) as error:
+        answer.full_result("turn")
+    assert error.value.code == "stale_data"
+
+
+def test_variant_switch_rejects_changed_snapshot_before_executing(monkeypatch):
+    turn = {"id": "turn", "question": "Q", "model": None,
+            "state": {"query_spec": {"recipe": "revenue"}, "variants": [{"id": "buyers"}], "dataset_version": "old"}}
+    monkeypatch.setattr(answer, "load_turn", lambda _: turn)
+    monkeypatch.setattr(answer, "_set_running", lambda _: None)
+    monkeypatch.setattr(answer, "_start", lambda _, work: work(Progress()))
+    monkeypatch.setattr(answer.catalog_mod, "published", lambda: CAT)
+    monkeypatch.setattr(answer.catalog_mod, "load_sources", lambda **_: SOURCES)
+    monkeypatch.setattr(answer, "_snapshot", lambda _: "new")
+    monkeypatch.setattr(answer, "run_spec", lambda *_: pytest.fail("stale variant must not execute"))
+    with pytest.raises(SpecError) as error:
+        answer.switch_variant("turn", "buyers")
+    assert error.value.code == "stale_data"
 
 
 def turn(id_, question, recipe, *, dataset="snapshot-a", version=1, selection=None):

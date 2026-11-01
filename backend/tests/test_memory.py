@@ -1,4 +1,19 @@
 from texa.memory import apply_turn, select_context
+
+
+def test_ordinary_followup_targets_active_query_even_if_old_question_matches_words():
+    old = answered("a", "Revenue only on mobile", filters=[{"field": "device", "values": ["mobile"]}])
+    active = answered("b", "Buyers for all devices", recipe="buyers")
+    ctx = select_context([old, active], "Only mobile", catalog_version=3)
+    assert ctx["references"] == ["b"]
+    assert [t["id"] for t in ctx["turns"]] == ["b"]
+
+
+def test_vietnamese_return_keeps_metric_words_for_topic_lookup():
+    old = answered("a", "Doanh thu toàn bộ dữ liệu")
+    active = answered("b", "Số người mua ngày hôm qua", recipe="buyers")
+    ctx = select_context([old, active], "Quay lại doanh thu", catalog_version=3)
+    assert ctx["references"] == ["a"]
 from uuid import UUID
 
 

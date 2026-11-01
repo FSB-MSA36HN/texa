@@ -1,0 +1,7 @@
+- id: smoke_clarify_followup
+  split: dev
+  dependency_distance: 1
+  turns:
+    - {question: "Revenue by week", action: clarify, ask_fields: [time_range]}
+    - {question: "All time", action: clarification_answer, oracle_answers: {time_range: [all]}, state: {metric: revenue, time_range: all, filters: [], breakdown: event_week}, gold_sql: "SELECT date_trunc('week',event_date)::date AS event_week, sum(revenue)::numeric AS revenue FROM analytics.event_activity WHERE source_id='event_benchmark' AND event_name='purchase' GROUP BY 1"}
+    - {question: "Now buyers instead", action: answer, referenced_turn: 1, state: {metric: buyers, time_range: all, filters: [], breakdown: null}, gold_sql: "SELECT count(DISTINCT user_id)::bigint AS buyers FROM analytics.event_activity WHERE source_id='event_benchmark' AND event_name='purchase'"}

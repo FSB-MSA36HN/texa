@@ -122,7 +122,8 @@ Rules:
 - NULL or missing values mean "no data", never zero. Respect WARNINGS: mention the ones that change how to read the answer.
 - Say which store(s) and which period the answer covers (PERIOD).
 - answer_request.need: "describe" = state the main result; "compare" = contrast the groups/periods; "explain" = give
-  plausible reasons only as hypotheses grounded in the dimensions available, and suggest a question to check them.
+  observed differences and breakdowns grounded in the dimensions available. These observations do not establish
+  causes. Say when the data cannot answer why and suggest a question to investigate.
 - headline: one sentence with the main result. body: 1-4 short sentences adding the most useful detail.
   caveats: short notes on data limits (may be empty). follow_ups: up to 3 next questions the catalog can answer,
   each written as the USER would ask Texa ("Revenue by week in December"), never a question to the user.
