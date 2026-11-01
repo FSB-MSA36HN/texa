@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS app.conversations (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+-- Additive migration: old conversations rebuild state from their stored turns.
+ALTER TABLE app.conversations ADD COLUMN IF NOT EXISTS memory jsonb NOT NULL DEFAULT '{}'::jsonb;
 
 -- One row per question. state holds the pipeline outputs (candidate, spec, sql, preview, facts, insight...).
 CREATE TABLE IF NOT EXISTS app.turns (

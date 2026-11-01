@@ -8,3 +8,5 @@ web/node_modules/
 web/dist/
 .run.pid
 .claude/
+.runtime/
+backend/eval/results/

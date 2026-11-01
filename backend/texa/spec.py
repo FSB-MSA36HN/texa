@@ -1,5 +1,6 @@
 """QuerySpec: the only thing the compiler accepts. The validator checks it against the published catalog."""
 from datetime import date
+import math
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
@@ -146,7 +147,8 @@ def validate_spec(raw: dict, cat: Catalog, sources: dict[str, Source]) -> QueryS
         if dim.value_type == "number" and f.operator != "CONTAINS":
             for v in f.values:
                 try:
-                    float(v)
+                    if not math.isfinite(float(v)):
+                        raise ValueError("non-finite numeric value")
                 except ValueError:
                     raise SpecError("invalid_filter", f"{dim.label} needs numbers, got {v!r}.")
         if dim.kind in ("time", "bucket"):

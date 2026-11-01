@@ -70,11 +70,17 @@ def advance(candidate: dict, answers: dict[str, list[str]], cat: Catalog, source
         recipe, metrics = metrics[0], []
     if answers.get("recipe"):
         recipe, metrics = answers["recipe"][0], []
+    elif recipe and candidate["recipe_alternatives"] and not candidate.get("recipe_stated"):
+        alts = list(dict.fromkeys([recipe, *candidate["recipe_alternatives"]]))
+        if len(alts) > 1:
+            recipe, metrics = "", []
+            fields.append({"id": "recipe", "label": t(lang, "which_metric"), "kind": "single_choice", "required": True,
+                           "allow_other": False, "default": [],
+                           "choices": [_choice(a, cat.mets[a].label, cat.mets[a].description) for a in alts]})
     elif not recipe and not metrics and candidate["recipe_alternatives"]:
         alts = list(dict.fromkeys(candidate["recipe_alternatives"]))
-        groups = {getattr(cat.variant_group_of(a), "id", None) for a in alts}
-        if len(alts) == 1 or (len(groups) == 1 and None not in groups):
-            recipe = alts[0]  # ways of counting one term: answer with the first, offer a switch
+        if len(alts) == 1:
+            recipe = alts[0]
         else:
             fields.append({"id": "recipe", "label": t(lang, "which_metric"), "kind": "single_choice", "required": True,
                            "allow_other": False, "default": [],
@@ -113,7 +119,9 @@ def advance(candidate: dict, answers: dict[str, list[str]], cat: Catalog, source
             fields.append({"id": "source", "label": t(lang, "which_store"), "kind": "single_choice", "required": True,
                            "allow_other": False, "default": [],
                            "choices": [_choice(s, sources[s].label, f"{sources[s].min_date} → {sources[s].max_date}")
-                                       for s in candidates_] + [_choice("__all__", t(lang, "all_stores"))]})
+                                       for s in candidates_] + ([_choice("__all__", t(lang, "all_stores"))] if cat.policy.max_sources > 1 else [])})
+    if len(chosen) > cat.policy.max_sources:
+        return Outcome("refuse", message=f"Choose one dataset per question (limit: {cat.policy.max_sources}).", suggestions=examples)
 
     # -- period --------------------------------------------------------------------------------------------
     tr = candidate["time_range"]
@@ -135,7 +143,7 @@ def advance(candidate: dict, answers: dict[str, list[str]], cat: Catalog, source
     elif tr["kind"] == "all" or shape == "distinct_values":
         time_range = {"kind": "all"}
     if time_range is None:
-        ends = sorted({sources[s].max_date for s in (chosen or sources)})
+        ends = sorted({sources[s].max_date for s in (chosen or sources) if sources[s].max_date})
         fields.append({"id": "time_range", "label": t(lang, "which_period"), "kind": "single_choice", "required": True,
                        "allow_other": False, "default": ["last_30"],
                        "choices": [_choice(k, t(lang, k), t(lang, "of_data", end=" / ".join(ends)) if k != "all" else "")

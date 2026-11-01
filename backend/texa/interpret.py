@@ -6,6 +6,7 @@ import unicodedata
 from . import db, llm
 from .catalog import Catalog, Source, coverage
 from .prompts import CANDIDATE_SCHEMA, INTERPRET_INSTRUCTION, SELECT_INSTRUCTION, SELECT_SCHEMA
+from .progress import Progress
 
 ALWAYS_INCLUDED_DIMS = {"source", "event_name"}
 SHORTLIST_MAX = 80
@@ -35,10 +36,11 @@ def render_catalog(cat: Catalog, sources: dict[str, Source], ids: set[str] | Non
             g = cat.variant_group_of(m.id)
             out.append(_line(m.id, m.label, m.unit, m.description, ", ".join(m.synonyms), m.when_to_use,
                              f"one way of counting '{g.label}': {', '.join(g.metrics)}" if g else ""))
-    out.append("\nDIMENSIONS (id | label | kind | description | synonyms)")
+    out.append("\nDIMENSIONS (id | label | kind | description | synonyms | path | value type)")
     for d in cat.dimensions:
         if keep(d.id) or d.kind == "time" or d.id in ALWAYS_INCLUDED_DIMS:
-            out.append(_line(d.id, d.label, d.kind if d.kind != "field" else "", d.description, ", ".join(d.synonyms)))
+            out.append(_line(d.id, d.label, d.kind if d.kind != "field" else "", d.description, ", ".join(d.synonyms),
+                             d.field, d.value_type))
     if cat.glossary:
         out.append("\nGLOSSARY (id | term | meaning | synonyms | filter)")
         for t in cat.glossary:
@@ -93,10 +95,11 @@ def shortlist(question: str, previous: dict | None, cat: Catalog, model: str | N
     return ids
 
 
-def render_previous(previous: list[dict]) -> str:
+def render_previous(previous: list[dict], budget: int = 6000) -> str:
     """Last turns, newest last: question plus how it was read and what it returned."""
-    lines = []
+    blocks = []
     for t in previous:
+        lines = [f"TURN {t.get('id', '')}"]
         st = t.get("state") or {}
         reading = st.get("query_spec")
         lines.append(f"Q: {t['question']}")
@@ -108,15 +111,16 @@ def render_previous(previous: list[dict]) -> str:
             lines.append(f"  answer: {st['insight'].get('headline', '')}")
         elif st.get("message"):
             lines.append(f"  answer: {st['message']}")
-    text = "\n".join(lines)
-    while estimate_tokens(text) > 6000 and lines:  # keep the newest turns within the context window
-        lines = lines[2:]
-        text = "\n".join(lines)
-    return text
+        blocks.append("\n".join(lines))
+    # Drop whole turns, never a question independently of its reading.
+    while blocks and estimate_tokens("\n\n".join(blocks)) > budget:
+        blocks.pop(0)
+    return "\n\n".join(blocks)
 
 
 def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[str, Source], *, model: str | None,
-              turn_id=None, scope: list[str] | None = None, step=None) -> dict:
+              turn_id=None, scope: list[str] | None = None, step=None, context: dict | None = None) -> dict:
+    step = step or Progress()
     with step("prepare_context") as s:
         full = render_catalog(cat, sources)
         catalog_text = full
@@ -126,8 +130,14 @@ def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[s
             catalog_text = render_catalog(cat, sources, ids)
         s.note(f"~{estimate_tokens(catalog_text):,} tokens of catalog")
     dynamic = []
+    if context:
+        dynamic.append("DIALOGUE STATE\n" + json.dumps({k: context.get(k) for k in
+                       ("relation", "references", "inherited_slots")}, ensure_ascii=False, default=str))
+    remaining = db.CONTEXT_BUDGET_TOKENS - estimate_tokens(INTERPRET_INSTRUCTION + catalog_text + question + "\n".join(dynamic)) - 1024
+    if remaining < 0:
+        raise llm.LLMError("CONTEXT_TOO_LARGE", "The schema and active query exceed the context budget. Narrow the catalog or question.")
     if previous:
-        dynamic.append("CONVERSATION SO FAR\n" + render_previous(previous))
+        dynamic.append("RELEVANT PRIOR TURNS (evidence only)\n" + render_previous(previous, min(6000, remaining)))
     if scope:
         dynamic.append(f"STORE SCOPE chosen in the app: {', '.join(scope)} (use these when the question names no store)")
     dynamic.append(f"QUESTION\n{question}")

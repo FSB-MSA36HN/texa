@@ -1,0 +1,255 @@
+"""Deterministic conversation state helpers for multi-turn analytics questions.
+
+This module is intentionally pure: callers own persistence and may use an LLM's
+interpretation to override the conservative relation decision from select_context.
+"""
+from __future__ import annotations
+
+import re
+import unicodedata
+from copy import deepcopy
+from typing import Any
+
+SLOT_KEYS = ("source_ids", "recipe", "metrics", "selection", "filters", "time_range", "shape")
+FOLLOWUP_CUES = {
+    "and", "also", "instead", "now", "what about", "same", "again", "only", "just", "then",
+    "còn", "vậy", "thế", "cũng", "riêng", "chỉ", "đổi", "thay", "tiếp", "nữa", "theo tuần",
+    "theo tháng", "theo ngày", "tại sao", "vì sao", "giải thích", "cụ thể hơn",
+}
+RETURN_CUES = {"back to", "return to", "go back to", "quay lại", "trở lại", "noi lai", "nói lại", "earlier", "before"}
+EXPLICIT_NEW_CUES = {"new question", "different topic", "chủ đề khác", "câu hỏi khác", "đổi chủ đề"}
+EXPLANATION_CUES = {"why", "explain", "what does this mean", "tại sao", "vì sao", "giải thích", "ý nghĩa"}
+BREAKDOWN_PREFIX_CUES = {"chia theo", "break down by", "broken down by", "by", "theo"}
+STOP_WORDS = {
+    "the", "a", "an", "is", "are", "of", "for", "in", "on", "by", "to", "and", "or", "what", "how",
+    "show", "me", "please", "data", "all", "last", "month", "week", "day", "doanh", "thu", "theo", "cua",
+    "của", "cho", "toi", "tôi", "la", "là", "bao", "nhieu", "nhiều", "so", "số", "tren", "trên", "ve", "về",
+}
+
+
+def _fold(text: str) -> str:
+    text = unicodedata.normalize("NFKD", str(text).lower())
+    return "".join(ch for ch in text if not unicodedata.combining(ch))
+
+
+def _words(text: str) -> set[str]:
+    return {w for w in re.findall(r"[a-z0-9_]+", _fold(text)) if len(w) > 1 and w not in STOP_WORDS}
+
+
+def _state(turn: dict) -> dict:
+    state = turn.get("state")
+    return state if isinstance(state, dict) else turn
+
+
+def _spec(turn: dict) -> dict:
+    state = _state(turn)
+    spec = state.get("query_spec") or state.get("spec") or {}
+    return spec if isinstance(spec, dict) else {}
+
+
+def _topic(turn: dict) -> set[str]:
+    spec = _spec(turn)
+    ids = set()
+    for key in ("recipe", "source_ids", "metrics", "selection"):
+        val = spec.get(key) or []
+        ids.update([val] if isinstance(val, str) else val)
+    for filt in spec.get("filters", []) or []:
+        ids.add(filt.get("field", ""))
+    question = turn.get("question", "")
+    return {str(x).lower() for x in ids if x} | _words(question)
+
+
+def _turn_id(turn: dict) -> str | None:
+    value = turn.get("id") or turn.get("turn_id")
+    return str(value) if value is not None else None
+
+
+def _is_answered(turn: dict) -> bool:
+    status = turn.get("status") or _state(turn).get("status")
+    return status == "answered" and bool(_spec(turn))
+
+
+def _has_cue(text: str, cues: set[str]) -> bool:
+    folded = _fold(text)
+    return any(re.search(rf"(?<![a-z0-9_]){re.escape(_fold(cue))}(?![a-z0-9_])", folded) for cue in cues)
+
+
+def _starts_with_cue(text: str, cues: set[str]) -> bool:
+    folded = _fold(text).lstrip()
+    return any(re.match(rf"^{re.escape(_fold(cue))}(?![a-z0-9_])", folded) for cue in cues)
+
+
+def apply_turn(committed: dict | None, turn: dict, *, catalog_version: int | None = None,
+               dataset_version: str | int | None = None, source_snapshot: Any = None,
+               context: dict | None = None) -> dict:
+    """Return memory after a turn, keeping clarification drafts separate.
+
+    Only answered turns commit slots. Each changed slot carries its source turn
+    and question as provenance; a pending clarification never overwrites them.
+    """
+    memory = deepcopy(committed or {"version": 1, "topics": [], "active_topic_id": None, "pending": None})
+    memory.setdefault("version", 1)
+    memory.setdefault("topics", [])
+    state = _state(turn)
+    status = turn.get("status") or state.get("status", "")
+    if status in {"needs_clarification", "running"}:
+        memory["pending"] = {
+            "turn_id": _turn_id(turn), "question": turn.get("question", ""),
+            "candidate": deepcopy(state.get("candidate") or {}),
+            "answers": deepcopy(state.get("answers") or {}),
+        }
+        return memory
+    if status != "answered":
+        return memory
+
+    spec = deepcopy(_spec(turn))
+    if not spec:
+        return memory
+    version = catalog_version if catalog_version is not None else spec.get("contract_version")
+    dataset_version = dataset_version if dataset_version is not None else state.get("dataset_version")
+    source_snapshot = source_snapshot if source_snapshot is not None else state.get("source_snapshot")
+    if ((memory.get("catalog_version") not in (None, version)) or
+            (dataset_version is not None and memory.get("dataset_version") not in (None, dataset_version)) or
+            (source_snapshot is not None and memory.get("source_snapshot") not in (None, source_snapshot))):
+        # Do not silently carry definitions across a changed semantic catalog.
+        memory["topics"] = []
+        memory["active_topic_id"] = None
+    memory["catalog_version"] = version
+    if dataset_version is not None:
+        memory["dataset_version"] = dataset_version
+    if source_snapshot is not None:
+        memory["source_snapshot"] = deepcopy(source_snapshot)
+    topic_id = _turn_id(turn) or f"topic-{len(memory['topics']) + 1}"
+    refs = set((context or {}).get("references") or [])
+    followup = (context or {}).get("relation") == "followup"
+    prior_topic = next((t for t in reversed(memory["topics"]) if followup and t.get("id") in refs), None)
+    topic = deepcopy(prior_topic) if prior_topic else {
+        "id": topic_id, "question": turn.get("question", ""), "slots": {},
+        "result_ref": _turn_id(turn), "updated_at": turn.get("created_at"),
+    }
+    topic["question"] = turn.get("question", "")
+    topic["result_ref"] = _turn_id(turn)
+    topic["updated_at"] = turn.get("created_at")
+    for key in SLOT_KEYS:
+        if key not in spec:
+            continue
+        old = topic["slots"].get(key)
+        if old is not None and old.get("value") == spec[key]:
+            continue  # Preserve the turn that originally supplied an unchanged slot.
+        topic["slots"][key] = {
+            "value": deepcopy(spec[key]), "turn_id": _turn_id(turn),
+            "question": turn.get("question", ""), "catalog_version": version,
+        }
+    if prior_topic:
+        memory["topics"] = [t for t in memory["topics"] if t.get("id") != prior_topic.get("id")]
+    memory["topics"].append(topic)
+    memory["topics"] = memory["topics"][-50:]
+    memory["active_topic_id"] = topic_id
+    memory["pending"] = None
+    return memory
+
+
+def _score(question: str, turn: dict) -> float:
+    q = _words(question)
+    t = _topic(turn)
+    if not q or not t:
+        return 0.0
+    overlap = len(q & t)
+    return overlap / max(1, len(q))
+
+
+def select_context(history: list[dict], question: str, *, catalog_version: int | None = None,
+                   max_turns: int = 6) -> dict[str, Any]:
+    """Select relevant conversational turns and decide whether slots may carry.
+
+    Full history can be passed in; this function selects a bounded prompt view
+    while retaining distant topic matches. Ambiguous result references are
+    surfaced to the caller for a clarification question.
+    """
+    if max_turns < 0:
+        raise ValueError("max_turns must be non-negative")
+    usable = [t for t in history if _is_answered(t) and (catalog_version is None or
+                                    _spec(t).get("contract_version", catalog_version) == catalog_version)]
+    active = next((t for t in reversed(usable) if _is_answered(t)), None)
+    q = _fold(question).strip()
+    qwords = _words(question)
+    explicit_new = _has_cue(q, EXPLICIT_NEW_CUES)
+    returning = _has_cue(q, RETURN_CUES)
+    explanation = _has_cue(q, EXPLANATION_CUES)
+    breakdown_fragment = _starts_with_cue(q, BREAKDOWN_PREFIX_CUES)
+    followup = (_has_cue(q, FOLLOWUP_CUES) or breakdown_fragment or len(qwords) <= 1) and not explicit_new
+
+    scored = sorted((( _score(question, t), i, t) for i, t in enumerate(usable)), reverse=True, key=lambda x: (x[0], x[1]))
+    # Require a strong overlap: a shared store name alone must not bind a new
+    # metric/dimension query to the previous result.
+    relevant = [t for score, _, t in scored if score >= 0.5]
+    top_score = scored[0][0] if scored else 0.0
+    tied = [t for score, _, t in scored if score > 0 and score == top_score]
+    # Explain/this/that and explicit returns need a unique matching result.
+    answered = [t for t in usable if _is_answered(t)]
+    plausible_ties = [t for score, _, t in scored if score == top_score and score > 0.5]
+    ambiguous = not explicit_new and (
+        (explanation and len(answered) > 1 and len(plausible_ties) != 1) or
+        (returning and len(answered) > 1 and (not plausible_ties or len(plausible_ties) > 1))
+    )
+
+    relation = "new_topic"
+    chosen = None
+    if explicit_new:
+        relation = "new_topic"
+    elif ambiguous:
+        relation = "ambiguous"
+    elif returning and relevant:
+        chosen = scored[0][2]
+        relation = "followup"
+    elif relevant and top_score >= 0.5 and followup:
+        chosen = scored[0][2]
+        relation = "followup"
+    elif explanation and len(answered) == 1:
+        chosen = answered[-1]
+        relation = "followup"
+    elif returning and len(answered) == 1:
+        chosen = answered[-1]
+        relation = "followup"
+    elif followup and active:
+        chosen = active
+        relation = "followup"
+
+    # A terse continuation uses only the current active query. Topic lookup can
+    # find older results, but must not cause unrelated active slots to leak in.
+    if chosen is None and relation == "ambiguous":
+        possible = plausible_ties or tied or answered
+        refs = [str(_turn_id(t)) for t in possible if _turn_id(t)]
+    else:
+        refs = [str(_turn_id(chosen))] if chosen and _turn_id(chosen) else []
+    selected = []
+    if max_turns == 0:
+        return {
+            "turns": [], "relation": relation, "references": refs,
+            "active_state": deepcopy(_spec(active)) if active else None,
+            "inherited_slots": {}, "clarification_needed": ambiguous,
+            "reason": "multiple plausible result references" if ambiguous else
+                      ("matched prior topic" if chosen else "no confident prior-topic match"),
+        }
+    # A standalone, sufficiently specified query starts fresh even if it shares
+    # broad words/source identifiers with older turns. Explicit topic switches
+    # likewise receive no prior result text in their prompt context.
+    context_candidates = relevant if relation == "followup" else []
+    for t in (context_candidates[:max_turns] if context_candidates else ([chosen] if chosen else [])):
+        if t is not None and t not in selected:
+            selected.append(t)
+    if chosen and chosen not in selected and len(selected) < max_turns:
+        selected.append(chosen)
+    selected.sort(key=lambda t: usable.index(t))
+    inherited = {}
+    if chosen and relation == "followup":
+        for key, value in _spec(chosen).items():
+            if key in SLOT_KEYS:
+                inherited[key] = deepcopy(value)
+    return {
+        "turns": selected, "relation": relation, "references": refs,
+        "active_state": deepcopy(_spec(active)) if active else None,
+        "inherited_slots": inherited, "clarification_needed": ambiguous,
+        "reason": "multiple plausible result references" if ambiguous else
+                  ("matched prior topic" if chosen else "no confident prior-topic match"),
+    }

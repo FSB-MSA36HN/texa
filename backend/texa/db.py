@@ -10,7 +10,7 @@ from psycopg_pool import ConnectionPool
 
 DB_DSN = os.environ.get("TEXA_DB_DSN", "postgresql://texa:texa@localhost:15432/texa")
 READER_DSN = os.environ.get("TEXA_READER_DSN", "postgresql://texa_reader:texa_reader@localhost:15432/texa")
-CATALOG_PATH = Path(os.environ.get("TEXA_CATALOG", Path(__file__).resolve().parents[2] / "catalog" / "ecommerce.yaml"))
+CATALOG_PATH = Path(os.environ.get("TEXA_CATALOG", Path(__file__).resolve().parents[2] / "catalog" / "product_events.yaml"))
 CONTEXT_BUDGET_TOKENS = int(os.environ.get("TEXA_CONTEXT_BUDGET", "32000"))
 RESULT_LIMIT = 2000
 PREVIEW_ROWS = 100
@@ -33,6 +33,8 @@ def app_conn():
 @contextmanager
 def reader_conn():
     with _pool(READER_DSN).connection() as conn:
+        conn.execute("SET TRANSACTION READ ONLY")
+        conn.execute("SET LOCAL statement_timeout = '30s'")
         yield conn
 
 
