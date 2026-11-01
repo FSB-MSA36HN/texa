@@ -11,6 +11,7 @@ PM/PO theo dõi một sản phẩm thương mại điện tử: hỏi số ngư�
 - `purchases` đếm item events, không phải orders. `sessions` chỉ có khi nguồn có ID. Buyer/user ratio là tỷ lệ trong kỳ, không phải funnel có thứ tự.
 - Event grain cố định: một hàng/một event; ID event duy nhất trong nguồn. Import phải báo lỗi duplicate, không âm thầm nhân đôi.
 - Nested object dưới `ep`/`up`: tối đa hai key, ví dụ `ep.device.type`. Chỉ path trong catalog; scalar text hoặc numeric có khai báo cast. Missing và JSON null trở thành SQL NULL. Không expand array.
+- Top-k hỗ trợ một metric và breakdown không phải thời gian: metric giảm dần, key tăng dần khi hòa. Top-k là phạm vi truy vấn, không phải cắt preview; tổng trên kết quả chỉ là tổng trong các nhóm top-k.
 - Thời gian theo event UTC date. QuerySpec `between` dùng start/end DATE bao gồm cả ngày cuối để tương thích UI hiện có; tương đương `[start, end + 1 ngày)`. Benchmark phải cố định mốc dữ liệu cho relative date.
 - Không có order/AOV, FX, retention, Olist delivery/review, join đa doanh nghiệp, tự sinh catalog từ tài liệu hoặc tích hợp nhiều DB trong bản đầu.
 

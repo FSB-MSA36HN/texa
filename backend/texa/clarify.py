@@ -200,4 +200,6 @@ def advance(candidate: dict, answers: dict[str, list[str]], cat: Catalog, source
 
     spec = {"source_ids": chosen, "shape": shape, "selection": selection, "recipe": recipe if recipe else "",
             "metrics": metrics if not recipe else [], "filters": filters, "time_range": time_range}
+    if candidate.get("top_k", 0):
+        spec["top_k"] = candidate["top_k"]
     return Outcome("spec", spec=spec, variants=variants, notes=notes)

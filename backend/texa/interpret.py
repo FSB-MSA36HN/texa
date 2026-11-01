@@ -105,7 +105,7 @@ def render_previous(previous: list[dict], budget: int = 6000) -> str:
         lines.append(f"Q: {t['question']}")
         if reading:
             lines.append("  reading: " + json.dumps({k: reading[k] for k in ("source_ids", "shape", "selection", "recipe",
-                                                                           "metrics", "filters", "time_range") if reading.get(k)},
+                                                                           "metrics", "filters", "time_range", "top_k") if reading.get(k)},
                                                      ensure_ascii=False, default=str))
         if st.get("insight"):
             lines.append(f"  answer: {st['insight'].get('headline', '')}")

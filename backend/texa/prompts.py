@@ -40,6 +40,8 @@ For "query":
   A question about the highest/lowest/best/worst PERIOD ("the best month", "peak day", "slowest week") needs that
   period: shape "time_trend" with the matching time dimension, even when no breakdown is asked for. A single total
   per store cannot say which period was highest.
+- top_k: 0 unless explicitly requesting the top K non-time groups by one metric (1-2000).
+  Top K sorts the metric descending with group keys ascending as ties. Do not apply it to chronological trends.
 - filters: restrict to values the user named. field is a dimension id; copy values exactly as the user wrote them in
   values_mentioned (Texa matches them against the data). A GLOSSARY term with a field and values IS a filter on that
   field with those values.
@@ -67,7 +69,7 @@ CANDIDATE_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
     "required": ["outcome", "reason", "reply", "suggestions", "source_ids", "shape", "selection", "recipe", "metrics",
-                 "recipe_alternatives", "recipe_stated", "filters", "time_range", "answer_request", "language"],
+                 "recipe_alternatives", "recipe_stated", "filters", "time_range", "answer_request", "language", "top_k"],
     "properties": {
         "outcome": {"type": "string", "enum": ["query", "conversation", "answer_from_previous", "unsupported"]},
         "reason": {"type": "string"},
@@ -91,6 +93,7 @@ CANDIDATE_SCHEMA = {
                            "properties": {"need": {"type": "string", "enum": ["none", "describe", "compare", "explain"]},
                                           "ask": {"type": "string"}}},
         "language": {"type": "string"},
+        "top_k": {"type": "integer", "minimum": 0, "maximum": 2000},
     },
 }
 

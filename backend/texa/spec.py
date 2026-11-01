@@ -49,6 +49,7 @@ class QuerySpec(Strict):
     filters: list[Filter] = []
     time_range: TimeRange
     limit: int = Field(default=1000, ge=1, le=2000)
+    top_k: int | None = Field(default=None, ge=1, le=2000)
 
     @property
     def metric_ids(self) -> list[str]:
@@ -102,6 +103,9 @@ def validate_spec(raw: dict, cat: Catalog, sources: dict[str, Source]) -> QueryS
         raise SpecError("invalid_spec", "A breakdown needs at least one dimension.")
     if spec.shape == "time_trend" and not any(cat.dims[d].is_time for d in spec.selection):
         raise SpecError("invalid_spec", "A time trend needs a day, week or month breakdown.")
+    if spec.top_k is not None and (spec.shape != "breakdown" or len(spec.metric_ids) != 1 or
+                                   any(cat.dims[d].is_time for d in spec.selection)):
+        raise SpecError("unsupported_combination", "Top-k requires one metric and a non-time breakdown.")
 
     # One period field per question: event metrics count by event day, cohort metrics by first-seen day.
     metrics = [cat.mets[m] for m in spec.metric_ids]

@@ -47,6 +47,8 @@ def run_spec(raw_spec: dict, cat=None, sources=None, step: Progress = Progress()
 
     period = resolved_period(spec, sources)
     warnings = list(av.warnings)
+    if spec.top_k:
+        warnings.append(f"This result contains the top {spec.top_k} groups; totals describe these groups only.")
     if not result["rows"]:
         spans = "; ".join(f"{sources[s].label} has data from {p['data_start']} to {p['data_end']}" for s, p in period.items())
         warnings.append(f"No rows match this question. {spans}.")

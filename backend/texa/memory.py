@@ -10,7 +10,7 @@ import unicodedata
 from copy import deepcopy
 from typing import Any
 
-SLOT_KEYS = ("source_ids", "recipe", "metrics", "selection", "filters", "time_range", "shape")
+SLOT_KEYS = ("source_ids", "recipe", "metrics", "selection", "filters", "time_range", "shape", "top_k")
 FOLLOWUP_CUES = {
     "and", "also", "instead", "now", "what about", "same", "again", "only", "just", "then",
     "còn", "vậy", "thế", "cũng", "riêng", "chỉ", "đổi", "thay", "tiếp", "nữa", "theo tuần",

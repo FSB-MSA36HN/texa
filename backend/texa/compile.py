@@ -287,8 +287,13 @@ def _finish(b, q, columns, hidden, spec, dims, primary, order_hint) -> Compiled:
             order += [sql.SQL("{} ASC NULLS LAST").format(sql.Identifier(f"__sort_{d.id}" if d.kind == "bucket" else d.id))
                       for d in dims if not d.is_time]
         else:
-            order += [sql.SQL("{} ASC").format(sql.Identifier(f"__sort_{d.id}")) for d in dims if d.kind == "bucket"]
+            if not spec.top_k:
+                order += [sql.SQL("{} ASC").format(sql.Identifier(f"__sort_{d.id}")) for d in dims if d.kind == "bucket"]
             order += [sql.SQL("{} DESC NULLS LAST").format(sql.Identifier(primary))]
+            order += [sql.SQL("{} ASC NULLS LAST").format(sql.Identifier(d.id)) for d in dims if d.kind != "bucket"]
+            if spec.top_k:
+                order += [sql.SQL("{} ASC").format(sql.Identifier(f"__sort_{d.id}")) for d in dims if d.kind == "bucket"]
         q = sql.SQL("SELECT * FROM ({}) q ORDER BY {}").format(q, sql.SQL(", ").join(order))
-    q = q + sql.SQL(" LIMIT {}").format(b.bind(spec.limit + 1))
+    # Requested top-k belongs to query semantics, separate from the safety row cap.
+    q = q + sql.SQL(" LIMIT {}").format(b.bind(min(spec.top_k, spec.limit + 1) if spec.top_k else spec.limit + 1))
     return Compiled(q, b.params, columns, order_hint, hidden)

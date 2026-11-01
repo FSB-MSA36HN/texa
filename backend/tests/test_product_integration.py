@@ -33,6 +33,18 @@ def test_nested_query_executes_against_postgresql(product):
     assert {r["device_type"]: r["events"] for r in out["rows"]} == {"mobile": 6, "desktop": 3, "tablet": 3}
 
 
+def test_requested_top_k_is_preserved_when_full_result_is_rerun(product, monkeypatch):
+    cat, sources = product
+    spec = {"source_ids": ["event_benchmark"], "recipe": "events", "shape": "breakdown", "top_k": 2,
+            "selection": ["device_type"], "time_range": {"kind": "all"}}
+    out = run_spec(spec, cat, sources)
+    assert [r["device_type"] for r in out["rows"]] == ["mobile", "desktop"]
+    assert not out["partial"]
+    monkeypatch.setattr(answer, "load_turn", lambda _: {"state": {"query_spec": out["query_spec"], "dataset_version": answer._snapshot(sources)}})
+    full = answer.full_result("turn")
+    assert full["rows"] == out["rows"]
+
+
 def test_numeric_nested_filters_and_missing_values_on_transaction_fixture(product):
     cat, sources = deepcopy(product)
     raw = cat.model_dump()

@@ -13,7 +13,7 @@ export type FormField = { id: string; label: string; kind: 'single_choice' | 'mu
 export type Step = { step: string; status: 'running' | 'done' | 'failed'; ms?: number; note?: string | null }
 export type Mark = { text: string; kind: 'sql' | 'calculation' | 'user'; label: string; formula?: string }
 export type Insight = { headline: string; body: string[]; caveats: string[]; follow_ups: string[]; cited?: string[]; marks?: Mark[] }
-export type QuerySpec = { source_ids: string[]; shape: string; selection: string[]; recipe: string; metrics: string[]; filters: { field: string; operator: string; values: string[] }[]; time_range: { kind: string; days?: number; start?: string; end?: string } }
+export type QuerySpec = { source_ids: string[]; shape: string; selection: string[]; recipe: string; metrics: string[]; top_k?: number | null; filters: { field: string; operator: string; values: string[] }[]; time_range: { kind: string; days?: number; start?: string; end?: string } }
 export type Turn = {
   id: string; conversation_id: string; question: string; created_at: string; model: string | null
   status: 'running' | 'answered' | 'discussed' | 'needs_clarification' | 'refused' | 'conversation' | 'error' | 'cancelled'

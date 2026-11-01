@@ -52,6 +52,7 @@ export function readingChips(spec: QuerySpec, boot: Bootstrap, period?: Record<s
   const chips: string[] = []
   const metrics = spec.recipe ? [spec.recipe] : spec.metrics
   if (metrics.length) chips.push(metrics.map((x) => m[x] ?? x).join(', '))
+  if (spec.top_k) chips.push(`Top ${spec.top_k}`)
   if (spec.selection.length) chips.push('theo ' + spec.selection.map((x) => d[x] ?? x).join(', '))
   for (const f of spec.filters) chips.push(`${d[f.field] ?? f.field} ${f.operator} ${f.values.join(', ')}`)
   const tr = spec.time_range
