@@ -84,3 +84,9 @@ Added inclusive cross-month windows, independent dimension assignments, nested m
 The runner selects versioned data/manifest together, records content hashes and validates dialogue gold without provider calls. The integrity checker verifies IDs, result shapes, split labels, duplicate cross-split SQL and valid prior-turn references. Dialogue patterns overlap across splits and remain diagnostic; do not claim unseen conversational-family generalization.
 
 Expansion verification: focused evaluator/dataset tests **18 passed**; default full backend tests **93 passed, 24 skipped** (DB opt-ins absent). No frontend changes or model calls. Full backend verification with metadata/product integration enabled against the restored pilot: **99 passed, 19 skipped**. The remaining skips require the original two-source warehouse.
+
+## Component ablation study — 03/11/2026
+
+Implemented offline F/M6/M0/C0 variants, a separate frozen 24-dialogue/40-interaction suite, adaptive oracle rollout, protocol locking, isolated repeated runs and paired cluster reporting. Default product behavior and compiler/validation stay enabled. Gold checks passed for all 77 memory answer turns and 40 interaction/control targets on PostgreSQL 16.2. Model calls in integration tests are scripted. See `backend/eval/ABLATION_README.md` for commands and `docs/ABLATION_STUDY_RESULTS.md` for pending live-model results. No model-quality improvement is claimed before empirical runs.
+
+Verification of the expansion: full backend on restored pilot with metadata/product enabled **139 passed, 23 skipped**; ablation-specific PostgreSQL checks on the separate ablation fixture **4 passed**. Reporter activation-deduplication check was then added and its focused suite passed **7/7**. Skips are not successful tests.

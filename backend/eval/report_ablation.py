@@ -208,6 +208,8 @@ def _summarize(runs: list[dict], repeats: list[int], ids: list[str]) -> dict[str
     tp = fp = fn = rounds = 0
     usage_incomplete = usage_rows = 0
     slots: dict[str, dict[str, int]] = defaultdict(lambda: {"correct": 0, "total": 0})
+    activation = {"turn_observations": 0, "clarification_requested": 0, "guess_invoked": 0}
+    activation_reasons, memory_relations = defaultdict(int), defaultdict(int)
     for rep in repeats:
         scenarios = by_repeat[rep]
         for sid in ids:
@@ -230,10 +232,21 @@ def _summarize(runs: list[dict], repeats: list[int], ids: list[str]) -> dict[str
             counts = row.get("clarification_counts", {})
             tp += int(counts.get("tp", 0)); fp += int(counts.get("fp", 0)); fn += int(counts.get("fn", 0))
             rounds += int(row.get("clarification_rounds", 0))
+            observed_turns = {}
             for turn in row.get("turns", []):
+                observation = turn.get("trace") or {}
+                if observation.get("id"):
+                    observed_turns[observation["id"]] = observation
                 for slot, passed in (turn.get("slot_checks") or {}).items():
                     slots[slot]["total"] += 1
                     slots[slot]["correct"] += int(bool(passed))
+            for observation in observed_turns.values():
+                component = observation.get("ablation") or {}
+                activation["turn_observations"] += 1
+                activation["clarification_requested"] += int(bool(component.get("clarification_requested")))
+                activation["guess_invoked"] += int(bool(component.get("clarification_invoked")))
+                activation_reasons[component.get("clarification_reason", "unknown")] += 1
+                memory_relations[(observation.get("context") or {}).get("relation", "unknown")] += 1
     # result_correct may be a scenario-only flag when answer_count is absent;
     # when answer_count exists it is the more granular gold-turn accounting.
     accuracy = sum(correctness) / len(correctness) if correctness else None
@@ -267,6 +280,7 @@ def _summarize(runs: list[dict], repeats: list[int], ids: list[str]) -> dict[str
             "usage_completeness": {"scenarios": usage_rows, "incomplete_scenarios": usage_incomplete,
                 "complete": usage_rows > 0 and usage_incomplete == 0,
                 "interpretation": "complete totals" if usage_rows > 0 and usage_incomplete == 0 else "lower bound; failed calls may not report tokens"},
+            "component_activation": activation | {"guess_reasons": dict(activation_reasons), "memory_relations": dict(memory_relations)},
             "slot_accuracy": {key: {"correct": val["correct"], "total": val["total"],
                                     "accuracy": val["correct"]/val["total"] if val["total"] else None}
                               for key, val in sorted(slots.items())},

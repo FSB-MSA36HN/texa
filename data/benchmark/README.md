@@ -53,3 +53,7 @@ The standalone cases are split by disjoint scenario families. Dialogues are a di
 For breakdowns the common contract includes all dimension values observed after question filters, including zero qualifying events. Gold uses conditional aggregates for this behavior. All ordinary breakdowns are unordered; rank order must be requested explicitly before an ordered comparator is used. The single-turn runner reports both full workload and `in_scope` counts; the checkout diagnostic is outside the current eight-metric product scope.
 
 Gold SQL has also been executed for all 22 answer-bearing dialogue turns. Unlike single-turn cases, dialogue gold currently lacks independently annotated literal result tables; executing those queries proves validity, not that their business interpretation is correct. Independent review remains required.
+
+## Component ablation study
+
+The versioned `ablation_v1` suite isolates memory and clarification, with a separate 50-day fixture. See [run instructions](../../backend/eval/ABLATION_README.md). The new runner defaults to dry-run; live test requires an explicit model, call budget, and frozen protocol. The pilot and v2 remain unchanged. Gold verification and scripted tests are not measured model accuracy.

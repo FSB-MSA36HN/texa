@@ -1,6 +1,6 @@
 # Kế hoạch bổ sung ablation study cho Texa
 
-Ngày: 03/11/2026. Trạng thái: **chỉ lập kế hoạch, chưa triển khai các thay đổi dưới đây, chưa chạy model thật**.
+Ngày: 03/11/2026. Trạng thái: **đã triển khai công cụ/dataset và kiểm thử offline theo kế hoạch; chưa chạy model thật**. Xem `docs/ABLATION_STUDY_RESULTS.md` và `backend/eval/ABLATION_README.md`. Nội dung dưới đây giữ lại thiết kế và trình tự đã chốt.
 
 ## 1. Mục tiêu và cách giải thích
 

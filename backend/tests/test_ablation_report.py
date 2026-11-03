@@ -113,3 +113,17 @@ def test_rejects_answer_count_or_bad_usage_differences(tmp_path):
     m.write_text("\n".join(json.dumps(row) for row in records) + "\n")
     with pytest.raises(ValueError, match="non-negative"):
         reporter.build_report([f, m])
+
+
+def test_component_activation_deduplicates_resumed_turn_traces(tmp_path):
+    path = _write_run(tmp_path / 'f-trace.jsonl', 'F', 1)
+    records = [json.loads(line) for line in path.read_text().splitlines()]
+    records[1]['turns'] = [
+        {'trace': {'id': 'same-turn', 'context': {'relation': 'followup'}, 'ablation': {'clarification_requested': True}}},
+        {'trace': {'id': 'same-turn', 'context': {'relation': 'followup'},
+            'ablation': {'clarification_requested': True, 'clarification_invoked': True, 'clarification_reason': 'selected'}}}]
+    path.write_text('\n'.join(json.dumps(row) for row in records) + '\n')
+    result = reporter.build_report([path])['summaries']['memory/dev/F']['component_activation']
+    assert result['turn_observations'] == 1
+    assert result['guess_invoked'] == 1
+    assert result['guess_reasons'] == {'selected': 1}
