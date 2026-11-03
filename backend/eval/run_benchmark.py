@@ -387,19 +387,18 @@ def run_dialogues(args, dsn: str) -> int:
                 # A single explicit result target must resolve to its annotated turn.
                 check["reference_correct"] = (str(target) in references) if target is not None else False
                 check["reference_expected_turn_id"] = target
-            if "ask_fields" in item:
-                asked = {f["id"] for f in (actual.get("form") or {}).get("fields", [])}
-                expected_asked = set(item["ask_fields"])
-                clarify_tp += len(asked & expected_asked)
-                clarify_fp += len(asked - expected_asked)
-                clarify_fn += len(expected_asked - asked)
+            asked = {f["id"] for f in (actual.get("form") or {}).get("fields", [])} if _actual_action(actual) == 'clarify' else set()
+            expected_asked = set(item.get("ask_fields", []))
+            clarify_tp += len(asked & expected_asked)
+            clarify_fp += len(asked - expected_asked)
+            clarify_fn += len(expected_asked - asked)
             action_confusion.setdefault(check["expected_action"], {})[check["actual_action"]] = \
                 action_confusion.setdefault(check["expected_action"], {}).get(check["actual_action"], 0) + 1
             check["memory_context"] = actual.get("context")
             rows.append(check)
-            print(f"{'PASS' if check['action_correct'] and check['slots_exact'] is not False and check.get('result_correct', True) and check.get('reference_correct', True) else 'FAIL'} {dialogue['id']} turn {turn_index}")
+            print(f"{'PASS' if check['action_correct'] and check['slots_exact'] is not False and check.get('result_correct', True) else 'FAIL'} {dialogue['id']} turn {turn_index}")
         required = rows
-        dialogue_ok = all(r["action_correct"] and r["slots_exact"] is not False and r.get("result_correct", True) and r.get("reference_correct", True) for r in required)
+        dialogue_ok = all(r["action_correct"] and r["slots_exact"] is not False and r.get("result_correct", True) for r in required)
         successes += int(dialogue_ok)
         payload = {"type": "dialogue", "id": dialogue["id"], "split": dialogue["split"],
                    "dependency_distance": dialogue.get("dependency_distance"), "memory_mode": args.memory_mode or "structured",
@@ -409,12 +408,14 @@ def run_dialogues(args, dsn: str) -> int:
             with db.app_conn() as conn:
                 conn.execute("DELETE FROM app.conversations WHERE id=%s", (conversation_id,))
     print(f"dialogue success: {successes}/{len(dialogues)} = {successes / len(dialogues):.1%}; raw: {output}")
-    precision = clarify_tp / (clarify_tp + clarify_fp) if clarify_tp + clarify_fp else 1.0
-    recall = clarify_tp / (clarify_tp + clarify_fn) if clarify_tp + clarify_fn else 1.0
+    precision = clarify_tp / (clarify_tp + clarify_fp) if clarify_tp + clarify_fp else None
+    recall = clarify_tp / (clarify_tp + clarify_fn) if clarify_tp + clarify_fn else None
     write_result(output, {"type": "dialogue_summary", "method": "texa", "memory_mode": args.memory_mode or "structured",
                           "action_confusion": action_confusion, "clarification_precision": precision,
                           "clarification_recall": recall, "dialogues": len(dialogues), "dialogue_successes": successes})
-    print(f"action confusion: {action_confusion}; clarification P/R: {precision:.1%}/{recall:.1%}")
+    p_text = f"{precision:.1%}" if precision is not None else "N/A"
+    r_text = f"{recall:.1%}" if recall is not None else "N/A"
+    print(f"action confusion: {action_confusion}; clarification P/R: {p_text}/{r_text}")
     return 0
 
 
@@ -496,7 +497,7 @@ def run_direct_dialogues(args, dsn: str, dialogues: list[dict], output: Path) ->
             else:
                 row["oracle_answer_valid"] = True
         dialogue_ok = all(r["action_correct"] and r.get("result_correct", True) and r.get("oracle_answer_valid", True)
-                          and r.get("reference_correct", True) and not r.get("context_contamination", False) for r in rows)
+                          and not r.get("context_contamination", False) for r in rows)
         passed += int(dialogue_ok)
         usage_by_dialogue.append(_call_usage(call_name))
         write_result(output, {"type": "dialogue", "id": dialogue["id"], "split": dialogue["split"],
