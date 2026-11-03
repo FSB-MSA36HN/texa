@@ -1,0 +1,45 @@
+name: texa-event-ablation-v1
+version: 1
+engine: PostgreSQL 16+; record actual server version for every run
+timezone: UTC
+source_id: event_benchmark
+fixture_rows: 96
+fixture_period: 2024-12-15 through 2025-02-02 (50 calendar days)
+fixture_rows_file: fixture_rows.json
+source_digest: 16a951a7a1f1244744dca699623ae1445ad76d8cf3ced826cdba801546eb5997
+source_digest_algorithm: SHA-256 over canonical UTF-8 JSON array sorted by event_id; sorted object keys; compact separators; no trailing newline
+grain: one analytics.event_activity row is one product event
+schema: >-
+  Same bounded e-commerce event schema and eight metric definitions as data/benchmark/v2/manifest.yaml.
+  Each query uses source_id='event_benchmark'. Nested arrays and arbitrary JSON remain unsupported.
+  The 96 frozen event records are distributed across 50 days so the supported last_7 and all periods
+  have different results. Fixture SQL only replaces this source partition in an isolated benchmark DB.
+metrics_reference: ../v2/manifest.yaml
+single_turn_suite: ../v2/cases.yaml
+single_turn_note: >-
+  Use v2 for the B0 versus F single-turn comparison. This suite isolates memory and clarification;
+  cases.yaml is intentionally empty to avoid duplicating the v2 single-turn questions.
+memory_suite: dialogues.yaml
+clarification_suite: interactions.yaml
+memory_counts: {scenarios: 24, dev: 12, test: 12, phenomena: 6, longest_turns: 12}
+clarification_counts: {ambiguous: 20, explicit_controls: 20, dev_ambiguous: 10, test_ambiguous: 10}
+period_choice_semantics: >-
+  last_7 means event_date > source_registry.max_date - 7 and <= max_date (seven calendar dates);
+  all means no date filter.
+  The hidden user intent is stored only in oracle_answers and may be returned to F only after it asks
+  for the annotated field. C0 must not receive oracle values.
+metric_choice_semantics: >-
+  Ambiguous customer-count prompts admit users or buyers; the intended answer is specified by the
+  human-simulated user oracle. Verify that the resolver actually requests recipe on each prompt before
+  treating it as an in-scope clarification trial. Otherwise mark it as a failed/unsupported trigger,
+  do not silently omit it from the denominator.
+split_policy: >-
+  Scenario families appear in both dev and test to balance the diagnostic phenomena. This is a paired
+  diagnostic suite, not a claim of generalization to unseen dialogue templates. Human review of the
+  business intent is pending.
+provenance: >-
+  Derived deterministically from the checked-in v2 synthetic records by generate.py, with only event
+  dates distributed over 50 days to distinguish all-time from last_7. Gold SQL and expected tables
+  use the independent declarative SQL writer and Python row evaluator from the v2 generator; Texa's
+  QuerySpec/compiler is not used to author expected results.
+human_review: pending

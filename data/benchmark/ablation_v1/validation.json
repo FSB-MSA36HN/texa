@@ -1,0 +1,33 @@
+{
+  "dialogues": 24,
+  "dialogue_splits": {
+    "dev": 12,
+    "test": 12
+  },
+  "answer_turns": 77,
+  "phenomena": {
+    "short_followup": 4,
+    "correction": 4,
+    "noise": 4,
+    "topic_switch_return": 4,
+    "long_reference": 4,
+    "ambiguity_and_independence": 4
+  },
+  "interactions": 40,
+  "ambiguous": 20,
+  "controls": 20,
+  "interaction_splits": {
+    "dev": 20,
+    "test": 20
+  },
+  "source_digest": "16a951a7a1f1244744dca699623ae1445ad76d8cf3ced826cdba801546eb5997",
+  "sha256": {
+    "manifest.yaml": "0440c4f48315c735342a208f6d4169647582534622f0ac476d44741c538b38b0",
+    "fixture.sql": "64dfc801a814c8b4eafded09d4b1ee9f5bcc39964066bbe432fd48c703107cf0",
+    "fixture_rows.json": "16a951a7a1f1244744dca699623ae1445ad76d8cf3ced826cdba801546eb5997",
+    "cases.yaml": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "dialogues.yaml": "090576a92b25047001e298b04de566db86390b83dc491e70a39ceef04b5a8496",
+    "interactions.yaml": "c61bed8b51d0c764a25550453f5942b73f24c9255e9231fcabbd6034674bb096",
+    "generate.py": "77c310eee4ddde5457ad7cfc48ea555892f7ff453c9711a60f54fa93a9de5c55"
+  }
+}

@@ -1,0 +1,1357 @@
+- id: dev_short_filter
+  split: dev
+  family: dev_short_followup
+  phenomenon: short_followup
+  cluster_id: dev_short_filter
+  dependency_distance: 1
+  turns:
+  - question: Doanh thu mua hàng ngày 20/1/2025 là bao nhiêu?
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-20'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-20'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 0
+  - question: Chỉ tính thiết bị mobile.
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-20'
+      filters:
+      - device_type: mobile
+      breakdown: null
+    gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id=''event_benchmark'' AND event_date=''2025-01-20'' AND ep #>> ''{device,type}''=''mobile'''
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 0
+    referenced_turn: 1
+- id: dev_short_breakdown
+  split: dev
+  family: dev_short_followup
+  phenomenon: short_followup
+  cluster_id: dev_short_breakdown
+  dependency_distance: 1
+  turns:
+  - question: Có bao nhiêu người mua trong toàn bộ dữ liệu?
+    action: answer
+    state:
+      metric: buyers
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+      WHERE source_id='event_benchmark'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 12
+  - question: Chia chỉ số buyers đó theo kênh tiếp thị.
+    action: answer
+    state:
+      metric: buyers
+      time_range: all
+      filters: []
+      breakdown: campaign_channel
+    gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::bigint
+      AS buyers FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+    expected_result:
+      columns:
+      - campaign_channel
+      - buyers
+      rows:
+      - - email
+        - 1
+      - - organic
+        - 4
+      - - paid
+        - 5
+      - - referral
+        - 6
+      - - null
+        - 1
+    referenced_turn: 1
+- id: dev_correction_date
+  split: dev
+  family: dev_correction
+  phenomenon: correction
+  cluster_id: dev_correction_date
+  dependency_distance: 1
+  turns:
+  - question: Đếm sự kiện ngày 10/1/2025.
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-10'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-10'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Tôi nhầm, đổi sang ngày 11/1/2025.
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-11'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-11'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+    referenced_turn: 1
+- id: dev_correction_filter
+  split: dev
+  family: dev_correction
+  phenomenon: correction
+  cluster_id: dev_correction_filter
+  dependency_distance: 1
+  turns:
+  - question: Doanh thu toàn thời gian từ kênh paid.
+    action: answer
+    state:
+      metric: revenue
+      time_range: all
+      filters:
+      - campaign_channel: paid
+      breakdown: null
+    gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id=''event_benchmark'' AND ep #>> ''{campaign,channel}''=''paid'''
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 360
+  - question: Sửa kênh thành organic.
+    action: answer
+    state:
+      metric: revenue
+      time_range: all
+      filters:
+      - campaign_channel: organic
+      breakdown: null
+    gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id=''event_benchmark'' AND ep #>> ''{campaign,channel}''=''organic'''
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 365
+    referenced_turn: 1
+- id: dev_noise_social
+  split: dev
+  family: dev_noise
+  phenomenon: noise
+  cluster_id: dev_noise_social
+  dependency_distance: 2
+  turns:
+  - question: Số phiên ngày 15/1/2025?
+    action: answer
+    state:
+      metric: sessions
+      time_range: '2025-01-15'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-15'
+    expected_result:
+      columns:
+      - sessions
+      rows:
+      - - 2
+  - question: Cảm ơn, câu trả lời hữu ích.
+    action: conversation
+  - question: Còn phân theo thiết bị thì sao?
+    action: answer
+    state:
+      metric: sessions
+      time_range: '2025-01-15'
+      filters: []
+      breakdown: device_type
+    gold_sql: 'SELECT ep #>> ''{device,type}'' AS device_type, count(DISTINCT session_id)::bigint AS sessions FROM
+      analytics.event_activity WHERE source_id=''event_benchmark'' AND event_date=''2025-01-15'' GROUP BY 1 ORDER
+      BY 1'
+    expected_result:
+      columns:
+      - device_type
+      - sessions
+      rows:
+      - - desktop
+        - 2
+    referenced_turn: 1
+- id: dev_noise_new_topic
+  split: dev
+  family: dev_noise
+  phenomenon: noise
+  cluster_id: dev_noise_new_topic
+  dependency_distance: 0
+  turns:
+  - question: Revenue ngày 17/1/2025?
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-17'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-17'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 0
+  - question: Chào bạn, tôi đang xem báo cáo.
+    action: conversation
+  - question: Đếm sự kiện ngày 18/1/2025.
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-18'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-18'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+- id: dev_topic_return
+  split: dev
+  family: dev_topic_switch_return
+  phenomenon: topic_switch_return
+  cluster_id: dev_topic_return
+  dependency_distance: 2
+  turns:
+  - question: Revenue ngày 8/1/2025?
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-08'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-08'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 0
+  - question: Có bao nhiêu buyers ngày 9/1/2025?
+    action: answer
+    state:
+      metric: buyers
+      time_range: '2025-01-09'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-09'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 0
+  - question: Quay lại revenue câu đầu, phân theo danh mục.
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-08'
+      filters: []
+      breakdown: item_category
+    gold_sql: SELECT item_category, coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue
+      FROM analytics.event_activity WHERE source_id='event_benchmark' AND event_date='2025-01-08' GROUP BY 1 ORDER
+      BY 1
+    expected_result:
+      columns:
+      - item_category
+      - revenue
+      rows:
+      - - books
+        - 0
+    referenced_turn: 1
+- id: dev_topic_independent
+  split: dev
+  family: dev_topic_switch_return
+  phenomenon: topic_switch_return
+  cluster_id: dev_topic_independent
+  dependency_distance: 0
+  turns:
+  - question: Số người mua từ thiết bị mobile ngày 12/1/2025?
+    action: answer
+    state:
+      metric: buyers
+      time_range: '2025-01-12'
+      filters:
+      - device_type: mobile
+      breakdown: null
+    gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::bigint AS buyers FROM analytics.event_activity
+      WHERE source_id=''event_benchmark'' AND event_date=''2025-01-12'' AND ep #>> ''{device,type}''=''mobile'''
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 0
+  - question: 'Câu hỏi mới, không dùng bộ lọc cũ: buyers toàn bộ thời gian.'
+    action: answer
+    state:
+      metric: buyers
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+      WHERE source_id='event_benchmark'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 12
+- id: test_short_filter
+  split: test
+  family: test_short_followup
+  phenomenon: short_followup
+  cluster_id: test_short_filter
+  dependency_distance: 1
+  turns:
+  - question: Doanh thu mua hàng ngày 22/1/2025 là bao nhiêu?
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-22'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-22'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 0
+  - question: Chỉ tính thiết bị desktop.
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-22'
+      filters:
+      - device_type: desktop
+      breakdown: null
+    gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id=''event_benchmark'' AND event_date=''2025-01-22'' AND ep #>> ''{device,type}''=''desktop'''
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 0
+    referenced_turn: 1
+- id: test_short_breakdown
+  split: test
+  family: test_short_followup
+  phenomenon: short_followup
+  cluster_id: test_short_breakdown
+  dependency_distance: 1
+  turns:
+  - question: Có bao nhiêu người dùng trong toàn bộ dữ liệu?
+    action: answer
+    state:
+      metric: users
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 19
+  - question: Chia chỉ số users đó theo kênh tiếp thị.
+    action: answer
+    state:
+      metric: users
+      time_range: all
+      filters: []
+      breakdown: campaign_channel
+    gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(DISTINCT user_id)::bigint AS users
+      FROM analytics.event_activity WHERE source_id=''event_benchmark'' GROUP BY 1 ORDER BY 1'
+    expected_result:
+      columns:
+      - campaign_channel
+      - users
+      rows:
+      - - email
+        - 12
+      - - organic
+        - 14
+      - - paid
+        - 15
+      - - referral
+        - 13
+      - - null
+        - 6
+    referenced_turn: 1
+- id: test_correction_date
+  split: test
+  family: test_correction
+  phenomenon: correction
+  cluster_id: test_correction_date
+  dependency_distance: 1
+  turns:
+  - question: Đếm sự kiện ngày 24/1/2025.
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-24'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-24'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Tôi nhầm, đổi sang ngày 25/1/2025.
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-25'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-25'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+    referenced_turn: 1
+- id: test_correction_filter
+  split: test
+  family: test_correction
+  phenomenon: correction
+  cluster_id: test_correction_filter
+  dependency_distance: 1
+  turns:
+  - question: Doanh thu toàn thời gian từ kênh email.
+    action: answer
+    state:
+      metric: revenue
+      time_range: all
+      filters:
+      - campaign_channel: email
+      breakdown: null
+    gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id=''event_benchmark'' AND ep #>> ''{campaign,channel}''=''email'''
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 60
+  - question: Sửa kênh thành referral.
+    action: answer
+    state:
+      metric: revenue
+      time_range: all
+      filters:
+      - campaign_channel: referral
+      breakdown: null
+    gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id=''event_benchmark'' AND ep #>> ''{campaign,channel}''=''referral'''
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 290
+    referenced_turn: 1
+- id: test_noise_social
+  split: test
+  family: test_noise
+  phenomenon: noise
+  cluster_id: test_noise_social
+  dependency_distance: 2
+  turns:
+  - question: Số phiên ngày 27/1/2025?
+    action: answer
+    state:
+      metric: sessions
+      time_range: '2025-01-27'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-27'
+    expected_result:
+      columns:
+      - sessions
+      rows:
+      - - 2
+  - question: Rất rõ, cảm ơn bạn.
+    action: conversation
+  - question: Và theo kênh tiếp thị?
+    action: answer
+    state:
+      metric: sessions
+      time_range: '2025-01-27'
+      filters: []
+      breakdown: campaign_channel
+    gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(DISTINCT session_id)::bigint AS sessions
+      FROM analytics.event_activity WHERE source_id=''event_benchmark'' AND event_date=''2025-01-27'' GROUP BY 1
+      ORDER BY 1'
+    expected_result:
+      columns:
+      - campaign_channel
+      - sessions
+      rows:
+      - - organic
+        - 1
+      - - referral
+        - 1
+    referenced_turn: 1
+- id: test_noise_new_topic
+  split: test
+  family: test_noise
+  phenomenon: noise
+  cluster_id: test_noise_new_topic
+  dependency_distance: 0
+  turns:
+  - question: Buyers ngày 29/1/2025?
+    action: answer
+    state:
+      metric: buyers
+      time_range: '2025-01-29'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-29'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 2
+  - question: Xin chào, tôi đang đọc báo cáo.
+    action: conversation
+  - question: Đếm sự kiện ngày 30/1/2025.
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-30'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-30'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+- id: test_topic_return
+  split: test
+  family: test_topic_switch_return
+  phenomenon: topic_switch_return
+  cluster_id: test_topic_return
+  dependency_distance: 2
+  turns:
+  - question: Buyers ngày 21/1/2025?
+    action: answer
+    state:
+      metric: buyers
+      time_range: '2025-01-21'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-21'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 0
+  - question: Có bao nhiêu events ngày 22/1/2025?
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-22'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-22'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Quay lại buyers câu đầu, phân theo danh mục.
+    action: answer
+    state:
+      metric: buyers
+      time_range: '2025-01-21'
+      filters: []
+      breakdown: item_category
+    gold_sql: SELECT item_category, count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers
+      FROM analytics.event_activity WHERE source_id='event_benchmark' AND event_date='2025-01-21' GROUP BY 1 ORDER
+      BY 1
+    expected_result:
+      columns:
+      - item_category
+      - buyers
+      rows:
+      - - toys
+        - 0
+    referenced_turn: 1
+- id: test_topic_independent
+  split: test
+  family: test_topic_switch_return
+  phenomenon: topic_switch_return
+  cluster_id: test_topic_independent
+  dependency_distance: 0
+  turns:
+  - question: Số người mua từ thiết bị tablet ngày 29/1/2025?
+    action: answer
+    state:
+      metric: buyers
+      time_range: '2025-01-29'
+      filters:
+      - device_type: tablet
+      breakdown: null
+    gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')::bigint AS buyers FROM analytics.event_activity
+      WHERE source_id=''event_benchmark'' AND event_date=''2025-01-29'' AND ep #>> ''{device,type}''=''tablet'''
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 1
+  - question: 'Câu hỏi mới, không dùng bộ lọc cũ: events toàn bộ thời gian.'
+    action: answer
+    state:
+      metric: events
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 96
+- id: dev_long_8
+  split: dev
+  family: dev_long_reference
+  phenomenon: long_reference
+  cluster_id: dev_long_8
+  dependency_distance: 7
+  turns:
+  - question: Revenue ngày 5/1/2025 là bao nhiêu?
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-05'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-05'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 0
+  - question: Số events ngày 7/1/2025?
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-07'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-07'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Cảm ơn.
+    action: conversation
+  - question: Số events ngày 9/1/2025?
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-09'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-09'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Số users ngày 10/1/2025?
+    action: answer
+    state:
+      metric: users
+      time_range: '2025-01-10'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-10'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 2
+  - question: Cảm ơn.
+    action: conversation
+  - question: Số users ngày 12/1/2025?
+    action: answer
+    state:
+      metric: users
+      time_range: '2025-01-12'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-12'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 2
+  - question: Quay lại revenue câu đầu.
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-05'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-05'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 0
+    referenced_turn: 1
+- id: test_long_10
+  split: test
+  family: test_long_reference
+  phenomenon: long_reference
+  cluster_id: test_long_10
+  dependency_distance: 9
+  turns:
+  - question: Buyers ngày 20/1/2025 là bao nhiêu?
+    action: answer
+    state:
+      metric: buyers
+      time_range: '2025-01-20'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-20'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 0
+  - question: Số sessions ngày 22/1/2025?
+    action: answer
+    state:
+      metric: sessions
+      time_range: '2025-01-22'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-22'
+    expected_result:
+      columns:
+      - sessions
+      rows:
+      - - 2
+  - question: Rõ rồi, cảm ơn.
+    action: conversation
+  - question: Số sessions ngày 24/1/2025?
+    action: answer
+    state:
+      metric: sessions
+      time_range: '2025-01-24'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-24'
+    expected_result:
+      columns:
+      - sessions
+      rows:
+      - - 2
+  - question: Số events ngày 25/1/2025?
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-25'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-25'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Rõ rồi, cảm ơn.
+    action: conversation
+  - question: Số events ngày 27/1/2025?
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-27'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-27'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Số sessions ngày 28/1/2025?
+    action: answer
+    state:
+      metric: sessions
+      time_range: '2025-01-28'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-28'
+    expected_result:
+      columns:
+      - sessions
+      rows:
+      - - 2
+  - question: Rõ rồi, cảm ơn.
+    action: conversation
+  - question: Quay lại buyers câu đầu.
+    action: answer
+    state:
+      metric: buyers
+      time_range: '2025-01-20'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-20'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 0
+    referenced_turn: 1
+- id: dev_long_12
+  split: dev
+  family: dev_long_reference
+  phenomenon: long_reference
+  cluster_id: dev_long_12
+  dependency_distance: 11
+  turns:
+  - question: Revenue ngày 5/1/2025 là bao nhiêu?
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-05'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-05'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 0
+  - question: Số events ngày 7/1/2025?
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-07'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-07'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Cảm ơn.
+    action: conversation
+  - question: Số events ngày 9/1/2025?
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-09'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-09'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Số users ngày 10/1/2025?
+    action: answer
+    state:
+      metric: users
+      time_range: '2025-01-10'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-10'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 2
+  - question: Cảm ơn.
+    action: conversation
+  - question: Số users ngày 12/1/2025?
+    action: answer
+    state:
+      metric: users
+      time_range: '2025-01-12'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-12'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 2
+  - question: Số events ngày 13/1/2025?
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-13'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-13'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Cảm ơn.
+    action: conversation
+  - question: Số events ngày 15/1/2025?
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-15'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-15'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Số users ngày 16/1/2025?
+    action: answer
+    state:
+      metric: users
+      time_range: '2025-01-16'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-16'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 2
+  - question: Quay lại revenue câu đầu.
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-05'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-05'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 0
+    referenced_turn: 1
+- id: test_long_12
+  split: test
+  family: test_long_reference
+  phenomenon: long_reference
+  cluster_id: test_long_12
+  dependency_distance: 11
+  turns:
+  - question: Buyers ngày 20/1/2025 là bao nhiêu?
+    action: answer
+    state:
+      metric: buyers
+      time_range: '2025-01-20'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-20'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 0
+  - question: Số sessions ngày 22/1/2025?
+    action: answer
+    state:
+      metric: sessions
+      time_range: '2025-01-22'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-22'
+    expected_result:
+      columns:
+      - sessions
+      rows:
+      - - 2
+  - question: Rõ rồi, cảm ơn.
+    action: conversation
+  - question: Số sessions ngày 24/1/2025?
+    action: answer
+    state:
+      metric: sessions
+      time_range: '2025-01-24'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-24'
+    expected_result:
+      columns:
+      - sessions
+      rows:
+      - - 2
+  - question: Số events ngày 25/1/2025?
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-25'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-25'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Rõ rồi, cảm ơn.
+    action: conversation
+  - question: Số events ngày 27/1/2025?
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-27'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-27'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Số sessions ngày 28/1/2025?
+    action: answer
+    state:
+      metric: sessions
+      time_range: '2025-01-28'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-28'
+    expected_result:
+      columns:
+      - sessions
+      rows:
+      - - 2
+  - question: Rõ rồi, cảm ơn.
+    action: conversation
+  - question: Số sessions ngày 30/1/2025?
+    action: answer
+    state:
+      metric: sessions
+      time_range: '2025-01-30'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-30'
+    expected_result:
+      columns:
+      - sessions
+      rows:
+      - - 2
+  - question: Số events ngày 31/1/2025?
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-31'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-31'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Quay lại buyers câu đầu.
+    action: answer
+    state:
+      metric: buyers
+      time_range: '2025-01-20'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-20'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 0
+    referenced_turn: 1
+- id: dev_ambiguous_reference
+  split: dev
+  family: dev_ambiguity_and_independence
+  phenomenon: ambiguity_and_independence
+  cluster_id: dev_ambiguous_reference
+  dependency_distance: 3
+  turns:
+  - question: revenue ngày 3/1/2025?
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-03'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-03'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 135
+  - question: Số buyers ngày 4/1/2025?
+    action: answer
+    state:
+      metric: buyers
+      time_range: '2025-01-04'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+      WHERE source_id='event_benchmark' AND event_date='2025-01-04'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 2
+  - question: Chia kết quả revenue đó theo danh mục.
+    action: clarify
+    ask_fields:
+    - context:reference
+  - question: Kết quả revenue.
+    action: clarification_answer
+    state:
+      metric: revenue
+      time_range: '2025-01-03'
+      filters: []
+      breakdown: item_category
+    gold_sql: SELECT item_category, coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue
+      FROM analytics.event_activity WHERE source_id='event_benchmark' AND event_date='2025-01-03' GROUP BY 1 ORDER
+      BY 1
+    expected_result:
+      columns:
+      - item_category
+      - revenue
+      rows:
+      - - books
+        - 135
+    referenced_turn: 1
+    oracle_answers:
+      context:reference:
+      - oracle:turn:1
+    oracle_reference_turn: 1
+  - question: Đổi sang tổng buyers toàn bộ thời gian.
+    action: answer
+    state:
+      metric: buyers
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+      WHERE source_id='event_benchmark'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 12
+- id: dev_no_inherit
+  split: dev
+  family: dev_ambiguity_and_independence
+  phenomenon: ambiguity_and_independence
+  cluster_id: dev_no_inherit
+  dependency_distance: 0
+  turns:
+  - question: Doanh thu từ thiết bị mobile ngày 6/1/2025?
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-06'
+      filters:
+      - device_type: mobile
+      breakdown: null
+    gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id=''event_benchmark'' AND event_date=''2025-01-06'' AND ep #>> ''{device,type}''=''mobile'''
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 0
+  - question: 'Câu hỏi mới: tổng revenue toàn bộ dữ liệu, không lọc thiết bị.'
+    action: answer
+    state:
+      metric: revenue
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id='event_benchmark'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 1075
+- id: test_ambiguous_reference
+  split: test
+  family: test_ambiguity_and_independence
+  phenomenon: ambiguity_and_independence
+  cluster_id: test_ambiguous_reference
+  dependency_distance: 3
+  turns:
+  - question: users ngày 23/1/2025?
+    action: answer
+    state:
+      metric: users
+      time_range: '2025-01-23'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-23'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 2
+  - question: Số events ngày 24/1/2025?
+    action: answer
+    state:
+      metric: events
+      time_range: '2025-01-24'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+      AND event_date='2025-01-24'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Chia kết quả users đó theo danh mục.
+    action: clarify
+    ask_fields:
+    - context:reference
+  - question: Kết quả users.
+    action: clarification_answer
+    state:
+      metric: users
+      time_range: '2025-01-23'
+      filters: []
+      breakdown: item_category
+    gold_sql: SELECT item_category, count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE
+      source_id='event_benchmark' AND event_date='2025-01-23' GROUP BY 1 ORDER BY 1
+    expected_result:
+      columns:
+      - item_category
+      - users
+      rows:
+      - - books
+        - 1
+      - - toys
+        - 1
+    referenced_turn: 1
+    oracle_answers:
+      context:reference:
+      - oracle:turn:1
+    oracle_reference_turn: 1
+  - question: Đổi sang tổng events toàn bộ thời gian.
+    action: answer
+    state:
+      metric: events
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 96
+- id: test_no_inherit
+  split: test
+  family: test_ambiguity_and_independence
+  phenomenon: ambiguity_and_independence
+  cluster_id: test_no_inherit
+  dependency_distance: 0
+  turns:
+  - question: Doanh thu từ thiết bị tablet ngày 29/1/2025?
+    action: answer
+    state:
+      metric: revenue
+      time_range: '2025-01-29'
+      filters:
+      - device_type: tablet
+      breakdown: null
+    gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0)::numeric AS revenue FROM analytics.event_activity
+      WHERE source_id=''event_benchmark'' AND event_date=''2025-01-29'' AND ep #>> ''{device,type}''=''tablet'''
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 0
+  - question: 'Câu hỏi mới: tổng sessions toàn bộ dữ liệu, không lọc thiết bị.'
+    action: answer
+    state:
+      metric: sessions
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity WHERE source_id='event_benchmark'
+    expected_result:
+      columns:
+      - sessions
+      rows:
+      - - 25

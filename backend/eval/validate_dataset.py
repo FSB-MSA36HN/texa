@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import importlib.util
 from pathlib import Path
 
 import yaml
@@ -84,12 +85,209 @@ def validate_dataset(directory: Path) -> dict:
             'sha256': {name: hashlib.sha256((directory / name).read_bytes()).hexdigest() for name in files}}
 
 
+def validate_ablation_dataset(directory: Path, *, check_lock: bool = True) -> dict:
+    """Validate the paired memory/clarification suite; does not execute SQL."""
+    manifest = yaml.safe_load((directory / "manifest.yaml").read_text())
+    dialogues = yaml.safe_load((directory / "dialogues.yaml").read_text())
+    interactions = yaml.safe_load((directory / "interactions.yaml").read_text())
+    cases = yaml.safe_load((directory / "cases.yaml").read_text())
+    if cases != []:
+        raise ValueError("ablation v1 cases.yaml must remain empty; use the pinned v2 case suite")
+    if manifest.get("metrics_reference") != "../v2/manifest.yaml" or manifest.get("single_turn_suite") != "../v2/cases.yaml":
+        raise ValueError("ablation manifest must point to the frozen v2 metric and single-turn contracts")
+
+    ids: set[str] = set()
+    counts: dict[str, int] = {}
+    splits: dict[str, int] = {"dev": 0, "test": 0}
+    answer_turns = 0
+    question_splits: dict[str, str] = {}
+    scenario_signatures: dict[str, tuple[str, str]] = {}
+    state_gold_signatures: dict[str, tuple[str, str]] = {}
+
+    def result_shape(item: dict, label: str) -> None:
+        if not item.get("gold_sql"):
+            raise ValueError(f"{label}: missing gold SQL")
+        result = item.get("expected_result")
+        if not isinstance(result, dict) or not isinstance(result.get("columns"), list) or not result["columns"]:
+            raise ValueError(f"{label}: missing expected result columns")
+        if not isinstance(result.get("rows"), list) or any(not isinstance(r, list) or len(r) != len(result["columns"])
+                                                              for r in result["rows"]):
+            raise ValueError(f"{label}: invalid expected result rows")
+
+    if not isinstance(dialogues, list) or not isinstance(interactions, list):
+        raise ValueError("dialogues.yaml and interactions.yaml must be lists")
+    for dialogue in dialogues:
+        did = dialogue.get("id")
+        if not did or did in ids or dialogue.get("split") not in splits:
+            raise ValueError(f"{did}: missing/duplicate ID or invalid split")
+        ids.add(did)
+        splits[dialogue["split"]] += 1
+        phenomenon = dialogue.get("phenomenon")
+        if not phenomenon or not dialogue.get("cluster_id"):
+            raise ValueError(f"{did}: missing phenomenon or cluster_id")
+        counts[phenomenon] = counts.get(phenomenon, 0) + 1
+        turns = dialogue.get("turns")
+        if not isinstance(turns, list) or not turns:
+            raise ValueError(f"{did}: missing turns")
+        for number, turn in enumerate(turns, 1):
+            normalized_question = " ".join(turn.get("question", "").lower().split())
+            if not normalized_question:
+                raise ValueError(f"{did}/{number}: missing question")
+            previous_split = question_splits.get(normalized_question)
+            if previous_split is not None and previous_split != dialogue["split"]:
+                raise ValueError(f"{did}/{number}: identical turn question crosses dev/test")
+            question_splits[normalized_question] = dialogue["split"]
+            action = turn.get("action")
+            if action not in {"answer", "clarify", "clarification_answer", "refuse", "conversation"}:
+                raise ValueError(f"{did}/{number}: invalid action")
+            if action in {"answer", "clarification_answer"}:
+                result_shape(turn, f"{did}/{number}")
+                answer_turns += 1
+            if action == "clarify":
+                if not turn.get("ask_fields"):
+                    raise ValueError(f"{did}/{number}: clarification must name ask_fields")
+                if number == len(turns) or turns[number].get("action") != "clarification_answer":
+                    raise ValueError(f"{did}/{number}: clarification must be followed by oracle reply")
+            if action == "clarification_answer":
+                if number == 1 or turns[number - 2].get("action") != "clarify":
+                    raise ValueError(f"{did}/{number}: no preceding clarification")
+                oracle = turn.get("oracle_answers", {})
+                required = set(turns[number - 2].get("ask_fields", []))
+                if set(oracle) != required:
+                    raise ValueError(f"{did}/{number}: oracle fields do not match requested fields")
+                target = turn.get("oracle_reference_turn")
+                if target is not None:
+                    if not isinstance(target, int) or not 1 <= target < number - 1:
+                        raise ValueError(f"{did}/{number}: oracle_reference_turn must identify an earlier answer turn")
+                    if oracle.get("context:reference") != [f"oracle:turn:{target}"]:
+                        raise ValueError(f"{did}/{number}: reference oracle marker does not match target turn")
+            reference = turn.get("referenced_turn")
+            if reference is not None and (not isinstance(reference, int) or not 1 <= reference < number):
+                raise ValueError(f"{did}/{number}: invalid earlier-turn reference")
+        computed = max((i - t["referenced_turn"] for i, t in enumerate(turns, 1)
+                        if t.get("referenced_turn")), default=0)
+        if dialogue.get("dependency_distance") != computed:
+            raise ValueError(f"{did}: dependency_distance is not reproducible")
+        signature = json.dumps([{key: turn.get(key) for key in
+            ("question", "action", "state", "gold_sql", "expected_result", "referenced_turn", "oracle_reference_turn")}
+            for turn in turns], sort_keys=True, ensure_ascii=False, default=str, separators=(",", ":"))
+        previous = scenario_signatures.get(signature)
+        if previous is not None and previous[0] != dialogue["split"]:
+            raise ValueError(f"{did}: identical scenario content crosses dev/test from {previous[1]}")
+        scenario_signatures[signature] = (dialogue["split"], did)
+        state_signature = json.dumps([{key: turn.get(key) for key in
+            ("action", "state", "gold_sql", "expected_result", "referenced_turn", "oracle_reference_turn")}
+            for turn in turns], sort_keys=True, ensure_ascii=False, default=str, separators=(",", ":"))
+        previous = state_gold_signatures.get(state_signature)
+        if previous is not None and previous[0] != dialogue["split"]:
+            raise ValueError(f"{did}: identical action/state/gold-result sequence crosses dev/test from {previous[1]}")
+        state_gold_signatures[state_signature] = (dialogue["split"], did)
+
+    by_id: dict[str, dict] = {}
+    ambiguous_count = control_count = 0
+    for item in interactions:
+        iid = item.get("id")
+        if not iid or iid in ids or item.get("split") not in splits:
+            raise ValueError(f"{iid}: missing/duplicate ID or invalid split")
+        ids.add(iid)
+        by_id[iid] = item
+        splits[item["split"]] += 1
+        if not item.get("family") or not item.get("cluster_id"):
+            raise ValueError(f"{iid}: missing family or cluster_id")
+        if not item.get("question") or not isinstance(item.get("ask_fields"), list):
+            raise ValueError(f"{iid}: missing question or ask_fields annotation")
+        result_shape(item, iid)
+        if item["ask_fields"]:
+            ambiguous_count += 1
+            if set(item.get("oracle_answers", {})) != set(item["ask_fields"]):
+                raise ValueError(f"{iid}: oracle keys must exactly match ask_fields")
+            if item.get("phenomenon") == "missing_period":
+                if item["ask_fields"] != ["time_range"] or item["oracle_answers"]["time_range"][0] not in {"all", "last_7"}:
+                    raise ValueError(f"{iid}: unsupported period ambiguity annotation")
+            elif item.get("phenomenon") == "ambiguous_metric":
+                if item["ask_fields"] != ["recipe"] or item["oracle_answers"]["recipe"][0] not in {"users", "buyers"}:
+                    raise ValueError(f"{iid}: unsupported metric ambiguity annotation")
+            else:
+                raise ValueError(f"{iid}: unknown clarification phenomenon")
+        else:
+            control_count += 1
+            if item.get("oracle_answers"):
+                raise ValueError(f"{iid}: explicit control must not contain hidden oracle answers")
+
+    for item in interactions:
+        control_of = item.get("control_of")
+        if control_of is None:
+            continue
+        original = by_id.get(control_of)
+        if original is None or not original.get("ask_fields") or item["ask_fields"]:
+            raise ValueError(f"{item['id']}: control_of must target an ambiguous interaction")
+        if (item["cluster_id"] != original["cluster_id"] or item["split"] != original["split"]
+                or item["expected_result"] != original["expected_result"]):
+            raise ValueError(f"{item['id']}: paired control must keep split, cluster and intended result")
+
+    if len(dialogues) != 24 or splits["dev"] < 12 or splits["test"] < 12:
+        raise ValueError(f"expected 24 dialogue scenarios and at least 12 per split; got {splits}")
+    if set(counts.values()) != {4} or len(counts) != 6:
+        raise ValueError(f"expected six balanced memory phenomena (four each), got {counts}")
+    if max(len(d["turns"]) for d in dialogues) < 12:
+        raise ValueError("memory suite must include a 12-turn scenario")
+    if ambiguous_count != 20 or control_count != 20:
+        raise ValueError(f"expected 20 ambiguous interactions and 20 controls; got {ambiguous_count}/{control_count}")
+
+    # Recompute literal outputs independently and confirm the choices used for
+    # clarification are observationally distinguishable on this fixture.
+    generator_path = directory / "generate.py"
+    spec = importlib.util.spec_from_file_location("ablation_v1_generator", generator_path)
+    generator = importlib.util.module_from_spec(spec)
+    assert spec.loader
+    spec.loader.exec_module(generator)
+    rows = generator.rows_for_v1()
+    projection = [{key: row[key] for key in ("event_id", "event_date", "event_name", "user_id",
+                  "session_id", "item_category", "revenue", "ep")}
+                  for row in sorted(rows, key=lambda item: item["event_id"])]
+    canonical_source = json.dumps(projection, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    projection_path = directory / "fixture_rows.json"
+    projection_bytes = projection_path.read_bytes()
+    if projection_bytes.decode("utf-8") != canonical_source:
+        raise ValueError("fixture_rows.json does not match the deterministic source event projection")
+    source_digest = hashlib.sha256(projection_bytes).hexdigest()
+    if manifest.get("source_digest") != source_digest:
+        raise ValueError("manifest source_digest does not match canonical fixture_rows.json")
+    for item in interactions:
+        if item.get("control_of"):
+            continue
+        state = item["state"]
+        chosen = (state["metric"], generator.where_for(state["metric"], state["time_range"])[1], state.get("breakdown"))
+        computed = generator.v2.evaluate(rows, chosen)
+        if computed != item["expected_result"]:
+            raise ValueError(f"{item['id']}: literal result differs from independent reference aggregation")
+        if item["phenomenon"] == "missing_period":
+            alternative = "last_7" if state["time_range"] == "all" else "all"
+            other = generator.v2.evaluate(rows, (state["metric"], generator.where_for(state["metric"], alternative)[1], None))
+            if other == item["expected_result"]:
+                raise ValueError(f"{item['id']}: period choices do not produce distinguishable results")
+
+    files = ["manifest.yaml", "fixture.sql", "fixture_rows.json", "cases.yaml", "dialogues.yaml", "interactions.yaml", "generate.py"]
+    report = {"dialogues": len(dialogues), "dialogue_splits": {"dev": sum(d["split"] == "dev" for d in dialogues),
+        "test": sum(d["split"] == "test" for d in dialogues)}, "answer_turns": answer_turns,
+        "phenomena": counts, "interactions": len(interactions), "ambiguous": ambiguous_count,
+        "controls": control_count, "interaction_splits": {"dev": sum(i["split"] == "dev" for i in interactions),
+        "test": sum(i["split"] == "test" for i in interactions)},
+        "source_digest": source_digest,
+        "sha256": {name: hashlib.sha256((directory / name).read_bytes()).hexdigest() for name in files}}
+    lock_path = directory / "validation.json"
+    if check_lock and lock_path.exists() and json.loads(lock_path.read_text()) != report:
+        raise ValueError("ablation validation lock does not match files or annotations")
+    return report
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('directory', type=Path)
     parser.add_argument('--write-lock', action='store_true', help='Freeze reviewed file hashes and annotation counts')
+    parser.add_argument('--ablation', action='store_true', help='Validate the versioned ablation study suite')
     args = parser.parse_args()
-    report = validate_dataset(args.directory)
+    report = validate_ablation_dataset(args.directory, check_lock=not args.write_lock) if args.ablation else validate_dataset(args.directory)
     if args.write_lock:
         (args.directory / 'validation.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))

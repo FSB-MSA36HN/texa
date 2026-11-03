@@ -1,0 +1,988 @@
+- id: clarify_period_01
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_01
+  phenomenon: missing_period
+  question: Cho biết doanh thu.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 1075
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_01
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_01
+  phenomenon: explicit_period_control
+  control_of: clarify_period_01
+  question: Cho biết doanh thu trong toàn bộ dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 1075
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_02
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_02
+  phenomenon: missing_period
+  question: Tính số người mua.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  state:
+    metric: buyers
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 2
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_02
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_02
+  phenomenon: explicit_period_control
+  control_of: clarify_period_02
+  question: Tính số người mua trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: buyers
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 2
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_03
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_03
+  phenomenon: missing_period
+  question: Báo cáo số người dùng.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_03
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_03
+  phenomenon: explicit_period_control
+  control_of: clarify_period_03
+  question: Báo cáo số người dùng trong toàn bộ dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_04
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_04
+  phenomenon: missing_period
+  question: Có bao nhiêu sự kiện?
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  state:
+    metric: events
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 13
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_04
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_04
+  phenomenon: explicit_period_control
+  control_of: clarify_period_04
+  question: Có bao nhiêu sự kiện trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: events
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 13
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_05
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_05
+  phenomenon: missing_period
+  question: Tôi muốn xem doanh thu.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 1075
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_05
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_05
+  phenomenon: explicit_period_control
+  control_of: clarify_period_05
+  question: Tôi muốn xem doanh thu trong toàn bộ dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 1075
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_06
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_06
+  phenomenon: missing_period
+  question: Báo cáo lượng người mua.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  state:
+    metric: buyers
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 2
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_06
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_06
+  phenomenon: explicit_period_control
+  control_of: clarify_period_06
+  question: Báo cáo lượng người mua trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: buyers
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 2
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_07
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_07
+  phenomenon: missing_period
+  question: Tổng người dùng là bao nhiêu?
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_07
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_07
+  phenomenon: explicit_period_control
+  control_of: clarify_period_07
+  question: Tổng người dùng là bao nhiêu trong toàn bộ dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_08
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_08
+  phenomenon: missing_period
+  question: Tổng lượt sự kiện là bao nhiêu?
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  state:
+    metric: events
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 13
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_08
+  split: dev
+  family: dev_missing_period
+  cluster_id: clarify_period_08
+  phenomenon: explicit_period_control
+  control_of: clarify_period_08
+  question: Tổng lượt sự kiện là bao nhiêu trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: events
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 13
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_09
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_09
+  phenomenon: missing_period
+  question: Tính doanh thu giúp tôi.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 1075
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_09
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_09
+  phenomenon: explicit_period_control
+  control_of: clarify_period_09
+  question: Tính doanh thu giúp tôi trong toàn bộ dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 1075
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_10
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_10
+  phenomenon: missing_period
+  question: Có bao nhiêu người đã mua?
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  state:
+    metric: buyers
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 2
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_10
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_10
+  phenomenon: explicit_period_control
+  control_of: clarify_period_10
+  question: Có bao nhiêu người đã mua trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: buyers
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 2
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_11
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_11
+  phenomenon: missing_period
+  question: Tính số người dùng hoạt động.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_11
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_11
+  phenomenon: explicit_period_control
+  control_of: clarify_period_11
+  question: Tính số người dùng hoạt động trong toàn bộ dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_12
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_12
+  phenomenon: missing_period
+  question: Báo cáo số sự kiện đã ghi nhận.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  state:
+    metric: events
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 13
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_12
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_12
+  phenomenon: explicit_period_control
+  control_of: clarify_period_12
+  question: Báo cáo số sự kiện đã ghi nhận trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: events
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 13
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_13
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_13
+  phenomenon: missing_period
+  question: Báo cáo doanh số.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 1075
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_13
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_13
+  phenomenon: explicit_period_control
+  control_of: clarify_period_13
+  question: Báo cáo doanh số trong toàn bộ dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 1075
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_14
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_14
+  phenomenon: missing_period
+  question: Tôi muốn xem số khách mua hàng.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  state:
+    metric: buyers
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 2
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_14
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_14
+  phenomenon: explicit_period_control
+  control_of: clarify_period_14
+  question: Tôi muốn xem số khách mua hàng trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: buyers
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark' AND event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 2
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_15
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_15
+  phenomenon: missing_period
+  question: Cho tôi lượng người dùng khác nhau.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_15
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_15
+  phenomenon: explicit_period_control
+  control_of: clarify_period_15
+  question: Cho tôi lượng người dùng khác nhau trong toàn bộ dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_period_16
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_16
+  phenomenon: missing_period
+  question: Tính lượt hoạt động.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  state:
+    metric: events
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 13
+  tags:
+  - clarification
+  - missing_period
+- id: control_period_16
+  split: test
+  family: test_missing_period
+  cluster_id: clarify_period_16
+  phenomenon: explicit_period_control
+  control_of: clarify_period_16
+  question: Tính lượt hoạt động trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: events
+    time_range: last_7
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='event_benchmark' AND
+    event_date BETWEEN '2025-01-27' AND '2025-02-02'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 13
+  tags:
+  - clarification_control
+  - period_present
+- id: clarify_metric_01
+  split: dev
+  family: dev_ambiguous_metric
+  cluster_id: clarify_metric_01
+  phenomenon: ambiguous_metric
+  question: Số khách hàng trong toàn bộ dữ liệu là bao nhiêu?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - buyers
+  state:
+    metric: buyers
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 12
+  tags:
+  - clarification
+  - ambiguous_metric
+- id: control_metric_01
+  split: dev
+  family: dev_ambiguous_metric
+  cluster_id: clarify_metric_01
+  phenomenon: explicit_metric_control
+  control_of: clarify_metric_01
+  question: Số người mua trong toàn bộ dữ liệu là bao nhiêu?
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: buyers
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 12
+  tags:
+  - clarification_control
+  - metric_present
+- id: clarify_metric_02
+  split: dev
+  family: dev_ambiguous_metric
+  cluster_id: clarify_metric_02
+  phenomenon: ambiguous_metric
+  question: Cho tôi số khách hàng có hoạt động, tính toàn thời gian.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - users
+  state:
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  tags:
+  - clarification
+  - ambiguous_metric
+- id: control_metric_02
+  split: dev
+  family: dev_ambiguous_metric
+  cluster_id: clarify_metric_02
+  phenomenon: explicit_metric_control
+  control_of: clarify_metric_02
+  question: Cho tôi số người dùng duy nhất có hoạt động, tính toàn thời gian.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  tags:
+  - clarification_control
+  - metric_present
+- id: clarify_metric_03
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: clarify_metric_03
+  phenomenon: ambiguous_metric
+  question: Thống kê khách hàng toàn thời gian giúp tôi.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - buyers
+  state:
+    metric: buyers
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 12
+  tags:
+  - clarification
+  - ambiguous_metric
+- id: control_metric_03
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: clarify_metric_03
+  phenomenon: explicit_metric_control
+  control_of: clarify_metric_03
+  question: Thống kê người mua toàn thời gian giúp tôi.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: buyers
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 12
+  tags:
+  - clarification_control
+  - metric_present
+- id: clarify_metric_04
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: clarify_metric_04
+  phenomenon: ambiguous_metric
+  question: Báo cáo số khách hàng trong toàn bộ dữ liệu.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - users
+  state:
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  tags:
+  - clarification
+  - ambiguous_metric
+- id: control_metric_04
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: clarify_metric_04
+  phenomenon: explicit_metric_control
+  control_of: clarify_metric_04
+  question: Báo cáo số người dùng duy nhất trong toàn bộ dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+  state:
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='event_benchmark'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 19
+  tags:
+  - clarification_control
+  - metric_present

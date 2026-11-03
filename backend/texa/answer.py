@@ -5,7 +5,7 @@ import os
 import threading
 import traceback
 
-from . import catalog as catalog_mod
+from . import ablation, catalog as catalog_mod
 from . import clarify, db, insight, interpret, llm, memory
 from .pipeline import run_spec
 from .progress import Cancelled, Progress
@@ -90,7 +90,7 @@ def _save(turn_id: str, state: dict):
         old = row["state"]
         conn.execute("SELECT id FROM app.conversations WHERE id = %s FOR UPDATE", (row["conversation_id"],))
         # Keep what earlier runs learned (candidate, answers) unless this run replaced it.
-        merged = {k: v for k, v in old.items() if k in ("candidate", "answers", "language", "scope", "context", "dataset_version")} | state
+        merged = {k: v for k, v in old.items() if k in ("candidate", "answers", "language", "scope", "context", "dataset_version", "ablation")} | state
         conn.execute("UPDATE app.turns SET state = %s, status = %s, contract_version = %s, updated_at = now() WHERE id = %s",
                      (json.dumps(merged, default=str), merged.get("status", "error"),
                       (merged.get("query_spec") or {}).get("contract_version"), turn_id))
@@ -119,6 +119,8 @@ def _history(conversation_id, before_turn) -> list[dict]:
 def _earlier_questions(turn_id) -> list[str]:
     """What the user typed earlier in the conversation: numbers they stated there (a rate) may be reused."""
     if turn_id is None:
+        return []
+    if ablation.memory_disabled():
         return []
     with db.app_conn() as conn:
         row = conn.execute("SELECT conversation_id FROM app.turns WHERE id = %s", (turn_id,)).fetchone()
@@ -171,25 +173,52 @@ def _continue(turn: dict, candidate: dict, answers: dict, progress: Progress, ca
         raise SpecError("stale_data", "The dataset changed while waiting for clarification. Ask again.")
     lang = _lang(candidate)
     scope = turn["state"].get("scope")
+    selected = turn["state"].get("ablation", {}).get("variant") or ablation.variant()
+    trace = turn["state"].get("ablation") or ablation.initial_trace(selected)
     with progress("check_interpretation") as s:
         out = clarify.advance(candidate, answers, cat, sources, scope=scope, lang=lang)
+        if out.kind == "clarify":
+            targets = [field for field in (out.form or {}).get("fields", [])
+                       if field.get("id") in {"time_range", "recipe"}]
+            trace = trace | {"clarification_requested": True, "clarification_eligible": bool(targets)}
+        if out.kind == "clarify" and selected == "C0":
+            if targets and not trace.get("clarification_invoked"):
+                guessed, guess_trace = ablation.resolve_clarification(
+                    candidate, out.form, turn["question"], model=turn["model"], turn_id=turn["id"])
+                trace = trace | {"clarification_invoked": bool(guess_trace["activated"]),
+                                 "clarification_field": guess_trace.get("field"),
+                                 "clarification_choice_id": guess_trace.get("choice_id"),
+                                 "clarification_choices": guess_trace.get("choices", []),
+                                 "clarification_choice_count": guess_trace.get("choice_count", 0),
+                                 "clarification_reason": guess_trace["reason"]}
+                if guess_trace["reason"] == "selected":
+                    # The guess only chooses an offered ID. The normal resolver,
+                    # value checks, QuerySpec validation, and compiler still run.
+                    answers = answers | guessed
+                    out = clarify.advance(candidate, answers, cat, sources, scope=scope, lang=lang)
+                elif guess_trace["activated"]:
+                    s.note("C0 could not safely choose an offered value")
+                    return {"status": "refused", "message": "I could not infer a valid option from the question. Please ask again with the missing detail.",
+                            "candidate": candidate, "answers": answers, "language": lang,
+                            "ablation": trace}
         s.note(out.kind)
     if out.kind == "clarify":
         return {"status": "needs_clarification", "form": out.form, "candidate": candidate, "answers": answers,
-                "language": lang, "notes": out.notes, "variants": out.variants}
+                "language": lang, "notes": out.notes, "variants": out.variants, "ablation": trace}
     if out.kind == "refuse":
         return {"status": "refused", "message": out.message, "suggestions": out.suggestions, "candidate": candidate,
-                "answers": answers, "language": lang}
+                "answers": answers, "language": lang, "ablation": trace}
     result = run_spec(out.spec, cat, sources, progress)
     state = _answered(turn["question"], result, cat, sources, candidate, turn["model"], turn["id"], progress,
                       out.variants, out.notes, earlier_questions=turn["state"].get("context", {}).get("questions", []))
-    return state | {"candidate": candidate, "answers": answers}
+    return state | {"candidate": candidate, "answers": answers, "ablation": trace}
 
 
 def ask(question: str, conversation_id: str | None, model: str | None, scope: list[str] | None) -> dict:
     question = question.strip()
     if not question or len(question) > 2000:
         raise SpecError("invalid_question", "Ask a question of at most 2000 characters.")
+    configured_variant = ablation.variant()
     with db.app_conn() as conn:
         if conversation_id is None:
             conversation_id = conn.execute("INSERT INTO app.conversations (title) VALUES (%s) RETURNING id",
@@ -201,7 +230,8 @@ def ask(question: str, conversation_id: str | None, model: str | None, scope: li
             raise SpecError("busy", "Wait for the current question before asking in this conversation.")
         turn_id = conn.execute(
             "INSERT INTO app.turns (conversation_id, question, model, state) VALUES (%s,%s,%s,%s) RETURNING id",
-            (conversation_id, question, model, json.dumps({"scope": scope or []}))).fetchone()["id"]
+            (conversation_id, question, model,
+             json.dumps({"scope": scope or [], "ablation": ablation.initial_trace(configured_variant)}))).fetchone()["id"]
     turn_id = str(turn_id)
     _start(turn_id, _question_work(turn_id))
     return {"turn_id": turn_id, "conversation_id": str(conversation_id)}
@@ -229,18 +259,34 @@ def _question_work(turn_id: str, reference_id: str | None = None):
     def work(progress: Progress) -> dict:
         turn = load_turn(turn_id)
         question, conversation_id, model = turn["question"], turn["conversation_id"], turn["model"]
+        selected_variant = turn["state"].get("ablation", {}).get("variant") or ablation.variant()
+        if selected_variant != ablation.variant():
+            raise SpecError("ablation_variant_changed", "The ablation variant changed before this scenario started.")
+        variant_trace = turn["state"].get("ablation") or ablation.initial_trace(selected_variant)
         scope = turn["state"].get("scope")
         with progress("read_conversation") as s:
             cat = catalog_mod.published()
             sources = catalog_mod.scoped_sources(cat, catalog_mod.load_sources(max_age=0))
             dataset_version = _snapshot(sources)
-            previous = [p for p in _history(conversation_id, turn_id)
-                        if p["state"].get("dataset_version") == dataset_version]
-            context = memory.select_context(previous, question, catalog_version=cat.contract_version)
-            if os.environ.get("TEXA_MEMORY_MODE", "structured") == "window6":
-                context = {"turns": previous[-6:], "relation": "window6", "references": [],
+            if ablation.memory_disabled(selected_variant):
+                previous = []
+                context = {"turns": [], "relation": "disabled", "references": [],
                            "inherited_slots": {}, "clarification_needed": False}
+            else:
+                all_previous = [p for p in _history(conversation_id, turn_id)
+                                if p["state"].get("dataset_version") == dataset_version]
+                if ablation.memory_mode(selected_variant) == "window6":
+                    # M6 is exactly a six-turn context window, including what
+                    # can be explicitly selected in a reference form.
+                    previous = all_previous[-6:]
+                    context = {"turns": previous, "relation": "window6", "references": [],
+                               "inherited_slots": {}, "clarification_needed": False}
+                else:
+                    previous = all_previous
+                    context = memory.select_context(previous, question, catalog_version=cat.contract_version)
             if reference_id:
+                if ablation.memory_disabled(selected_variant):
+                    raise SpecError("memory_disabled", "Earlier results are unavailable in this ablation run. Ask a complete question.")
                 ref = next((p for p in previous if str(p["id"]) == reference_id and p["status"] == "answered"
                             and p["state"].get("query_spec", {}).get("contract_version") == cat.contract_version), None)
                 if ref is None:
@@ -249,7 +295,7 @@ def _question_work(turn_id: str, reference_id: str | None = None):
                            "inherited_slots": ref["state"]["query_spec"], "clarification_needed": False}
             selected = context.pop("turns")
             context.update(catalog_version=cat.contract_version, questions=[p["question"] for p in selected])
-            metadata = {"context": context, "dataset_version": dataset_version}
+            metadata = {"context": context, "dataset_version": dataset_version, "ablation": variant_trace}
             turn["state"].update(metadata)
             s.note(f"{len(selected)} relevant turns · {context['relation']} · catalog v{cat.contract_version}")
         if context.get("clarification_needed"):
@@ -266,7 +312,9 @@ def _question_work(turn_id: str, reference_id: str | None = None):
         if candidate["outcome"] == "answer_from_previous":
             refs = set(context.get("references", []))
             choices = [p for p in previous if p["status"] == "answered" and str(p["id"]) in refs]
-            if os.environ.get("TEXA_MEMORY_MODE") == "window6":
+            if ablation.memory_disabled(selected_variant):
+                raise SpecError("memory_disabled", "Earlier results are unavailable in this ablation run. Ask a complete question.")
+            if ablation.memory_mode(selected_variant) == "window6":
                 choices = [p for p in selected if p["status"] == "answered"][-1:]
             if len(choices) != 1:
                 return _reference_form(previous, context) | metadata
@@ -278,7 +326,7 @@ def _question_work(turn_id: str, reference_id: str | None = None):
                                  model=model, turn_id=turn_id, step=progress, earlier_questions=context["questions"])
             return {"status": "discussed", "insight": text, "based_on": str(prior["id"]), "candidate": candidate,
                     "language": lang, "facts": st.get("facts")} | metadata
-        return _continue(turn, candidate, {}, progress, cat, sources) | metadata
+        return metadata | _continue(turn, candidate, {}, progress, cat, sources)
     return work
 
 
@@ -287,6 +335,9 @@ def answer_clarification(turn_id: str, answers: dict[str, list[str]]) -> None:
     if turn["status"] != "needs_clarification":
         raise SpecError("not_waiting", "This question is not waiting for an answer.")
     form_ids = {f["id"]: f for f in turn["state"]["form"]["fields"]}
+    selected_variant = turn["state"].get("ablation", {}).get("variant") or ablation.variant()
+    if selected_variant != ablation.variant():
+        raise SpecError("ablation_variant_changed", "The ablation variant changed while this clarification was pending. Restart the scenario.")
     clean = {}
     for fid, values in answers.items():
         f = form_ids.get(fid)
@@ -299,6 +350,8 @@ def answer_clarification(turn_id: str, answers: dict[str, list[str]]) -> None:
             raise SpecError("invalid_answer", f"Choose exactly one value for {f['label']}.")
         clean[fid] = values[:20]
     if "context:reference" in form_ids:
+        if ablation.memory_disabled(selected_variant):
+            raise SpecError("memory_disabled", "Earlier results are unavailable in this ablation run. Ask a complete question.")
         values = clean.get("context:reference", [])
         if len(values) != 1:
             raise SpecError("invalid_answer", "Choose exactly one earlier result.")
@@ -313,9 +366,14 @@ def answer_clarification(turn_id: str, answers: dict[str, list[str]]) -> None:
 
 def retry(turn_id: str) -> None:
     """Run the question again from the start (new model reading, no stored answers)."""
+    old_state = load_turn(turn_id)["state"]
+    selected_variant = old_state.get("ablation", {}).get("variant") or ablation.variant()
+    if selected_variant != ablation.variant():
+        raise SpecError("ablation_variant_changed", "The ablation variant changed. Restart the scenario.")
     with db.app_conn() as conn:
-        conn.execute("UPDATE app.turns SET state = jsonb_build_object('scope', state->'scope'), status = 'running', "
-                     "updated_at = now() WHERE id = %s", (turn_id,))
+        conn.execute("UPDATE app.turns SET state = jsonb_build_object('scope', state->'scope') || %s::jsonb, status = 'running', "
+                     "updated_at = now() WHERE id = %s",
+                     (json.dumps({"ablation": ablation.initial_trace(selected_variant)}), turn_id))
     _start(turn_id, _question_work(turn_id))
 
 
@@ -326,6 +384,9 @@ def edit(turn_id: str, question: str) -> list[str]:
     if not question or len(question) > 2000:
         raise SpecError("invalid_question", "Ask a question of at most 2000 characters.")
     turn = load_turn(turn_id)
+    selected_variant = turn["state"].get("ablation", {}).get("variant") or ablation.variant()
+    if selected_variant != ablation.variant():
+        raise SpecError("ablation_variant_changed", "The ablation variant changed. Restart the scenario.")
     with db.app_conn() as conn:
         later = [str(r["id"]) for r in conn.execute(
             "SELECT id FROM app.turns WHERE conversation_id = %s AND created_at > %s",
@@ -333,8 +394,9 @@ def edit(turn_id: str, question: str) -> list[str]:
         if any(RUNS.get(t) and not RUNS[t].done for t in [turn_id, *later]):
             raise SpecError("busy", "Stop the running question before editing.")
         conn.execute("DELETE FROM app.turns WHERE id = ANY(%s::uuid[])", (later,))
-        conn.execute("UPDATE app.turns SET question = %s, state = jsonb_build_object('scope', state->'scope'), "
-                     "status = 'running', updated_at = now() WHERE id = %s", (question, turn_id))
+        conn.execute("UPDATE app.turns SET question = %s, state = jsonb_build_object('scope', state->'scope') || %s::jsonb, "
+                     "status = 'running', updated_at = now() WHERE id = %s",
+                     (question, json.dumps({"ablation": ablation.initial_trace(selected_variant)}), turn_id))
         conn.execute("UPDATE app.conversations SET updated_at = now() WHERE id = %s", (turn["conversation_id"],))
     _start(turn_id, _question_work(turn_id))
     return later
