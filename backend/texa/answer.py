@@ -214,15 +214,16 @@ def _continue(turn: dict, candidate: dict, answers: dict, progress: Progress, ca
     return state | {"candidate": candidate, "answers": answers, "ablation": trace}
 
 
-def ask(question: str, conversation_id: str | None, model: str | None, scope: list[str] | None) -> dict:
+def ask(question: str, conversation_id: str | None, model: str | None, scope: list[str] | None,
+        owner_hash: str | None = None) -> dict:
     question = question.strip()
     if not question or len(question) > 2000:
         raise SpecError("invalid_question", "Ask a question of at most 2000 characters.")
     configured_variant = ablation.variant()
     with db.app_conn() as conn:
         if conversation_id is None:
-            conversation_id = conn.execute("INSERT INTO app.conversations (title) VALUES (%s) RETURNING id",
-                                           (question[:80],)).fetchone()["id"]
+            conversation_id = conn.execute("INSERT INTO app.conversations (title, browser_session_hash) VALUES (%s,%s) RETURNING id",
+                                           (question[:80], owner_hash)).fetchone()["id"]
         elif conn.execute("SELECT 1 FROM app.conversations WHERE id = %s FOR UPDATE", (conversation_id,)).fetchone() is None:
             raise LookupError("conversation not found")
         if conn.execute("SELECT 1 FROM app.turns WHERE conversation_id = %s AND status = 'running' LIMIT 1",

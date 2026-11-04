@@ -16,6 +16,9 @@ CREATE TABLE IF NOT EXISTS app.conversations (
 );
 -- Additive migration: old conversations rebuild state from their stored turns.
 ALTER TABLE app.conversations ADD COLUMN IF NOT EXISTS memory jsonb NOT NULL DEFAULT '{}'::jsonb;
+-- Shared-demo browser ownership; NULL keeps existing single-user/local conversations compatible.
+ALTER TABLE app.conversations ADD COLUMN IF NOT EXISTS browser_session_hash text;
+CREATE INDEX IF NOT EXISTS conversations_browser_session_idx ON app.conversations (browser_session_hash, updated_at DESC);
 
 -- One row per question. state holds the pipeline outputs (candidate, spec, sql, preview, facts, insight...).
 CREATE TABLE IF NOT EXISTS app.turns (

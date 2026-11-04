@@ -23,14 +23,22 @@ export default function App() {
   const [catalogOpen, setCatalogOpen] = useState(false)
   const [sidebar, setSidebar] = useState(() => window.innerWidth >= 768)
   const [sending, setSending] = useState(false)
+  const [loadingConversation, setLoadingConversation] = useState(false)
   const [sendError, setSendError] = useState('')
   const followers = useRef<Record<string, () => void>>({})
+  const conversationRequest = useRef(0)
+  const activeIdRef = useRef<string | null>(activeId)
+  const sendCount = useRef(0)
+  const sendingRef = useRef(false)
   const bottom = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const loadBoot = useCallback(() => api.bootstrap().then((b) => { setBoot(b); setBootError('') }).catch((e) => setBootError(e.message)), [])
   const loadConversations = useCallback(() => api.conversations().then(setConversations).catch(() => {}), [])
   useEffect(() => { loadBoot(); loadConversations() }, [loadBoot, loadConversations])
+  useEffect(() => {
+    if (boot && scope && !boot.sources.some((s) => s.id === scope)) { setScope(''); write('texa.scope', '') }
+  }, [boot, scope])
   // Focus the question box on desktop only; on phones it would pop the keyboard over the page.
   useEffect(() => { if (window.matchMedia('(pointer: fine)').matches) inputRef.current?.focus() }, [])
 
@@ -43,47 +51,67 @@ export default function App() {
     setTurns((ts) => ts.map((t) => (t.id === turnId ? { ...t, status: 'running' } : t)))
     followers.current[turnId] = followTurn(turnId,
       (step) => setSteps((s) => ({ ...s, [turnId]: [...(s[turnId] ?? []), step] })),
-      (turn) => { setTurns((ts) => ts.map((t) => (t.id === turnId ? turn : t))); loadConversations() })
+      (turn) => { setTurns((ts) => ts.map((t) => (t.id === turnId ? turn : t))); delete followers.current[turnId]; loadConversations() })
   }, [loadConversations])
 
   const openConversation = useCallback(async (id: string | null) => {
+    const request = ++conversationRequest.current
+    sendCount.current += 1
+    sendingRef.current = false
+    setSending(false)
+    activeIdRef.current = id
     Object.values(followers.current).forEach((stop) => stop())
     followers.current = {}
     setActiveId(id)
     setSteps({})
     setSendError('')
     if (!window.matchMedia('(min-width: 768px)').matches) setSidebar(false)
-    if (!id) { setTurns([]); setTimeout(() => inputRef.current?.focus()); return }
-    const conv = await api.conversation(id)
+    setTurns([])
+    if (!id) { setLoadingConversation(false); setTimeout(() => inputRef.current?.focus()); return }
+    setLoadingConversation(true)
+    let conv
+    try { conv = await api.conversation(id) }
+    catch (e) {
+      if (request === conversationRequest.current) { setSendError(`Không tải được hội thoại: ${(e as Error).message}`); setLoadingConversation(false) }
+      return
+    }
+    if (request !== conversationRequest.current) return
+    setLoadingConversation(false)
     setTurns(conv.turns)
     conv.turns.filter((t) => t.status === 'running').forEach((t) => follow(t.id))
   }, [follow])
 
   const send = async (text?: string) => {
     const q = (text ?? input).trim()
-    if (!q || sending) return
+    if (!q || sendingRef.current || turns.some((t) => t.status === 'running')) return
     if (!boot?.connection) { setSettings(true); return }
+    const targetConversation = activeIdRef.current
+    const request = ++sendCount.current
+    sendingRef.current = true
     setSending(true)
     setSendError('')
     try {
-      const { turn_id, conversation_id } = await api.ask(q, activeId, activeModel || null, scope ? [scope] : [])
-      if (!activeId) setActiveId(conversation_id)
+      const { turn_id, conversation_id } = await api.ask(q, targetConversation, activeModel || null, scope ? [scope] : [])
+      if (request !== sendCount.current || targetConversation !== activeIdRef.current) return
+      if (!targetConversation) { activeIdRef.current = conversation_id; setActiveId(conversation_id) }
       setTurns((ts) => [...ts, { id: turn_id, conversation_id, question: q, status: 'running', created_at: new Date().toISOString(), model: activeModel, feedback: null }])
       setInput('')
       if (inputRef.current) inputRef.current.style.height = 'auto'
       follow(turn_id)
       loadConversations()
     } catch (e) {
-      setSendError((e as Error).message)
+      if (request === sendCount.current && targetConversation === activeIdRef.current) setSendError((e as Error).message)
     } finally {
-      setSending(false)
-      inputRef.current?.focus()
+      if (request === sendCount.current) { sendingRef.current = false; setSending(false) }
+      if (targetConversation === activeIdRef.current) inputRef.current?.focus()
     }
   }
 
   // Rewind: the edited turn reruns with its new question; every later turn is dropped.
   const editTurn = async (turnId: string, question: string) => {
+    const conversation = activeIdRef.current
     await api.edit(turnId, question)
+    if (conversation !== activeIdRef.current) return
     setTurns((ts) => {
       const i = ts.findIndex((t) => t.id === turnId)
       ts.slice(i + 1).forEach((t) => { followers.current[t.id]?.(); delete followers.current[t.id] })
@@ -105,9 +133,9 @@ export default function App() {
   const firstAnswered = turns.find((t) => t.status === 'answered' || t.status === 'discussed')?.id
 
   const composer = (
-    <Composer inputRef={inputRef} value={input} onChange={setInput} onSend={() => send()} busy={sending || running}
+    <Composer inputRef={inputRef} value={input} onChange={setInput} onSend={() => send()} busy={sending || running || loadingConversation}
       large={empty} error={sendError}
-      tools={allowed.length > 0 && (
+      tools={allowed.length > 0 && !boot?.read_only_settings && (
         <Picker label="Model" quiet value={activeModel} onChange={(v) => { setModel(v); write('texa.model', v) }}
           options={allowed.map((m) => ({ value: m, label: m }))} />
       )} />

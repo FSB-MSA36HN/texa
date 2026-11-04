@@ -6,6 +6,6 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY texa ./texa
 COPY eval ./eval
 RUN uv sync --frozen --no-dev
-ENV TEXA_CATALOG=/app/catalog/ecommerce.yaml PATH="/app/.venv/bin:$PATH"
+ENV TEXA_CATALOG=/app/catalog/product_events.yaml PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
 CMD ["uvicorn", "texa.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -56,10 +56,20 @@ export function SettingsModal({ boot, onClose, onSaved }: { boot: Bootstrap; onC
       <div role="dialog" aria-modal="true" aria-label="Cài đặt" onClick={(e) => e.stopPropagation()}
         className="scroll-thin max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-rule bg-paper p-7 shadow-2xl">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-serif text-2xl">Kết nối model</h2>
+          <h2 className="font-serif text-2xl">{boot.read_only_settings ? 'Model của buổi demo' : 'Kết nối model'}</h2>
           <button aria-label="Đóng" onClick={onClose} className="rounded-lg p-1.5 text-lead transition-colors hover:bg-wash hover:text-ink"><X className="h-5 w-5" /></button>
         </div>
-        <div className="space-y-5 text-sm">
+        {boot.read_only_settings ? (
+          <div className="space-y-4 text-sm">
+            {conn?.default_model ? (
+              <p>Buổi demo đang dùng model <span className="font-medium text-ink">{conn.default_model}</span>.</p>
+            ) : (
+              <p>Buổi demo chưa được cấu hình model.</p>
+            )}
+            <p className="text-lead">Cài đặt model do người tổ chức quản lý. Nếu không gửi được câu hỏi, hãy liên hệ người cung cấp đường dẫn demo.</p>
+            <div className="flex justify-end pt-2"><button onClick={onClose} className="rounded-full bg-ledger px-4 py-2 font-medium text-white dark:text-paper">Đóng</button></div>
+          </div>
+        ) : <div className="space-y-5 text-sm">
           <label className="block space-y-1.5">
             <span className="font-medium text-ink">Provider</span>
             <select value={provider} onChange={(e) => { setProvider(e.target.value); setModels([]); setAllowed([]); setDefaultModel('') }} className="w-full rounded-xl border border-rule bg-sheet px-3 py-2 outline-none focus:border-ledger/50">
@@ -130,7 +140,7 @@ export function SettingsModal({ boot, onClose, onSaved }: { boot: Bootstrap; onC
               className="inline-flex items-center gap-2 rounded-full bg-ledger px-4 py-2 font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40 dark:text-paper">
               {busy === 'save' && <Loader2 className="h-4 w-4 animate-spin" />} Lưu kết nối</button>
           </div>
-        </div>
+        </div>}
       </div>
     </div>
   )

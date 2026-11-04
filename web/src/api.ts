@@ -6,6 +6,7 @@ export type Bootstrap = {
   catalog: { version?: number; metrics?: CatalogEntry[]; dimensions?: CatalogEntry[]; examples?: string[]; error?: string }
   connection: Connection | null
   providers: { id: string; label: string }[]
+  read_only_settings?: boolean
 }
 export type Column = { name: string; label: string; role: 'dimension' | 'metric'; unit: string; value_type: string; currency?: string | null }
 export type Choice = { id: string; label: string; description?: string }
@@ -71,15 +72,42 @@ export const api = {
 
 /** Follow a running turn: step events while it works, then the saved turn. Returns a stop function. */
 export function followTurn(id: string, onStep: (s: Step) => void, onResult: (t: Turn) => void): () => void {
-  const es = new EventSource(`/api/turns/${id}/stream`)
+  let es: EventSource | null = null
+  let retryTimer: ReturnType<typeof setTimeout> | null = null
   let finished = false
-  es.addEventListener('step', (e) => onStep(JSON.parse((e as MessageEvent).data)))
-  es.addEventListener('result', (e) => { finished = true; es.close(); onResult(JSON.parse((e as MessageEvent).data)) })
-  es.onerror = () => {
-    if (finished) return
-    es.close()
-    // The stream dropped: read the saved state once instead.
-    setTimeout(() => api.turn(id).then((t) => (t.status === 'running' ? followTurn(id, onStep, onResult) : onResult(t))).catch(() => {}), 1500)
+  const stop = () => {
+    finished = true
+    if (retryTimer !== null) clearTimeout(retryTimer)
+    retryTimer = null
+    es?.close()
   }
-  return () => { finished = true; es.close() }
+  const connect = () => {
+    if (finished) return
+    es = new EventSource(`/api/turns/${id}/stream`)
+    es.addEventListener('step', (e) => { if (!finished) onStep(JSON.parse((e as MessageEvent).data)) })
+    es.addEventListener('result', (e) => {
+      if (finished) return
+      const turn = JSON.parse((e as MessageEvent).data) as Turn
+      stop()
+      onResult(turn)
+    })
+    es.onerror = () => {
+      if (finished) return
+      es?.close()
+      retryTimer = setTimeout(() => {
+        retryTimer = null
+        if (finished) return
+        // The stream dropped: read the saved state once before reconnecting.
+        api.turn(id).then((t) => {
+          if (finished) return
+          if (t.status === 'running') connect()
+          else { stop(); onResult(t) }
+        }).catch(() => {
+          if (!finished) retryTimer = setTimeout(() => { retryTimer = null; connect() }, 1500)
+        })
+      }, 1500)
+    }
+  }
+  connect()
+  return stop
 }
