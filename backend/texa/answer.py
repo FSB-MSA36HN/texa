@@ -274,7 +274,8 @@ def _question_work(turn_id: str, reference_id: str | None = None):
                 context = {"turns": [], "relation": "disabled", "references": [],
                            "inherited_slots": {}, "clarification_needed": False}
             else:
-                all_previous = [p for p in _history(conversation_id, turn_id)
+                raw_history = _history(conversation_id, turn_id)
+                all_previous = [p for p in raw_history
                                 if p["state"].get("dataset_version") == dataset_version]
                 if ablation.memory_mode(selected_variant) == "window6":
                     # M6 is exactly a six-turn context window, including what
@@ -284,7 +285,8 @@ def _question_work(turn_id: str, reference_id: str | None = None):
                                "inherited_slots": {}, "clarification_needed": False}
                 else:
                     previous = all_previous
-                    context = memory.select_context(previous, question, catalog_version=cat.contract_version)
+                    context = memory.select_context(previous, question, catalog_version=cat.contract_version,
+                                                    ordinal_history=raw_history)
             if reference_id:
                 if ablation.memory_disabled(selected_variant):
                     raise SpecError("memory_disabled", "Earlier results are unavailable in this ablation run. Ask a complete question.")

@@ -1,3 +1,5 @@
+import pytest
+
 from texa.memory import apply_turn, select_context
 
 
@@ -225,4 +227,112 @@ def test_new_question_with_question_mark_and_max_turns_zero():
 
     assert ctx["relation"] == "new_topic"
     assert ctx["turns"] == []
+    assert ctx["inherited_slots"] == {}
+
+
+@pytest.mark.parametrize("question", [
+    "Chỉ thêm điều kiện mobile vào kết quả đó.",
+    "Add a mobile filter to that result.",
+])
+def test_result_modification_resolves_across_social_noise(question):
+    prior = answered("t1", "Revenue on 2025-01-31")
+    noise = {"id": "t2", "question": "Cảm ơn, bạn giải thích rõ rồi.", "status": "conversation", "state": {}}
+
+    ctx = select_context([prior, noise], question, catalog_version=3)
+
+    assert ctx["relation"] == "followup"
+    assert ctx["references"] == ["t1"]
+    assert ctx["inherited_slots"]["recipe"] == "revenue"
+
+
+def test_explicit_new_topic_overrides_result_anaphora_and_ordinal():
+    prior = answered("t1", "Revenue by month", selection=["month"])
+    later = answered("t2", "Orders by region", recipe="orders", selection=["region"])
+
+    ctx = select_context([prior, later], "Different topic: go back to the first result", catalog_version=3)
+
+    assert ctx["relation"] == "new_topic"
+    assert ctx["references"] == []
+    assert ctx["inherited_slots"] == {}
+    assert ctx["clarification_needed"] is False
+
+
+@pytest.mark.parametrize(("question", "expected"), [
+    ("Quay lại kết quả đầu", "t1"),
+    ("Go back to result number 2", "t2"),
+])
+def test_first_and_numbered_results_resolve_across_social_noise(question, expected):
+    first = answered("t1", "Revenue by month", selection=["month"])
+    noise = {"id": "t-noise", "question": "Chào bạn", "status": "conversation", "state": {}}
+    second = answered("t2", "Orders by region", recipe="orders", selection=["region"])
+
+    ctx = select_context([first, noise, second], question, catalog_version=3)
+
+    assert ctx["relation"] == "followup"
+    assert ctx["references"] == [expected]
+    assert ctx["inherited_slots"]["recipe"] == ("revenue" if expected == "t1" else "orders")
+
+
+def test_question_ordinal_counts_non_answer_turns_without_shifting_to_next_result():
+    first = answered("t1", "Revenue by month", selection=["month"])
+    social = {"id": "t2", "question": "Chào bạn", "status": "conversation", "state": {}}
+    third = answered("t3", "Orders by region", recipe="orders", selection=["region"])
+
+    ctx = select_context([first, social, third], "Return to question number 2", catalog_version=3)
+
+    assert ctx["relation"] == "ambiguous"
+    assert ctx["clarification_needed"] is True
+    assert ctx["inherited_slots"] == {}
+
+
+def test_question_ordinal_uses_raw_history_when_stale_result_was_filtered():
+    stale = answered("t1", "Revenue by month", selection=["month"])
+    current = answered("t2", "Orders by region", recipe="orders", selection=["region"])
+    ordinal_history = [stale, current]
+    current_history = [current]
+
+    first = select_context(current_history, "Return to the first question", catalog_version=3,
+                           ordinal_history=ordinal_history)
+    second = select_context(current_history, "Return to question number 2", catalog_version=3,
+                            ordinal_history=ordinal_history)
+
+    assert first["relation"] == "ambiguous"
+    assert first["clarification_needed"] is True
+    assert first["inherited_slots"] == {}
+    assert second["relation"] == "followup"
+    assert second["references"] == ["t2"]
+    assert second["inherited_slots"]["recipe"] == "orders"
+
+
+@pytest.mark.parametrize("question", ["Return to result number 3", "Go back to question number 9"])
+def test_unavailable_or_out_of_range_ordinal_never_inherits(question):
+    first = answered("t1", "Revenue by month", selection=["month"])
+
+    ctx = select_context([first], question, catalog_version=3)
+
+    assert ctx["relation"] == "ambiguous"
+    assert ctx["clarification_needed"] is True
+    assert ctx["inherited_slots"] == {}
+
+
+def test_generic_return_remains_ambiguous_with_multiple_matching_results():
+    first = answered("t1", "Revenue by month", selection=["month"])
+    second = answered("t2", "Revenue by category", selection=["category"])
+
+    ctx = select_context([first, second], "Go back to revenue", catalog_version=3)
+
+    assert ctx["relation"] == "ambiguous"
+    assert ctx["clarification_needed"] is True
+    assert set(ctx["references"]) == {"t1", "t2"}
+    assert ctx["inherited_slots"] == {}
+
+
+def test_multiple_explicit_ordinals_do_not_silently_choose_first_reference():
+    first = answered("t1", "Revenue by month", selection=["month"])
+    second = answered("t2", "Orders by region", recipe="orders", selection=["region"])
+
+    ctx = select_context([first, second], "Compare question 1 and question 2", catalog_version=3)
+
+    assert ctx["relation"] == "ambiguous"
+    assert ctx["clarification_needed"] is True
     assert ctx["inherited_slots"] == {}

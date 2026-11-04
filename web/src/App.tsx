@@ -30,12 +30,20 @@ export default function App() {
   const activeIdRef = useRef<string | null>(activeId)
   const sendCount = useRef(0)
   const sendingRef = useRef(false)
+  const bootRequest = useRef<Promise<void> | null>(null)
   const bottom = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  const loadBoot = useCallback(() => api.bootstrap().then((b) => { setBoot(b); setBootError('') }).catch((e) => setBootError(e.message)), [])
+  const loadBoot = useCallback(() => {
+    // Establish the browser session before other requests; deduplicate React's
+    // development effect replay so competing Set-Cookie responses cannot race.
+    if (!bootRequest.current) bootRequest.current = api.bootstrap()
+      .then((b) => { setBoot(b); setBootError('') }).catch((e) => setBootError(e.message))
+      .finally(() => { bootRequest.current = null })
+    return bootRequest.current
+  }, [])
   const loadConversations = useCallback(() => api.conversations().then(setConversations).catch(() => {}), [])
-  useEffect(() => { loadBoot(); loadConversations() }, [loadBoot, loadConversations])
+  useEffect(() => { loadBoot().then(loadConversations) }, [loadBoot, loadConversations])
   useEffect(() => {
     if (boot && scope && !boot.sources.some((s) => s.id === scope)) { setScope(''); write('texa.scope', '') }
   }, [boot, scope])
@@ -43,7 +51,7 @@ export default function App() {
   useEffect(() => { if (window.matchMedia('(pointer: fine)').matches) inputRef.current?.focus() }, [])
 
   const allowed = boot?.connection?.allowed_models ?? []
-  const activeModel = allowed.includes(model) ? model : boot?.connection?.default_model ?? ''
+  const activeModel = !boot?.read_only_settings && allowed.includes(model) ? model : boot?.connection?.default_model ?? ''
 
   const follow = useCallback((turnId: string) => {
     followers.current[turnId]?.()

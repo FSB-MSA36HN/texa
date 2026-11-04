@@ -267,6 +267,13 @@ def _score_dialogue_turn(expected: dict, turn: dict, expected_action: str, dsn: 
     out = {"expected_action": expected_action, "actual_action": actual_action,
            "action_correct": expected_action == actual_action, "slot_correct": checks,
            "slots_exact": bool(checks) and all(checks.values()) if checks else None}
+    # Preserve concise runtime diagnostics in the evaluation artifact. Do not log
+    # prompts or provider response bodies; public_turn exposes only normalized state.
+    error = turn.get("error")
+    out.update(system_status=turn.get("status"), system_error=error,
+               system_code=(error.get("code") if isinstance(error, dict) else None) or turn.get("code"),
+               system_message=(error.get("message") if isinstance(error, dict) else None) or turn.get("message"),
+               form_field_ids=sorted(f.get("id") for f in (turn.get("form") or {}).get("fields", []) if f.get("id")))
     gold_sql = expected.get("gold_sql")
     if gold_sql and actual_action == "answer":
         full = None

@@ -1,5 +1,7 @@
 # Implementation and verification — 01/11/2026
 
+Historical implementation snapshot. The 04/11/2026 real-model dev runs, browser E2E, shared-demo mode and latest regression results are documented in [Class demo checks](CLASS_DEMO_CHECKS.md); statements about missing provider runs below describe the earlier verification period.
+
 Branch: `codex/event-conversational-qa`. All project changes and temporary verification artifacts stay under `Final`. No external project was accessed, no application warehouse was modified, and no provider calls were made during verification.
 
 ## Commit milestones

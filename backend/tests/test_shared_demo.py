@@ -160,4 +160,3 @@ def test_shared_demo_admin_routes_require_bearer_token(monkeypatch):
         assert client.post("/api/model-connection/discover", json={"provider": "openai"}).status_code == 403
         assert client.put("/api/model-connection", json={"provider": "openai"}).status_code == 403
         assert client.delete("/api/model-connection").status_code == 403
-

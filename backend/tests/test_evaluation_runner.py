@@ -65,6 +65,21 @@ def test_dialogue_gold_requires_independent_reference_rows(runner, monkeypatch):
     assert runner.validate_dialogue_gold(args, 'unused', dialogues, Path('unused')) == 0
 
 
+def test_dialogue_turn_output_keeps_safe_runtime_diagnostics(runner):
+    turn = {
+        "status": "error",
+        "error": {"code": "INTERNAL", "message": "Could not resolve requested metric.", "retryable": True},
+        "form": {"fields": [{"id": "time_range"}, {"id": "source"}]},
+    }
+    scored = runner._score_dialogue_turn({"action": "answer"}, turn, "answer", "unused")
+    assert scored["system_status"] == "error"
+    assert scored["system_error"] == turn["error"]
+    assert scored["system_code"] == "INTERNAL"
+    assert scored["system_message"] == "Could not resolve requested metric."
+    assert scored["form_field_ids"] == ["source", "time_range"]
+    assert "prompt" not in scored and "provider_response" not in scored
+
+
 def test_dataset_directory_selects_manifest_as_well_as_cases(runner):
     args = SimpleNamespace(dataset_dir=str(runner.ROOT / 'data/benchmark/v2'))
     assert runner.dataset_path(args, 'manifest.yaml') == runner.ROOT / 'data/benchmark/v2/manifest.yaml'

@@ -37,6 +37,10 @@ For "query":
   "time_trend" (over days/weeks/months; selection includes a time dimension), "distinct_values" (list values of a
   dimension, no metric), or "unclear".
 - selection: dimension ids to break down by (at most 4). "by month" means a month dimension, "per day" a day one.
+  A dimension mentioned only as a restriction belongs in filters, not selection. For a total restricted to one
+  category, use aggregate with selection []; use breakdown only when the user requests separate groups.
+  A date or date interval alone restricts time_range; it does not request a time breakdown. "Total on date D"
+  and "total between A and B" use aggregate with selection []; "daily totals" requests time_trend.
   A question about the highest/lowest/best/worst PERIOD ("the best month", "peak day", "slowest week") needs that
   period: shape "time_trend" with the matching time dimension, even when no breakdown is asked for. A single total
   per store cannot say which period was highest.

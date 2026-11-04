@@ -80,10 +80,11 @@ def generate(*, name, prompt, turn_id=None, model=None, **kwargs):
             return candidate(outcome='conversation', reply='Rất vui được hỗ trợ bạn.', suggestions=[])
         if question == 'Doanh thu':
             return candidate(time_range={'kind': 'none', 'days': 0, 'start': '', 'end': ''})
-        if question == 'Chia theo thiết bị':
+        if question in ('Chia theo thiết bị', 'Chia kết quả đó theo thiết bị'):
             # Follow-ups must be offered the relevant prior evidence, rather than
             # the provider fixture inventing history on behalf of the application.
-            if 'RELEVANT PRIOR TURNS' not in prompt:
+            if ('RELEVANT PRIOR TURNS' not in prompt or 'Q: Tổng doanh thu' not in prompt
+                    or '"recipe": "revenue"' not in prompt):
                 raise llm.LLMError('E2E_NO_HISTORY', 'Không tìm thấy ngữ cảnh trước.')
             return candidate(shape='breakdown', selection=['device_type'])
         if question == 'Số người dùng toàn bộ dữ liệu':

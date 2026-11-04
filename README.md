@@ -18,7 +18,7 @@ web (React) ◄──SSE── api: structured memory → interpret → clarify 
 
 ## Bản triển khai hiện tại
 
-Đã bổ sung structured memory, hỗ trợ nested object hai key, source scope và thông tin cách tính trên giao diện. [Trạng thái triển khai và kiểm chứng](docs/IMPLEMENTATION_STATUS.md) phân biệt rõ tính năng đã có với thí nghiệm còn phải chạy. [Benchmark pilot](data/benchmark/README.md) có SQL gold, direct LLM baseline và hội thoại. Chưa có điểm độ chính xác model thật.
+Đã bổ sung structured memory, hỗ trợ nested object hai key, source scope và thông tin cách tính trên giao diện. [Trạng thái triển khai và kiểm chứng](docs/IMPLEMENTATION_STATUS.md) phân biệt rõ tính năng đã có với thí nghiệm còn phải chạy. [Benchmark pilot](data/benchmark/README.md) có SQL gold, direct LLM baseline và hội thoại. Đã bắt đầu kiểm tra model thật trên tập dev; kết quả và giới hạn nằm trong [kiểm thử demo lớp học](docs/CLASS_DEMO_CHECKS.md).
 
 ## Chạy nhanh (dev)
 

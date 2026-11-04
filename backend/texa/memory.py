@@ -15,6 +15,7 @@ FOLLOWUP_CUES = {
     "and", "also", "instead", "now", "what about", "same", "again", "only", "just", "then",
     "còn", "vậy", "thế", "cũng", "riêng", "chỉ", "đổi", "thay", "tiếp", "nữa", "theo tuần",
     "theo tháng", "theo ngày", "tại sao", "vì sao", "giải thích", "cụ thể hơn",
+    "kết quả đó", "kết quả này", "that result", "this result", "thêm điều kiện", "add a filter", "add the filter",
 }
 RETURN_CUES = {"back to", "return to", "go back to", "quay lại", "trở lại", "noi lai", "nói lại", "earlier", "before"}
 EXPLICIT_NEW_CUES = {"new question", "different topic", "chủ đề khác", "câu hỏi khác", "đổi chủ đề"}
@@ -77,6 +78,33 @@ def _has_cue(text: str, cues: set[str]) -> bool:
 def _starts_with_cue(text: str, cues: set[str]) -> bool:
     folded = _fold(text).lstrip()
     return any(re.match(rf"^{re.escape(_fold(cue))}(?![a-z0-9_])", folded) for cue in cues)
+
+
+def _ordinal_reference(question: str, history: list[dict], usable: list[dict]) -> tuple[bool, dict | None]:
+    """Resolve a stated question/result position before fuzzy topic matching.
+
+    Question positions include social/failed questions; result positions include
+    successful answers only. Never silently substitute another answer for a
+    requested question that did not produce a compatible result.
+    """
+    q = _fold(question)
+    result_matches = re.findall(r"\b(?:result|ket qua)\s+(?:number\s+|thu\s+)?(\d+)\b", q)
+    question_matches = re.findall(r"\b(?:cau(?: hoi)?(?: thu)?|question(?: number)?)\s+(\d+)\b", q)
+    first_result = _has_cue(q, {"first result", "kết quả đầu"})
+    first_question = _has_cue(q, {"first question", "câu đầu", "câu hỏi đầu"})
+    pointers = {(True, int(n) - 1) for n in result_matches} | {(False, int(n) - 1) for n in question_matches}
+    if first_result:
+        pointers.add((True, 0))
+    if first_question:
+        pointers.add((False, 0))
+    if not pointers:
+        return False, None
+    if len(pointers) != 1:
+        return True, None
+    is_result, index = pointers.pop()
+    candidates = usable if is_result else history
+    target = candidates[index] if 0 <= index < len(candidates) else None
+    return True, target if target is not None and target in usable else None
 
 
 def apply_turn(committed: dict | None, turn: dict, *, catalog_version: int | None = None,
@@ -162,7 +190,7 @@ def _score(question: str, turn: dict) -> float:
 
 
 def select_context(history: list[dict], question: str, *, catalog_version: int | None = None,
-                   max_turns: int = 6) -> dict[str, Any]:
+                   max_turns: int = 6, ordinal_history: list[dict] | None = None) -> dict[str, Any]:
     """Select relevant conversational turns and decide whether slots may carry.
 
     Full history can be passed in; this function selects a bounded prompt view
@@ -181,6 +209,7 @@ def select_context(history: list[dict], question: str, *, catalog_version: int |
     explanation = _has_cue(q, EXPLANATION_CUES)
     breakdown_fragment = _starts_with_cue(q, BREAKDOWN_PREFIX_CUES)
     followup = (_has_cue(q, FOLLOWUP_CUES) or breakdown_fragment or len(qwords) <= 1) and not explicit_new
+    ordinal_stated, ordinal_target = _ordinal_reference(question, history if ordinal_history is None else ordinal_history, usable)
 
     scored = sorted((( _score(question, t), i, t) for i, t in enumerate(usable)), reverse=True, key=lambda x: (x[0], x[1]))
     # Require a strong overlap: a shared store name alone must not bind a new
@@ -195,11 +224,16 @@ def select_context(history: list[dict], question: str, *, catalog_version: int |
         (explanation and len(answered) > 1 and len(plausible_ties) != 1) or
         (returning and len(answered) > 1 and (not plausible_ties or len(plausible_ties) > 1))
     )
+    if ordinal_stated and not explicit_new:
+        ambiguous = ordinal_target is None
 
     relation = "new_topic"
     chosen = None
     if explicit_new:
         relation = "new_topic"
+    elif ordinal_target is not None:
+        chosen = ordinal_target
+        relation = "followup"
     elif ambiguous:
         relation = "ambiguous"
     elif returning and relevant:
@@ -237,7 +271,7 @@ def select_context(history: list[dict], question: str, *, catalog_version: int |
     # A standalone, sufficiently specified query starts fresh even if it shares
     # broad words/source identifiers with older turns. Explicit topic switches
     # likewise receive no prior result text in their prompt context.
-    context_candidates = relevant if relation == "followup" and (returning or explanation) else []
+    context_candidates = relevant if relation == "followup" and (returning or explanation) and not ordinal_stated else []
     for t in (context_candidates[:max_turns] if context_candidates else ([chosen] if chosen else [])):
         if t is not None and t not in selected:
             selected.append(t)

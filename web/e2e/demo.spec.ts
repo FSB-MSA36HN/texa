@@ -32,7 +32,11 @@ test('carries relevant conversation memory into a follow-up', async ({ page }) =
   await page.getByRole('button', { name: 'Gửi câu hỏi' }).click()
   await expect(page.getByRole('table')).toContainText('135', { timeout: 15_000 })
 
-  await page.getByRole('textbox', { name: 'Câu hỏi' }).fill('Chia theo thiết bị')
+  await page.getByRole('textbox', { name: 'Câu hỏi' }).fill('Cảm ơn')
+  await page.getByRole('button', { name: 'Gửi câu hỏi' }).click()
+  await expect(page.getByText('Rất vui được hỗ trợ bạn.')).toBeVisible({ timeout: 15_000 })
+
+  await page.getByRole('textbox', { name: 'Câu hỏi' }).fill('Chia kết quả đó theo thiết bị')
   await page.getByRole('button', { name: 'Gửi câu hỏi' }).click()
   const table = page.getByRole('table').last()
   await expect(table).toContainText('mobile', { timeout: 15_000 })
