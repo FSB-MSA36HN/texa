@@ -4,16 +4,41 @@ one of these APIs (LiteLLM, OpenRouter, Azure, an internal proxy...) is just tha
 import json
 import os
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 
 import jsonschema
 from cryptography.fernet import Fernet, InvalidToken
 
 from . import db
+from .runtime_guard import AdmissionRejected, admission_from_env, event
 
 PROVIDERS = {"gemini": "Google Gemini", "anthropic": "Anthropic Claude", "openai": "OpenAI (hoặc gateway tương thích OpenAI)"}
 ENV_KEYS = {"gemini": "GEMINI_API_KEY", "anthropic": "ANTHROPIC_API_KEY", "openai": "OPENAI_API_KEY"}
 TIMEOUT_S = 90
+MAX_PROVIDER_ATTEMPTS = 2
+
+# Optional process-local policy hook. The gateway evaluation runner installs a
+# durable budget adapter here; normal app calls use the same guarded request
+# path without a spend ledger.
+REQUEST_GUARD = None
+ADMISSION = admission_from_env()
+_runtime_observer = ContextVar("texa_runtime_observer", default=None)
+
+
+@contextmanager
+def runtime_observer_scope(observer):
+    """Bind runtime timing events to the current request/thread without global races."""
+    token = _runtime_observer.set(observer)
+    try:
+        yield
+    finally:
+        _runtime_observer.reset(token)
+
+
+def _emit_runtime_event(name, *, duration_ms, **dimensions):
+    event(name, duration_ms=duration_ms, observer=_runtime_observer.get(), **dimensions)
 
 
 class LLMError(Exception):
@@ -161,7 +186,7 @@ def _call_gemini(conn, model, system, prompt, schema, name, max_tokens):
 # ---- Anthropic -------------------------------------------------------------
 def _anthropic_client(api_key: str, base_url: str | None):
     import anthropic
-    return anthropic.Anthropic(api_key=api_key, base_url=base_url or None, timeout=TIMEOUT_S)
+    return anthropic.Anthropic(api_key=api_key, base_url=base_url or None, timeout=TIMEOUT_S, max_retries=0)
 
 
 def _anthropic_models(api_key, base_url):
@@ -183,7 +208,7 @@ def _call_anthropic(conn, model, system, prompt, schema, name, max_tokens):
 # ---- OpenAI and OpenAI-compatible gateways -----------------------------------
 def _openai_client(api_key: str, base_url: str | None):
     import openai
-    return openai.OpenAI(api_key=api_key, base_url=base_url or None, timeout=TIMEOUT_S)
+    return openai.OpenAI(api_key=api_key, base_url=base_url or None, timeout=TIMEOUT_S, max_retries=0)
 
 
 def _openai_models(api_key, base_url):
@@ -201,7 +226,12 @@ def _call_openai(conn, model, system, prompt, schema, name, max_tokens):
         resp = client.chat.completions.create(
             model=model, messages=messages, max_completion_tokens=max_tokens,
             response_format={"type": "json_schema", "json_schema": {"name": name, "schema": _api_schema(schema), "strict": True}})
-    except openai.BadRequestError:
+    except openai.BadRequestError as exc:
+        detail = str(exc).lower()
+        if not (("json_schema" in detail or "response_format" in detail)
+                and any(word in detail for word in ("not support", "unsupported", "not available"))):
+            raise
+        # Explicit capability negotiation only; other 400 errors must not be retried.
         # ponytail: gateway/model without json_schema support → plain JSON mode + schema in the prompt; validated locally.
         messages[0]["content"] = f"{system}\n\nReturn only a JSON object matching this JSON Schema:\n{json.dumps(schema)}"
         resp = client.chat.completions.create(model=model, messages=messages, max_completion_tokens=max_tokens,
@@ -217,6 +247,41 @@ def _call_openai(conn, model, system, prompt, schema, name, max_tokens):
 
 _MODELS = {"gemini": _gemini_models, "anthropic": _anthropic_models, "openai": _openai_models}
 _CALLS = {"gemini": _call_gemini, "anthropic": _call_anthropic, "openai": _call_openai}
+
+
+# Configure the ordinary application/CLI path from an owner-only file path.
+# No key is accepted from environment, and absence of the variable is a no-op.
+if os.environ.get("TEXA_GATEWAY_BUDGET_CREDENTIALS"):
+    from .gateway_budget import configure_gateway_from_environment
+    configure_gateway_from_environment(Path(__file__).resolve().parents[2] / ".runtime")
+
+
+def _transient_provider_error(exc: Exception) -> bool:
+    """Retry only transport/server failures; never retry auth, quota or bad requests."""
+    if getattr(exc, "retryable", False):
+        return True
+    status = getattr(exc, "status_code", None)
+    if status is not None:
+        return status in (408, 409, 425, 429, 500, 502, 503, 504)
+    name = type(exc).__name__.lower()
+    return any(part in name for part in ("timeout", "connection", "network", "transport"))
+
+
+def _provider_request(provider, conn, model, system, prompt, schema, name, max_tokens, request_guard=None):
+    """One logical request with bounded retries; SDK-level retries are disabled."""
+    import random
+    for attempt in range(MAX_PROVIDER_ATTEMPTS):
+        try:
+            invoke = lambda: _CALLS[provider](conn, model, system, prompt, schema, name, max_tokens)
+            if request_guard is None:
+                return invoke()
+            return request_guard(provider=provider, model=model, system=system, prompt=prompt,
+                                 schema=schema, name=name, max_tokens=max_tokens,
+                                 attempt=attempt + 1, invoke=invoke)
+        except Exception as exc:
+            if attempt + 1 >= MAX_PROVIDER_ATTEMPTS or not _transient_provider_error(exc):
+                raise
+            time.sleep(min(0.25 * (2 ** attempt) + random.random() * 0.1, 1.0))
 
 
 # ---------------------------------------------------------------------------
@@ -256,11 +321,31 @@ def generate_structured(*, model: str | None, system: str, prompt: str, schema: 
 
     started = time.monotonic()
     try:
-        text, (tokens_in, tokens_cached, tokens_out), status = _CALLS[conn["provider"]](
-            conn, model, system, prompt, schema, name, max_output_tokens or conn.get("max_output_tokens") or 8192)
+        max_tokens = max_output_tokens or conn.get("max_output_tokens") or 8192
+        invoke = lambda: _provider_request(conn["provider"], conn, model, system, prompt, schema, name,
+                                           max_tokens, REQUEST_GUARD)
+        provider_started = None
+        with ADMISSION.acquire() as queue_ms:
+            _emit_runtime_event("llm_queue_wait", duration_ms=queue_ms, call_name=name)
+            provider_started = time.monotonic()
+            text, (tokens_in, tokens_cached, tokens_out), status = invoke()
+            provider_ms = (time.monotonic() - provider_started) * 1000
+    except AdmissionRejected as e:
+        _emit_runtime_event("llm_queue_wait", duration_ms=e.wait_ms, call_name=name, outcome="rejected")
+        raise LLMError("OVERLOADED", str(e)) from None
+    except LLMError:
+        if provider_started is not None:
+            _emit_runtime_event("llm_provider_total", duration_ms=(time.monotonic() - provider_started) * 1000,
+                                call_name=name, model=model, outcome="failed")
+        raise
     except Exception as e:
+        if provider_started is not None:
+            _emit_runtime_event("llm_provider_total", duration_ms=(time.monotonic() - provider_started) * 1000,
+                                call_name=name, model=model, outcome="failed")
         raise _map_error(e)
     ms = int((time.monotonic() - started) * 1000)
+    _emit_runtime_event("llm_provider_total", duration_ms=provider_ms, call_name=name,
+                        model=model, input_tokens=tokens_in, output_tokens=tokens_out, outcome="success")
     with db.app_conn() as c:
         c.execute(
             "INSERT INTO app.llm_usage (turn_id, call_name, model, input_tokens, cached_tokens, output_tokens, ms) "

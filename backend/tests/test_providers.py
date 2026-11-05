@@ -95,3 +95,34 @@ def test_finish_reasons_map_to_errors(fake, provider, key, value, code):
 def test_discover_filters_non_chat_models(fake):
     assert [m["id"] for m in llm.discover_models("openai", "k")] == ["gpt-5"]
     assert llm.discover_models("anthropic", "k")[0]["id"] == "claude-opus-5-5"
+
+
+def test_provider_request_retries_only_transient_errors(monkeypatch):
+    calls = []
+    def transient(*_):
+        calls.append(1)
+        if len(calls) == 1:
+            raise TimeoutError("transient")
+        return "{}", (1, 0, 1), "ok"
+    monkeypatch.setitem(llm._CALLS, "openai", transient)
+    monkeypatch.setattr(llm.time, "sleep", lambda _delay: None)
+    assert llm._provider_request("openai", {}, "m", "s", "p", {}, "n", 10)[2] == "ok"
+    assert len(calls) == 2
+
+    calls.clear()
+    def permanent(*_):
+        calls.append(1)
+        raise ValueError("bad request")
+    monkeypatch.setitem(llm._CALLS, "openai", permanent)
+    with pytest.raises(ValueError):
+        llm._provider_request("openai", {}, "m", "s", "p", {}, "n", 10)
+    assert len(calls) == 1
+
+
+def test_runtime_observer_is_scoped_and_receives_queue_and_provider_events(fake):
+    events = []
+    with llm.runtime_observer_scope(events.append):
+        fake["run"]("openai")
+    assert [event["event"] for event in events] == ["llm_queue_wait", "llm_provider_total"]
+    assert events[0]["duration_ms"] >= 0
+    assert events[1]["outcome"] == "success"

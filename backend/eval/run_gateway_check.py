@@ -8,11 +8,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
 from benchmark import ROOT
-from gateway_budget import update_ledger, validate_credentials_path
+from gateway_budget import configure_gateway_from_environment, update_ledger, validate_credentials_path
 
 
 def main():
@@ -45,37 +46,21 @@ def main():
             reserve=reserve, release=release, actual=actual, usage=usage)
 
     from texa import llm
-    # The connection is supplied in memory only. Do not save a model connection
-    # in the benchmark DB or log encrypted/plain credentials anywhere else.
-    conn = {'provider': 'openai', 'api_key': secret['api_key'], 'base_url': base_url,
-            'allowed_models': [model], 'default_model': model, 'max_output_tokens': 4096,
-            'daily_token_limit': 0, 'answer_language': 'auto'}
-    llm.get_connection = lambda with_key=False: dict(conn) if with_key else {k:v for k,v in conn.items() if k != 'api_key'}
-    import openai
-    llm._openai_client = lambda key, url: openai.OpenAI(api_key=key, base_url=url, timeout=60, max_retries=0)
-    original = llm._CALLS['openai']
-
-    def measured(connection, selected_model, system, prompt, schema, name, max_tokens):
-        if selected_model != model:
-            raise ValueError('Only the authorized model can be used')
-        # UTF-8 bytes exceed ordinary token counts; reserve two HTTP calls for
-        # the existing strict-schema -> JSON fallback, plus generous overhead.
-        bytes_count = len((system + prompt + json.dumps(schema)).encode()) + 8192
-        reservation = 2 * (bytes_count * input_price + max_tokens * output_price)
-        update(reserve=reservation)
-        try:
-            text, usage, finish = original(connection, selected_model, system, prompt, schema, name, max_tokens)
-            if usage[0] is None or usage[2] is None:
-                raise ValueError('Missing usage; retained conservative cost reservation')
-            cost = usage[0]*input_price + usage[2]*output_price  # no cache discount assumed
-            update(release=reservation, actual=cost, usage=usage)
-            return text, usage, finish
-        except Exception:
-            # Retain reservation for failed/unknown requests; never release an
-            # uncertain provider charge or print a raw provider error with keys.
-            raise llm.LLMError('GATEWAY_CHECK_FAILED', 'Gateway check failed; conservative budget reservation retained') from None
-
-    llm._CALLS['openai'] = measured
+    # Children launched by --matrix inherit only protected paths and pricing;
+    # the API key remains in the chmod-600 runtime file, never in env/logs.
+    budget_env = {
+        'TEXA_GATEWAY_BUDGET_CREDENTIALS': str(path),
+        'TEXA_GATEWAY_BUDGET_LEDGER': str(ledger_path),
+        'TEXA_GATEWAY_INPUT_PRICE': str(input_price),
+        'TEXA_GATEWAY_OUTPUT_PRICE': str(output_price),
+        'TEXA_GATEWAY_MAX_USD': str(secret['max_usd']),
+    }
+    old_env = {key: os.environ.get(key) for key in budget_env}
+    os.environ.update(budget_env)
+    previous_guard = llm.REQUEST_GUARD
+    llm._openai_client = lambda key, url: __import__('openai').OpenAI(
+        api_key=key, base_url=url, timeout=llm.TIMEOUT_S, max_retries=0)
+    configure_gateway_from_environment(ROOT / '.runtime')
     if '--model' in forwarded:
         raise ValueError('Model comes from the protected credentials file')
     forwarded += ['--model', model]
@@ -90,6 +75,12 @@ def main():
             if code:
                 raise SystemExit(code)
     finally:
+        llm.REQUEST_GUARD = previous_guard
+        for key, value in old_env.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
         totals = update()
         print(json.dumps({'gateway_check_budget': {k:totals[k] for k in (
             'model','calls','input_tokens','output_tokens','spent_estimated_usd','reserved_usd','max_usd')}}), flush=True)
