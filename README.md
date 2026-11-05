@@ -2,7 +2,7 @@
 
 Texa là trợ lý hỏi đáp dữ liệu hội thoại dành cho **PM/PO của một sản phẩm thương mại điện tử**. Người dùng hỏi về hành vi và kết quả sản phẩm; LLM chọn định nghĩa trong semantic catalog để tạo QuerySpec, Python validate và compile SQL PostgreSQL, sau đó câu trả lời sử dụng facts từ dữ liệu.
 
-Scope hiện tại đang được triển khai theo [kế hoạch refinement](PLAN_REFINEMENT_EVENT_CONVERSATIONAL_QA.md): một dataset event mỗi câu hỏi, 8 metric, nested object có giới hạn; memory có cấu trúc và đánh giá kết quả thực thi. Không phải nền tảng tích hợp mọi database hoặc báo cáo tài chính. PM/PO là persona giả thuyết cần kiểm chứng bằng task walkthrough; quản lý là nhóm người dùng phụ.
+Scope hiện tại đang được triển khai theo [kế hoạch refinement](PLAN_REFINEMENT_EVENT_CONVERSATIONAL_QA.md): một dataset event mỗi câu hỏi (Cosmetics hoặc Olist), 8 metric trong catalog, nested object có giới hạn; memory có cấu trúc và đánh giá kết quả thực thi. Không phải nền tảng tích hợp mọi database hoặc báo cáo tài chính. PM/PO là persona giả thuyết cần kiểm chứng bằng task walkthrough; quản lý là nhóm người dùng phụ.
 
 Catalog bản sản phẩm là `catalog/product_events.yaml`; `catalog/ecommerce.yaml` giữ để chạy regression cũ. Chỉ catalog được publish mới có hiệu lực trong DB đã tồn tại. Những giới hạn và lệnh kiểm tra cập nhật nằm trong [scope contract](docs/PRODUCT_SCOPE.md).
 

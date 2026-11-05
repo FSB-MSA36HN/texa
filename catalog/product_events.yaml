@@ -3,6 +3,7 @@ version: 1
 table: analytics.event_activity
 allowed_sources:
 - cosmetics_shop
+- olist_marketplace
 - event_benchmark
 event_roles:
 - id: any_event
@@ -14,6 +15,13 @@ event_roles:
   - cart
   - remove_from_cart
   - purchase
+  - order_purchased
+  - order_approved
+  - order_shipped
+  - order_delivered
+  - order_canceled
+  - payment_made
+  - review_submitted
 - id: product_view
   label: Product view
   description: A product page was viewed.
@@ -25,6 +33,7 @@ event_roles:
   alternatives: true
   events:
   - purchase
+  - order_purchased
 dimensions:
 - id: event_date
   label: Day
@@ -108,7 +117,8 @@ dimensions:
 metrics:
 - id: users
   label: Users
-  description: Distinct users with any event in the period.
+  description: Distinct users with any event in the period. Olist observes only customers
+    who ordered, not all website visitors; source populations are not comparable.
   synonyms:
   - active users
   - customers
@@ -181,7 +191,8 @@ metrics:
 - id: buyer_conversion_rate
   label: Buyer conversion rate
   description: Distinct buyers / distinct active users in the selected period. This
-    is a period-level buyer/user ratio, not an ordered funnel conversion.
+    is a period-level buyer/user ratio, not an ordered funnel conversion. Olist only
+    observes ordering customers; its ratio is not visitor-to-buyer conversion.
   synonyms:
   - conversion rate
   - CVR
@@ -213,5 +224,13 @@ policy:
   ask_when_missing: []
   max_sources: 1
 data_notes:
+- source: olist_marketplace
+  message: Olist contains order lifecycle, payment and review events, not visitor tracking.
+    Sessions and product views are unavailable. Purchases count item lines, not orders;
+    revenue uses purchase item prices in BRL and excludes payment events and freight.
+- source: olist_marketplace
+  metric: buyer_conversion_rate
+  message: Olist chỉ ghi nhận khách đã đặt hàng. Tỷ lệ người mua/người dùng quan sát
+    trong kỳ không phải tỷ lệ chuyển đổi khách truy cập website.
 - scope: One e-commerce event dataset per question; no cross-store totals, currencies,
     orders, arrays or causal claims.

@@ -52,6 +52,9 @@ def render_catalog(cat: Catalog, sources: dict[str, Source], ids: set[str] | Non
             reading = {k: v for k, v in {"shape": q.shape, "selection": q.selection, "recipe": q.recipe,
                                          "metrics": q.metrics, "filters": q.filters}.items() if v}
             out.append(f"{q.question} -> {json.dumps(reading, ensure_ascii=False)}")
+    notes = [note for note in cat.data_notes if note.get("source") in sources and note.get("message")]
+    if notes:
+        out.append("\nSOURCE LIMITATIONS\n" + "\n".join(json.dumps(note, ensure_ascii=False) for note in notes))
     return "\n".join(out)
 
 

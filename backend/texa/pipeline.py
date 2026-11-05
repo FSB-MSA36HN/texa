@@ -47,6 +47,9 @@ def run_spec(raw_spec: dict, cat=None, sources=None, step: Progress = Progress()
 
     period = resolved_period(spec, sources)
     warnings = list(av.warnings)
+    warnings.extend(note["message"] for note in cat.data_notes
+                    if note.get("source") in av.sources and note.get("message")
+                    and (not note.get("metric") or note["metric"] in spec.metric_ids))
     if spec.top_k:
         warnings.append(f"This result contains the top {spec.top_k} groups; totals describe these groups only.")
     if not result["rows"]:
