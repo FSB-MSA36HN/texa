@@ -46,24 +46,31 @@ def run_spec(raw_spec: dict, cat=None, sources=None, step: Progress = Progress()
         s.note(f"{result['row_count']} rows · {result['ms']} ms")
 
     period = resolved_period(spec, sources)
-    warnings = list(av.warnings)
-    warnings.extend(note["message"] for note in cat.data_notes
-                    if note.get("source") in av.sources and note.get("message")
-                    and (not note.get("metric") or note["metric"] in spec.metric_ids))
+    warnings, warning_details = [], []
+    def warn(code, message, **params):
+        warnings.append(message)
+        warning_details.append({"code": code, "message": message, "params": params})
+    for message in av.warnings:
+        warn("availability", message)
+    for note in cat.data_notes:
+        if (note.get("source") in av.sources and note.get("message")
+                and (not note.get("metric") or note["metric"] in spec.metric_ids)):
+            warn("catalog_note", note["message"], localized=note.get("messages", {}))
     if spec.top_k:
-        warnings.append(f"This result contains the top {spec.top_k} groups; totals describe these groups only.")
+        warn("top_k", f"This result contains the top {spec.top_k} groups; totals describe these groups only.", count=spec.top_k)
     if not result["rows"]:
-        spans = "; ".join(f"{sources[s].label} has data from {p['data_start']} to {p['data_end']}" for s, p in period.items())
-        warnings.append(f"No rows match this question. {spans}.")
+        spans = "; ".join(f"{sources[s].label}: {p['data_start']}–{p['data_end']}" for s, p in period.items())
+        warn("empty", f"No rows match this question. {spans}.", period=spans)
     if result["partial"]:
-        warnings.append(f"Only the first {spec.limit} rows are shown; totals over the result are not computed.")
-    small = sum(1 for s in result["samples"] for v in s.values() if v is not None and v < cat.policy.min_sample)
+        warn("partial", f"Only the first {spec.limit} rows are shown; totals over the result are not computed.", count=spec.limit)
+    small = sum(1 for sample in result["samples"] for v in sample.values() if v is not None and v < cat.policy.min_sample)
     if small:
-        warnings.append(f"{small} row(s) rest on fewer than {cat.policy.min_sample} users or events; treat them as unreliable.")
+        warn("small_sample", f"{small} row(s) rest on fewer than {cat.policy.min_sample} users or events; treat them as unreliable.",
+             count=small, minimum=cat.policy.min_sample)
     for m, reason in av.unavailable_metrics.items():
-        warnings.append(f"{cat.mets[m].label} is empty where it cannot be computed: {reason}.")
+        warn("metric_unavailable", f"{cat.mets[m].label} is empty where it cannot be computed: {reason}.", metric=cat.mets[m].label)
     for sid, reason in av.sources_without_data.items():
-        warnings.append(f"{sources[sid].label} is left out: {reason}.")
+        warn("source_unavailable", f"{sources[sid].label} is left out: {reason}.", source=sources[sid].label)
 
     currency_of = {s: sources[s].currency for s in av.sources}
     facts = compute_facts(result["rows"], compiled.columns, spec.shape, result["partial"], currency_of)
@@ -79,6 +86,7 @@ def run_spec(raw_spec: dict, cat=None, sources=None, step: Progress = Progress()
         "model_preview": preview,
         "model_preview_grouped": preview_grouped,
         "warnings": warnings,
+        "warning_details": warning_details,
         "unavailable_metrics": av.unavailable_metrics,
         "sources_without_data": av.sources_without_data,
         "sources": av.sources,

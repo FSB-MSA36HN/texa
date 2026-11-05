@@ -50,6 +50,7 @@ def _turn(variant="M0"):
 def test_m0_uses_no_history_or_hidden_context_and_records_variant(monkeypatch):
     monkeypatch.setenv("TEXA_ABLATION_VARIANT", "M0")
     monkeypatch.delenv("TEXA_MEMORY_MODE", raising=False)
+    monkeypatch.setattr(answer, "_persist_language", lambda *_: None)
     monkeypatch.setattr(answer, "load_turn", lambda _: _turn())
     monkeypatch.setattr(answer.catalog_mod, "published", lambda: CAT)
     monkeypatch.setattr(answer.catalog_mod, "load_sources", lambda **_: SOURCES)
@@ -78,6 +79,7 @@ def test_m6_passes_exactly_six_most_recent_turns_to_interpretation(monkeypatch):
     monkeypatch.setenv("TEXA_MEMORY_MODE", "window6")
     history = [{"id": str(i), "question": f"Question {i}", "status": "answered",
                 "state": {"dataset_version": "snapshot"}} for i in range(10)]
+    monkeypatch.setattr(answer, "_persist_language", lambda *_: None)
     monkeypatch.setattr(answer, "load_turn", lambda _: {
         "id": "current", "question": "What next?", "conversation_id": "conversation", "model": None,
         "state": {"scope": [], "ablation": ablation.initial_trace("M6")},
@@ -107,6 +109,7 @@ def test_question_work_preserves_updated_c0_trace(monkeypatch):
     monkeypatch.delenv("TEXA_MEMORY_MODE", raising=False)
     turn = {"id": "current", "question": "How much revenue?", "conversation_id": "conversation", "model": None,
             "state": {"scope": [], "ablation": ablation.initial_trace("C0")}}
+    monkeypatch.setattr(answer, "_persist_language", lambda *_: None)
     monkeypatch.setattr(answer, "load_turn", lambda _: turn)
     monkeypatch.setattr(answer.catalog_mod, "published", lambda: CAT)
     monkeypatch.setattr(answer.catalog_mod, "load_sources", lambda **_: SOURCES)
@@ -115,7 +118,7 @@ def test_question_work_preserves_updated_c0_trace(monkeypatch):
     monkeypatch.setattr(answer, "_history", lambda *_: [])
     monkeypatch.setattr(answer.memory, "select_context", lambda *_a, **_k: {"turns": [], "relation": "new_topic", "references": [], "inherited_slots": {}})
     monkeypatch.setattr(answer.llm, "get_connection", lambda **_: {"answer_language": "auto"})
-    monkeypatch.setattr(answer.interpret, "interpret", lambda *_a, **_k: {"outcome": "query"})
+    monkeypatch.setattr(answer.interpret, "interpret", lambda *_a, **_k: {"outcome": "query", "dialogue": {"relation": "new_topic", "target_id": "", "slots": {k: "set" for k in answer.memory.SLOT_KEYS}}})
     updated = ablation.initial_trace("C0") | {"clarification_requested": True, "clarification_eligible": True,
                                                "clarification_invoked": True, "clarification_field": "time_range",
                                                "clarification_choice_id": "all", "clarification_choices": ["all", "last_30"],
@@ -128,6 +131,7 @@ def test_question_work_preserves_updated_c0_trace(monkeypatch):
 def test_m0_rejects_stale_explicit_reference_form(monkeypatch):
     monkeypatch.setenv("TEXA_ABLATION_VARIANT", "M0")
     monkeypatch.delenv("TEXA_MEMORY_MODE", raising=False)
+    monkeypatch.setattr(answer, "_persist_language", lambda *_: None)
     monkeypatch.setattr(answer, "load_turn", lambda _: _turn())
     monkeypatch.setattr(answer.catalog_mod, "published", lambda: CAT)
     monkeypatch.setattr(answer.catalog_mod, "scoped_sources", lambda _cat, src: src)

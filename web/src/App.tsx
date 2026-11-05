@@ -59,7 +59,16 @@ export default function App() {
     setTurns((ts) => ts.map((t) => (t.id === turnId ? { ...t, status: 'running' } : t)))
     followers.current[turnId] = followTurn(turnId,
       (step) => setSteps((s) => ({ ...s, [turnId]: [...(s[turnId] ?? []), step] })),
-      (turn) => { setTurns((ts) => ts.map((t) => (t.id === turnId ? turn : t))); delete followers.current[turnId]; loadConversations() })
+      (turn) => {
+        const effective = turn.source_resolution?.effective
+        const uiSource = turn.source_resolution?.ui
+        if (turn.status === 'answered' && effective?.length === 1 && uiSource?.length === 1 && effective[0] !== uiSource[0]) {
+          setScope((current) => {
+            if (current !== uiSource[0]) return current
+            write('texa.scope', effective[0]); return effective[0]
+          })
+        }
+        setTurns((ts) => ts.map((t) => (t.id === turnId ? turn : t))); delete followers.current[turnId]; loadConversations() })
   }, [loadConversations])
 
   const openConversation = useCallback(async (id: string | null) => {
@@ -208,7 +217,7 @@ export default function App() {
 
         {empty ? (
           <div className="flex flex-1 flex-col items-center justify-center px-4 pb-[12vh]">
-            {boot && <EmptyState boot={boot} onAsk={send} composer={composer} />}
+            {boot && <EmptyState scope={scope} boot={boot} onAsk={send} composer={composer} />}
           </div>
         ) : (
           <>
@@ -282,14 +291,8 @@ function Composer({ inputRef, value, onChange, onSend, busy, large, error, tools
   )
 }
 
-function EmptyState({ boot, onAsk, composer }: { boot: Bootstrap; onAsk: (q: string) => void; composer: React.ReactNode }) {
-  const examples = [
-    'Doanh thu theo danh mục tháng 12/2019',
-    'Tỉ lệ giao trễ theo bang của Olist',
-    'Phễu xem → giỏ → mua theo tuần',
-    'So sánh giá trị đơn trung bình hai cửa hàng',
-    ...(boot.catalog.examples ?? []),
-  ].slice(0, 4)
+function EmptyState({ boot, onAsk, composer, scope }: { scope: string; boot: Bootstrap; onAsk: (q: string) => void; composer: React.ReactNode }) {
+  const examples = (boot.catalog.suggestions ?? []).filter((s) => !scope || s.source_id === scope).slice(0, 4).map((s) => s.question)
   return (
     <div className="w-full max-w-[44rem]">
       <h1 className="mb-7 text-center font-serif text-[2rem] leading-tight tracking-[-0.01em] text-ink sm:text-[2.4rem]">Hôm nay bạn muốn đo gì?</h1>

@@ -88,7 +88,7 @@ def test_shared_questions_pin_default_model_while_local_mode_honors_selection(mo
     monkeypatch.setenv("TEXA_SHARED_DEMO", "0")
     assert main.post_question(main.AskBody(question="local", model="selected-model"), req) == {"ok": True}
     assert calls[-1][0][2] == "selected-model"
-    assert calls[-1][1] == {}
+    assert calls[-1][1] == {"language": None}
 
 
 @_POSTGRES_TESTS

@@ -76,7 +76,9 @@ def test_source_limitations_reach_prompt_and_results(product, monkeypatch):
         "rows": [{"buyer_conversion_rate": 1.0}], "samples": [], "row_count": 1,
         "partial": False, "ms": 0})
     out = pipeline.run_spec(_spec(cat, metric="buyer_conversion_rate"), cat, sources)
-    assert any("không phải tỷ lệ chuyển đổi" in warning for warning in out["warnings"])
+    assert any("not visitor conversion" in warning for warning in out["warnings"])
+    assert any("không phải tỷ lệ chuyển đổi" in warning["params"].get("localized", {}).get("vi", "")
+               for warning in out["warning_details"])
     for metric in ("sessions", "viewers"):
         with pytest.raises(SpecError, match="cannot be answered"):
             check_availability(validate_spec(_spec(cat, metric=metric), cat, sources), cat, sources)

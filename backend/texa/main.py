@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
-from . import answer, catalog, db, llm
+from . import answer, catalog, db, llm, suggestions
 from .spec import SpecError
 
 
@@ -139,11 +139,12 @@ def bootstrap(request: Request):
         sources = catalog.scoped_sources(cat, sources)
         cat_info = {
             "version": cat.contract_version,
-            "metrics": [{"id": m.id, "label": m.label, "description": m.description, "unit": m.unit, "synonyms": m.synonyms}
+            "metrics": [{"id": m.id, "label": catalog.display_label(m, "vi"), "description": catalog.display_description(m, "vi"), "unit": m.unit, "synonyms": m.synonyms}
                         for m in cat.metrics],
-            "dimensions": [{"id": d.id, "label": d.label, "description": d.description, "synonyms": d.synonyms}
+            "dimensions": [{"id": d.id, "label": catalog.display_label(d, "vi"), "description": catalog.display_description(d, "vi"), "synonyms": d.synonyms}
                            for d in cat.dimensions],
-            "examples": [q.question for q in cat.verified_questions],
+            "examples": [x["question"] for x in suggestions.suggestions(cat, sources)],
+            "suggestions": suggestions.suggestions(cat, sources, limit=100),
             "coverage": {sid: {"metrics_missing": list(c["metrics_missing"]), "dimensions_missing": c["dimensions_missing"]}
                          for sid, c in catalog.coverage(cat, sources).items()},
         }
@@ -182,6 +183,7 @@ class AskBody(BaseModel):
     conversation_id: str | None = None
     model: str | None = Field(default=None, max_length=100)
     source_ids: list[str] = Field(default=[], max_length=3)
+    language: Literal["vi", "en"] | None = None
 
 
 @app.post("/api/questions")
@@ -193,11 +195,11 @@ def post_question(body: AskBody, request: Request):
     if connection is None:
         raise llm.LLMError("NO_KEY", "No model is connected. Add an API key in Settings.")
     if owner is None:
-        return answer.ask(body.question, body.conversation_id, body.model, body.source_ids or None)
+        return answer.ask(body.question, body.conversation_id, body.model, body.source_ids or None, language=body.language)
     selected_model = connection.get("default_model")
     if not selected_model or (body.model and body.model != selected_model):
         raise llm.LLMError("BAD_MODEL", "Shared demo uses the model selected by the organizer.")
-    return answer.ask(body.question, body.conversation_id, selected_model, body.source_ids or None, owner_hash=owner)
+    return answer.ask(body.question, body.conversation_id, selected_model, body.source_ids or None, owner_hash=owner, language=body.language)
 
 
 @app.get("/api/turns/{turn_id}")
@@ -335,7 +337,7 @@ class TitleBody(BaseModel):
 def rename_conversation(conversation_id: str, body: TitleBody, request: Request):
     _require_conversation_owner(conversation_id, request)
     with db.app_conn() as conn:
-        conn.execute("UPDATE app.conversations SET title = %s WHERE id = %s", (body.title, conversation_id))
+        conn.execute("UPDATE app.conversations SET title = %s, title_manual = true WHERE id = %s", (body.title, conversation_id))
     return {"ok": True}
 
 

@@ -3,13 +3,15 @@ import json
 import hashlib
 import os
 import threading
+import time
 import traceback
 
 from . import ablation, catalog as catalog_mod
-from . import clarify, db, insight, interpret, llm, memory
+from . import clarify, db, insight, interpret, llm, memory, suggestions, locale
 from .pipeline import run_spec
 from .progress import Cancelled, Progress
 from .spec import SpecError
+from .runtime_guard import BoundedAdmission, AdmissionRejected
 
 STORED_ROWS = 100
 
@@ -24,8 +26,12 @@ class Run:
         self.done = False
         self.cancel = False
         self.lock = threading.Lock()
+        self.started_at = time.monotonic()
+        self.first_result_ms = None
 
     def emit(self, event: dict):
+        if event.get("step") == "run_query" and event.get("status") == "done" and self.first_result_ms is None:
+            self.first_result_ms = int((time.monotonic() - self.started_at) * 1000)
         with self.lock:
             self.events.append(event)
         if event.get("status") in ("done", "failed"):
@@ -34,7 +40,10 @@ class Run:
                              (self.turn_id, event["step"], event["status"], event.get("ms"), event.get("note")))
 
 
-RUNS: dict[str, Run] = {}  # ponytail: in-memory, single worker; move to Redis pub/sub if the API scales out
+RUNS: dict[str, Run] = {}  # SSE delivery is process-local; durable turn state is reconciled on startup.
+RUN_ADMISSION = BoundedAdmission(max_inflight=int(os.getenv("TEXA_RUN_MAX_INFLIGHT", "4")),
+                                 max_waiters=int(os.getenv("TEXA_RUN_MAX_WAITERS", "16")),
+                                 wait_timeout_s=float(os.getenv("TEXA_RUN_QUEUE_TIMEOUT_S", "30")))
 
 
 def _start(turn_id: str, work) -> Run:
@@ -47,16 +56,32 @@ def _start(turn_id: str, work) -> Run:
 
     def target():
         try:
-            state = work(progress)
+            with RUN_ADMISSION.acquire() as queue_ms:
+                run.emit({"step": "run_queue", "status": "done", "ms": int(queue_ms)})
+                with llm.runtime_observer_scope(lambda event: run.emit({"step": event["event"], "status": "done",
+                                                               "ms": int(event["duration_ms"]),
+                                                               "note": ":".join(str(v) for v in (event.get("call_name"), event.get("outcome")) if v)})):
+                    state = work(progress)
+        except AdmissionRejected:
+            state = {"status": "error", "error": {"code": "QUEUE_FULL", "message": "Request queue is full. Please retry later.", "retryable": True}}
         except Cancelled:
             state = {"status": "cancelled", "message": "Stopped."}
         except llm.LLMError as e:
             state = {"status": "error", "error": {"code": e.code, "message": e.message, "retryable": True}}
         except SpecError as e:
-            state = {"status": "refused", "message": e.message, "code": e.code, "suggestions": e.suggestions}
+            state = {"status": "refused", "message": e.message, "code": e.code, "reason_params": getattr(e, "params", {}), "suggestions": []}
         except Exception as e:  # never leave a turn spinning
             traceback.print_exc()
-            state = {"status": "error", "error": {"code": "INTERNAL", "message": f"Unexpected error: {e}", "retryable": True}}
+            state = {"status": "error", "error": {"code": "INTERNAL", "message": "Unexpected internal error. Please retry.", "retryable": True}}
+        language = state.get("language") or load_turn(turn_id)["state"].get("language", "vi")
+        state["language"] = language
+        if state.get("error"):
+            error = state["error"]
+            error["message"] = locale.render(error["code"], error["message"], language)
+        if state.get("code") and state.get("message"):
+            state["message"] = locale.render(state["code"], state["message"], language, state.pop("reason_params", {}))
+        state["timing"] = {"end_to_end_ms": int((time.monotonic() - run.started_at) * 1000),
+                           "first_result_ms": run.first_result_ms}
         _save(turn_id, state)
         run.emit({"step": "result", "status": "done", "result": public_turn(load_turn(turn_id))})
         run.done = True
@@ -111,7 +136,7 @@ def _history(conversation_id, before_turn) -> list[dict]:
     with db.app_conn() as conn:
         rows = conn.execute(
             """SELECT id, question, status, state, created_at FROM app.turns WHERE conversation_id = %s AND created_at <
-                 (SELECT created_at FROM app.turns WHERE id = %s) AND status NOT IN ('running', 'error', 'cancelled')
+                 (SELECT created_at FROM app.turns WHERE id = %s)
                ORDER BY created_at, id""", (conversation_id, before_turn)).fetchall()
     return rows
 
@@ -141,6 +166,14 @@ def public_turn(row: dict) -> dict:
 # ---------------------------------------------------------------------------
 # The flow
 # ---------------------------------------------------------------------------
+def _persist_language(turn_id, lang):
+    with db.app_conn() as conn:
+        conn.execute("UPDATE app.turns SET state = state || %s::jsonb WHERE id = %s",
+                     (json.dumps({"language": lang}), turn_id))
+        conn.execute("UPDATE app.conversations SET locale=%s WHERE id=(SELECT conversation_id FROM app.turns WHERE id=%s)",
+                     (lang, turn_id))
+
+
 def _lang(candidate: dict | None) -> str:
     forced = (llm.get_connection() or {}).get("answer_language", "auto")
     if forced and forced != "auto":
@@ -150,9 +183,16 @@ def _lang(candidate: dict | None) -> str:
 
 def _answered(question, result, cat, sources, candidate, model, turn_id, progress, variants, notes, earlier_questions=None) -> dict:
     lang = _lang(candidate)
+    result["warnings"] = [locale.render(w.get("code"), w.get("message", ""), lang, w.get("params"))
+                          for w in result.get("warning_details", [])] or result["warnings"]
+    for column in result.get("columns", []):
+        entry = cat.mets.get(column["name"]) or cat.dims.get(column["name"])
+        if entry:
+            column["label"] = catalog_mod.display_label(entry, lang)
     request = (candidate or {}).get("answer_request") or {"need": "describe", "ask": ""}
     text = insight.write(question, result, cat, sources, lang=lang, answer_request=request, model=model,
                          turn_id=turn_id, step=progress, earlier_questions=earlier_questions or [])
+    text["follow_ups"] = suggestions.questions(cat, sources, result["sources"], lang)
     return {
         "status": "answered", "language": lang, "insight": text, "variants": variants, "notes": notes,
         "query_spec": result["query_spec"], "compiled_sql": result["compiled_sql"], "columns": result["columns"],
@@ -160,7 +200,7 @@ def _answered(question, result, cat, sources, candidate, model, turn_id, progres
         "facts": result["facts"], "model_preview": result["model_preview"], "warnings": result["warnings"],
         "period": result["period"], "sources": result["sources"], "currency_of": result["currency_of"],
         "unavailable_metrics": result["unavailable_metrics"], "message": None, "form": None, "error": None,
-        "metric_definitions": [{"id": mid, "label": cat.mets[mid].label, "description": cat.mets[mid].description}
+        "metric_definitions": [{"id": mid, "label": catalog_mod.display_label(cat.mets[mid], lang), "description": catalog_mod.display_description(cat.mets[mid], lang)}
                                for mid in ([result["query_spec"].get("recipe")] if result["query_spec"].get("recipe") else result["query_spec"].get("metrics", []))],
     }
 
@@ -175,8 +215,32 @@ def _continue(turn: dict, candidate: dict, answers: dict, progress: Progress, ca
     scope = turn["state"].get("scope")
     selected = turn["state"].get("ablation", {}).get("variant") or ablation.variant()
     trace = turn["state"].get("ablation") or ablation.initial_trace(selected)
+    named = candidate.get("source_ids") or []
+    if any(sid not in sources for sid in named):
+        raise llm.LLMError("MODEL_OUTPUT_INVALID", "The interpretation referenced an unavailable source.")
+    inherited_source = (candidate.get("dialogue", {}).get("slots", {}).get("source_ids") == "keep")
+    text_sources = [] if inherited_source else list(named)
+    memory_sources = list(named) if inherited_source else []
+    if inherited_source and scope:
+        candidate = candidate | {"source_ids": list(scope)}
+        named = list(scope)
+    resolved_source = answers.get("context:source")
+    if scope and named and set(named) != set(scope) and not resolved_source:
+        choices = [{"id": sid, "label": sources[sid].label, "description": ""}
+                   for sid in dict.fromkeys([*scope, *named]) if sid in sources]
+        return {"status": "needs_clarification", "candidate": candidate, "answers": answers, "language": lang,
+                "source_resolution": {"ui": scope, "text": text_sources, "memory": memory_sources, "effective": None},
+                "form": {"message": "Nguồn đã chọn khác nguồn trong câu hỏi. Chọn nguồn để tiếp tục." if lang == "vi" else
+                         "The chosen source differs from your question. Choose one to continue.",
+                         "fields": [{"id": "context:source", "label": "Nguồn / Source", "kind": "single_choice",
+                                     "required": True, "allow_other": False, "default": [], "choices": choices}]}}
+    if resolved_source:
+        candidate = candidate | {"source_ids": resolved_source}
+        scope = resolved_source
+    source_resolution = {"ui": turn["state"].get("scope") or [], "text": text_sources, "memory": memory_sources,
+                         "effective": resolved_source or named or scope or []}
     with progress("check_interpretation") as s:
-        out = clarify.advance(candidate, answers, cat, sources, scope=scope, lang=lang)
+        out = clarify.advance(candidate, answers, cat, sources, scope=scope, lang=lang, question=turn["question"])
         if out.kind == "clarify":
             targets = [field for field in (out.form or {}).get("fields", [])
                        if field.get("id") in {"time_range", "recipe"}]
@@ -195,7 +259,7 @@ def _continue(turn: dict, candidate: dict, answers: dict, progress: Progress, ca
                     # The guess only chooses an offered ID. The normal resolver,
                     # value checks, QuerySpec validation, and compiler still run.
                     answers = answers | guessed
-                    out = clarify.advance(candidate, answers, cat, sources, scope=scope, lang=lang)
+                    out = clarify.advance(candidate, answers, cat, sources, scope=scope, lang=lang, question=turn["question"])
                 elif guess_trace["activated"]:
                     s.note("C0 could not safely choose an offered value")
                     return {"status": "refused", "message": "I could not infer a valid option from the question. Please ask again with the missing detail.",
@@ -206,33 +270,36 @@ def _continue(turn: dict, candidate: dict, answers: dict, progress: Progress, ca
         return {"status": "needs_clarification", "form": out.form, "candidate": candidate, "answers": answers,
                 "language": lang, "notes": out.notes, "variants": out.variants, "ablation": trace}
     if out.kind == "refuse":
-        return {"status": "refused", "message": out.message, "suggestions": out.suggestions, "candidate": candidate,
+        return {"status": "refused", "message": out.message, "suggestions": suggestions.questions(cat, sources, scope, lang), "candidate": candidate,
                 "answers": answers, "language": lang, "ablation": trace}
     result = run_spec(out.spec, cat, sources, progress)
     state = _answered(turn["question"], result, cat, sources, candidate, turn["model"], turn["id"], progress,
                       out.variants, out.notes, earlier_questions=turn["state"].get("context", {}).get("questions", []))
-    return state | {"candidate": candidate, "answers": answers, "ablation": trace}
+    return state | {"candidate": candidate, "answers": answers, "ablation": trace, "source_resolution": source_resolution}
 
 
 def ask(question: str, conversation_id: str | None, model: str | None, scope: list[str] | None,
-        owner_hash: str | None = None) -> dict:
+        owner_hash: str | None = None, language: str | None = None) -> dict:
     question = question.strip()
     if not question or len(question) > 2000:
         raise SpecError("invalid_question", "Ask a question of at most 2000 characters.")
     configured_variant = ablation.variant()
     with db.app_conn() as conn:
         if conversation_id is None:
-            conversation_id = conn.execute("INSERT INTO app.conversations (title, browser_session_hash) VALUES (%s,%s) RETURNING id",
-                                           (question[:80], owner_hash)).fetchone()["id"]
+            language = language or "vi"
+            conversation_id = conn.execute("INSERT INTO app.conversations (title, browser_session_hash, locale) VALUES (%s,%s,%s) RETURNING id",
+                                           (question[:80], owner_hash, language)).fetchone()["id"]
         elif conn.execute("SELECT 1 FROM app.conversations WHERE id = %s FOR UPDATE", (conversation_id,)).fetchone() is None:
             raise LookupError("conversation not found")
+        if not language:
+            language = conn.execute("SELECT locale FROM app.conversations WHERE id=%s", (conversation_id,)).fetchone()["locale"]
         if conn.execute("SELECT 1 FROM app.turns WHERE conversation_id = %s AND status = 'running' LIMIT 1",
                         (conversation_id,)).fetchone():
             raise SpecError("busy", "Wait for the current question before asking in this conversation.")
         turn_id = conn.execute(
             "INSERT INTO app.turns (conversation_id, question, model, state) VALUES (%s,%s,%s,%s) RETURNING id",
             (conversation_id, question, model,
-             json.dumps({"scope": scope or [], "ablation": ablation.initial_trace(configured_variant)}))).fetchone()["id"]
+             json.dumps({"scope": scope or [], "language": language, "ablation": ablation.initial_trace(configured_variant)}))).fetchone()["id"]
     turn_id = str(turn_id)
     _start(turn_id, _question_work(turn_id))
     return {"turn_id": turn_id, "conversation_id": str(conversation_id)}
@@ -244,15 +311,29 @@ def _snapshot(sources: dict) -> str:
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:20]
 
 
-def _reference_form(previous: list[dict], context: dict) -> dict:
-    refs = set(context.get("references", []))
-    choices = [{"id": str(p["id"]), "label": p["question"][:160], "description": ""}
-               for p in previous if p["status"] == "answered" and (not refs or str(p["id"]) in refs)]
+def _reference_form(previous: list[dict], context: dict, cat=None, sources=None) -> dict:
+    lang = context.get("language", "vi")
+    choices = []
+    for i, prior in enumerate(previous):
+        if prior["status"] != "answered":
+            continue
+        spec = prior["state"].get("query_spec", {})
+        metrics = [spec["recipe"]] if spec.get("recipe") else spec.get("metrics", [])
+        labels = [catalog_mod.display_label(cat.mets[mid], lang) if cat and mid in cat.mets else mid for mid in metrics]
+        stores = [sources[sid].label if sources and sid in sources else sid for sid in spec.get("source_ids", [])]
+        period = spec.get("time_range", {})
+        dates = (f"{period.get('start')} → {period.get('end')}" if period.get("kind") == "between" else
+                 f"{period.get('days')} ngày / days" if period.get("kind") == "last_n_days" else "Toàn bộ / All data")
+        filters = [f"{catalog_mod.display_label(cat.dims[f['field']], lang) if cat and f['field'] in cat.dims else f['field']} "
+                   f"{f['operator']} {', '.join(f.get('values', []))}" for f in spec.get("filters", [])]
+        ordinal = context.get("result_ordinals", {}).get(str(prior["id"]), i + 1)
+        choices.append({"id": str(prior["id"]), "label": f"{ordinal}. {prior['question'][:150]}",
+                        "description": " · ".join([*stores, *labels, dates, *filters])})
     if not choices:
         raise SpecError("no_result", "There is no compatible earlier result to reference. Ask a complete question.")
     return {"status": "needs_clarification", "context": context, "form": {
-        "message": "Bạn đang nhắc đến kết quả nào? / Which earlier result do you mean?",
-        "fields": [{"id": "context:reference", "label": "Kết quả trước / Earlier result", "kind": "single_choice",
+        "message": "Bạn đang nhắc đến kết quả nào?" if lang == "vi" else "Which earlier result do you mean?",
+        "fields": [{"id": "context:reference", "label": "Kết quả trước" if lang == "vi" else "Earlier result", "kind": "single_choice",
                     "required": True, "allow_other": False, "default": [], "choices": choices}]}}
 
 
@@ -268,6 +349,8 @@ def _question_work(turn_id: str, reference_id: str | None = None):
         with progress("read_conversation") as s:
             cat = catalog_mod.published()
             sources = catalog_mod.scoped_sources(cat, catalog_mod.load_sources(max_age=0))
+            if scope and (len(scope) > cat.policy.max_sources or any(sid not in sources for sid in scope)):
+                raise SpecError("source_scope", "Choose one available source within the product scope.")
             dataset_version = _snapshot(sources)
             if ablation.memory_disabled(selected_variant):
                 previous = []
@@ -285,8 +368,10 @@ def _question_work(turn_id: str, reference_id: str | None = None):
                                "inherited_slots": {}, "clarification_needed": False}
                 else:
                     previous = all_previous
-                    context = memory.select_context(previous, question, catalog_version=cat.contract_version,
-                                                    ordinal_history=raw_history)
+                    previous = memory.compatible_results(all_previous, cat.contract_version)
+                    context = {"turns": [], "relation": "unresolved", "references": [],
+                               "inherited_slots": {}, "clarification_needed": False, "structured_memory": True,
+                               "registry": memory.result_registry(previous, cat.contract_version, ordinal_history=raw_history)}
             if reference_id:
                 if ablation.memory_disabled(selected_variant):
                     raise SpecError("memory_disabled", "Earlier results are unavailable in this ablation run. Ask a complete question.")
@@ -294,23 +379,36 @@ def _question_work(turn_id: str, reference_id: str | None = None):
                             and p["state"].get("query_spec", {}).get("contract_version") == cat.contract_version), None)
                 if ref is None:
                     raise SpecError("stale_reference", "The selected result is no longer compatible. Ask again.")
-                context = {"turns": [ref], "relation": "followup", "references": [reference_id],
-                           "inherited_slots": ref["state"]["query_spec"], "clarification_needed": False}
+                context.update(turns=[ref], relation="followup", references=[reference_id],
+                               inherited_slots=ref["state"]["query_spec"], clarification_needed=False,
+                               forced_reference=reference_id)
+            context["language"] = turn["state"].get("language", "vi")
+            if context.get("registry"):
+                context["result_ordinals"] = {r["id"]: r["result_number"] for r in context["registry"]}
             selected = context.pop("turns")
             context.update(catalog_version=cat.contract_version, questions=[p["question"] for p in selected])
             metadata = {"context": context, "dataset_version": dataset_version, "ablation": variant_trace}
             turn["state"].update(metadata)
             s.note(f"{len(selected)} relevant turns · {context['relation']} · catalog v{cat.contract_version}")
         if context.get("clarification_needed"):
-            return _reference_form(previous, context) | metadata
+            return _reference_form(previous, context, cat, sources) | metadata
         candidate = interpret.interpret(question, selected, cat, sources, model=model, turn_id=turn_id,
                                         scope=scope, step=progress, context=context)
+        if context.get("structured_memory"):
+            candidate, resolved = memory.reduce_candidate(candidate, previous, cat.contract_version, reference_id)
+            context.update(resolved)
+            context["language"] = _lang(candidate)
+            context.pop("registry", None)  # durable context stores pointers and provenance, not another history copy
+            context["questions"] = [p["question"] for p in previous if str(p["id"]) in context["references"]]
+            if context.get("clarification_needed"):
+                return _reference_form(previous, context, cat, sources) | metadata | {"candidate": candidate}
         lang = _lang(candidate)
+        _persist_language(turn_id, lang)
         if candidate["outcome"] == "conversation":
-            return {"status": "conversation", "message": candidate["reply"], "suggestions": candidate["suggestions"],
+            return {"status": "conversation", "message": candidate["reply"], "suggestions": suggestions.questions(cat, sources, scope, lang),
                     "candidate": candidate, "language": lang} | metadata
         if candidate["outcome"] == "unsupported":
-            return {"status": "refused", "message": candidate["reason"], "suggestions": candidate["suggestions"],
+            return {"status": "refused", "message": candidate["reason"], "suggestions": suggestions.questions(cat, sources, scope, lang),
                     "candidate": candidate, "language": lang} | metadata
         if candidate["outcome"] == "answer_from_previous":
             refs = set(context.get("references", []))
@@ -320,7 +418,7 @@ def _question_work(turn_id: str, reference_id: str | None = None):
             if ablation.memory_mode(selected_variant) == "window6":
                 choices = [p for p in selected if p["status"] == "answered"][-1:]
             if len(choices) != 1:
-                return _reference_form(previous, context) | metadata
+                return _reference_form(previous, context, cat, sources) | metadata
             prior = choices[0]
             st = prior["state"]
             result = {k: st.get(k) for k in ("query_spec", "compiled_sql", "columns", "rows", "row_count", "partial", "facts",
@@ -400,7 +498,11 @@ def edit(turn_id: str, question: str) -> list[str]:
         conn.execute("UPDATE app.turns SET question = %s, state = jsonb_build_object('scope', state->'scope') || %s::jsonb, "
                      "status = 'running', updated_at = now() WHERE id = %s",
                      (question, json.dumps({"ablation": ablation.initial_trace(selected_variant)}), turn_id))
-        conn.execute("UPDATE app.conversations SET updated_at = now() WHERE id = %s", (turn["conversation_id"],))
+        conn.execute("""UPDATE app.conversations SET updated_at = now(),
+                        title = CASE WHEN title_manual THEN title ELSE
+                        (SELECT left(question,80) FROM app.turns WHERE conversation_id = %s
+                         ORDER BY created_at,id LIMIT 1) END WHERE id = %s""",
+                     (turn["conversation_id"], turn["conversation_id"]))
     _start(turn_id, _question_work(turn_id))
     return later
 

@@ -17,13 +17,23 @@ def candidate(**over):
 
 @pytest.fixture
 def model(monkeypatch):
+    # These scripted compiler/insight regressions explicitly use the archived
+    # catalog; the product's reduced contract is tested in product integration.
+    from texa import catalog, db, memory
+    from tests.test_units import CAT
+    monkeypatch.setattr(answer.catalog_mod, 'published', lambda: CAT)
+    db.migrate()
     script = {}
     calls = []
 
     def fake(*, name, prompt, **kw):
         calls.append((name, prompt))
         out = script[name]
-        return out(prompt) if callable(out) else out
+        result = out(prompt) if callable(out) else dict(out)
+        if name == 'interpret':
+            result['dialogue'] = {'relation': 'social' if result['outcome'] == 'conversation' else 'new_topic',
+                                  'target_id': '', 'slots': {k: 'set' for k in memory.SLOT_KEYS}}
+        return result
 
     monkeypatch.setattr(llm, "generate_structured", fake)
     monkeypatch.setattr(llm, "get_connection", lambda with_key=False: {"answer_language": "auto"})
@@ -52,7 +62,7 @@ def test_asks_for_store_and_period_then_answers(model):
     out = answer.ask_cli("buyers per month")
     assert out["status"] == "needs_clarification"
     assert {f["id"] for f in out["form"]["fields"]} == {"source", "time_range"}
-    out = answer.ask_cli("buyers per month", answers={"source": ["cosmetics_shop"], "time_range": ["all"]})
+    out = answer.ask_cli("buyers per month", answers={"source": ["olist_marketplace"], "time_range": ["all"]})
     assert out["status"] == "answered", out
     assert [c[0] for c in calls].count("interpret") == 2  # answering the form made no extra model call
     assert out["query_spec"]["shape"] == "time_trend"
@@ -84,14 +94,15 @@ def test_value_matching_and_refusal(model):
     assert out["status"] == "refused" and "does not log" in out["message"]
 
 
-def test_variant_group_answers_without_asking(model):
-    script, _ = model
+def test_variant_group_requires_choice_before_execution(model):
+    script, calls = model
     script["interpret"] = candidate(source_ids=["cosmetics_shop"], recipe_alternatives=["buyer_conversion_rate", "view_to_purchase_rate"],
                                     time_range={"kind": "last_n_days", "days": 30, "start": "", "end": ""})
     script["insight"] = {"headline": "Conversion is [[f_buyer_conversion_rate]].", "body": [], "caveats": [], "follow_ups": []}
     out = answer.ask_cli("conversion rate")
-    assert out["status"] == "answered", out
-    assert [v["id"] for v in out["variants"]] == ["buyer_conversion_rate", "view_to_purchase_rate"]
+    assert out["status"] == "needs_clarification", out
+    assert {c["id"] for f in out["form"]["fields"] if f["id"] == "recipe" for c in f["choices"]} == {"buyer_conversion_rate", "view_to_purchase_rate"}
+    assert all(name != "insight" for name, _ in calls)
 
 
 def test_unknown_ids_from_model_are_rejected(model):
@@ -124,3 +135,12 @@ def test_edit_rewinds_the_conversation(model):
         answer.load_turn(second["turn_id"])
     edited = answer.load_turn(first["turn_id"])
     assert edited["question"] == "hello, edited" and edited["status"] == "conversation"
+    from texa import db
+    with db.app_conn() as conn:
+        title = conn.execute('SELECT title FROM app.conversations WHERE id=%s', (first['conversation_id'],)).fetchone()['title']
+        assert title == 'hello, edited'
+        conn.execute("UPDATE app.conversations SET title='Manual title',title_manual=true WHERE id=%s", (first['conversation_id'],))
+    answer.edit(first['turn_id'], 'edited again')
+    settle(first['turn_id'])
+    with db.app_conn() as conn:
+        assert conn.execute('SELECT title FROM app.conversations WHERE id=%s', (first['conversation_id'],)).fetchone()['title'] == 'Manual title'

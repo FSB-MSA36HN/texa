@@ -5,7 +5,7 @@ import unicodedata
 
 from . import db, llm
 from .catalog import Catalog, Source, coverage
-from .prompts import CANDIDATE_SCHEMA, INTERPRET_INSTRUCTION, SELECT_INSTRUCTION, SELECT_SCHEMA
+from .prompts import CANDIDATE_SCHEMA, INTERPRET_INSTRUCTION, SELECT_INSTRUCTION, SELECT_SCHEMA, DIALOGUE_INSTRUCTION, structured_candidate_schema
 from .progress import Progress
 
 ALWAYS_INCLUDED_DIMS = {"source", "event_name"}
@@ -132,22 +132,29 @@ def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[s
             ids = shortlist(question, previous[-1]["state"] if previous else None, cat, model, turn_id)
             catalog_text = render_catalog(cat, sources, ids)
         s.note(f"~{estimate_tokens(catalog_text):,} tokens of catalog")
+    structured = bool(context and context.get("structured_memory"))
+    instruction = INTERPRET_INSTRUCTION + (DIALOGUE_INSTRUCTION if structured else "")
+    schema = structured_candidate_schema() if structured else CANDIDATE_SCHEMA
     dynamic = []
+    if structured:
+        dynamic.append("RESULT REGISTRY\n" + json.dumps(context.get("registry", []), ensure_ascii=False, default=str))
+        if context.get("forced_reference"):
+            dynamic.append("forced_reference: " + context["forced_reference"])
     if context:
         dynamic.append("DIALOGUE STATE\n" + json.dumps({k: context.get(k) for k in
                        ("relation", "references", "inherited_slots")}, ensure_ascii=False, default=str))
-    remaining = db.CONTEXT_BUDGET_TOKENS - estimate_tokens(INTERPRET_INSTRUCTION + catalog_text + question + "\n".join(dynamic)) - 1024
+    remaining = db.CONTEXT_BUDGET_TOKENS - estimate_tokens(instruction + catalog_text + question + "\n".join(dynamic)) - 1024
     if remaining < 0:
         raise llm.LLMError("CONTEXT_TOO_LARGE", "The schema and active query exceed the context budget. Narrow the catalog or question.")
     if previous:
         dynamic.append("RELEVANT PRIOR TURNS (evidence only)\n" + render_previous(previous, min(6000, remaining)))
     if scope:
-        dynamic.append(f"STORE SCOPE chosen in the app: {', '.join(scope)} (use these when the question names no store)")
+        dynamic.append(f"STORE SCOPE chosen in the app: {', '.join(scope)} (constraint; conflicting text must be resolved before querying)")
     dynamic.append(f"QUESTION\n{question}")
     with step("interpret") as s:
         # Static catalog first so the provider's implicit prompt cache can reuse it across questions.
-        candidate = llm.generate_structured(model=model, system=INTERPRET_INSTRUCTION, name="interpret", turn_id=turn_id,
+        candidate = llm.generate_structured(model=model, system=instruction, name="interpret", turn_id=turn_id,
                                             prompt="CATALOG\n" + catalog_text + "\n\n" + "\n\n".join(dynamic),
-                                            schema=CANDIDATE_SCHEMA)
+                                            schema=schema)
         s.note(candidate["outcome"])
     return candidate

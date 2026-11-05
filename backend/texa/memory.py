@@ -150,7 +150,7 @@ def apply_turn(committed: dict | None, turn: dict, *, catalog_version: int | Non
     topic_id = _turn_id(turn) or f"topic-{len(memory['topics']) + 1}"
     refs = set((context or {}).get("references") or [])
     followup = (context or {}).get("relation") == "followup"
-    prior_topic = next((t for t in reversed(memory["topics"]) if followup and t.get("id") in refs), None)
+    prior_topic = next((t for t in reversed(memory["topics"]) if followup and (t.get("id") in refs or t.get("result_ref") in refs)), None)
     topic = deepcopy(prior_topic) if prior_topic else {
         "id": topic_id, "question": turn.get("question", ""), "slots": {},
         "result_ref": _turn_id(turn), "updated_at": turn.get("created_at"),
@@ -172,7 +172,7 @@ def apply_turn(committed: dict | None, turn: dict, *, catalog_version: int | Non
         memory["topics"] = [t for t in memory["topics"] if t.get("id") != prior_topic.get("id")]
     memory["topics"].append(topic)
     memory["topics"] = memory["topics"][-50:]
-    memory["active_topic_id"] = topic_id
+    memory["active_topic_id"] = topic["id"]
     memory["pending"] = None
     return memory
 
@@ -290,3 +290,80 @@ def select_context(history: list[dict], question: str, *, catalog_version: int |
         "reason": "multiple plausible result references" if ambiguous else
                   ("matched prior topic" if chosen else "no confident prior-topic match"),
     }
+
+
+def compatible_results(history: list[dict], catalog_version: int) -> list[dict]:
+    """The complete server-owned registry; prompt eviction never changes eligibility."""
+    return [t for t in history if _is_answered(t) and _spec(t).get('contract_version') == catalog_version]
+
+
+def result_registry(history: list[dict], catalog_version: int, ordinal_history: list[dict] | None = None) -> list[dict]:
+    usable = compatible_results(history, catalog_version)
+    result_positions = {_turn_id(t): i + 1 for i, t in enumerate(t for t in (ordinal_history if ordinal_history is not None else history) if _is_answered(t))}
+    positions = {_turn_id(t): i + 1 for i, t in enumerate(ordinal_history if ordinal_history is not None else history)}
+    return [{'id': _turn_id(t), 'result_number': result_positions[_turn_id(t)], 'question_number': positions[_turn_id(t)], 'question': t.get('question', ''),
+             'reading': {k: deepcopy(v) for k, v in _spec(t).items() if k in SLOT_KEYS}}
+            for i, t in enumerate(usable)]
+
+
+def reduce_candidate(candidate: dict, history: list[dict], catalog_version: int,
+                     forced_reference: str | None = None) -> tuple[dict, dict]:
+    """Validate the semantic resolver's pointer, then apply keep/set/clear on the server.
+
+    The model proposes meaning; it cannot invent a reference, inherit from a stale
+    snapshot, or change a kept slot by emitting different candidate values.
+    Callers must pass only this conversation's current-snapshot history.
+    """
+    from . import llm
+    decision = candidate.get('dialogue')
+    if not isinstance(decision, dict):
+        raise llm.LLMError('MODEL_OUTPUT_INVALID', 'Missing structured dialogue decision.')
+    relation = decision.get('relation')
+    registry = compatible_results(history, catalog_version)
+    target_id = forced_reference or decision.get('target_id')
+    target = next((t for t in registry if _turn_id(t) == target_id), None)
+    context = {'relation': relation, 'references': [], 'inherited_slots': {}, 'clarification_needed': False}
+    if forced_reference and target is not None and relation != 'social':
+        relation = 'followup'
+        context['relation'] = relation
+    if relation == 'ambiguous' or (relation == 'followup' and target is None):
+        context.update(relation='ambiguous', clarification_needed=True)
+        return deepcopy(candidate), context
+    if relation not in {'new_topic', 'followup', 'social'}:
+        raise llm.LLMError('MODEL_OUTPUT_INVALID', 'Invalid dialogue relation.')
+    if forced_reference and relation != 'social':
+        relation = 'followup'
+        context['relation'] = relation
+    if relation == 'new_topic' and target_id and not forced_reference:
+        raise llm.LLMError('MODEL_OUTPUT_INVALID', 'A new topic cannot inherit an earlier result.')
+    inherited = _spec(target) if relation == 'followup' and target else {}
+    if inherited:
+        context.update(references=[_turn_id(target)], inherited_slots=deepcopy(inherited))
+    defaults = {'source_ids': [], 'recipe': '', 'metrics': [], 'selection': [], 'filters': [],
+                'time_range': {'kind': 'none', 'days': 0, 'start': '', 'end': ''}, 'shape': 'unclear', 'top_k': 0}
+    out = deepcopy(candidate)
+    operations = decision.get('slots', {})
+    if relation == 'social':
+        return out, context
+    for key in SLOT_KEYS:
+        operation = operations.get(key)
+        if operation not in {'keep', 'set', 'clear'}:
+            raise llm.LLMError('MODEL_OUTPUT_INVALID', f'Missing slot operation: {key}.')
+        if operation == 'keep':
+            if not inherited:
+                raise llm.LLMError('MODEL_OUTPUT_INVALID', 'Cannot keep slots without a compatible reference.')
+            value = deepcopy(inherited.get(key, defaults[key]))
+            if key == 'filters':
+                value = [{'field': f['field'], 'operator': f['operator'],
+                          'values_mentioned': f.get('values', f.get('values_mentioned', []))} for f in value]
+            if key == 'time_range':
+                value = {k: v for k, v in value.items() if k in {'kind', 'days', 'start', 'end'}}
+            out[key] = value if value is not None else deepcopy(defaults[key])
+        elif operation == 'clear':
+            out[key] = deepcopy(defaults[key])
+    # Alternatives are an interpretation of the current request, not an old metric.
+    if inherited and operations.get('recipe') == 'keep' and operations.get('metrics') == 'keep':
+        out['recipe_alternatives'] = []
+        out['recipe_stated'] = True
+    context['slot_operations'] = deepcopy(operations)
+    return out, context

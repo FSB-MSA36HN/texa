@@ -3,7 +3,7 @@ export type CatalogEntry = { id: string; label: string; description: string; uni
 export type Connection = { provider: string; base_url: string | null; allowed_models: string[]; default_model: string | null; max_output_tokens: number; daily_token_limit: number; answer_language: string; from_env?: boolean; has_key: boolean }
 export type Bootstrap = {
   sources: Source[]
-  catalog: { version?: number; metrics?: CatalogEntry[]; dimensions?: CatalogEntry[]; examples?: string[]; error?: string }
+  catalog: { version?: number; metrics?: CatalogEntry[]; dimensions?: CatalogEntry[]; examples?: string[]; suggestions?: { question: string; source_id: string }[]; error?: string }
   connection: Connection | null
   providers: { id: string; label: string }[]
   read_only_settings?: boolean
@@ -26,6 +26,7 @@ export type Turn = {
   period?: Record<string, { start: string; end: string; data_start: string; data_end: string }>
   currency_of?: Record<string, string>; sources?: string[]
   context?: { relation: string; references: string[]; questions?: string[] }
+  source_resolution?: { ui: string[]; text: string[]; effective: string[] | null }
   dataset_version?: string
   based_on?: string
   metric_definitions?: { id: string; label: string; description: string }[]

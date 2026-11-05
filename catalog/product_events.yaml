@@ -161,8 +161,8 @@ metrics:
 - id: sessions
   label: Sessions
   labels: {vi: Phiên truy cập}
-  description: Distinct sessions (cosmetics shop only).
-  descriptions: {vi: 'Số phiên truy cập duy nhất; hiện chỉ có ở nguồn Cosmetics.'}
+  description: Distinct session IDs on sources that record session_id; availability is determined from source metadata.
+  descriptions: {vi: 'Số mã phiên truy cập duy nhất; chỉ tính khi nguồn ghi nhận session_id, theo metadata hiện tại.'}
   synonyms:
   - visits
   - phiên
@@ -278,9 +278,13 @@ data_notes:
   message: Olist contains order lifecycle, payment and review events, not visitor tracking.
     Sessions and product views are unavailable. Purchases count item lines, not orders;
     revenue uses purchase item prices in BRL and excludes payment events and freight.
+  messages:
+    vi: Olist ghi nhận vòng đời đơn hàng, thanh toán và đánh giá; không ghi nhận phiên truy cập hay lượt xem sản phẩm. Sản phẩm đã mua được đếm theo dòng sản phẩm; doanh thu bằng BRL, không cộng sự kiện thanh toán hoặc phí vận chuyển.
 - source: olist_marketplace
   metric: buyer_conversion_rate
-  message: Olist chỉ ghi nhận khách đã đặt hàng. Tỷ lệ người mua/người dùng quan sát
-    trong kỳ không phải tỷ lệ chuyển đổi khách truy cập website.
+  message: Olist observes ordering customers, not website visitors; this buyer/user ratio is not visitor conversion.
+  messages:
+    vi: Olist chỉ ghi nhận khách đã đặt hàng. Tỷ lệ người mua/người dùng quan sát trong kỳ không phải tỷ lệ chuyển đổi khách truy cập website.
+    en: Olist observes ordering customers, not website visitors; this buyer/user ratio is not visitor conversion.
 - scope: One e-commerce event dataset per question; no cross-store totals, currencies,
     orders, arrays or causal claims.

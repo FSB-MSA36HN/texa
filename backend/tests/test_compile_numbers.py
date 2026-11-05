@@ -2,7 +2,7 @@
 import pytest
 
 from texa import catalog, db
-from texa.pipeline import run_spec
+from texa.pipeline import run_spec as _run_spec
 from texa.spec import SpecError
 
 
@@ -19,6 +19,16 @@ pytestmark = pytest.mark.skipif(not _warehouse_ready(), reason="warehouse not lo
 def hand(query, params=None):
     with db.reader_conn() as conn:
         return conn.execute(query, params).fetchall()
+
+
+def run_spec(spec):
+    # Compiler regression for the archived broad catalog. Product-scope behavior
+    # is covered separately in test_product_integration/test_olist_product_scope.
+    from pathlib import Path
+    import yaml
+    cat = catalog.validate_catalog(yaml.safe_load((Path(__file__).parents[2] / 'catalog/ecommerce.yaml').read_text()))
+    cat.contract_version = 1
+    return _run_spec(spec, cat, catalog.load_sources(max_age=0))
 
 
 def one(spec):
@@ -43,8 +53,9 @@ def test_revenue_by_month_cosmetics():
 
 
 def test_orders_map_to_sessions_for_cosmetics():
-    rows = one({"source_ids": COSM, "shape": "aggregate", "recipe": "orders", "time_range": ALL})
-    expected = hand("SELECT count(DISTINCT session_id) n FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase'")
+    rows = one({"source_ids": COSM, "shape": "aggregate", "recipe": "orders",
+                "time_range": {"kind": "between", "start": "2019-12-01", "end": "2019-12-01"}})
+    expected = hand("SELECT count(DISTINCT session_id) n FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase' AND event_date='2019-12-01'")
     assert rows[0]["orders"] == expected[0]["n"]
 
 

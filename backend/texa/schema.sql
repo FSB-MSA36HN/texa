@@ -77,3 +77,7 @@ CREATE TABLE IF NOT EXISTS app.llm_usage (
   ms            int,
   created_at    timestamptz NOT NULL DEFAULT now()
 );
+
+-- Preserve user titles when editing/rewinding questions.
+ALTER TABLE app.conversations ADD COLUMN IF NOT EXISTS title_manual boolean NOT NULL DEFAULT false;
+ALTER TABLE app.conversations ADD COLUMN IF NOT EXISTS locale text NOT NULL DEFAULT 'vi';

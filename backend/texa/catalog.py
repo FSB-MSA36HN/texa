@@ -494,16 +494,15 @@ def fingerprint(raw: dict) -> str:
 
 def check_against_sources(cat: Catalog, sources: dict[str, Source]) -> list[str]:
     """Require each role to be observed, not every optional event alias in a snapshot."""
-    visible = {sid: src for sid, src in sources.items() if sid in cat.sources_for_profile("evaluation")}
+    visible = scoped_sources(cat, sources)
     logged = set().union(*(s.events for s in visible.values())) if visible else set()
     errors = [f"event role {r.id}: no in-scope source logs any of {r.events!r}"
               for r in cat.event_roles if not logged.intersection(r.events)]
     for concept in cat.semantic_values:
         for sid, expected in concept.source_values.items():
-            src = sources.get(sid)
+            src = visible.get(sid)
             if src is None:
-                errors.append(f"semantic value {concept.id}: source {sid!r} has no metadata")
-                continue
+                continue  # A catalog can declare adapters for datasets not installed in this profile.
             field = cat.mapped_field(concept.field, sid)
             available = src.events if concept.field == "event_name" else src.values.get(field, {})
             if concept.field != "event_name" and not src.has_field(field):

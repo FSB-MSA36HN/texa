@@ -109,3 +109,10 @@ def test_clarification_preserves_contains_substring(cat):
     out = clarify.advance(c, {}, cat, {src.id: src})
     assert out.kind == 'spec'
     assert out.spec['filters'] == [{'field': 'item_category', 'operator': 'CONTAINS', 'values': ['bea']}]
+
+
+def test_publish_checks_only_installed_sources_in_active_profile(cat):
+    from texa.catalog import check_against_sources
+    cosmetics = source('cosmetics_shop', ['purchase', 'view'])
+    # A demo must not require installation of the isolated evaluation fixture.
+    assert check_against_sources(cat, {cosmetics.id: cosmetics}) == []

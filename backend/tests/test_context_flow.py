@@ -9,6 +9,7 @@ from tests.test_units import CAT, SOURCES
 
 
 def test_full_result_rejects_changed_snapshot_before_executing(monkeypatch):
+    monkeypatch.setattr(answer, "_persist_language", lambda *_: None)
     monkeypatch.setattr(answer, "load_turn", lambda _: {"state": {"query_spec": {"recipe": "revenue"}, "dataset_version": "old"}})
     monkeypatch.setattr(answer.catalog_mod, "published", lambda: CAT)
     monkeypatch.setattr(answer.catalog_mod, "load_sources", lambda **_: SOURCES)
@@ -22,6 +23,7 @@ def test_full_result_rejects_changed_snapshot_before_executing(monkeypatch):
 def test_variant_switch_rejects_changed_snapshot_before_executing(monkeypatch):
     turn = {"id": "turn", "question": "Q", "model": None,
             "state": {"query_spec": {"recipe": "revenue"}, "variants": [{"id": "buyers"}], "dataset_version": "old"}}
+    monkeypatch.setattr(answer, "_persist_language", lambda *_: None)
     monkeypatch.setattr(answer, "load_turn", lambda _: turn)
     monkeypatch.setattr(answer, "_set_running", lambda _: None)
     monkeypatch.setattr(answer, "_start", lambda _, work: work(Progress()))
@@ -52,6 +54,7 @@ def candidate(outcome="query", **over):
 def setup_flow(monkeypatch, *, history, question="Show orders by region?", interpret_result=None, version=1):
     cat = deepcopy(CAT)
     cat.contract_version = version
+    monkeypatch.setattr(answer, "_persist_language", lambda *_: None)
     monkeypatch.setattr(answer, "load_turn", lambda _: {
         "id": "current", "question": question, "conversation_id": "conversation", "model": None,
         "state": {"scope": []},
@@ -65,8 +68,17 @@ def setup_flow(monkeypatch, *, history, question="Show orders by region?", inter
     calls = []
 
     def fake_interpret(q, previous, *_args, context=None, **_kwargs):
-        calls.append((q, previous, context))
-        return interpret_result or candidate()
+        calls.append((q, previous, deepcopy(context)))
+        result = deepcopy(interpret_result or candidate())
+        relation = 'social' if result['outcome'] == 'conversation' else 'new_topic'
+        target = ''
+        if question == 'Why?':
+            relation = 'ambiguous'
+        if result['outcome'] == 'answer_from_previous':
+            relation, target = 'followup', 'a'
+        result['dialogue'] = {'relation': relation, 'target_id': target,
+                              'slots': {key: 'set' for key in answer.memory.SLOT_KEYS}}
+        return result
 
     monkeypatch.setattr(answer.interpret, "interpret", fake_interpret)
     return calls
@@ -82,8 +94,8 @@ def test_ten_noise_turns_keep_explicitly_referenced_older_context(monkeypatch):
     result = answer._question_work("current")(Progress())
 
     assert len(calls) == 1
-    assert [t["id"] for t in calls[0][1]] == ["old"]
-    assert calls[0][2]["references"] == ["old"]
+    assert calls[0][1] == []
+    assert calls[0][2]["registry"][0]["id"] == "old"
     assert result["status"] == "conversation"
 
 
@@ -94,7 +106,7 @@ def test_ambiguous_reference_returns_choice_form_without_model_call(monkeypatch)
 
     result = answer._question_work("current")(Progress())
 
-    assert calls == []
+    assert len(calls) == 1
     assert result["status"] == "needs_clarification"
     choices = result["form"]["fields"][0]["choices"]
     assert {choice["id"] for choice in choices} == {"a", "b"}
@@ -123,7 +135,7 @@ def test_new_topic_does_not_send_old_turns_to_interpreter(monkeypatch):
     result = answer._question_work("current")(Progress())
 
     assert calls[0][1] == []
-    assert calls[0][2]["relation"] == "new_topic"
+    assert calls[0][2]["relation"] == "unresolved"
     assert result["status"] == "observed"
 
 
@@ -136,7 +148,7 @@ def test_dataset_and_catalog_mismatches_are_excluded(monkeypatch):
     answer._question_work("current")(Progress())
 
     assert calls[0][1] == []
-    assert calls[0][2]["relation"] == "new_topic"
+    assert calls[0][2]["relation"] == "unresolved"
 
 
 def test_render_previous_drops_whole_old_turn_blocks_to_fit_budget():
