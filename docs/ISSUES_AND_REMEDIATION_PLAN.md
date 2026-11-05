@@ -1,10 +1,34 @@
 # Texa — Vấn đề tồn đọng và kế hoạch sửa tận gốc
 
-Cập nhật: 05/11/2026. Trạng thái: **đã phân tích, chưa implement**. Mốc code đã kiểm thử: `4bde1ac`; product trong các lần đo vẫn là phiên bản đóng băng trước đó. File này được bổ sung theo yêu cầu tracking, bên cạnh hai tài liệu sản phẩm hiện hành.
+Cập nhật: 05/11/2026. Trạng thái: **đã implement các phần code chính; các gate đánh giá còn mở được ghi rõ bên dưới**. Phân tích root cause ban đầu tại `4bde1ac`; kết quả code mới được tách riêng trong bảng tiến độ và artifacts dưới đây. File này được bổ sung theo yêu cầu tracking, bên cạnh hai tài liệu sản phẩm hiện hành.
+
+## Tiến độ sau implementation
+
+Các root cause/file:line phía dưới mô tả mốc trước sửa; dùng bảng này để đọc trạng thái hiện tại. Các artifact cũ giữ nguyên. Các commit được tách theo semantic contract, provider/budget, memory/UX, regression và evaluation trên `main`.
+
+| Vấn đề | Đã thực hiện | Gate còn mở |
+|---|---|---|
+| 01–02 Semantic/capability | Binder dùng chung cho model/form/QuerySpec; enum complete/open/absent; concept → raw value theo nguồn; filter trace; demo/evaluation profiles | Gold cần reviewer thứ hai; thêm biến thể thực tế từ user traffic |
+| 03 Memory | Structured reference + reducer keep/set/clear; registry đầy đủ phía server, prompt có budget; ordinal không renumber; version/edit guards | Không cam kết hiểu mọi paraphrase; chưa có holdout memory mới được thẩm định |
+| 04 Clarification | Policy mơ hồ từ catalog, thiếu kỳ và xung đột nguồn phải hỏi lại | Policy nghiệp vụ vẫn hữu hạn; cần review các ambiguity ngoài glossary |
+| 05–06 Suggestions/source | Gợi ý qua validation/capability; tên nguồn không tự ghi đè ý nghĩa; bất đồng UI/model/text phải chọn; đồng bộ picker | Tiếp tục thu thập câu hỏi thật; việc LLM hiểu sai vẫn có thể xảy ra |
+| 07–08 Evaluation | Business result vs output contract tách riêng; frozen provenance; oracle chỉ cấp field đang được hỏi; raw run gián đoạn giữ nguyên | Bộ regression đã nhìn thấy, chưa phải holdout; câu trả lời discussion chưa có contract chấm tự động |
+| 09 Reliability | Guard chi phí dùng chung theo attempt/process, giữ reservation khi usage chưa rõ; SDK retry tắt; timeout/admission hữu hạn | Single worker; RUNS/SSE và semaphore chưa phải hệ phân tán |
+| 10 Latency | Có đo queue, SQL-ready và end-to-end; thử 8 phiên model thật | Chưa tối ưu latency hoặc chốt SLO; SQL-ready chưa đồng nghĩa UI đã render |
+| 11 Locale | Locale theo hội thoại; label và ba loại cảnh báo availability có renderer từ code/params | Một số lỗi/caveat legacy ngoài đường sản phẩm chính còn fallback English |
+| 12 Title | Edit cập nhật title tự sinh; giữ title người dùng đặt | Giữ regression khi thay persistence/rewind |
+
+Bằng chứng mới nằm tại `data/benchmark/results/remediation-20261105/`:
+
+- Backend full suite: **261 passed, 12 skipped**; kết quả cuối ghi trong `verification.json`.
+- Playwright: **15/15 passed**, gồm tám phiên browser dùng provider mô phỏng; không dùng số này làm accuracy của LLM.
+- Model thật: tám request đồng thời đều đúng số/tiền tệ, tám lượt đọc chéo phiên đều trả 404; end-to-end p50 **21,2 giây**, p95 **36,5 giây**. Chỉ là sanity test một lượt, chưa phải sức chứa production.
+- Model thật, một hội thoại: **12/12** truy vấn trả đúng; sau câu xã giao, “kết quả thứ hai” quay lại Olist 01/2018, đủ **31/31 dòng** khớp SQL độc lập. Không biến một hội thoại thành tỷ lệ chính xác tổng quát.
+- Benchmark mới: **v3: Texa 35/48 = 72,9%; B0 41/48 = 85,4%** trên 16 câu test × 3 lần; regression đã nhìn thấy, không phải holdout. Memory comparison không hợp lệ vì discussion chưa chấm được; clarification v3 không hợp lệ do thiếu oracle kỳ. Clarification v4: **F 6/6 (100%), C0 1/6 (16,7%) trên hai tình huống × ba lần; chỉ là regression nhỏ đã nhìn thấy, không suy rộng**. Không gộp với formal cũ. Lượt `initial-protocol-attempt/` không đủ điều kiện so sánh: thiếu oracle kỳ báo cáo, discussion chưa có SQL-result contract, và single/F/r2 bị timeout nên matrix chưa hoàn tất. Không xóa lần chạy này.
 
 ## 1. Kết luận và phạm vi
 
-Luồng truy vấn rõ nguồn/kỳ/metric hoạt động trên các mẫu warehouse đã đối chiếu. Điểm yếu chính nằm ở **liên kết ngôn ngữ với semantic contract**, **phân giải tham chiếu hội thoại**, **các đường vào không dùng chung kiểm tra**, và **mức bằng chứng đánh giá**. Chưa nên mở demo tự do cho cả lớp.
+Luồng truy vấn rõ nguồn/kỳ/metric hoạt động trên các mẫu warehouse đã đối chiếu. Điểm yếu chính nằm ở **liên kết ngôn ngữ với semantic contract**, **phân giải tham chiếu hội thoại**, **các đường vào không dùng chung kiểm tra**, và **mức bằng chứng đánh giá**. Chỉ demo có hướng dẫn trong phạm vi đã kiểm tra; chưa khẳng định tải toàn lớp hoặc độ đúng trên mọi câu hỏi.
 
 Giữ nguyên PostgreSQL, Cosmetics + Olist, một nguồn mỗi truy vấn, tám metric, nested scalar có giới hạn. Tận dụng catalog, QuerySpec, compiler và PostgreSQL hiện có; chưa cần thay bằng framework agent, vector database hay bộ chuẩn hóa mọi database.
 
@@ -54,7 +78,7 @@ User message + UI source + locale + result registry
 - **Không làm:** thay chuỗi `mua hàng` bằng `purchase` trong SQL; thêm dictionary riêng trong prompt/compiler; biến mọi kết quả rỗng thành lỗi.
 - **Nghiệm thu:** đổi label/ngôn ngữ không đổi QuerySpec đã bind; cùng ý purchase ánh xạ đúng hai nguồn; thử alias xung đột, metadata thiếu/stale, form Other, giá trị high-cardinality hợp lệ, và kết quả rỗng thật. Trace phải chỉ được nguồn gốc của từng filter đã bind: câu người dùng, kế thừa đã xác nhận hay policy. Không thêm filter chỉ vì mô tả metric nhắc tới một event; event role của metric do compiler áp dụng theo catalog.
 - **Điểm sửa:** `catalog.py`, `interpret.py`, `sanity.py`, `clarify.py`, `spec.py`; compiler chỉ nhận giá trị đã bind. Metadata/fixture phải được kiểm tra cùng contract.
-- [ ] Chưa triển khai.
+- [x] Core đã triển khai; xem gate còn mở trong bảng tiến độ.
 
 ### TEXA-02 · P1 · Mô tả nguồn và khả năng truy vấn chưa là một contract nhất quán
 
@@ -63,7 +87,7 @@ User message + UI source + locale + result registry
 - **Fix:** capability được suy ra từ định nghĩa metric/event roles/field coverage của từng source, có version; prose được dựng từ đó. Tách registry/config môi trường eval khỏi demo, dùng cùng engine contract. Eval vẫn được khai báo nguồn fixture riêng; demo chỉ công bố Cosmetics/Olist. Thêm kiểm tra publish catalog ↔ metadata trước khi chạy, không nới whitelist toàn cục để test xanh.
 - **Nghiệm thu:** cùng metric trên hai nguồn có/không có event/field được phân biệt đúng; Olist sessions luôn unavailable; fixture có session không bị từ chối chỉ vì tên nguồn. API/UI demo không công bố source eval. Missing column metadata trong fixture phải bị báo rõ khi setup.
 - **Điểm sửa:** `catalog/product_events.yaml`, `catalog.py`, `sanity.py`, `interpret.py`, setup/publish fixture trong `backend/eval/`.
-- [ ] Chưa triển khai; cần ghi lại candidate/reason code cho các refusal formal.
+- [x] Core đã triển khai; nghiệm thu nghiên cứu/coverage theo bảng tiến độ.
 
 ### TEXA-03 · P1 · Memory có lưu nhưng phân giải tham chiếu bằng heuristic yếu
 
@@ -73,7 +97,7 @@ User message + UI source + locale + result registry
 - **Ứng xử khi mơ hồ:** không tự đổi thành chủ đề mới để đoán metric/kỳ. Form phải truy xuất từ toàn bộ registry kết quả tương thích của hội thoại, độc lập với phần lịch sử bị cắt khỏi prompt; cho tìm/xem thêm, không làm mất target vì top-k pruning; cho thấy số thứ tự, nguồn, metric, kỳ và filter. Tham chiếu ID/ordinal rõ ràng được ưu tiên trước giới hạn prompt. Không tăng sáu lượt thành một số tùy ý khác.
 - **Nghiệm thu:** paraphrase Việt/Anh, số và chữ, 2/8/12+ kết quả, social noise, quay lại chủ đề cũ, sửa điều kiện và xóa filter, đổi nguồn, reference mơ hồ, edit/retry, snapshot/catalog đổi. Chấm cả target ID, QuerySpec cuối và kết quả SQL; test phải bắt được chọn nhầm lượt dù hai lượt tình cờ cùng con số.
 - **Điểm sửa:** `memory.py`, `interpret.py`, `prompts.py`, `_reference_form`/state handling trong `answer.py`, form UI và tests memory.
-- [ ] Chưa triển khai.
+- [x] Core đã triển khai; xem gate còn mở trong bảng tiến độ.
 
 ### TEXA-04 · P1 · Clarification phụ thuộc quá nhiều vào việc LLM tự khai báo mơ hồ
 
@@ -81,7 +105,7 @@ User message + UI source + locale + result registry
 - **Fix:** lập ambiguity policy từ metric contract: định nghĩa, grain, denominator, nguồn và trường bắt buộc. Nếu request có nhiều cách hiểu hợp lệ dẫn tới phép tính khác nhau, resolver trả các lựa chọn có ID; server kiểm tra và buộc hỏi khi còn unresolved. Không coi số confidence tự khai báo của LLM là xác suất đã hiệu chỉnh. Lựa chọn phải được tạo theo capability và giữ phần yêu cầu đã chắc chắn.
 - **Nghiệm thu:** thiếu kỳ, metric thực sự mơ hồ, metric đã nói rõ, missing/unsupported field và xung đột nguồn; đo đúng-kết-quả-cuối, clarification precision/recall và số lượt hỏi. Không ép mọi câu phải hỏi để tăng recall; C0 được chấm đúng khi tự trả lời đúng.
 - **Điểm sửa:** `clarify.py`, candidate schema trong `interpret.py`, metric catalog, memory pending state; mở rộng lát cắt clarification dev.
-- [ ] Chưa triển khai; cần phân loại lỗi từng scenario trước khi đổi policy.
+- [x] Core đã triển khai; policy chỉ mở rộng theo lỗi có bằng chứng.
 
 ### TEXA-05 · P1 · Gợi ý không đi qua semantic/capability validator
 
@@ -89,7 +113,7 @@ User message + UI source + locale + result registry
 - **Fix:** một suggestion service trả candidate intent/QuerySpec kèm câu diễn đạt, dựa trên catalog và coverage đang chọn. Trước khi hiển thị phải qua cùng binder/validator như query thực; thiếu ngày thì dùng kỳ hợp lệ xác định từ nguồn. Chỉ hiển thị suggestion đã kiểm tra. Dùng tập ví dụ đã duyệt có version [S7] làm seed; không lưu câu SQL/đáp án theo exact question để trả tắt.
 - **Nghiệm thu:** mọi gợi ý home/social/refusal chạy được hoặc mở clarification hợp lệ, không quảng bá tính năng ngoài scope; thay source/ngày/field/catalog thì gợi ý cập nhật. Không cần gọi truy vấn warehouse thật mỗi lần mở trang: kiểm contract khi publish/cache theo version, rồi kiểm lại khi thực thi.
 - **Điểm sửa:** `App.tsx`, bootstrap/suggestion API, `answer.py`, catalog verified questions và shared validation service.
-- [ ] Chưa triển khai.
+- [x] Core đã triển khai; xem gate còn mở trong bảng tiến độ.
 
 ### TEXA-06 · P1 · UI source và nguồn trong câu hỏi có thể mâu thuẫn
 
@@ -97,7 +121,7 @@ User message + UI source + locale + result registry
 - **Quyết định sản phẩm đề xuất** (không phải kết luận benchmark về bên nào nên thắng): nguồn được người dùng chọn rõ trên dropdown là **ràng buộc**; câu hỏi nêu nguồn khác thì hiện form giải quyết xung đột trước SQL. “Mọi nguồn” nghĩa là chưa chọn nguồn, không phải quyền gộp hai nguồn. Lưu provenance riêng cho UI selection, source được nhắc trong text và source đã resolve; chỉ có một `effective_source` được dùng cho QuerySpec/scope chip.
 - **Nghiệm thu:** đủ tổ hợp UI A/text A, UI A/text B, UI A/không nêu, Mọi nguồn/text A, text nêu hai nguồn và follow-up đổi nguồn. Không thực thi khi conflict chưa giải quyết; chọn xong picker/scope/query phải thống nhất.
 - **Điểm sửa:** request schema/API, `interpret.py`, `clarify.py`, `answer.py`, `App.tsx`.
-- [ ] Chưa triển khai.
+- [x] Core đã triển khai; xem gate còn mở trong bảng tiến độ.
 
 ### TEXA-07 · P0 · Metric đánh giá chưa đủ để chứng minh ưu thế về hiểu đúng
 
@@ -107,7 +131,7 @@ User message + UI source + locale + result registry
 - **Chống overfit:** toàn bộ holdout đã xem lỗi được xem là regression/dev cho vòng sửa; tạo holdout mới theo intent/template/dialogue family, đóng băng trước chạy [S3]. Ví dụ đã duyệt không được lấy từ holdout mới. Dataset diagnostic 17 dòng và các mẫu UI chỉ là bằng chứng chức năng.
 - **Nghiệm thu:** scorecard có error taxonomy và lát cắt nguồn/ngôn ngữ/intent/độ dài; cùng model/snapshot/schema/định nghĩa/budget đã công bố cho B0/F; CI paired theo cluster và đủ mẫu độc lập để đọc được. Không yêu cầu Texa phải thắng mới coi runner đúng.
 - **Điểm sửa:** `backend/eval/benchmark.py`, `report_ablation.py`, protocol/data manifests và dataset mới; giữ raw artifact cũ bất biến.
-- [ ] Chưa triển khai; chốt scoring contract trước khi tối ưu theo điểm mới.
+- [x] Scoring/protocol đã triển khai; chưa đóng gate holdout/review độc lập.
 
 ### TEXA-08 · P1 · Runner hội thoại diagnostic chấm khác tiêu chí giữa hai bên
 
@@ -115,7 +139,7 @@ User message + UI source + locale + result registry
 - **Fix:** mỗi phương pháp xuất một observation chung: action, kết quả thực thi, câu hỏi làm rõ và reference có thể quan sát. Scorer dùng một rubric bên ngoài cho tất cả. Internal QuerySpec/slot accuracy là chẩn đoán riêng của Texa; không bắt baseline không có QuerySpec phải khớp object nội bộ. Oracle cung cấp cùng thông tin khi clarification hợp lệ. Tiếp tục ablation F/M6/M0, F/C0; ghi rõ số model calls/cost và overhead của resolver mới.
 - **Nghiệm thu:** hai observation tương đương cho cùng tình huống phải cùng điểm; đáp án đúng nhưng reference sai được phát hiện bằng counterexample; error/timeout không bị loại mẫu số. Chỉ công bố so sánh hội thoại mới sau khi scorer parity qua kiểm thử.
 - **Điểm sửa:** `run_benchmark.py`, adapter ablation, comparator/scorer dùng chung, tests runner.
-- [ ] Chưa triển khai.
+- [x] Core đã triển khai; xem gate còn mở trong bảng tiến độ.
 
 ### TEXA-09 · P1 · Reliability và budget chưa được bảo vệ thống nhất tại runtime
 
@@ -123,7 +147,7 @@ User message + UI source + locale + result registry
 - **Fix:** đưa call accounting, timeout, retry policy và reservation budget vào adapter LLM dùng chung của app/eval/CLI, không phụ thuộc cách launch. Dùng ID cho logical call/attempt, reserve/settle nguyên tử và concurrency-safe; tách usage đã biết với khoản chưa biết. Retry có giới hạn/backoff cho lỗi transient, không retry lỗi semantic để săn đáp án đúng. Thêm queue/concurrency limit trong triển khai một worker hiện tại; trạng thái job bền vững và restart reconciliation để không để turn chạy mãi. Chưa cần mở multi-replica khi chưa có nhu cầu.
 - **Nghiệm thu:** kiểm đồng thời nhiều process, request đang bay lúc gần hết budget, 429/5xx/timeout, ngắt SSE, cancel/retry và restart. Không vượt giới hạn admission đã thiết kế; ghi rõ chi phí failed call chưa được provider xác nhận, không cam kết biết chính xác hóa đơn chỉ từ token thiếu. Matrix/CLI/UI phải đi cùng guard. Phiên người dùng vẫn tách biệt.
 - **Điểm sửa:** `llm.py`, provider adapters, `answer.py`, runtime configuration, `backend/eval/run_gateway_check.py` và orchestration. Inject fault trên môi trường test, không gây outage cho buổi demo thật.
-- [ ] Chưa triển khai; cần fault/load testing trước rollout cả lớp.
+- [x] Guard/fault tests và sanity tải tám phiên đã có; chưa đóng gate tải cả lớp.
 
 ### TEXA-10 · P2 · Có mẫu trả lời chậm, chưa xác định bottleneck
 
@@ -131,7 +155,7 @@ User message + UI source + locale + result registry
 - **Fix đúng thứ tự:** trace cùng ID theo queue → context/interpret → bind/clarify → DB → facts → insight → SSE/render; ghi token, DB plan và p50/p95 theo loại câu. Chỉ sau đó tối ưu stage chiếm thời gian: SQL/index sau EXPLAIN, giảm context/calls dư, deterministic rendering cho tổng đơn giản, cache có khóa source/snapshot/catalog/spec/permission hoặc chạy song song tác vụ độc lập [S4]. Không cache theo câu hỏi thuần hay bỏ validation.
 - **Nghiệm thu:** báo first-result và end-to-end riêng, so chất lượng trước/sau, cache invalidation và isolation; load test theo số người dự kiến cùng dùng, công bố concurrency. Chốt SLO sau baseline tải, không bịa ngưỡng để tuyên bố đã đạt.
 - **Điểm sửa:** instrumentation trong `answer.py`, `llm.py`, `db.py`, pipeline insight và frontend trace; SQL/ETL chỉ sửa khi plan chỉ ra nguyên nhân.
-- [ ] Chưa điều tra bottleneck; chưa chọn tối ưu cụ thể.
+- [x] Đã có instrumentation và đo queue/end-to-end; tối ưu và SLO còn mở.
 
 ### TEXA-11 · P2 · Thông báo và caveat lẫn ngôn ngữ
 
@@ -139,7 +163,7 @@ User message + UI source + locale + result registry
 - **Fix:** locale là state của request/hội thoại; lỗi/caveat dùng reason code + typed parameters và renderer i18n. Catalog tách label/description theo locale khỏi expression/ID. Insight sử dụng facts theo ID và locale, có fallback đã dịch. Không sửa prose của catalog để đổi nghĩa metric.
 - **Nghiệm thu:** query, clarification, refusal, missing field, timeout và CSV header có locale nhất quán; raw event value không bị dịch thành SQL literal. Việt/Anh đổi ngôn ngữ không làm thay đổi kết quả.
 - **Điểm sửa:** catalog display metadata, `answer.py`, `clarify.py`, `sanity.py`, insight/UI renderer.
-- [ ] Chưa triển khai.
+- [x] Core đã triển khai; xem gate còn mở trong bảng tiến độ.
 
 ### TEXA-12 · P2 · Sửa câu hỏi nhưng tiêu đề lịch sử không cập nhật
 
@@ -147,7 +171,7 @@ User message + UI source + locale + result registry
 - **Fix:** quy định title là title người dùng đặt hoặc title suy ra từ first surviving turn. Recompute title suy ra trong cùng transaction edit/rewind; giữ title người dùng đã đặt nếu sau này có chức năng đó. API và sidebar lấy cùng giá trị.
 - **Nghiệm thu:** sửa câu đầu/câu sau, reload/mở lịch sử, edit có lượt sau; không nhân đôi turn, không đổi nhầm title chat khác và không dùng title làm reference ID.
 - **Điểm sửa:** `answer.py`, conversation persistence/list response, sidebar tests.
-- [ ] Chưa triển khai.
+- [x] Core đã triển khai; xem gate còn mở trong bảng tiến độ.
 
 ## 4. Thứ tự implement và tracking
 

@@ -1,0 +1,43 @@
+{
+  "status": "descriptive_inspected_regression_not_confirmatory",
+  "single": {
+    "artifact": "regression-v3/report.json",
+    "commit": "cae0a97",
+    "protocol": 3,
+    "questions": 16,
+    "repeats": 3,
+    "F": {
+      "correct": 35,
+      "total": 48
+    },
+    "B0": {
+      "correct": 41,
+      "total": 48
+    }
+  },
+  "clarification": {
+    "artifact": "clarification-v4/report.json",
+    "commit": "2ef3019",
+    "protocol": 4,
+    "scenarios": 2,
+    "repeats": 3,
+    "F": {
+      "correct": 6,
+      "total": 6
+    },
+    "C0": {
+      "correct": 1,
+      "total": 6
+    }
+  },
+  "memory": {
+    "status": "invalid_for_efficacy_comparison",
+    "reason": "Unsupported discussion task; see regression-v3/validity.json"
+  },
+  "limits": [
+    "Do not pool scores across suites/protocols.",
+    "Repeated trials are not independent questions.",
+    "All sets inspected; no second-human adjudication or sealed holdout.",
+    "Raw historical/invalid attempts retained unchanged."
+  ]
+}

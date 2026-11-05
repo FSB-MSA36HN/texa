@@ -1,0 +1,9 @@
+{
+  "model": "gpt-6-luna",
+  "calls": 2344,
+  "input_tokens": 3995014,
+  "output_tokens": 314405,
+  "spent_estimated_usd": 0.5567038999999998,
+  "reserved_usd": 0.18966220000000017,
+  "max_usd": 10
+}

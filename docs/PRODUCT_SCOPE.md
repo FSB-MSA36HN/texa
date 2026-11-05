@@ -1,85 +1,73 @@
 # Texa — Product scope
 
-Cập nhật 05/11/2026. Kịch bản thuyết trình: [FINAL_PRESENTATION_SCRIPT](FINAL_PRESENTATION_SCRIPT.md).
+Cập nhật 05/11/2026. Kịch bản trình bày hiện hành: [FINAL_PRESENTATION_SCRIPT](FINAL_PRESENTATION_SCRIPT.md).
 
-## Sản phẩm cho ai, giải quyết gì?
+## Sản phẩm và người dùng
 
-PM/PO không chuyên SQL hỏi dữ liệu thương mại điện tử bằng ngôn ngữ tự nhiên: xem số liệu, đổi kỳ, lọc/chia nhóm và hỏi tiếp. Texa trả bảng, nhận xét, định nghĩa và phạm vi truy vấn để kiểm tra. Persona chưa được xác nhận bằng user study; không cam kết LLM đúng tuyệt đối.
+Texa hỗ trợ PM/PO và người quản lý không chuyên SQL tự xem số liệu thương mại điện tử: hỏi bằng tiếng Việt hoặc tiếng Anh, xem bảng, lọc/chia nhóm, đổi kỳ và hỏi tiếp. Kết quả có thể hỗ trợ ra quyết định, không thay thế phân tích chuyên môn hoặc xác minh nghiệp vụ. Persona này là định hướng sản phẩm, chưa được xác nhận bằng nghiên cứu người dùng; LLM không được đảm bảo đúng tuyệt đối.
 
-## Phạm vi cố định
+## Phạm vi hiện tại
 
-- **PostgreSQL; Cosmetics + Olist đã cấu hình sẵn. Mỗi câu hỏi chỉ dùng một nguồn.** Không gộp/join hai nguồn hoặc chuẩn hóa mọi database.
-- Event rows do adapter ETL cụ thể tạo; semantic catalog `catalog/product_events.yaml` định nghĩa metric và ánh xạ event. Olist `order_purchased` và Cosmetics `purchase` cùng là purchase item.
-- Nested scalar dưới `ep`/`up`: tối đa hai key, chỉ field được khai báo; không expand array. Dữ liệu nguồn nào thiếu field/event thì báo không hỗ trợ, không tự trả 0.
-- Hỗ trợ aggregate, trend theo ngày/tuần/tháng, filter/breakdown trong catalog và top-k theo một metric. Relative date tính từ ngày dữ liệu mới nhất của nguồn.
+- Một engine: PostgreSQL; hai nguồn được cấu hình sẵn: Cosmetics Shop và Olist.
+- Mỗi truy vấn chỉ dùng một nguồn; không join/cộng gộp hai nguồn, không hướng tới chuẩn hóa mọi database hay kiến trúc data của mọi công ty.
+- Dữ liệu là event rows qua ETL adapter hiện có và catalog semantic được quản trị trong `catalog/product_events.yaml`.
+- Nested scalar chỉ trong các path được khai báo, sâu tối đa hai key dưới `ep`/`up`; không bung array. Thiếu field/event là unavailable, không được báo thành zero.
+- Hỗ trợ aggregate, ngày/tuần/tháng, filter, breakdown và top-k một metric trong phạm vi catalog. Relative date tính từ ngày mới nhất của nguồn.
 
-| Metric | Cách tính | Cosmetics | Olist |
+| Metric | Ý nghĩa ngắn | Cosmetics | Olist |
 |---|---|---|---|
-| events | Đếm event được ghi nhận | Có | Có, gồm lifecycle/payment/review |
-| users | User duy nhất có event trong kỳ | Có | Chỉ khách đã đặt hàng |
-| sessions | Session duy nhất | Có | Không ghi nhận |
-| viewers | User duy nhất có product view | Có | Không ghi nhận |
-| purchases | Đếm item purchase events | Có | Có; không phải số order |
-| buyers | User duy nhất có item purchase | Có | Có |
-| revenue | Cộng revenue trên item purchase | USD | BRL, loại payment/freight |
-| buyer_conversion_rate | buyers/users quan sát trong kỳ | Không phải funnel tuần tự | Không phải visitor conversion |
+| Events | Số event được ghi nhận | Có | Có |
+| Users | User duy nhất được quan sát trong kỳ | Có | Khách đã đặt hàng, không phải toàn bộ visitor |
+| Sessions | Session duy nhất | Có | Không ghi nhận |
+| Viewers | User duy nhất đã xem sản phẩm | Có | Không ghi nhận |
+| Purchases | Item lines được mua, không phải số order | Có | Có |
+| Buyers | User duy nhất có item purchase | Có | Có |
+| Revenue | Tổng giá trị item purchase theo tiền tệ nguồn | USD | BRL; không cộng payment/freight |
+| Buyer conversion rate | Buyers/users quan sát trong kỳ; không phải funnel tuần tự | Có | Không phải visitor conversion |
 
-Tám metric tạo ra nhiều câu hỏi nhờ kết hợp kỳ/filter/breakdown; không phải chỉ tám câu hỏi. Chưa xác nhận chúng bao phủ đủ công việc PM/PO. Không hỗ trợ metric delivery/review, order/AOV, retention, FX hoặc kết luận nhân quả, dù kho dữ liệu có một số field liên quan.
+Đây là tám metric, không phải tám câu hỏi: có thể kết hợp kỳ, filter và breakdown. Chưa chứng minh độ bao phủ đủ mọi công việc PM/PO. Ngoài scope: delivery/review, order/AOV, retention, FX, causal claims và các truy vấn tự do.
 
-## Luồng AI và kiểm soát
+## Cách Texa xử lý yêu cầu
 
-Câu hỏi + nguồn + memory → LLM hiểu thành candidate → resolver hỏi lại nếu thiếu/mơ hồ → QuerySpec → validator và kiểm tra coverage → compiler Python sinh SQL có tham số → PostgreSQL reader role → facts/phép tính server → LLM viết nhận xét bằng fact references → giao diện hiển thị bảng, scope, SQL.
-
-LLM chọn ý định và diễn giải, không tự viết SQL trong pipeline Texa. Baseline đánh giá mới là LLM sinh SQL trực tiếp. Không có DuckDB/AST sandbox/free-SQL self-correction trong scope này. QuerySpec hợp lệ vẫn có thể sai ý người hỏi, nên đánh giá chính phải so kết quả truy vấn.
-
-Memory lưu metric, nguồn, kỳ, filter, breakdown và provenance của truy vấn thành công. Chọn ngữ cảnh liên quan thay vì chỉ sáu lượt gần nhất; hiểu “kết quả đó”, thêm điều kiện và tham chiếu câu/kết quả theo vị trí. Câu xã giao không ghi đè truy vấn; mơ hồ thì hỏi lại. Context vẫn có budget, không nhớ vô hạn; snapshot/catalog đổi thì không thừa kế kết quả cũ. Retry/edit replay state để tránh lưu trùng.
-
-## Đánh giá và mức bằng chứng
-
-Baseline B0 dùng cùng model, schema và định nghĩa nghiệp vụ để sinh SQL trực tiếp. Metric chính là tỷ lệ yêu cầu có **bảng kết quả đúng** so gold; không so chuỗi SQL. Chấm thêm action, slot, tham chiếu, scenario success, latency/token. QuerySpec chỉ là chẩn đoán, không thay thế execution accuracy.
-
-Bộ v2: 96 events tổng hợp, 104 câu đơn (41 dev/63 test), 12 hội thoại. Ablation: 24 hội thoại/77 lượt trả lời và 20 câu mơ hồ + 20 control. Bộ `multisource_v1` là diagnostic trên dev, không phải holdout; gold SQL đã được kiểm tra với PostgreSQL. Không gán điểm synthetic thành accuracy trên warehouse thật.
-
-**Kết quả formal đã chạy** (`gpt-6-luna`, cùng code/dữ liệu đóng băng, ba lần lặp): trên 63 câu test, Texa đúng 143/189 = **75,7%**, B0 (LLM sinh SQL trực tiếp) đúng 130/189 = **68,8%**. CI95% ghép theo nhóm câu hỏi/hội thoại cho chênh lệch là **−14,5 đến +26,1 điểm %**, nên chưa đủ bằng chứng kết luận Texa tốt hơn. Chấm chính yêu cầu toàn bộ bảng kết quả khớp; phép chiếu cột hậu nghiệm cho thấy B0 đạt 89,9%, nhưng đó chỉ là chẩn đoán về lỗi cột thừa, không phải metric chính. Median latency lần lượt 9,554 và 5,952 giây; Texa bao gồm sinh insight còn B0 chỉ sinh SQL.
-
-Ablation memory (12 hội thoại holdout, 39 lượt gold, ba lần lặp): scenario success F/M6/M0 là **63,9% / 66,7% / 19,4%**; độ đúng lượt trả lời **70,9% / 81,2% / 65,0%**. CI95% F–M6 là −27,8 đến +22,2 điểm %, chưa cho thấy memory cấu trúc tốt hơn cửa sổ sáu lượt; F–M0 là +16,7 đến +69,4 điểm %. Bốn scenario F-r3 bị gián đoạn gateway nên usage là cận dưới, nhưng kết quả vẫn nằm trong điểm số. Ablation clarification (20 scenario holdout, 10 mơ hồ + 10 control, ba lần lặp): F **85,0%**, C0 **51,7%**, CI95% ghép **+15 đến +50 điểm %**; cải thiện chủ yếu ở trường hợp thiếu kỳ báo cáo, còn metric mơ hồ vẫn khó.
-
-Diagnostic đa nguồn trên dev (English, một lần chạy; không phải holdout): fixture gồm **17 dòng**, **33 câu đơn**, **7 hội thoại**; 36 gold SQL được kiểm tra đúng trên PostgreSQL. Trên so sánh đơn lượt công bằng, Texa đúng **31/33 (93,9%)**, direct baseline đúng **19/33 (57,6%)**; median lần lượt 8,76 và 6,11 giây. Đây chỉ là tín hiệu ban đầu trên fixture nhỏ, không được gộp với test holdout hay coi là accuracy production. Runner hội thoại thô cho Texa 7/7 và baseline 4/7 nhưng có tiêu chí slot/reference khác nhau theo phương pháp, nên không dùng để tuyên bố baseline so sánh công bằng. Chi tiết: `data/benchmark/results/multisource-20261105/report.json`.
-
-Đây là bằng chứng trên benchmark tổng hợp, không phải người dùng thật hay warehouse production; chưa chứng minh ưu thế tổng quát. Kết quả formal và diagnostic cần được đọc riêng. Chi tiết formal: `data/benchmark/results/study-20261105/report.json`; sự cố gateway: `data/benchmark/results/study-20261105/provider-incident.json`.
-
-## Kiểm thử trực tiếp trên website
-
-Sau benchmark, đã chạy `run.sh` và dùng trình điều khiển trình duyệt hỏi thật bằng `gpt-6-luna` trên warehouse Cosmetics/Olist. Các mẫu tổng doanh thu, item purchases Olist, nhóm tháng, top 3 và lọc danh mục khớp SQL đối chiếu độc lập; clarification chọn kỳ hoạt động. Đã quan sát dừng/hỏi lại, phân trang, khôi phục lịch sử, settings chỉ đọc và hai phiên browser riêng chạy đồng thời. Đây là kiểm tra chức năng trên mẫu nhỏ, không phải accuracy production hay kiểm thử tải cả lớp.
-
-**Chưa nên mở demo tự do cho cả lớp:** hai cách nói tiếp nối tiếng Việt (“chia kết quả doanh thu vừa rồi…”, “chia doanh thu đó theo từng tháng”) bị phân loại thành chủ đề mới, mất nguồn/kỳ dù đã có kết quả. Gợi ý ở trang đầu vẫn quảng bá delivery, funnel và AOV hai nguồn ngoài scope; gợi ý sau từ chối cũng có câu không khả thi. Cần sửa nhận diện follow-up và các gợi ý, rồi kiểm tra lại trên dev/regression mới. Không sửa product/prompt sau khi đã xem holdout để làm đẹp số đo này. Vòng E2E mở rộng đã thử 8 kết quả liên tiếp: “kết quả 2” giữ đúng nguồn/kỳ/filter, còn “kết quả thứ hai” hỏi lại và không đưa kết quả cần chọn vào danh sách. Đã xác minh file CSV tải thật (top 3, tỷ lệ và đủ 31 dòng ngày, từng số khớp SQL), sửa câu hỏi và chuyển chat lúc đang chạy; kết quả không lẫn hội thoại. Mẫu trả lời có lúc mất 20–29 giây. Khi dropdown Olist mâu thuẫn câu hỏi Cosmetics, câu hỏi thắng nhưng dropdown không đổi/cảnh báo. Lỗi provider có chủ ý và tải cả lớp chưa kiểm tra. Bằng chứng hai vòng: `data/benchmark/results/live-e2e-20261105/` và `data/benchmark/results/live-e2e-extended-20261105/report.json`.
-
-## Demo và vận hành tối thiểu
-
-Publish catalog sản phẩm vào đúng DB ứng dụng sau khi đã nạp nguồn; file YAML thay đổi không tự thay catalog đã publish. Từ thư mục gốc:
-
-```sh
-cd backend
-uv sync
-uv run texa catalog publish ../catalog/product_events.yaml
-uv run uvicorn texa.main:app --port 18000
+```text
+Câu hỏi + nguồn đã chọn
+  → LLM đề xuất ý định và tham chiếu hội thoại có cấu trúc
+  → binder/clarification giải nghĩa metric, filter, nguồn và kỳ
+  → QuerySpec + kiểm tra capability/semantic values
+  → compiler Python sinh SQL tham số hóa
+  → PostgreSQL reader → facts có provenance → nhận xét có kiểm tra placeholder
 ```
 
-Terminal khác từ thư mục gốc: `cd web && npm ci && npm run dev` (web `15173`). API riêng cần nhận cấu hình DB/key/model qua môi trường; `run.sh` có bước nạp `.env`, khởi động local services và publish catalog. Không commit `.env`/key.
+LLM không tự viết SQL trong pipeline sản phẩm. Filter business label có thể được ánh xạ sang raw value theo source qua catalog; event name và nhãn hiển thị không được tự dịch thành SQL literal. Giao diện hoặc câu hỏi nêu nguồn khác nhau thì Texa hỏi người dùng trước khi chạy. Giá trị mở/high-cardinality vẫn có thể được dùng sau kiểm tra field; vocabulary đóng thì phải resolve được.
 
-Website lớp học bật `TEXA_SHARED_DEMO=1`, admin token ngẫu nhiên ≥24 ký tự, HTTPS với cookie secure; settings do host quản lý, lịch sử tách theo browser cookie. Đây là phiên ẩn danh, chưa có login. Một API worker vì RUNS/SSE nằm trong process; chưa có multi-replica hoặc kiểm thử tải model thật. Budget script đánh giá không tự áp dụng cho website; riêng phiên E2E này dùng launcher cục bộ để mọi lần gọi UI vào cùng ledger giới hạn 10 USD. Localhost dùng HTTP/cookie không secure; khi chia sẻ qua mạng cần cấu hình HTTPS như trên.
+Memory giữ tham chiếu kết quả theo ID và các slot QuerySpec; slot chỉ được server kế thừa/đổi/xóa sau khi kiểm tra result, snapshot và catalog. Registry prompt có giới hạn token; nếu view bị cắt thì follow-up mơ hồ phải hỏi chọn target từ registry đầy đủ, không đoán theo phần mới nhất. Không phải memory vô hạn hay bảo đảm hiểu mọi cách nói.
 
-Lần kiểm tra offline khi thu gọn tài liệu: **161 passed, 31 skipped** (các kiểm thử cần DB không được tính là đạt). Lệnh: `backend/.venv/bin/python -m pytest backend/tests -q`; frontend `npm run build`, `npm run lint`. DB integration/E2E chỉ dùng DB riêng `texa_benchmark`; không nạp fixture vào warehouse demo. Không chạy chồng fixture pilot/v2/ablation/diagnostic. Các file benchmark và mã runner được giữ trong `data/benchmark/` và `backend/eval/`; repository chỉ giữ hai tài liệu hiện hành này.
+## Benchmark và mức bằng chứng
 
+Baseline B0 là cùng model sinh SQL trực tiếp từ câu hỏi/schema/định nghĩa nghiệp vụ. Texa dùng cùng model và thêm semantic resolver, clarification, memory, catalog validation và compiler. Metric chính protocol v2 là business-result correctness theo output contract đã khai báo; metric phụ là output-contract compliance. Không so chuỗi SQL và không thay điểm lịch sử bằng protocol mới.
 
-## Chạy đánh giá và ablation
+Lượt mới dùng `data/benchmark/remediation_v3_regression/`: **24 câu đơn** (8 dev/16 test nhìn thấy), **4 hội thoại**, **4 tình huống clarification**, trên **17 dòng tổng hợp cho hai nguồn**. Mỗi cấu hình lặp ba lần. Protocol 3 sửa phần oracle/tiêu chí thứ tự dòng của bộ candidate đã kiểm tra; câu hỏi, gold SQL và bảng đáp án giữ nguyên. Oracle chỉ trả các field hệ thống thực sự hỏi, theo ý định khai báo trước; không đưa số gold vào prompt. Vì đã nhìn thấy bộ này và chưa có reviewer thứ hai, đây là **regression diagnostic**, không phải holdout hay accuracy production.
 
-Thiết lập `TEXA_DB_DSN` (owner), `TEXA_READER_DSN` và `TEXA_BENCHMARK_DSN` (reader) cùng trỏ DB riêng `texa_benchmark`. Không dùng warehouse demo. Nạp **một** fixture bằng `backend/eval/setup_benchmark.py --dataset-dir <thư_mục_bộ> --dsn "$TEXA_DB_DSN"`, rồi publish đúng catalog vào DB đó. Không đưa DSN/key vào tài liệu hoặc Git.
+**Kết quả câu đơn v3:** Texa 35/48 = 72,9%; B0 41/48 = 85,4% (16 câu test × 3 lần). Baseline cao hơn 12,5 điểm phần trăm trong lượt regression này; chưa chứng minh Texa tốt hơn. Clarification được chạy lại riêng bằng protocol 4 vì v3 thiếu oracle kỳ báo cáo: F 6/6 (100%), C0 1/6 (16,7%) trên hai tình huống × ba lần; chỉ là regression nhỏ đã nhìn thấy, không suy rộng. Memory có một task trả lời bằng lời từ bảng trước, chưa có contract chấm bằng SQL-result; báo cáo đánh dấu so sánh đó không hợp lệ và công bố coverage, không tự suy ra đúng từ một con số trong câu trả lời. Lượt candidate trước bị thiếu oracle kỳ và gián đoạn timeout được giữ nguyên trong `initial-protocol-attempt/`.
 
-- v2: `backend/.venv/bin/python backend/eval/validate_dataset.py data/benchmark/v2`; runner `backend/eval/run_benchmark.py --dataset-dir data/benchmark/v2 --method gold --split test` chỉ kiểm tra gold, không chấm model. Thay `gold` bằng `direct` hoặc `texa`, thêm `--model` để chạy model đã cấu hình.
-- Ablation: `backend/.venv/bin/python backend/eval/validate_dataset.py data/benchmark/ablation_v1 --ablation`. `backend/eval/run_ablation.py --suite memory --matrix` mặc định dry-run; F/M6/M0 kiểm tra memory. `--suite clarification --matrix` so F/C0; `--suite single --dataset-dir data/benchmark/v2 --matrix` so F/B0 và cần fixture v2.
-- Khi dùng gateway wrapper có trần USD, **không dùng `--matrix --execute`**: tiến trình con hiện bỏ qua wrapper. Chạy từng `--variant`/`--repeat` qua `run_gateway_check.py --runner ablation`, dùng chung ledger. Vòng đo đã làm theo cách này.
-- Sau dev, chốt code/model/prompt/budget và tạo `--freeze-protocol <file.json>`. Live test dùng `--protocol <file.json> --split test --matrix --repeats 3 --execute --model <model> --max-model-calls <budget>` với runner ablation. Call budget tính cho mỗi process/variant/repeat, không phải trần USD.
-- Tổng hợp bằng `backend/eval/report_ablation.py --inputs <logs.jsonl...> --output <report.json>`. Báo mean/sd, chênh lệch và CI theo scenario; không bỏ lỗi/timeout khỏi mẫu số. Hỏi lại được chấm theo ý định và kết quả cuối; C0 không tự động bị tính sai vì không hỏi.
+Các formal scores protocol cũ (63 câu × 3 lần: Texa 143/189 = 75,7%, B0 130/189 = 68,8%; CI95% chênh lệch −14,5…+26,1 điểm %) vẫn là bằng chứng lịch sử của code/scorer cũ. Không so trực tiếp với lượt regression mới. Formal cũ chưa chứng minh Texa hơn baseline.
 
-Lệnh runner phía trên chạy bằng `backend/.venv/bin/python`. Provider cần được cấu hình riêng; thêm `--execute` sẽ gọi model có phí. Không lấy gold validation hoặc test dùng provider mô phỏng làm accuracy của LLM. Số liệu formal phía trên là từ lần chạy đã đóng băng; mọi lần chạy diagnostic mới cần được báo riêng, không gộp vào kết quả holdout.
+## Kiểm thử runtime
+
+- Backend: **261 passed, 12 skipped**; Playwright **15/15**. Playwright dùng provider mô phỏng, gồm tám phiên browser và kiểm tra isolation; không dùng nó làm accuracy của LLM.
+- Model thật: tám request đồng thời đều đúng số và tiền tệ; tám lượt đọc chéo phiên đều trả 404. End-to-end p50 **21,2 giây**, p95 **36,5 giây**; queue p50/p95 **6,3/16,3 giây**. Đây là sanity test một lượt, chưa phải sức chứa lớp học.
+- Một hội thoại model thật có **12/12** kết quả đúng; sau social noise, “kết quả thứ hai” quay lại đúng Olist 01/2018. Cả **31 dòng theo ngày** khớp SQL độc lập. Browser cũng đã kiểm nguồn xung đột, chọn lại nguồn, ordinal bằng chữ và cả Cosmetics/Olist.
+- Bằng chứng: `data/benchmark/results/remediation-20261105/`. Không suy rộng các ví dụ đúng thành cam kết mọi câu đều đúng.
+- Một API worker; RUNS/SSE và semaphore là process-local. Mặc định tối đa bốn lượt xử lý, 16 lượt chờ, timeout hàng đợi 30 giây. Startup đánh dấu lượt dở là INTERRUPTED. `first_result_ms` đo SQL-ready phía server; UI hiện vẫn chờ phần nhận xét để hiển thị trọn câu trả lời.
+
+## Còn phải xác minh trước khi mở demo rộng
+
+1. Thẩm định gold độc lập lần hai, tạo holdout mới không nhìn thấy trước và chạy frozen B0/F + ablation theo protocol đã đăng ký trước.
+2. Mở rộng nhiều hội thoại độc lập và paraphrase, sửa/xóa filter, stale snapshot; một hội thoại 12 kết quả chưa đại diện toàn bộ memory. Bổ sung scorer cho discussion bằng contract rõ ràng.
+3. Đo stage latency p50/p95 theo truy vấn và tải thực tế; chưa chọn tối ưu hoặc tuyên bố đạt SLO.
+4. Đánh giá rủi ro process-local SSE/admission nếu lớp mở nhiều kết nối hơn khả năng một worker; chưa có multi-worker test.
+5. Kiểm tiếp các lỗi legacy ngoài luồng chính và export Việt/Anh. Ba loại cảnh báo availability và các note của catalog sản phẩm đã có bản Việt; một số fallback legacy vẫn cần kiểm tra.
+
+## Chạy ứng dụng và dữ liệu
+
+Dùng `run.sh` cho demo hiện tại. Nếu chạy thủ công, publish catalog đã chọn vào đúng DB app rồi khởi động API/frontend theo README. Benchmark phải dùng DB `texa_benchmark` riêng; không nạp fixture vào warehouse demo. `TEXA_SOURCE_PROFILE=evaluation` chỉ dùng trong runner đánh giá để mở source fixture `event_benchmark`; ứng dụng demo mặc định chỉ công bố Cosmetics/Olist. Không commit credential hoặc key; DSN demo thật giữ ngoài Git.

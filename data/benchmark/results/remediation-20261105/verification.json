@@ -2,9 +2,10 @@
   "schema_version": 1,
   "verified_at": "2026-11-05",
   "backend_tests": {
-    "passed": 255,
+    "passed": 261,
     "skipped": 12,
-    "failed": 0
+    "failed": 0,
+    "elapsed_seconds": 95.24
   },
   "frontend": {
     "build": "passed",
@@ -31,6 +32,6 @@
   "limitations": [
     "Observed latency is not an established SLO; measure p50/p95 under representative class concurrency before making a capacity claim.",
     "No independent human-authored holdout has been evaluated; the current suites are small and should not be presented as broad evidence of generalization.",
-    "Memory and clarification v3 ablations are invalid for comparative claims; see regression-v3/validity.json."
+    "Memory v3 comparison remains invalid; clarification v3 was superseded by the separately frozen protocol4 run with only two inspected test scenarios."
   ]
 }
