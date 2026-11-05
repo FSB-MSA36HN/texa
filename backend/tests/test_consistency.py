@@ -112,3 +112,13 @@ def test_invalid_primary_still_requires_two_valid_agreeing_replacements():
     selected, trace = consistency.select({'language': 'en'}, lambda: proposal(2), normalize,
                                          primary_error='MODEL_OUTPUT_INVALID')
     assert selected == proposal(2) and trace['vote_counts'] == [2] and trace['errors'] == 1
+
+
+def test_supported_refusal_is_not_counted_as_query_vote():
+    def resolve(p):
+        if p.get('outcome') == 'unsupported':
+            return {'kind': 'unsupported', 'supported_proposal': normalize(proposal(2))}
+        return normalize(p)
+    selected, trace = consistency.select({'outcome': 'unsupported'}, lambda: proposal(2), resolve)
+    assert selected == proposal(2)
+    assert trace['trigger'] == 'catalog_supported_refusal' and trace['vote_counts'] == [2]

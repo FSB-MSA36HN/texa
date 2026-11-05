@@ -33,6 +33,8 @@ def fingerprint(bundle):
 
 
 def trigger(candidate, bundle):
+    if bundle.get("kind") == "unsupported" and bundle.get("supported_proposal"):
+        return "catalog_supported_refusal"
     if bundle.get("kind") != "spec":
         return None  # Missing user information must be asked, never majority-guessed.
     filters = bundle["spec"].get("filters", [])

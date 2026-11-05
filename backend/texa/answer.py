@@ -469,8 +469,15 @@ def _question_work(turn_id: str, reference_id: str | None = None):
                 proposal, resolved = memory.reduce_candidate(proposal, previous, cat.contract_version, reference_id)
                 if resolved.get("clarification_needed"):
                     return {"kind": "clarify", "field": "context:reference"}
-            if proposal.get("outcome") != "query":
-                return {"kind": proposal.get("outcome")}
+            outcome = proposal.get("outcome")
+            if outcome == "unsupported":
+                try:
+                    probe = normalize(proposal | {"outcome": "query"})
+                except (llm.LLMError, SpecError):
+                    return {"kind": "unsupported"}
+                return {"kind": "unsupported", "supported_proposal": probe if probe.get("kind") == "spec" else None}
+            if outcome != "query":
+                return {"kind": outcome}
             named = proposal.get("source_ids") or []
             mentions = catalog_mod.mentioned_sources(cat, sources, question)
             if (any(sid not in sources for sid in named) or len(named) > cat.policy.max_sources):
@@ -482,9 +489,10 @@ def _question_work(turn_id: str, reference_id: str | None = None):
                 return {"kind": out.kind}
             spec = validate_spec(out.spec | {"contract_version": cat.contract_version}, cat, sources)
             check_availability(spec, cat, sources)
-            return {"kind": "spec", "spec": spec.model_dump(mode="json"),
-                    "dialogue": proposal.get("dialogue"), "references": resolved.get("references", []),
-                    "dataset_version": dataset_version}
+            bundle = {"kind": "spec", "spec": spec.model_dump(mode="json"),
+                      "dialogue": proposal.get("dialogue"), "references": resolved.get("references", []),
+                      "dataset_version": dataset_version}
+            return bundle
         candidate = interpret.interpret(question, selected, cat, sources, model=model, turn_id=turn_id,
                                         scope=scope, step=progress, context=context, normalize=normalize,
                                         cancelled=progress.cancelled)
