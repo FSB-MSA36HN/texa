@@ -145,11 +145,17 @@ class _Builder:
         return sql.SQL("{} {} {}").format(expr, sql.SQL(f.operator if f.operator != "CONTAINS" else "="), self.bind(value))
 
     # ---- metrics ------------------------------------------------------------
-    def simple(self, m: Metric) -> sql.Composable:
+    def metric_support(self, m: Metric) -> sql.Composable:
+        """Rows eligible for a simple metric, independent of their numeric value."""
         s = m.simple
         cond = self.role_filter(self.cat.roles[s.event_role])
         if s.conditions:
             cond = cond + sql.SQL(" AND ") + sql.SQL(" AND ").join(self.condition(c) for c in s.conditions)
+        return cond
+
+    def simple(self, m: Metric) -> sql.Composable:
+        s = m.simple
+        cond = self.metric_support(m)
         if s.aggregation == "count_events":
             return sql.SQL("count(*) FILTER (WHERE {})").format(cond)
         if s.aggregation == "count_users":
@@ -192,6 +198,13 @@ def compile_spec(spec: QuerySpec, cat: Catalog, av: Availability) -> Compiled:
             select.append(sql.SQL("min({}) AS {}").format(sort, sql.Identifier(f"__sort_{d.id}")))
             hidden.append(f"__sort_{d.id}")
     where = b.where(period)
+    if dims and metrics and all(m.group_domain == "metric_support" for m in metrics):
+        # Groups come from eligible event rows, not from whether the final value
+        # happens to be nonzero. Ratios retain support for BOTH numerator and
+        # denominator, so a visitor-only group still yields a valid zero rate.
+        support_metrics = {leaf.id: leaf for m in metrics for leaf in cat.base_simple_metrics(m.id)}
+        support = sql.SQL(" OR ").join(b.metric_support(m) for m in support_metrics.values())
+        where += sql.SQL(" AND ({})").format(support)
     base = sql.SQL("FROM {} e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE {}").format(sql.SQL(T), where)
     group = sql.SQL(" GROUP BY {}").format(sql.SQL(", ").join(sql.Literal(i + 1) for i in range(len(dims)))) if dims else sql.SQL("")
 

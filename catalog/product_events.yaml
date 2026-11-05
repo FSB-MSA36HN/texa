@@ -145,6 +145,7 @@ metrics:
   - người dùng
   - khách hàng
   type: simple
+  group_domain: metric_support
   unit: count
   simple:
     aggregation: count_users
@@ -158,6 +159,7 @@ metrics:
   - event count
   - số sự kiện
   type: simple
+  group_domain: metric_support
   unit: count
   simple:
     aggregation: count_events
@@ -171,6 +173,7 @@ metrics:
   - visits
   - phiên
   type: simple
+  group_domain: metric_support
   unit: count
   simple:
     aggregation: count_distinct
@@ -184,6 +187,7 @@ metrics:
   synonyms:
   - viewers
   type: simple
+  group_domain: metric_support
   unit: count
   simple:
     aggregation: count_users
@@ -199,6 +203,7 @@ metrics:
   - sản phẩm bán ra
   - lượt mua
   type: simple
+  group_domain: metric_support
   unit: count
   simple:
     aggregation: count_events
@@ -214,6 +219,7 @@ metrics:
   - purchasers
   - người mua
   type: simple
+  group_domain: metric_support
   unit: count
   simple:
     aggregation: count_users
@@ -231,6 +237,7 @@ metrics:
   - tỉ lệ chuyển đổi
   when_to_use: Conversion of people into buyers.
   type: ratio
+  group_domain: metric_support
   unit: percent
   ratio:
     numerator: buyers
@@ -248,6 +255,7 @@ metrics:
   - doanh số
   when_to_use: Money from items sold.
   type: simple
+  group_domain: metric_support
   unit: currency
   simple:
     aggregation: sum

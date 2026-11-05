@@ -119,6 +119,9 @@ class Metric(Strict):
     # A money metric that is already converted (e.g. revenue_usd) has one currency for every store.
     currency: str | None = Field(default=None, pattern=r"^[A-Z]{3}$")
     type: Literal["simple", "ratio", "cohort", "per_day"]
+    # Which eligible rows may create groups; separate from the aggregate value.
+    # Default preserves previously published/archived catalog contracts.
+    group_domain: Literal["filtered_events", "metric_support"] = "filtered_events"
     simple: Simple | None = None
     ratio: Ratio | None = None
     cohort: Cohort | None = None
@@ -128,6 +131,8 @@ class Metric(Strict):
     def _one_body(self):
         if getattr(self, self.type) is None:
             raise ValueError(f"metric {self.id}: type {self.type} needs a `{self.type}` block")
+        if self.group_domain == "metric_support" and self.type == "cohort":
+            raise ValueError(f"metric {self.id}: cohort group domains need an explicit cohort contract")
         return self
 
     @property
