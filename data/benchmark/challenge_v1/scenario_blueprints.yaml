@@ -1,0 +1,351 @@
+metadata:
+  schema_version: 1
+  name: texa-ecommerce-workflow-challenge-v1-blueprint
+  status: design_draft_not_executable
+  purpose: diagnostic_challenge_not_production_distribution
+  review_status: agent_drafted
+  executable_dataset: false
+  sources: [cosmetics_shop, olist_marketplace]
+  metric_ids: [events, users, sessions, viewers, purchases, buyers, revenue, buyer_conversion_rate]
+  nested_paths: [ep.device.type, ep.campaign.channel]
+  claims: "No human review, sealed-test status, or compiler-derived gold is claimed."
+
+scenarios:
+  # Single: core controls (4)
+  - id: core_cosmetics_revenue
+    template_family: source_metric_period
+    suite: single
+    stratum: core_control
+    difficulty: easy
+    phenomena: [explicit_and_relative_date_boundary]
+    source_id: cosmetics_shop
+    language: en
+    question: "How much revenue did Cosmetics Shop record from 2025-01-01 through 2025-01-31?"
+    expected_behavior: "Resolve revenue over the inclusive explicit period and preserve the source currency."
+    required_capabilities: {metrics: [revenue], dimensions: [event_date]}
+    behavioral_capabilities: [source_isolation, inclusive_date_range]
+    review_status: agent_drafted
+  - id: core_olist_purchases
+    template_family: source_metric_period
+    suite: single
+    stratum: core_control
+    difficulty: easy
+    phenomena: [item_vs_order_grain]
+    source_id: olist_marketplace
+    language: vi
+    question: "Trong tháng 01/2018, Olist ghi nhận bao nhiêu dòng sản phẩm đã mua?"
+    expected_behavior: "Count item purchase lines, not orders."
+    required_capabilities: {metrics: [purchases], dimensions: [event_date]}
+    behavioral_capabilities: [source_isolation]
+    review_status: agent_drafted
+  - id: core_daily_events
+    template_family: source_metric_time_series
+    suite: single
+    stratum: core_control
+    difficulty: easy
+    phenomena: [explicit_and_relative_date_boundary]
+    source_id: cosmetics_shop
+    language: en
+    question: "Show Cosmetics Shop event counts by day from 2025-02-01 through 2025-02-07."
+    expected_behavior: "Return daily event counts for the explicit seven-calendar-day interval."
+    required_capabilities: {metrics: [events], dimensions: [event_date]}
+    behavioral_capabilities: [day_grain, inclusive_date_range]
+    review_status: agent_drafted
+  - id: core_buyers
+    template_family: source_metric_period
+    suite: single
+    stratum: core_control
+    difficulty: easy
+    phenomena: [distinct_user_vs_event_count]
+    source_id: olist_marketplace
+    language: vi
+    question: "Tháng 01/2018 có bao nhiêu người mua duy nhất trên Olist?"
+    expected_behavior: "Count distinct purchasers during the explicit month; do not describe them as all site visitors."
+    required_capabilities: {metrics: [buyers], dimensions: [event_date]}
+    behavioral_capabilities: [source_isolation]
+    review_status: agent_drafted
+
+  # Single: semantic/data-shape (6)
+  - id: shape_users_not_events
+    template_family: distinct_user_vs_event_count
+    suite: single
+    stratum: semantic_data_shape
+    difficulty: medium
+    phenomena: [distinct_user_vs_event_count]
+    source_id: cosmetics_shop
+    language: en
+    question: "For 2025-01, count unique users."
+    expected_behavior: "Count distinct users, not event rows. Minimal counterfactual partner: shape_events_not_users; only the requested quantity changes."
+    required_capabilities: {metrics: [users], dimensions: [event_date]}
+    behavioral_capabilities: [counterexample_pairing]
+    counterfactual_pair_id: shape_events_not_users
+    review_status: agent_drafted
+  - id: shape_events_not_users
+    template_family: distinct_user_vs_event_count
+    suite: single
+    stratum: semantic_data_shape
+    difficulty: medium
+    phenomena: [distinct_user_vs_event_count]
+    source_id: cosmetics_shop
+    language: en
+    question: "For 2025-01, count events."
+    expected_behavior: "Count event rows, not distinct users. Minimal counterfactual partner: shape_users_not_events; only the requested quantity changes."
+    required_capabilities: {metrics: [events], dimensions: [event_date]}
+    behavioral_capabilities: [counterexample_pairing]
+    counterfactual_pair_id: shape_users_not_events
+    review_status: agent_drafted
+  - id: shape_olist_payment_not_purchase
+    template_family: purchase_role_not_payment_event
+    suite: single
+    stratum: semantic_data_shape
+    difficulty: medium
+    phenomena: [purchase_vs_payment]
+    source_id: olist_marketplace
+    language: vi
+    question: "Tháng 01/2018, Olist bán được bao nhiêu sản phẩm, không tính số giao dịch thanh toán?"
+    expected_behavior: "Count purchase item lines and exclude payment events."
+    required_capabilities: {metrics: [purchases], dimensions: [event_date]}
+    behavioral_capabilities: [semantic_role_selection]
+    review_status: agent_drafted
+  - id: shape_rate_denominator
+    template_family: ratio_denominator
+    suite: single
+    stratum: semantic_data_shape
+    difficulty: medium
+    phenomena: [ratio_denominator]
+    source_id: cosmetics_shop
+    language: en
+    question: "What was the buyer conversion rate for 2025-01?"
+    expected_behavior: "Use distinct buyers divided by distinct observed users in the same period, not an event-based ratio."
+    required_capabilities: {metrics: [buyer_conversion_rate], dimensions: [event_date]}
+    behavioral_capabilities: [ratio_definition]
+    review_status: agent_drafted
+  - id: shape_zero_vs_absent
+    template_family: sparse_time_group_domain
+    suite: single
+    stratum: semantic_data_shape
+    difficulty: hard
+    phenomena: [zero_vs_absent_vs_unavailable]
+    source_id: cosmetics_shop
+    language: en
+    question: "Show daily buyers for 2025-02-01 through 2025-02-03, including calendar days with no recorded events if the result contract supports them."
+    expected_behavior: "Do not fabricate zero-valued date rows unless the supported output contract explicitly requests a complete date domain; distinguish absent groups from measured zero."
+    required_capabilities: {metrics: [buyers], dimensions: [event_date]}
+    behavioral_capabilities: [group_domain_awareness]
+    review_status: agent_drafted
+  - id: shape_cosmetics_category
+    template_family: metric_by_category
+    suite: single
+    stratum: semantic_data_shape
+    difficulty: medium
+    phenomena: [group_row_domain]
+    source_id: cosmetics_shop
+    language: vi
+    question: "Tháng 02/2025, doanh thu theo danh mục sản phẩm là bao nhiêu?"
+    expected_behavior: "Group purchase revenue by the catalog's top-level item_category; do not substitute an undeclared category hierarchy."
+    required_capabilities: {metrics: [revenue], dimensions: [item_category, event_date]}
+    behavioral_capabilities: [group_domain_awareness]
+    review_status: agent_drafted
+
+  # Composed in-scope single queries (6)
+  - id: comp_daily_revenue_category
+    template_family: daily_metric_by_category
+    suite: single
+    stratum: composed_in_scope
+    difficulty: hard
+    phenomena: [group_row_domain, explicit_and_relative_date_boundary]
+    source_id: cosmetics_shop
+    language: en
+    question: "Show daily revenue by product category from 2025-02-01 through 2025-02-14."
+    expected_behavior: "Apply the explicit inclusive date interval and group one metric by day and category."
+    required_capabilities: {metrics: [revenue], dimensions: [event_date, item_category]}
+    behavioral_capabilities: [multi_dimension_grouping, inclusive_date_range]
+    review_status: agent_drafted
+  - id: comp_weekly_conversion
+    template_family: weekly_ratio_over_explicit_range
+    suite: single
+    stratum: composed_in_scope
+    difficulty: hard
+    phenomena: [ratio_denominator, explicit_and_relative_date_boundary]
+    source_id: cosmetics_shop
+    language: vi
+    question: "Tính tỷ lệ người mua trên người dùng theo tuần từ 2025-01-01 đến hết 2025-03-31."
+    expected_behavior: "Use the catalog ratio for each week in the explicit interval; do not interpret it as a sequential funnel."
+    required_capabilities: {metrics: [buyer_conversion_rate], dimensions: [event_week]}
+    behavioral_capabilities: [time_grouping, inclusive_date_range]
+    review_status: agent_drafted
+  - id: comp_top_category_revenue
+    template_family: top_k_category_by_metric
+    suite: single
+    stratum: composed_in_scope
+    difficulty: hard
+    phenomena: [top_k_and_ties, group_row_domain]
+    source_id: cosmetics_shop
+    language: en
+    question: "For February 2025, list the five product categories with the highest revenue."
+    expected_behavior: "Rank category groups by revenue descending, return at most five, and handle tied values deterministically if the output contract specifies a tie rule."
+    required_capabilities: {metrics: [revenue], dimensions: [item_category, event_date]}
+    behavioral_capabilities: [top_k, ranking]
+    review_status: agent_drafted
+  - id: comp_olist_monthly_revenue
+    template_family: monthly_metric_explicit_range
+    suite: single
+    stratum: composed_in_scope
+    difficulty: hard
+    phenomena: [explicit_and_relative_date_boundary, zero_vs_absent_vs_unavailable]
+    source_id: olist_marketplace
+    language: en
+    question: "Show Olist item revenue by month from 2018-01-01 through 2018-06-30."
+    expected_behavior: "Aggregate only purchase-item revenue by month, preserve BRL, and do not silently fill months with no groups."
+    required_capabilities: {metrics: [revenue], dimensions: [event_month]}
+    behavioral_capabilities: [time_grouping, source_currency, inclusive_date_range]
+    review_status: agent_drafted
+  - id: comp_olist_buyers_category
+    template_family: distinct_users_by_category
+    suite: single
+    stratum: composed_in_scope
+    difficulty: hard
+    phenomena: [distinct_user_vs_event_count, group_row_domain]
+    source_id: olist_marketplace
+    language: vi
+    question: "Tháng 01/2018, phân nhóm số người mua duy nhất theo danh mục sản phẩm."
+    expected_behavior: "Count distinct buyers in each observed item_category group; do not infer groups with no rows."
+    required_capabilities: {metrics: [buyers], dimensions: [item_category, event_date]}
+    behavioral_capabilities: [group_domain_awareness, source_population_caveat]
+    review_status: agent_drafted
+  - id: comp_daily_purchases_category
+    template_family: daily_item_lines_by_category
+    suite: single
+    stratum: composed_in_scope
+    difficulty: hard
+    phenomena: [item_vs_order_grain, group_row_domain]
+    source_id: cosmetics_shop
+    language: vi
+    question: "Đếm số dòng sản phẩm đã mua theo ngày và danh mục trong khoảng 2025-03-01 đến 2025-03-10."
+    expected_behavior: "Count purchase item events by day and category over the inclusive date interval; do not count orders."
+    required_capabilities: {metrics: [purchases], dimensions: [event_date, item_category]}
+    behavioral_capabilities: [multi_dimension_grouping, inclusive_date_range]
+    review_status: agent_drafted
+
+  # Clarification (3)
+  - id: clarify_sales_ambiguous
+    template_family: ambiguous_sales_metric
+    suite: clarification
+    difficulty: medium
+    phenomena: [ambiguous_business_term]
+    source_id: cosmetics_shop
+    language: vi
+    question: "Tháng 01/2025 doanh số là bao nhiêu?"
+    expected_behavior: "Ask whether doanh số means revenue amount or purchased item-line volume before querying."
+    required_capabilities: {metrics: [], dimensions: [event_date]}
+    behavioral_capabilities: [clarification, disambiguate_metric]
+    review_status: agent_drafted
+  - id: clarify_missing_source
+    template_family: missing_source_picker
+    suite: clarification
+    difficulty: medium
+    phenomena: [source_conflict_or_negation]
+    source_id: null
+    language: en
+    question: "How many buyers did we have in January 2025?"
+    expected_behavior: "Ask the user to select Cosmetics Shop or Olist; never query both sources together."
+    required_capabilities: {metrics: [buyers], dimensions: [event_date]}
+    behavioral_capabilities: [source_picker, one_source_per_query]
+    review_status: agent_drafted
+  - id: clarify_missing_period
+    template_family: missing_period_request
+    suite: clarification
+    difficulty: medium
+    phenomena: [missing_period]
+    source_id: cosmetics_shop
+    language: en
+    question: "How much revenue did the cosmetics shop make?"
+    expected_behavior: "Ask which reporting period is intended rather than silently selecting a default."
+    required_capabilities: {metrics: [revenue], dimensions: []}
+    behavioral_capabilities: [clarification, request_period]
+    review_status: agent_drafted
+
+  # Conversation (3)
+  - id: convo_change_period
+    template_family: followup_period_change
+    suite: conversation
+    difficulty: medium
+    phenomena: [keep_set_clear_followup]
+    source_id: cosmetics_shop
+    language: en
+    turns:
+      - "Show revenue by category for January 2025."
+      - "Now make that February instead."
+    expected_behavior: "Keep metric and category grouping from the first turn; change only the period."
+    required_capabilities: {metrics: [revenue], dimensions: [item_category, event_month]}
+    behavioral_capabilities: [structured_memory, slot_update]
+    review_status: agent_drafted
+  - id: convo_long_old_result_after_noise
+    template_family: long_distance_ordinal_with_noise
+    suite: conversation
+    difficulty: hard
+    phenomena: [old_result_reference, unrelated_noise_and_topic_switch]
+    source_id: olist_marketplace
+    language: vi
+    turns:
+      - "Cho xem số người mua theo tháng năm 2018."
+      - "Cho xem số sự kiện theo tháng năm 2018."
+      - "Cho xem doanh thu theo tháng năm 2018."
+      - "Cho xem số dòng sản phẩm đã mua theo tháng năm 2018."
+      - "Cho xem số người dùng theo tháng năm 2018."
+      - "Cho xem tỷ lệ người mua theo tháng năm 2018."
+      - "Cho xem số người mua theo tháng năm 2017."
+      - "Cho xem số sự kiện theo tháng năm 2017."
+      - "Cho xem doanh thu theo tháng năm 2017."
+      - "Cho xem số dòng sản phẩm đã mua theo tháng năm 2017."
+      - "Cho xem số người dùng theo tháng năm 2017."
+      - "Cho xem tỷ lệ người mua theo tháng năm 2017."
+      - "Cho xem số người mua theo tháng quý 1 năm 2018."
+      - "Chuyện ngoài lề: gợi ý tên cho một chú mèo nhé."
+      - "Chia kết quả thứ hai theo ngày, giữ nguyên kỳ."
+    expected_behavior: "Assume the first 13 queries succeeded: 11 intervening successful results separate the second result from the follow-up. Ignore the unrelated turn, resolve the full old-result registry, and change only its time grain to day while retaining its period."
+    required_capabilities: {metrics: [events], dimensions: [event_date, event_month]}
+    behavioral_capabilities: [structured_memory, result_registry, ordinal_reference, noise_isolation, slot_update]
+    memory_distance_successful_results: 11
+    target_result_ordinal: 2
+    review_status: agent_drafted
+  - id: convo_clear_filter
+    template_family: followup_clear_dimension
+    suite: conversation
+    difficulty: medium
+    phenomena: [keep_set_clear_followup]
+    source_id: cosmetics_shop
+    language: vi
+    turns:
+      - "Tháng 01/2025, cho xem người mua theo thương hiệu, chỉ tính các dòng có danh mục sản phẩm."
+      - "Bỏ bộ lọc danh mục đó, giữ nguyên kỳ và cách chia theo thương hiệu."
+    expected_behavior: "Remove only the non-null item_category filter and keep buyers, period, and brand breakdown."
+    required_capabilities: {metrics: [buyers], dimensions: [item_brand, event_month]}
+    behavioral_capabilities: [structured_memory, slot_clear]
+    review_status: agent_drafted
+
+  # Not answerable as SQL under current source capability
+  - id: unsupported_olist_viewers
+    template_family: unavailable_metric_capability
+    suite: unsupported_or_adversarial
+    difficulty: medium
+    phenomena: [unsupported_scope, zero_vs_absent_vs_unavailable]
+    source_id: olist_marketplace
+    language: en
+    question: "How many product viewers did Olist have in January 2018?"
+    expected_behavior: "Explain product views are unavailable in Olist; do not return zero or substitute buyers."
+    required_capabilities: {metrics: [viewers], dimensions: [event_date]}
+    behavioral_capabilities: [capability_check, missing_not_zero, refuse_unavailable_metric]
+    review_status: agent_drafted
+  - id: unsupported_olist_sessions
+    template_family: unavailable_metric_capability
+    suite: unsupported_or_adversarial
+    difficulty: medium
+    phenomena: [unsupported_scope, zero_vs_absent_vs_unavailable]
+    source_id: olist_marketplace
+    language: vi
+    question: "Olist có bao nhiêu phiên truy cập trong tháng 01/2018?"
+    expected_behavior: "Explain that Olist does not track sessions; do not infer sessions from orders, events, or users."
+    required_capabilities: {metrics: [sessions], dimensions: [event_date]}
+    behavioral_capabilities: [capability_check, missing_not_zero, refuse_unavailable_metric]
+    review_status: agent_drafted
