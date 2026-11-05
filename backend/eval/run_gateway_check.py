@@ -20,7 +20,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--credentials', required=True)
     parser.add_argument('--ledger', default=str(ROOT / '.runtime/gateway-cost-ledger.json'))
-    parser.add_argument('--runner', choices=('benchmark', 'ablation'), default='benchmark')
+    parser.add_argument('--runner', choices=('benchmark', 'ablation', 'accuracy'), default='benchmark')
     args, forwarded = parser.parse_known_args()
     path = validate_credentials_path(Path(args.credentials), ROOT / '.runtime')
     secret = json.loads(path.read_text())
@@ -70,8 +70,12 @@ def main():
             import run_benchmark
             run_benchmark.main()
         else:
-            import run_ablation
-            code = run_ablation.main()
+            if args.runner == 'accuracy':
+                import run_accuracy_study
+                code = run_accuracy_study.main()
+            else:
+                import run_ablation
+                code = run_ablation.main()
             if code:
                 raise SystemExit(code)
     finally:
