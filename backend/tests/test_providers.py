@@ -126,3 +126,30 @@ def test_runtime_observer_is_scoped_and_receives_queue_and_provider_events(fake)
     assert [event["event"] for event in events] == ["llm_queue_wait", "llm_provider_total"]
     assert events[0]["duration_ms"] >= 0
     assert events[1]["outcome"] == "success"
+
+
+def test_full_admission_queue_fails_closed_without_provider_call(fake, monkeypatch):
+    from texa.runtime_guard import AdmissionRejected
+    class FullQueue:
+        def acquire(self):
+            from contextlib import contextmanager
+            @contextmanager
+            def rejected():
+                raise AdmissionRejected('Model request queue is full', wait_ms=5)
+                yield
+            return rejected()
+    events = []
+    monkeypatch.setattr(llm, 'ADMISSION', FullQueue())
+    with llm.runtime_observer_scope(events.append):
+        with pytest.raises(llm.LLMError) as exc:
+            fake['run']('openai')
+    assert exc.value.code == 'OVERLOADED'
+    assert fake['calls'] == []
+    assert events == [{'event': 'llm_queue_wait', 'duration_ms': 5, 'call_name': 'insight', 'outcome': 'rejected'}]
+
+
+def test_provider_error_does_not_expose_raw_credentials_or_payload():
+    error = llm._map_error(RuntimeError('Authorization: Bearer private-key; user payload'))
+    assert error.code == 'PROVIDER_ERROR'
+    assert 'private-key' not in error.message
+    assert 'payload' not in error.message

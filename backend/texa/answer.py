@@ -67,7 +67,7 @@ def _start(turn_id: str, work) -> Run:
         except Cancelled:
             state = {"status": "cancelled", "message": "Stopped."}
         except llm.LLMError as e:
-            state = {"status": "error", "error": {"code": e.code, "message": e.message, "retryable": True}}
+            state = {"status": "error", "error": {"code": e.code, "message": e.message, "retryable": e.code not in {"BUDGET_EXHAUSTED", "AUTH", "NO_KEY", "BAD_MODEL"}}}
         except SpecError as e:
             state = {"status": "refused", "message": e.message, "code": e.code, "reason_params": getattr(e, "params", {}), "suggestions": []}
         except Exception as e:  # never leave a turn spinning
@@ -219,26 +219,30 @@ def _continue(turn: dict, candidate: dict, answers: dict, progress: Progress, ca
     if any(sid not in sources for sid in named):
         raise llm.LLMError("MODEL_OUTPUT_INVALID", "The interpretation referenced an unavailable source.")
     inherited_source = (candidate.get("dialogue", {}).get("slots", {}).get("source_ids") == "keep")
-    text_sources = [] if inherited_source else list(named)
+    model_sources = list(named)
     memory_sources = list(named) if inherited_source else []
-    if inherited_source and scope:
-        candidate = candidate | {"source_ids": list(scope)}
-        named = list(scope)
+    literal_mentions = catalog_mod.mentioned_sources(cat, sources, turn["question"])
+    text_sources = literal_mentions or ([] if inherited_source else list(named))
+    if literal_mentions:
+        named = literal_mentions
+        candidate = candidate | {"source_ids": named}
     resolved_source = answers.get("context:source")
-    if scope and named and set(named) != set(scope) and not resolved_source:
+    if ((scope and named and set(named) != set(scope)) or len(named) > cat.policy.max_sources) and not resolved_source:
         choices = [{"id": sid, "label": sources[sid].label, "description": ""}
-                   for sid in dict.fromkeys([*scope, *named]) if sid in sources]
+                   for sid in dict.fromkeys([*(scope or []), *named]) if sid in sources]
         return {"status": "needs_clarification", "candidate": candidate, "answers": answers, "language": lang,
-                "source_resolution": {"ui": scope, "text": text_sources, "memory": memory_sources, "effective": None},
-                "form": {"message": "Nguồn đã chọn khác nguồn trong câu hỏi. Chọn nguồn để tiếp tục." if lang == "vi" else
-                         "The chosen source differs from your question. Choose one to continue.",
-                         "fields": [{"id": "context:source", "label": "Nguồn / Source", "kind": "single_choice",
+                "source_resolution": {"ui": scope or [], "text": text_sources, "memory": memory_sources, "effective": None},
+                "form": {"message": ("Nguồn đã chọn khác nguồn của kết quả trước. Chọn nguồn để tiếp tục." if inherited_source else
+                          "Nguồn đã chọn khác nguồn trong câu hỏi. Chọn nguồn để tiếp tục." if scope else
+                          "Mỗi câu hỏi chỉ dùng một nguồn. Chọn nguồn để tiếp tục.") if lang == "vi" else
+                         "The chosen source conflicts with the request or referenced result. Choose one to continue.",
+                         "fields": [{"id": "context:source", "label": "Nguồn" if lang == "vi" else "Source", "kind": "single_choice",
                                      "required": True, "allow_other": False, "default": [], "choices": choices}]}}
     if resolved_source:
         candidate = candidate | {"source_ids": resolved_source}
         scope = resolved_source
-    source_resolution = {"ui": turn["state"].get("scope") or [], "text": text_sources, "memory": memory_sources,
-                         "effective": resolved_source or named or scope or []}
+    source_resolution = {"ui": turn["state"].get("scope") or [], "text": text_sources, "memory": memory_sources, "model": model_sources,
+                         "resolved_by_user": bool(resolved_source), "effective": resolved_source or named or scope or []}
     with progress("check_interpretation") as s:
         out = clarify.advance(candidate, answers, cat, sources, scope=scope, lang=lang, question=turn["question"])
         if out.kind == "clarify":
@@ -331,8 +335,13 @@ def _reference_form(previous: list[dict], context: dict, cat=None, sources=None)
                         "description": " · ".join([*stores, *labels, dates, *filters])})
     if not choices:
         raise SpecError("no_result", "There is no compatible earlier result to reference. Ask a complete question.")
+    message = "Bạn đang nhắc đến kết quả nào?" if lang == "vi" else "Which earlier result do you mean?"
+    unavailable = context.get("unavailable_result_numbers", [])
+    if unavailable:
+        message += (" Một số kết quả cũ không còn tương thích; danh sách giữ nguyên số thứ tự ban đầu." if lang == "vi" else
+                    " Some older results are incompatible; original result numbers are retained.")
     return {"status": "needs_clarification", "context": context, "form": {
-        "message": "Bạn đang nhắc đến kết quả nào?" if lang == "vi" else "Which earlier result do you mean?",
+        "message": message,
         "fields": [{"id": "context:reference", "label": "Kết quả trước" if lang == "vi" else "Earlier result", "kind": "single_choice",
                     "required": True, "allow_other": False, "default": [], "choices": choices}]}}
 
@@ -385,6 +394,8 @@ def _question_work(turn_id: str, reference_id: str | None = None):
             context["language"] = turn["state"].get("language", "vi")
             if context.get("registry"):
                 context["result_ordinals"] = {r["id"]: r["result_number"] for r in context["registry"]}
+                count = sum(p["status"] == "answered" and bool(p["state"].get("query_spec")) for p in raw_history)
+                context["unavailable_result_numbers"] = sorted(set(range(1, count + 1)) - set(context["result_ordinals"].values()))
             selected = context.pop("turns")
             context.update(catalog_version=cat.contract_version, questions=[p["question"] for p in selected])
             metadata = {"context": context, "dataset_version": dataset_version, "ablation": variant_trace}

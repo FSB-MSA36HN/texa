@@ -134,7 +134,10 @@ def _map_error(e: Exception) -> LLMError:
         return LLMError("BAD_MODEL", "This model is not available for the API key.")
     if "timed out" in text.lower() or "timeout" in text.lower():
         return LLMError("TIMEOUT", "The model took too long to answer.")
-    return LLMError("PROVIDER_ERROR", f"The model call failed: {text[:300]}")
+    from .gateway_budget import BudgetExceededError
+    if isinstance(e, BudgetExceededError):
+        return LLMError("BUDGET_EXHAUSTED", "The authorized model budget is exhausted; pending charges remain reserved.")
+    return LLMError("PROVIDER_ERROR", "The model provider could not complete the request. Please retry later.")
 
 
 def _api_schema(schema):

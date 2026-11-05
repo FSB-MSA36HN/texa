@@ -26,7 +26,8 @@ export type Turn = {
   period?: Record<string, { start: string; end: string; data_start: string; data_end: string }>
   currency_of?: Record<string, string>; sources?: string[]
   context?: { relation: string; references: string[]; questions?: string[] }
-  source_resolution?: { ui: string[]; text: string[]; effective: string[] | null }
+  source_resolution?: { ui: string[]; text: string[]; effective: string[] | null; resolved_by_user?: boolean }
+  timing?: { end_to_end_ms: number; first_result_ms: number | null }
   dataset_version?: string
   based_on?: string
   metric_definitions?: { id: string; label: string; description: string }[]

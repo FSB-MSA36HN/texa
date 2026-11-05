@@ -9,6 +9,10 @@ import uuid
 from pathlib import Path
 
 
+class BudgetExceededError(RuntimeError):
+    """No further calls can be admitted under the authorized spending cap."""
+
+
 def validate_credentials_path(path: Path, runtime_dir: Path) -> Path:
     path = path.resolve()
     path.relative_to(runtime_dir.resolve())
@@ -62,7 +66,7 @@ def update_ledger(ledger_path: Path, lock_path: Path, *, model: str, input_price
             post_reserved = data["reserved_usd"] - release + reserve
             post_spent = data["spent_estimated_usd"] + actual
             if release > data["reserved_usd"] or post_spent + post_reserved > ceiling:
-                raise RuntimeError("Authorized dollar budget exhausted")
+                raise BudgetExceededError("Authorized dollar budget exhausted")
             data["reserved_usd"] = post_reserved
             data["spent_estimated_usd"] = post_spent
             if usage is not None:

@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from texa.catalog import Catalog, SemanticValue, Source, validate_catalog
+from texa.catalog import Catalog, SemanticValue, Source, mentioned_sources, validate_catalog
 from texa.sanity import match_values
 from texa.spec import SpecError, validate_spec
 
@@ -60,6 +60,18 @@ def test_source_profiles_hide_evaluation_fixture_by_default(cat, monkeypatch):
     assert cat.sources_for_profile() == ["cosmetics_shop", "olist_marketplace"]
     monkeypatch.setenv("TEXA_SOURCE_PROFILE", "evaluation")
     assert cat.sources_for_profile() == ["cosmetics_shop", "olist_marketplace", "event_benchmark"]
+
+
+def test_source_mention_binder_matches_catalog_aliases_and_returns_all_matches(cat):
+    cosmetics = source("cosmetics_shop", ["purchase"])
+    cosmetics.label = "Cosmetics shop"
+    olist = source("olist_marketplace", ["order_purchased"])
+    olist.label = "Olist marketplace"
+    sources = {cosmetics.id: cosmetics, olist.id: olist}
+    assert mentioned_sources(cat, sources, "Doanh thu ở CỬA HÀNG MỸ PHẨM") == ["cosmetics_shop"]
+    assert mentioned_sources(cat, sources, "So sánh cosmetics và Olist") == ["cosmetics_shop", "olist_marketplace"]
+    # Negation is deliberately not guessed: caller must ask if it changes the source set.
+    assert mentioned_sources(cat, sources, "Không dùng Olist") == ["olist_marketplace"]
 
 
 def test_exact_alias_expanding_to_multiple_physical_values_uses_in_operator(cat):

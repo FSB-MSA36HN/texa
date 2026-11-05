@@ -6,6 +6,10 @@ allowed_sources:
 - olist_marketplace
 evaluation_sources:
 - event_benchmark
+source_aliases:
+  cosmetics_shop: [cosmetics, "cosmetics shop", "shop mỹ phẩm", "cửa hàng mỹ phẩm"]
+  olist_marketplace: [olist, "olist marketplace", "sàn olist"]
+  event_benchmark: ["event benchmark", benchmark, "bộ dữ liệu benchmark"]
 event_roles:
 - id: any_event
   label: Any tracked event

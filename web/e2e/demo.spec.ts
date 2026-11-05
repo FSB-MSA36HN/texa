@@ -172,3 +172,69 @@ test('serves eight independent classmates concurrently without mixing histories'
     await Promise.all(sessions.map((context) => context.close()))
   }
 })
+
+test('asks before applying a text source that conflicts with the selected source', async ({ page }) => {
+  await page.goto('/')
+  await page.getByLabel('Nguồn dữ liệu').selectOption('event_benchmark')
+  await page.getByRole('textbox', { name: 'Câu hỏi' }).fill('Xung đột nguồn')
+  await page.getByRole('button', { name: 'Gửi câu hỏi' }).click()
+  await expect(page.getByText(/Nguồn đã chọn khác nguồn trong câu hỏi/)).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('button', { name: /Synthetic product events pilot/ })).toBeVisible()
+  await page.getByRole('button', { name: /Synthetic product events pilot/ }).click()
+  await page.getByRole('button', { name: 'Tính với lựa chọn này' }).click()
+  await expect(page.getByRole('table')).toContainText('135', { timeout: 15_000 })
+})
+
+test('manual conversation title survives later turns', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('textbox', { name: 'Câu hỏi' }).fill('Tổng doanh thu')
+  await page.getByRole('button', { name: 'Gửi câu hỏi' }).click()
+  await expect(page.getByRole('table')).toContainText('135', { timeout: 15_000 })
+  const list = await page.request.get('/api/conversations')
+  const [conversation] = await list.json() as { id: string }[]
+  expect(conversation?.id).toBeTruthy()
+  expect((await page.request.patch(`/api/conversations/${conversation.id}`, { data: { title: 'Báo cáo Q1' } })).ok()).toBeTruthy()
+
+  await page.getByRole('textbox', { name: 'Câu hỏi' }).fill('Cảm ơn')
+  await page.getByRole('button', { name: 'Gửi câu hỏi' }).click()
+  await expect(page.getByText('Rất vui được hỗ trợ bạn.')).toBeVisible({ timeout: 15_000 })
+  const saved = await page.request.get(`/api/conversations/${conversation.id}`)
+  expect((await saved.json() as { title: string }).title).toBe('Báo cáo Q1')
+})
+
+test('shows validated follow-up suggestions after an answer', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('textbox', { name: 'Câu hỏi' }).fill('Tổng doanh thu')
+  await page.getByRole('button', { name: 'Gửi câu hỏi' }).click()
+  await expect(page.getByRole('table')).toContainText('135', { timeout: 15_000 })
+  const conversations = await (await page.request.get('/api/conversations')).json() as { id: string }[]
+  const data = await (await page.request.get(`/api/conversations/${conversations[0].id}`)).json() as {
+    turns: { insight?: { follow_ups?: string[] } }[]
+  }
+  const suggestions = data.turns[0]?.insight?.follow_ups ?? []
+  expect(suggestions.length).toBeGreaterThan(0)
+  await expect(page.getByRole('button', { name: suggestions[0], exact: true })).toBeVisible()
+  await page.getByRole('button', { name: suggestions[0], exact: true }).click()
+  await expect(page.getByRole('table').last()).toBeVisible({ timeout: 15_000 })
+})
+
+test('references a result older than six turns despite intervening noise', async ({ page }) => {
+  await page.goto('/')
+  const ask = async (question: string, expected = '135') => {
+    const previousTables = await page.getByRole('table').count()
+    await page.getByRole('textbox', { name: 'Câu hỏi' }).fill(question)
+    await page.getByRole('button', { name: 'Gửi câu hỏi' }).click()
+    await expect(page.getByRole('table')).toHaveCount(previousTables + 1, { timeout: 15_000 })
+    await expect(page.getByRole('table').last()).toContainText(expected, { timeout: 15_000 })
+  }
+  await ask('Tổng doanh thu')
+  for (let i = 1; i <= 6; i++) await ask(`Câu hỏi mới ${i}`)
+  await page.getByRole('textbox', { name: 'Câu hỏi' }).fill('Cảm ơn')
+  await page.getByRole('button', { name: 'Gửi câu hỏi' }).click()
+  await expect(page.getByText('Rất vui được hỗ trợ bạn.')).toBeVisible({ timeout: 15_000 })
+  await page.getByRole('textbox', { name: 'Câu hỏi' }).fill('Kết quả đầu tiên chia theo thiết bị')
+  await page.getByRole('button', { name: 'Gửi câu hỏi' }).click()
+  const table = page.getByRole('table').last()
+  await expect(table).toContainText('mobile', { timeout: 15_000 })
+  await expect(table).toContainText('desktop')
+})

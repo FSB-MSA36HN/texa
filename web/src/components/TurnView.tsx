@@ -310,8 +310,8 @@ function Footer({ turn, steps, onRetry, busy, details }: { turn: Turn; steps: St
   const latest = new Map<string, Step>()
   for (const s of steps) if (s.step !== 'result') latest.set(s.step, s)
   const list = [...latest.values()]
-  const total = list.reduce((a, s) => a + (s.ms ?? 0), 0)
-  const hasDetails = !!details || list.length > 0
+  const total = turn.timing?.end_to_end_ms ?? list.filter((s) => !s.step.startsWith('llm_')).reduce((a, s) => a + (s.ms ?? 0), 0)
+  const hasDetails = !!details || list.length > 0 || !!turn.timing
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-0.5 text-lead">
@@ -320,7 +320,7 @@ function Footer({ turn, steps, onRetry, busy, details }: { turn: Turn; steps: St
         <Feedback turn={turn} />
         {hasDetails && (
           <button onClick={() => setOpen(!open)} aria-expanded={open} className={`${softBtn} ml-auto text-xs`}>
-            Chi tiết{list.length > 0 && ` · ${(total / 1000).toFixed(1)} giây`}
+            Chi tiết{total > 0 && ` · ${(total / 1000).toFixed(1)} giây`}
             <ChevronDown className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} /></button>
         )}
       </div>

@@ -62,9 +62,9 @@ export default function App() {
       (turn) => {
         const effective = turn.source_resolution?.effective
         const uiSource = turn.source_resolution?.ui
-        if (turn.status === 'answered' && effective?.length === 1 && uiSource?.length === 1 && effective[0] !== uiSource[0]) {
+        if (turn.status === 'answered' && turn.source_resolution?.resolved_by_user && effective?.length === 1) {
           setScope((current) => {
-            if (current !== uiSource[0]) return current
+            if (current !== (uiSource?.[0] ?? '')) return current
             write('texa.scope', effective[0]); return effective[0]
           })
         }

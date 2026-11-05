@@ -5,6 +5,7 @@ import re
 import math
 import os
 import time
+import unicodedata
 from functools import cached_property
 from typing import Literal
 
@@ -193,6 +194,7 @@ class Catalog(Strict):
     table: str
     allowed_sources: list[str] = []
     evaluation_sources: list[str] = []
+    source_aliases: dict[str, list[str]] = {}
     event_roles: list[EventRole]
     dimensions: list[Dimension]
     metrics: list[Metric]
@@ -297,6 +299,12 @@ def validate_catalog(raw: dict) -> Catalog:
         errors.append("allowed_sources must contain unique non-empty source ids")
     if len(set(cat.evaluation_sources)) != len(cat.evaluation_sources) or set(cat.allowed_sources) & set(cat.evaluation_sources):
         errors.append("evaluation_sources must be unique and disjoint from demo allowed_sources")
+    unknown_alias_sources = set(cat.source_aliases) - set(cat.sources_for_profile("evaluation"))
+    if unknown_alias_sources:
+        errors.append(f"source_aliases reference unknown sources: {sorted(unknown_alias_sources)}")
+    for sid, aliases in cat.source_aliases.items():
+        if any(not isinstance(alias, str) or not alias.strip() for alias in aliases):
+            errors.append(f"source_aliases for {sid!r} must be non-empty strings")
     for value in cat.semantic_values:
         check_field(f"semantic value {value.id}", value.field)
         if not value.source_values or any(not vals for vals in value.source_values.values()):
@@ -438,6 +446,31 @@ class Source(BaseModel):
 
     def logs_role(self, role: EventRole) -> list[str]:
         return [e for e in role.events if e in self.events]
+
+
+def _normalized_source_phrase(value: str) -> str:
+    value = unicodedata.normalize("NFD", value.casefold())
+    value = "".join(c for c in value if unicodedata.category(c) != "Mn")
+    return " ".join(re.findall(r"[a-z0-9]+", value))
+
+
+def mentioned_sources(cat: Catalog, sources: dict[str, Source], question: str) -> list[str]:
+    """Find all explicit source mentions without relying on model interpretation.
+
+    Matching is accent/case/punctuation insensitive and whole-phrase bounded.
+    All matches are returned in source-registry order; negation is intentionally
+    not inferred here, so callers must resolve multi-mention cases conservatively.
+    """
+    text = f" {_normalized_source_phrase(question)} "
+    matched = set()
+    for sid, source in sources.items():
+        aliases = [sid.replace("_", " "), source.label, *cat.source_aliases.get(sid, [])]
+        for alias in aliases:
+            phrase = _normalized_source_phrase(alias)
+            if phrase and f" {phrase} " in text:
+                matched.add(sid)
+                break
+    return [sid for sid in sources if sid in matched]
 
 
 _sources_cache: tuple[float, dict[str, Source]] | None = None

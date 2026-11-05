@@ -3,7 +3,7 @@ import json
 import re
 import unicodedata
 
-from . import db, llm
+from . import db, llm, memory
 from .catalog import Catalog, Source, coverage
 from .prompts import CANDIDATE_SCHEMA, INTERPRET_INSTRUCTION, SELECT_INSTRUCTION, SELECT_SCHEMA, DIALOGUE_INSTRUCTION, structured_candidate_schema
 from .progress import Progress
@@ -27,7 +27,7 @@ def render_catalog(cat: Catalog, sources: dict[str, Source], ids: set[str] | Non
     out = ["STORES (id | label | description | data period | currency | cannot compute | breakdowns without data)"]
     for s in sources.values():
         c = cov[s.id]
-        out.append(_line(s.id, s.label, s.description, f"{s.min_date}..{s.max_date}", s.currency,
+        out.append(_line(s.id, s.label, ", ".join(cat.source_aliases.get(s.id, [])), s.description, f"{s.min_date}..{s.max_date}", s.currency,
                          "cannot compute: " + ", ".join(c["metrics_missing"]) if c["metrics_missing"] else "",
                          "no data for: " + ", ".join(c["dimensions_missing"]) if c["dimensions_missing"] else ""))
     out.append("\nMETRICS (id | label | unit | description | synonyms | when to use | ways of counting)")
@@ -135,9 +135,20 @@ def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[s
     structured = bool(context and context.get("structured_memory"))
     instruction = INTERPRET_INSTRUCTION + (DIALOGUE_INSTRUCTION if structured else "")
     schema = structured_candidate_schema() if structured else CANDIDATE_SCHEMA
+    if structured and context.get("forced_reference"):
+        schema["properties"]["dialogue"]["properties"]["relation"]["enum"] = ["followup"]
+        schema["properties"]["dialogue"]["properties"]["target_id"]["enum"] = [context["forced_reference"]]
+        schema["properties"]["outcome"]["enum"] = ["query", "answer_from_previous", "unsupported"]
     dynamic = []
+    registry_complete = True
     if structured:
-        dynamic.append("RESULT REGISTRY\n" + json.dumps(context.get("registry", []), ensure_ascii=False, default=str))
+        static_cost = estimate_tokens(instruction + catalog_text + question + json.dumps(
+            context.get("inherited_slots", {}), default=str))
+        registry_budget = max(0, min(db.CONTEXT_BUDGET_TOKENS // 3, db.CONTEXT_BUDGET_TOKENS - static_cost - 2048))
+        registry_view, registry_complete = memory.bounded_registry(context.get("registry", []), registry_budget)
+        dynamic.append("RESULT REGISTRY\n" + json.dumps(registry_view, ensure_ascii=False, default=str))
+        if not registry_complete:
+            dynamic.append("Registry evidence is incomplete. Use ambiguous for references unless forced_reference is supplied. New independent questions may proceed without inheritance.")
         if context.get("forced_reference"):
             dynamic.append("forced_reference: " + context["forced_reference"])
     if context:
@@ -157,4 +168,6 @@ def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[s
                                             prompt="CATALOG\n" + catalog_text + "\n\n" + "\n\n".join(dynamic),
                                             schema=schema)
         s.note(candidate["outcome"])
+    if structured:
+        candidate["_registry_complete"] = registry_complete
     return candidate

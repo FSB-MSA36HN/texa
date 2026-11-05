@@ -76,3 +76,24 @@ def test_registry_ordinals_do_not_shift_when_an_old_snapshot_is_ineligible():
     registry = memory.result_registry([good], 3, ordinal_history=[old, noise, good])
     assert registry[0]['question_number'] == 3
     assert registry[0]['result_number'] == 2
+
+
+def test_forced_user_selection_cannot_be_dropped_as_social():
+    with pytest.raises(llm.LLMError, match='explicitly selected reference'):
+        memory.reduce_candidate(proposal(target='a', relation='social'), [answered('a', 'old')], 3, 'a')
+
+
+def test_prompt_budget_never_changes_server_eligibility_and_cannot_force_recent_guess():
+    history = [answered(str(i), f'Revenue {i} ' + 'x' * 1500) for i in range(50)]
+    registry = memory.result_registry(history, 3)
+    view, complete = memory.bounded_registry(registry, 800)
+    assert not complete and len(view) < len(registry)
+    candidate = proposal(target='49') | {'_registry_complete': complete}
+    _, ctx = memory.reduce_candidate(candidate, history, 3)
+    assert ctx['clarification_needed']
+    candidate = proposal(target='', relation='new_topic', **{k: 'set' for k in memory.SLOT_KEYS}) | {'_registry_complete': False}
+    _, ctx = memory.reduce_candidate(candidate, history, 3)
+    assert ctx['relation'] == 'new_topic' and not ctx['clarification_needed']
+    candidate = proposal(target='0') | {'_registry_complete': False}
+    _, ctx = memory.reduce_candidate(candidate, history, 3, '0')
+    assert ctx['references'] == ['0'] and not ctx['clarification_needed']

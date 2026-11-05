@@ -23,10 +23,20 @@ for dsn in (db.DB_DSN, db.READER_DSN):
     with psycopg.connect(dsn) as conn:
         if conn.execute('SELECT current_database()').fetchone()[0] != 'texa_benchmark':
             raise RuntimeError('E2E server must use the isolated texa_benchmark database')
+        if conn.info.port != 15433:
+            raise RuntimeError('E2E server refuses database ports other than isolated port 15433')
+with psycopg.connect(db.DB_DSN) as conn:
+    rows, revenue = conn.execute(
+        "SELECT count(*), coalesce(sum(revenue), 0) FROM analytics.event_activity WHERE source_id='event_benchmark'"
+    ).fetchone()
+    if rows != 12 or revenue != 135:
+        raise RuntimeError(f'E2E fixture mismatch: expected 12 events and revenue 135, got {rows} and {revenue}')
 
 # Evaluation switches must not accidentally alter the product behavior under test.
 for name in ('TEXA_ABLATION_VARIANT', 'TEXA_MEMORY_MODE'):
     os.environ.pop(name, None)
+
+os.environ['TEXA_SOURCE_PROFILE'] = 'evaluation'
 
 MODEL = 'e2e-scripted-model'
 _connection = {'provider': 'openai', 'base_url': None, 'allowed_models': [MODEL], 'default_model': MODEL,
@@ -56,6 +66,9 @@ def candidate(**changes):
             'recipe_stated': True, 'filters': [], 'top_k': 0,
             'time_range': {'kind': 'all', 'days': 0, 'start': '', 'end': ''},
             'answer_request': {'need': 'describe', 'ask': ''}, 'language': 'vi'}
+    from texa.memory import SLOT_KEYS
+    base['dialogue'] = {'relation': 'social' if changes.get('outcome') == 'conversation' else 'new_topic',
+                        'target_id': '', 'slots': {k: 'set' for k in SLOT_KEYS}}
     return base | changes
 
 
@@ -76,17 +89,24 @@ def generate(*, name, prompt, turn_id=None, model=None, **kwargs):
                 time.sleep(.05)
         if question == 'Ngoài phạm vi':
             return candidate(outcome='unsupported', reason='Yêu cầu ngoài phạm vi e-commerce.', suggestions=[])
+        if question == 'Xung đột nguồn':
+            return candidate(source_ids=['olist_marketplace'])
         if question in ('Cảm ơn', 'Xin chào'):
             return candidate(outcome='conversation', reply='Rất vui được hỗ trợ bạn.', suggestions=[])
         if question == 'Doanh thu':
             return candidate(time_range={'kind': 'none', 'days': 0, 'start': '', 'end': ''})
-        if question in ('Chia theo thiết bị', 'Chia kết quả đó theo thiết bị'):
-            # Follow-ups must be offered the relevant prior evidence, rather than
-            # the provider fixture inventing history on behalf of the application.
-            if ('RELEVANT PRIOR TURNS' not in prompt or 'Q: Tổng doanh thu' not in prompt
-                    or '"recipe": "revenue"' not in prompt):
+        if question in ('Chia theo thiết bị', 'Chia kết quả đó theo thiết bị') or 'kết quả đầu tiên chia theo thiết bị' in question.lower():
+            # The provider fixture selects an actual server-supplied pointer;
+            # only the reducer is allowed to inherit its slots.
+            registry = json.JSONDecoder().raw_decode(prompt.split('RESULT REGISTRY\n', 1)[1])[0]
+            target = registry[0] if 'kết quả đầu tiên' in question.lower() else registry[-1] if registry else None
+            if not target or target['reading']['recipe'] != 'revenue':
                 raise llm.LLMError('E2E_NO_HISTORY', 'Không tìm thấy ngữ cảnh trước.')
-            return candidate(shape='breakdown', selection=['device_type'])
+            from texa.memory import SLOT_KEYS
+            operations = {k: 'keep' for k in SLOT_KEYS}
+            operations.update(selection='set', shape='set', top_k='clear')
+            return candidate(shape='breakdown', selection=['device_type'],
+                             dialogue={'relation': 'followup', 'target_id': target['id'], 'slots': operations})
         if question == 'Số người dùng toàn bộ dữ liệu':
             return candidate(recipe='users')
         return candidate()

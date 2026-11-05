@@ -319,6 +319,8 @@ def reduce_candidate(candidate: dict, history: list[dict], catalog_version: int,
     if not isinstance(decision, dict):
         raise llm.LLMError('MODEL_OUTPUT_INVALID', 'Missing structured dialogue decision.')
     relation = decision.get('relation')
+    if forced_reference and (relation != 'followup' or candidate.get('outcome') == 'conversation'):
+        raise llm.LLMError('MODEL_OUTPUT_INVALID', 'An explicitly selected reference cannot be ignored.')
     registry = compatible_results(history, catalog_version)
     target_id = forced_reference or decision.get('target_id')
     target = next((t for t in registry if _turn_id(t) == target_id), None)
@@ -326,7 +328,8 @@ def reduce_candidate(candidate: dict, history: list[dict], catalog_version: int,
     if forced_reference and target is not None and relation != 'social':
         relation = 'followup'
         context['relation'] = relation
-    if relation == 'ambiguous' or (relation == 'followup' and target is None):
+    if (relation == 'ambiguous' or (relation == 'followup' and target is None)
+            or (relation == 'followup' and not forced_reference and not candidate.get('_registry_complete', True))):
         context.update(relation='ambiguous', clarification_needed=True)
         return deepcopy(candidate), context
     if relation not in {'new_topic', 'followup', 'social'}:
@@ -367,3 +370,22 @@ def reduce_candidate(candidate: dict, history: list[dict], catalog_version: int,
         out['recipe_stated'] = True
     context['slot_operations'] = deepcopy(operations)
     return out, context
+
+
+def bounded_registry(registry: list[dict], token_budget: int) -> tuple[list[dict], bool]:
+    """Bound prompt evidence without changing the complete server registry.
+
+    If any entries are omitted, an unforced followup must ask the user to choose
+    from the complete registry instead of guessing from the partial prompt view.
+    Independent questions remain usable even in arbitrarily long conversations.
+    """
+    import json
+    selected, used = [], 0
+    for item in reversed(registry):
+        cost = (len(json.dumps(item, ensure_ascii=False, default=str)) + 3) // 4 + 2
+        if used + cost > token_budget:
+            break
+        selected.append(item)
+        used += cost
+    selected.reverse()
+    return selected, len(selected) == len(registry)
