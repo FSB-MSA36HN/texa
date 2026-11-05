@@ -37,12 +37,12 @@ def olist():
         if i<30:
             event='order_purchased'; order=i//2; user=f'cust{order%10+1}'; cat=CATS[(i//2)%6]
             revenue=[0,15,22,35,None][i%5]
-            session=f'order{order+1:02}'
+            session=None
         elif i<48:
             event='payment_made'; order=(i-30)//2; user=f'cust{order%10+1}'; cat=None
-            revenue=[18,40,62][i%3]; session=f'order{order+1:02}'
+            revenue=[18,40,62][i%3]; session=None
         else:
-            event='view'; user=f'visitor{(i%8)+1}'; cat=CATS[(i-48)%6]; revenue=None; session=f'os{i//2:02}'
+            event='order_approved'; user=f'cust{(i-48)%10+1}'; cat=None; revenue=None; session=None
         ep={'device':{'type':DEV[i%3]},'campaign':{'channel':CHANNEL[(i//3)%2]}}
         if i==9: ep.pop('device')
         if i==12: ep['device']['type']=None
@@ -71,8 +71,9 @@ def sql_for(name,rows):
         ep=json.dumps(r['ep'],separators=(',',':')).replace("'","''")
         rev='NULL' if r['revenue'] is None else str(r['revenue'])
         cat='NULL' if r['category'] is None else "'"+r['category']+"'"
+        session='NULL' if r['session'] is None else "'"+r['session'].replace("'","''")+"'"
         out.append("INSERT INTO analytics.event_activity(event_id,source_id,event_ts,event_date,event_name,user_id,session_id,first_seen_date,platform,item_category,revenue,ep,up,src_table) VALUES ("+
-          f"'{r['id']}','{r['source']}','{r['day']} 12:00+00','{r['day']}','{r['event']}','{r['user']}','{r['session']}','{r['day']}','web',{cat},{rev},'{ep}'::jsonb,'{{}}'::jsonb,'challenge_v1');")
+          f"'{r['id']}','{r['source']}','{r['day']} 12:00+00','{r['day']}','{r['event']}','{r['user']}',{session},'{r['day']}','web',{cat},{rev},'{ep}'::jsonb,'{{}}'::jsonb,'challenge_v1');")
     for source,label,currency in [('cosmetics_shop','Challenge Cosmetics Shop','USD'),('olist_marketplace','Challenge Olist Marketplace','BRL')]:
         own=[r for r in rows if r['source']==source]
         out.append("INSERT INTO analytics.source_registry(source_id,label,description,currency,min_date,max_date,row_count,user_count,last_loaded_at) VALUES "+

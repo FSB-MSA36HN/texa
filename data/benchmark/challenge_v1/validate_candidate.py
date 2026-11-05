@@ -19,6 +19,7 @@ assert len(diagnostics)==manifest['counts']['diagnostics']==12
 assert sum(x['suite'] if 'suite' in x else 0 for x in [])==0
 for item in answers:
     assert item.get('expected_result') is not None, item['id']
+    assert set(item.get('expected_results_by_world',{}))==set(manifest['fixture_worlds']), item['id']
     assert item.get('fixture_world','base') in manifest['fixture_worlds'], item['id']
     assert item['source_id'] in manifest['sources']
     assert item.get('stratum') in ('core_control','semantic_data_shape','composed_in_scope')
@@ -27,12 +28,21 @@ assert Counter(x['stratum'] for x in answers)==Counter({'core_control':8,'semant
 families=defaultdict(set)
 for item in answers: families[item['family']].add(item['split'])
 assert all(len(s)==1 for s in families.values()), 'single family leakage across splits'
-assert len(interactions)==manifest['counts']['clarification_total']
+assert len(interactions)==manifest['counts']['clarification_total']==24
 assert len(dialogues)==manifest['counts']['conversation_total']
 for scenario in interactions:
     if scenario.get('gold_sql'):
         assert scenario.get('expected_result') is not None
     assert scenario['split'] in ('dev','test')
+    if scenario.get('control_of'):
+        parent=next(x for x in interactions if x['id']==scenario['control_of'])
+        assert scenario['family']==parent['family'] and scenario['split']==parent['split']
+        assert scenario.get('ask_fields')==[]
+for item in answers:
+    if 'event_date' not in item.get('gold_sql',''):
+        q=item['question'].casefold()
+        assert ('all available dates' in q or 'toàn bộ ngày có dữ liệu' in q or 'all available data' in q), item['id']
+assert not any(x.get('source_id')=='olist_marketplace' and x.get('metric') in ('sessions','viewers') for x in cases)
 for dialogue in dialogues:
     assert dialogue['split'] in ('dev','test')
     assert any(t.get('action')=='answer' and t.get('gold_sql') for t in dialogue['turns'])

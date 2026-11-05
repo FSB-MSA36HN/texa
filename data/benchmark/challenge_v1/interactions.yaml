@@ -25,14 +25,11 @@
     - - 185.0
 - id: q02_ambiguous_buyers
   split: test
-  family: ambiguous_customer_count
-  question: Tháng 1 trên Olist có bao nhiêu khách hàng?
-  ask_fields:
-  - metric
-  oracle_intent: buyers
-  oracle_answers:
-    metric:
-    - buyers
+  family: explicit_olist_buyers
+  question: How many distinct Olist buyers were there in January 2018?
+  ask_fields: []
+  oracle_intent: explicit_metric
+  oracle_answers: {}
   state:
     source_id: olist_marketplace
     metric: buyers
@@ -98,11 +95,11 @@
     - - 420.0
 - id: q05_ambiguous_period
   split: test
-  family: ambiguous_period
+  family: missing_period
   question: How many distinct Olist buyers are there?
   ask_fields:
   - time_range
-  oracle_intent: january_2018
+  oracle_intent: explicit_all_time
   oracle_answers:
     time_range:
     - all
@@ -284,3 +281,301 @@
     - revenue
     rows:
     - - 432.0
+- id: q13_period_cosmetics_revenue
+  split: dev
+  family: period_cosmetics_revenue
+  question: What was purchase revenue for Cosmetics Shop?
+  ask_fields:
+  - time_range
+  oracle_intent: explicit_all_time
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range: all
+    filters: &id001 []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0) AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 420.0
+- id: q14_period_cosmetics_revenue_control
+  split: dev
+  family: period_cosmetics_revenue
+  control_of: q13_period_cosmetics_revenue
+  question: What was purchase revenue for Cosmetics Shop across all available dates?
+  ask_fields: []
+  oracle_intent: explicit_all_time_control
+  oracle_answers: {}
+  state:
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range: all
+    filters: *id001
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0) AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 420.0
+- id: q15_period_olist_purchases
+  split: test
+  family: period_olist_purchases
+  question: How many Olist item purchase rows were recorded?
+  ask_fields:
+  - time_range
+  oracle_intent: explicit_all_time
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    source_id: olist_marketplace
+    metric: purchases
+    time_range: all
+    filters: &id002 []
+    breakdown: null
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='order_purchased') AS purchases FROM analytics.event_activity
+    WHERE source_id='olist_marketplace'
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 30
+- id: q16_period_olist_purchases_control
+  split: test
+  family: period_olist_purchases
+  control_of: q15_period_olist_purchases
+  question: How many Olist item purchase rows were recorded across all available dates?
+  ask_fields: []
+  oracle_intent: explicit_all_time_control
+  oracle_answers: {}
+  state:
+    source_id: olist_marketplace
+    metric: purchases
+    time_range: all
+    filters: *id002
+    breakdown: null
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='order_purchased') AS purchases FROM analytics.event_activity
+    WHERE source_id='olist_marketplace'
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 30
+- id: q17_period_cosmetics_channel_buyers
+  split: dev
+  family: period_cosmetics_channel_buyers
+  question: How many distinct buyers did Cosmetics Shop have by campaign channel?
+  ask_fields:
+  - time_range
+  oracle_intent: explicit_all_time
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    source_id: cosmetics_shop
+    metric: buyers
+    time_range: all
+    filters: &id003 []
+    breakdown: campaign_channel
+  gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel,count(DISTINCT user_id) AS buyers FROM analytics.event_activity
+    WHERE source_id=''cosmetics_shop'' AND event_name=''purchase'' GROUP BY 1 ORDER BY 1 NULLS FIRST'
+  expected_result:
+    columns:
+    - campaign_channel
+    - buyers
+    rows:
+    - - null
+      - 1
+    - - email
+      - 7
+    - - paid
+      - 8
+- id: q18_period_cosmetics_channel_buyers_control
+  split: dev
+  family: period_cosmetics_channel_buyers
+  control_of: q17_period_cosmetics_channel_buyers
+  question: How many distinct buyers did Cosmetics Shop have by campaign channel across all available dates?
+  ask_fields: []
+  oracle_intent: explicit_all_time_control
+  oracle_answers: {}
+  state:
+    source_id: cosmetics_shop
+    metric: buyers
+    time_range: all
+    filters: *id003
+    breakdown: campaign_channel
+  gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel,count(DISTINCT user_id) AS buyers FROM analytics.event_activity
+    WHERE source_id=''cosmetics_shop'' AND event_name=''purchase'' GROUP BY 1 ORDER BY 1 NULLS FIRST'
+  expected_result:
+    columns:
+    - campaign_channel
+    - buyers
+    rows:
+    - - null
+      - 1
+    - - email
+      - 7
+    - - paid
+      - 8
+- id: q19_period_olist_item_revenue
+  split: test
+  family: period_olist_item_revenue
+  question: What was Olist item revenue by product category?
+  ask_fields:
+  - time_range
+  oracle_intent: explicit_all_time
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: all
+    filters: &id004 []
+    breakdown: item_category
+  gold_sql: SELECT item_category,coalesce(sum(revenue),0) AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_name='order_purchased' GROUP BY 1 ORDER BY 1
+  expected_result:
+    columns:
+    - item_category
+    - revenue
+    rows:
+    - - cleanser
+      - 72.0
+    - - cream
+      - 94.0
+    - - mask
+      - 72.0
+    - - serum
+      - 72.0
+    - - sunscreen
+      - 72.0
+    - - toner
+      - 50.0
+- id: q20_period_olist_item_revenue_control
+  split: test
+  family: period_olist_item_revenue
+  control_of: q19_period_olist_item_revenue
+  question: What was Olist item revenue by product category across all available dates?
+  ask_fields: []
+  oracle_intent: explicit_all_time_control
+  oracle_answers: {}
+  state:
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: all
+    filters: *id004
+    breakdown: item_category
+  gold_sql: SELECT item_category,coalesce(sum(revenue),0) AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_name='order_purchased' GROUP BY 1 ORDER BY 1
+  expected_result:
+    columns:
+    - item_category
+    - revenue
+    rows:
+    - - cleanser
+      - 72.0
+    - - cream
+      - 94.0
+    - - mask
+      - 72.0
+    - - serum
+      - 72.0
+    - - sunscreen
+      - 72.0
+    - - toner
+      - 50.0
+- id: q21_period_cosmetics_ratio
+  split: dev
+  family: period_cosmetics_ratio
+  question: What was the Cosmetics Shop buyer conversion rate?
+  ask_fields:
+  - time_range
+  oracle_intent: explicit_all_time
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    source_id: cosmetics_shop
+    metric: buyer_conversion_rate
+    time_range: all
+    filters: &id005 []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::numeric/nullif(count(DISTINCT user_id),0)
+    AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result:
+    columns:
+    - buyer_conversion_rate
+    rows:
+    - - 0.42857142857142855
+- id: q22_period_cosmetics_ratio_control
+  split: dev
+  family: period_cosmetics_ratio
+  control_of: q21_period_cosmetics_ratio
+  question: What was the Cosmetics Shop buyer conversion rate across all available dates?
+  ask_fields: []
+  oracle_intent: explicit_all_time_control
+  oracle_answers: {}
+  state:
+    source_id: cosmetics_shop
+    metric: buyer_conversion_rate
+    time_range: all
+    filters: *id005
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::numeric/nullif(count(DISTINCT user_id),0)
+    AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result:
+    columns:
+    - buyer_conversion_rate
+    rows:
+    - - 0.42857142857142855
+- id: q23_period_olist_users
+  split: test
+  family: period_olist_users
+  question: How many distinct users were recorded by Olist?
+  ask_fields:
+  - time_range
+  oracle_intent: explicit_all_time
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    source_id: olist_marketplace
+    metric: users
+    time_range: all
+    filters: &id006 []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) AS users FROM analytics.event_activity WHERE source_id='olist_marketplace'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 10
+- id: q24_period_olist_users_control
+  split: test
+  family: period_olist_users
+  control_of: q23_period_olist_users
+  question: How many distinct users were recorded by Olist across all available dates?
+  ask_fields: []
+  oracle_intent: explicit_all_time_control
+  oracle_answers: {}
+  state:
+    source_id: olist_marketplace
+    metric: users
+    time_range: all
+    filters: *id006
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) AS users FROM analytics.event_activity WHERE source_id='olist_marketplace'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 10

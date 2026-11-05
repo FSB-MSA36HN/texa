@@ -134,7 +134,7 @@
       - revenue
       rows:
       - - 56.0
-  - question: Distinct Olist buyers attributed to email?
+  - question: Distinct Olist buyers attributed to email across all available dates.
     action: answer
     state:
       source_id: olist_marketplace
@@ -150,7 +150,7 @@
       - buyers
       rows:
       - - 7
-  - question: How many distinct Cosmetics users are in the snapshot?
+  - question: How many distinct Cosmetics users are in the snapshot across all available dates.
     action: answer
     state:
       source_id: cosmetics_shop
@@ -164,23 +164,23 @@
       - users
       rows:
       - - 21
-  - question: How many Olist users viewed a product during January 2018?
+  - question: How many Cosmetics Shop users viewed a product during January 2025?
     action: answer
     state:
-      source_id: olist_marketplace
+      source_id: cosmetics_shop
       metric: viewers
       time_range:
-      - '2018-01-01'
-      - '2018-01-31'
+      - '2025-01-01'
+      - '2025-01-31'
       filters: []
       breakdown: null
     gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='view') AS viewers FROM analytics.event_activity
-      WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-01' AND '2018-01-31'
+      WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-01' AND '2025-01-31'
     expected_result:
       columns:
       - viewers
       rows:
-      - - 0
+      - - 11
   - question: Cosmetics purchase rows in February by product category.
     action: answer
     state:
@@ -295,21 +295,21 @@
         - 1
       - - '2025-01-07'
         - 1
-  - question: How many distinct Olist sessions are recorded?
+  - question: How many distinct Cosmetics Shop sessions are recorded across all available dates?
     action: answer
     state:
-      source_id: olist_marketplace
+      source_id: cosmetics_shop
       metric: sessions
       time_range: all
       filters: []
       breakdown: null
-    gold_sql: SELECT count(DISTINCT session_id) AS sessions FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    gold_sql: SELECT count(DISTINCT session_id) AS sessions FROM analytics.event_activity WHERE source_id='cosmetics_shop'
     expected_result:
       columns:
       - sessions
       rows:
-      - - 21
-  - question: Break Cosmetics buyers down by campaign channel.
+      - - 30
+  - question: Break Cosmetics buyers down by campaign channel across all available dates.
     action: answer
     state:
       source_id: cosmetics_shop
@@ -480,7 +480,7 @@
   family: nested_breakdown
   dependency_distance: 1
   turns:
-  - question: How many distinct Cosmetics buyers by campaign channel?
+  - question: How many distinct Cosmetics buyers by campaign channel across all available dates.
     action: answer
     state:
       source_id: cosmetics_shop
@@ -501,7 +501,7 @@
         - 7
       - - paid
         - 8
-  - question: Keep email only.
+  - question: Keep email only across all available dates.
     action: answer
     state:
       source_id: cosmetics_shop
