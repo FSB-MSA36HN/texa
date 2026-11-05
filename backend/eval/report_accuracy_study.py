@@ -98,6 +98,14 @@ def compare(runs: list[dict[str, Any]], *, iterations: int = 3000) -> dict[str, 
         world_hashes.setdefault(key, set()).add(run["manifest"].get("fixture_hash"))
     if any(len(values) != 1 or None in values for values in world_hashes.values()):
         raise ValueError("paired variants differ in fixture-world hash or omit it")
+    run_key_sets = [set(keys) for keys in run_keys_by_variant.values()]
+    if any(keys != run_key_sets[0] for keys in run_key_sets[1:]):
+        raise ValueError("paired variants must have identical repeat/world blocks")
+    context_hashes = defaultdict(set)
+    for manifest in manifests:
+        context_hashes[manifest.get("fixture_world")].add((manifest.get("provenance") or {}).get("public_context_hash"))
+    if any(len(values) != 1 for values in context_hashes.values()):
+        raise ValueError("public context differs across paired fixture worlds")
     rows_by_variant = {}
     summaries = {}
     for variant, variant_runs in by_variant.items():
@@ -163,11 +171,20 @@ def compare(runs: list[dict[str, Any]], *, iterations: int = 3000) -> dict[str, 
                             discordant_left += 1
                         if bool(r.get("success")) and not bool(l.get("success")):
                             discordant_right += 1
-                cluster_diff[cluster] = delta / max(1, observed)
+                cluster_diff[cluster] = (delta, observed)
             point = statistics.mean(diffs) if diffs else None
             values = list(cluster_diff.values())
-            boot = sorted(statistics.mean(rng.choice(values) for _ in values) for _ in range(iterations)) if values else []
+            boot = []
+            if values:
+                for _ in range(iterations):
+                    draw = [rng.choice(values) for _ in values]
+                    boot.append(sum(value for value, _ in draw) / max(1, sum(count for _, count in draw)))
+                boot.sort()
+            discordant = discordant_left + discordant_right
+            exact_p = min(1.0, 2 * sum(math.comb(discordant, k) for k in range(min(discordant_left, discordant_right) + 1)) / (2 ** discordant)) if discordant else 1.0
             pairs[f"{left_name}_vs_{right_name}"] = {"paired_accuracy_delta_right_minus_left": point,
+                "estimand": "mean scenario answer fraction; cluster-resampled families",
+                "mcnemar_exact_p_diagnostic": exact_p,
                 "cluster_bootstrap_ci95": [boot[int(.025*(iterations-1))], boot[int(.975*(iterations-1))]] if boot else None,
                 "clusters": len(values), "matched_run_blocks": common_keys,
                 "mcnemar_discordant_left_only": discordant_left, "mcnemar_discordant_right_only": discordant_right}

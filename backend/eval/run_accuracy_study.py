@@ -88,6 +88,7 @@ def _question(item: dict, manifest: dict, public_context: str = "") -> str:
             "distinct observed users, NULL on zero denominator. Group-domain values are eligible observed events; "
             "for conversion ratios retain rows supported by numerator OR denominator.\n" + manifest["metric_policy"] +
             "\nRelative periods are anchored to the selected source's public max_date shown in CATALOG, not the current date. "
+            "Use canonical catalog IDs as SQL output aliases (metric IDs and dimension IDs), in the requested dimension order then metric. "
             "Return only a read-only PostgreSQL SELECT. Never invent rows or sources." + scope +
             ("\nRequired output column aliases: " + ", ".join(map(str, output_columns)) if output_columns else "") +
             ("\nBusiness output contract: " + json.dumps(contract, ensure_ascii=False, sort_keys=True) if contract else "") +
@@ -111,8 +112,11 @@ class RawHistorySession:
         self.correction = correction
         self.public_context = public_context
 
-    def ask(self, question: str, manifest: dict, *, choices=None, ui_scope=None) -> dict:
-        question = _question({"question": question}, manifest, self.public_context)
+    def ask(self, question: str, manifest: dict, *, choices=None, ui_scope=None, output_columns=None, business_contract=None) -> dict:
+        public_item = {"question": question}
+        # Conversation/clarification controls must not see gold output aliases:
+        # an alias such as revenue would disclose the unresolved metric intent.
+        question = _question(public_item, manifest, self.public_context)
         if ui_scope:
             question += "\nExplicit user-selected source scope: " + ", ".join(ui_scope)
         if choices:
@@ -251,11 +255,15 @@ def _run_raw_scenario(item: dict, suite: str, manifest: dict, session: RawHistor
     out = []
     for target in targets:
         if target.get("action") == "social":
-            got = session.ask(target["question"], manifest, ui_scope=item.get("ui_scope"))
+            got = session.ask(target["question"], manifest, ui_scope=item.get("ui_scope"),
+                              output_columns=(target.get("expected_result") or {}).get("columns"),
+                              business_contract=target.get("business_contract"))
             out.append({"expected_action": "conversation", "actual_action": got["action"], "scorable": False,
                         "unsupported_reason": "social_turn_not_sql_scored"})
             continue
-        got = session.ask(target["question"], manifest, ui_scope=item.get("ui_scope"))
+        got = session.ask(target["question"], manifest, ui_scope=item.get("ui_scope"),
+                              output_columns=(target.get("expected_result") or {}).get("columns"),
+                              business_contract=target.get("business_contract"))
         rounds = 0
         while got.get("action") == "clarify" and rounds < 2:
             # Form choices are protocol-derived, never copied from gold result data.
@@ -275,7 +283,9 @@ def _run_raw_scenario(item: dict, suite: str, manifest: dict, session: RawHistor
                     if not values or any(v not in allowed for v in values):
                         raise ValueError("oracle_mismatch")
                     choices[field["id"]] = values
-                got = session.ask(target["question"], manifest, choices=choices, ui_scope=item.get("ui_scope"))
+                got = session.ask(target["question"], manifest, choices=choices, ui_scope=item.get("ui_scope"),
+                                  output_columns=(target.get("expected_result") or {}).get("columns"),
+                                  business_contract=target.get("business_contract"))
                 rounds += 1
             except Exception:
                 got["error_class"] = "oracle_mismatch"
@@ -295,6 +305,8 @@ def _run_raw_scenario(item: dict, suite: str, manifest: dict, session: RawHistor
 
 def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
     from texa import llm
+    if subprocess.run(["git", "diff", "--quiet", "HEAD", "--", "backend/texa", "backend/eval", "catalog", "data/benchmark/challenge_v1"], cwd=ROOT).returncode:
+        raise ValueError("Freeze and commit study inputs before live execution")
     try:
         from .run_benchmark import _call_usage
     except ImportError:
