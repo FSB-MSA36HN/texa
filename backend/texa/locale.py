@@ -29,6 +29,9 @@ MESSAGES = {
         'partial': 'Chỉ hiển thị {count} dòng đầu; không tính tổng trên kết quả chưa đầy đủ.',
         'empty': 'Không có dòng khớp điều kiện. Khoảng dữ liệu: {period}.',
         'small_sample': 'Có {count} dòng dựa trên ít hơn {minimum} người dùng hoặc sự kiện; cần thận trọng khi diễn giải.',
+        'availability_missing_fields': 'Nguồn {source} không ghi nhận trường {fields}; các nhóm này sẽ không có dữ liệu.',
+        'availability_duplicate_event_role': 'Nguồn {source} ghi nhận nhiều tên sự kiện cho cùng một loại sự kiện ({event_names}); có thể bị đếm trùng.',
+        'availability_mixed_currencies': 'Các khoản tiền thuộc nhiều loại tiền tệ ({source_currencies}) và chưa được quy đổi; chỉ nên so sánh xu hướng, không cộng tổng.',
     }
 }
 

@@ -1,0 +1,115 @@
+{
+  "model": "gpt-6-luna",
+  "requests": 8,
+  "answered": 8,
+  "correct": 8,
+  "provider_errors": 0,
+  "provider_error_codes": [],
+  "privacy_foreign_turn_statuses": [
+    404,
+    404,
+    404,
+    404,
+    404,
+    404,
+    404,
+    404
+  ],
+  "privacy_isolated": true,
+  "timings_ms": {
+    "app_queue": {
+      "n": 8,
+      "p50": 6275.0,
+      "p95": 16322
+    },
+    "llm_queue_wait_total": {
+      "n": 16,
+      "p50": 0.0,
+      "p95": 0
+    },
+    "end_to_end": {
+      "n": 8,
+      "p50": 21219.5,
+      "p95": 36461
+    },
+    "first_result": {
+      "n": 8,
+      "p50": 16703.0,
+      "p95": 31072
+    }
+  },
+  "results": [
+    {
+      "source": "olist_marketplace",
+      "status": "answered",
+      "expected": 950030.36,
+      "actual": 950030.36,
+      "currency": "BRL",
+      "correct": true,
+      "error_code": null
+    },
+    {
+      "source": "cosmetics_shop",
+      "status": "answered",
+      "expected": 1321825.06,
+      "actual": 1321825.06,
+      "currency": "USD",
+      "correct": true,
+      "error_code": null
+    },
+    {
+      "source": "olist_marketplace",
+      "status": "answered",
+      "expected": 950030.36,
+      "actual": 950030.36,
+      "currency": "BRL",
+      "correct": true,
+      "error_code": null
+    },
+    {
+      "source": "cosmetics_shop",
+      "status": "answered",
+      "expected": 1321825.06,
+      "actual": 1321825.06,
+      "currency": "USD",
+      "correct": true,
+      "error_code": null
+    },
+    {
+      "source": "olist_marketplace",
+      "status": "answered",
+      "expected": 950030.36,
+      "actual": 950030.36,
+      "currency": "BRL",
+      "correct": true,
+      "error_code": null
+    },
+    {
+      "source": "cosmetics_shop",
+      "status": "answered",
+      "expected": 1321825.06,
+      "actual": 1321825.06,
+      "currency": "USD",
+      "correct": true,
+      "error_code": null
+    },
+    {
+      "source": "olist_marketplace",
+      "status": "answered",
+      "expected": 950030.36,
+      "actual": 950030.36,
+      "currency": "BRL",
+      "correct": true,
+      "error_code": null
+    },
+    {
+      "source": "cosmetics_shop",
+      "status": "answered",
+      "expected": 1321825.06,
+      "actual": 1321825.06,
+      "currency": "USD",
+      "correct": true,
+      "error_code": null
+    }
+  ]
+}

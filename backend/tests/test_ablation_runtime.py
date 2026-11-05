@@ -157,7 +157,7 @@ def test_c0_guesses_only_an_offered_choice_then_runs_normal_validation(monkeypat
     monkeypatch.setattr(answer, "_snapshot", lambda _: "snapshot")
     monkeypatch.setattr(answer.catalog_mod, "scoped_sources", lambda _cat, src: src)
     monkeypatch.setattr(answer, "_lang", lambda _: "en")
-    monkeypatch.setattr(answer, "run_spec", lambda spec, *_: {"spec": spec})
+    monkeypatch.setattr(answer, "run_spec", lambda spec, *_: {"query_spec": {"filters": [], "source_ids": ["cosmetics_shop"]}})
     monkeypatch.setattr(answer, "_answered", lambda *_a, **_k: {"status": "answered"})
     calls = []
 

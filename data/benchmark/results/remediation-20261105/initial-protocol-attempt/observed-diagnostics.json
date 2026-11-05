@@ -1,0 +1,37 @@
+{
+  "clarification/C0": {
+    "observed": 6,
+    "success": 0,
+    "not_a_valid_overall_accuracy": true
+  },
+  "clarification/F": {
+    "observed": 6,
+    "success": 3,
+    "not_a_valid_overall_accuracy": true
+  },
+  "memory/F": {
+    "observed": 6,
+    "success": 0,
+    "not_a_valid_overall_accuracy": true
+  },
+  "memory/M0": {
+    "observed": 6,
+    "success": 0,
+    "not_a_valid_overall_accuracy": true
+  },
+  "memory/M6": {
+    "observed": 6,
+    "success": 0,
+    "not_a_valid_overall_accuracy": true
+  },
+  "single/B0": {
+    "observed": 32,
+    "success": 27,
+    "not_a_valid_overall_accuracy": true
+  },
+  "single/F": {
+    "observed": 21,
+    "success": 4,
+    "not_a_valid_overall_accuracy": true
+  }
+}

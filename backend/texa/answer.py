@@ -183,7 +183,7 @@ def _lang(candidate: dict | None) -> str:
 
 def _answered(question, result, cat, sources, candidate, model, turn_id, progress, variants, notes, earlier_questions=None) -> dict:
     lang = _lang(candidate)
-    result["warnings"] = [locale.render(w.get("code"), w.get("message", ""), lang, w.get("params"))
+    result["warnings"] = [_render_warning(w, cat, sources, lang)
                           for w in result.get("warning_details", [])] or result["warnings"]
     for column in result.get("columns", []):
         entry = cat.mets.get(column["name"]) or cat.dims.get(column["name"])
@@ -203,6 +203,28 @@ def _answered(question, result, cat, sources, candidate, model, turn_id, progres
         "metric_definitions": [{"id": mid, "label": catalog_mod.display_label(cat.mets[mid], lang), "description": catalog_mod.display_description(cat.mets[mid], lang)}
                                for mid in ([result["query_spec"].get("recipe")] if result["query_spec"].get("recipe") else result["query_spec"].get("metrics", []))],
     }
+
+
+def _render_warning(warning: dict, cat, sources, lang: str) -> str:
+    """Localize typed availability warnings while preserving IDs/raw event values."""
+    params = dict(warning.get("params") or {})
+    source_id = params.get("source_id")
+    if source_id in sources:
+        params["source"] = sources[source_id].label
+    field_ids = params.get("field_ids")
+    if field_ids:
+        params["fields"] = ", ".join(
+            catalog_mod.display_label(cat.dims[field_id], lang) if field_id in cat.dims else field_id
+            for field_id in field_ids)
+    if "event_names" in params:
+        # These are physical data values: never translate or normalize them for display.
+        params["event_names"] = ", ".join(params["event_names"])
+    source_currencies = params.get("source_currencies")
+    if source_currencies:
+        params["source_currencies"] = "; ".join(
+            f"{sources[sid].label if sid in sources else sid}: {currency or 'unknown'}"
+            for sid, currency in source_currencies.items())
+    return locale.render(warning.get("code"), warning.get("message", ""), lang, params)
 
 
 def _continue(turn: dict, candidate: dict, answers: dict, progress: Progress, cat, sources) -> dict:

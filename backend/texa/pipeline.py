@@ -50,8 +50,12 @@ def run_spec(raw_spec: dict, cat=None, sources=None, step: Progress = Progress()
     def warn(code, message, **params):
         warnings.append(message)
         warning_details.append({"code": code, "message": message, "params": params})
-    for message in av.warnings:
-        warn("availability", message)
+    if av.warning_details:
+        warning_details.extend(av.warning_details)
+        warnings.extend(w["message"] for w in av.warning_details)
+    else:  # Backward-compatible with older Availability producers.
+        for message in av.warnings:
+            warn("availability", message)
     for note in cat.data_notes:
         if (note.get("source") in av.sources and note.get("message")
                 and (not note.get("metric") or note["metric"] in spec.metric_ids)):

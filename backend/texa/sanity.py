@@ -15,6 +15,13 @@ class Availability:
     unavailable_metrics: dict[str, str] = field(default_factory=dict)   # metric -> reason
     sources_without_data: dict[str, str] = field(default_factory=dict)  # store -> reason
     warnings: list[str] = field(default_factory=list)
+    warning_details: list[dict] = field(default_factory=list)
+
+
+def _warning(av: Availability, code: str, message: str, **params) -> None:
+    """Keep the legacy prose while exposing typed, locale-safe warning parameters."""
+    av.warnings.append(message)
+    av.warning_details.append({"code": code, "message": message, "params": params})
 
 
 def _metric_gaps(cat: Catalog, metric_id: str, src: Source) -> list[str]:
@@ -39,7 +46,9 @@ def check_availability(spec: QuerySpec, cat: Catalog, sources: dict[str, Source]
                 raise SpecError("field_not_tracked", f"{src.label} does not record {', '.join(d.label for d in missing_dims)}.",
                                 params={"source_id": sid, "field_ids": [d.id for d in missing_dims],
                                         "fields": [d.label for d in missing_dims]})
-            av.warnings.append(f"{src.label} does not record {', '.join(d.label for d in missing_dims)}; its rows show it as empty.")
+            _warning(av, "availability_missing_fields",
+                     f"{src.label} does not record {', '.join(d.label for d in missing_dims)}; its rows show it as empty.",
+                     source_id=sid, field_ids=[d.id for d in missing_dims])
         usable = []
         for m in spec.metric_ids:
             gaps = _metric_gaps(cat, m, src)
@@ -57,7 +66,9 @@ def check_availability(spec: QuerySpec, cat: Catalog, sources: dict[str, Source]
             for role in cat.roles_of(m):
                 logged = src.logs_role(role)
                 if role.alternatives and len(logged) > 1:
-                    av.warnings.append(f"{src.label} logs {role.label.lower()} as both {' and '.join(logged)}; it may be counted twice.")
+                    _warning(av, "availability_duplicate_event_role",
+                             f"{src.label} logs {role.label.lower()} as both {' and '.join(logged)}; it may be counted twice.",
+                             source_id=sid, role_id=role.id, event_names=logged)
     # A metric is reported unavailable (NULL, never 0) for each queried store that cannot compute it.
     for m, by_source in gaps_by_metric.items():
         reasons = [r for sid, r in by_source.items() if sid in av.sources]
@@ -74,7 +85,10 @@ def check_availability(spec: QuerySpec, cat: Catalog, sources: dict[str, Source]
                                 "unavailable": gaps_by_metric})
     currencies = {sources[s].currency for s in av.sources}
     if len(currencies) > 1 and any(cat.mets[m].unit == "currency" and not cat.mets[m].currency for m in spec.metric_ids):
-        av.warnings.append(f"Amounts are in different currencies ({', '.join(f'{sources[s].label}: {sources[s].currency}' for s in av.sources)}) and are not converted; compare trends, not totals.")
+        source_currencies = {sid: sources[sid].currency for sid in av.sources}
+        _warning(av, "availability_mixed_currencies",
+                 f"Amounts are in different currencies ({', '.join(f'{sources[s].label}: {sources[s].currency}' for s in av.sources)}) and are not converted; compare trends, not totals.",
+                 source_currencies=source_currencies)
     return av
 
 

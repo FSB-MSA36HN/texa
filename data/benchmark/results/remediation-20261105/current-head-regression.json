@@ -1,0 +1,292 @@
+{
+  "tested_at_local": "2026-11-05 21:45:54",
+  "api": "localhost:18000",
+  "model": "gpt-6-luna",
+  "negated_source": {
+    "status": "needs_clarification",
+    "valid_source_form": true,
+    "offered_sources": [
+      "olist_marketplace",
+      "cosmetics_shop"
+    ],
+    "executed_sources": null,
+    "did_not_execute_olist": true,
+    "error_code": null,
+    "elapsed_ms": 6550
+  },
+  "memory_sequence": {
+    "social_noise": {
+      "status": "conversation",
+      "elapsed_ms": 6149
+    },
+    "answered_before_reference": 12,
+    "questions": [
+      {
+        "source": "cosmetics_shop",
+        "status": "answered",
+        "expected": 1321825.06,
+        "actual": 1321825.06,
+        "currency": "USD",
+        "correct": true,
+        "recipe": "revenue",
+        "time_range": {
+          "end": "2020-01-31",
+          "days": null,
+          "kind": "between",
+          "field": "event_date",
+          "start": "2020-01-01"
+        },
+        "label": "result-1",
+        "elapsed_ms": 22486
+      },
+      {
+        "source": "olist_marketplace",
+        "status": "answered",
+        "expected": 950030.36,
+        "actual": 950030.36,
+        "currency": "BRL",
+        "correct": true,
+        "recipe": "revenue",
+        "time_range": {
+          "end": "2018-01-31",
+          "days": null,
+          "kind": "between",
+          "field": "event_date",
+          "start": "2018-01-01"
+        },
+        "label": "result-2",
+        "elapsed_ms": 11056
+      },
+      {
+        "source": "cosmetics_shop",
+        "status": "answered",
+        "expected": 1321825.06,
+        "actual": 1321825.06,
+        "currency": "USD",
+        "correct": true,
+        "recipe": "revenue",
+        "time_range": {
+          "end": "2020-01-31",
+          "days": null,
+          "kind": "between",
+          "field": "event_date",
+          "start": "2020-01-01"
+        },
+        "label": "cosmetics-1",
+        "elapsed_ms": 16401
+      },
+      {
+        "source": "cosmetics_shop",
+        "status": "answered",
+        "expected": 1321825.06,
+        "actual": 1321825.06,
+        "currency": "USD",
+        "correct": true,
+        "recipe": "revenue",
+        "time_range": {
+          "end": "2020-01-31",
+          "days": null,
+          "kind": "between",
+          "field": "event_date",
+          "start": "2020-01-01"
+        },
+        "label": "cosmetics-2",
+        "elapsed_ms": 14805
+      },
+      {
+        "source": "cosmetics_shop",
+        "status": "answered",
+        "expected": 1321825.06,
+        "actual": 1321825.06,
+        "currency": "USD",
+        "correct": true,
+        "recipe": "revenue",
+        "time_range": {
+          "end": "2020-01-31",
+          "days": null,
+          "kind": "between",
+          "field": "event_date",
+          "start": "2020-01-01"
+        },
+        "label": "cosmetics-3",
+        "elapsed_ms": 12283
+      },
+      {
+        "source": "cosmetics_shop",
+        "status": "answered",
+        "expected": 1321825.06,
+        "actual": 1321825.06,
+        "currency": "USD",
+        "correct": true,
+        "recipe": "revenue",
+        "time_range": {
+          "end": "2020-01-31",
+          "days": null,
+          "kind": "between",
+          "field": "event_date",
+          "start": "2020-01-01"
+        },
+        "label": "cosmetics-4",
+        "elapsed_ms": 11078
+      },
+      {
+        "source": "cosmetics_shop",
+        "status": "answered",
+        "expected": 1321825.06,
+        "actual": 1321825.06,
+        "currency": "USD",
+        "correct": true,
+        "recipe": "revenue",
+        "time_range": {
+          "end": "2020-01-31",
+          "days": null,
+          "kind": "between",
+          "field": "event_date",
+          "start": "2020-01-01"
+        },
+        "label": "cosmetics-5",
+        "elapsed_ms": 13921
+      },
+      {
+        "source": "cosmetics_shop",
+        "status": "answered",
+        "expected": 1321825.06,
+        "actual": 1321825.06,
+        "currency": "USD",
+        "correct": true,
+        "recipe": "revenue",
+        "time_range": {
+          "end": "2020-01-31",
+          "days": null,
+          "kind": "between",
+          "field": "event_date",
+          "start": "2020-01-01"
+        },
+        "label": "cosmetics-6",
+        "elapsed_ms": 17714
+      },
+      {
+        "source": "cosmetics_shop",
+        "status": "answered",
+        "expected": 1321825.06,
+        "actual": 1321825.06,
+        "currency": "USD",
+        "correct": true,
+        "recipe": "revenue",
+        "time_range": {
+          "end": "2020-01-31",
+          "days": null,
+          "kind": "between",
+          "field": "event_date",
+          "start": "2020-01-01"
+        },
+        "label": "cosmetics-7",
+        "elapsed_ms": 12318
+      },
+      {
+        "source": "cosmetics_shop",
+        "status": "answered",
+        "expected": 1321825.06,
+        "actual": 1321825.06,
+        "currency": "USD",
+        "correct": true,
+        "recipe": "revenue",
+        "time_range": {
+          "end": "2020-01-31",
+          "days": null,
+          "kind": "between",
+          "field": "event_date",
+          "start": "2020-01-01"
+        },
+        "label": "cosmetics-8",
+        "elapsed_ms": 11061
+      },
+      {
+        "source": "cosmetics_shop",
+        "status": "answered",
+        "expected": 1321825.06,
+        "actual": 1321825.06,
+        "currency": "USD",
+        "correct": true,
+        "recipe": "revenue",
+        "time_range": {
+          "end": "2020-01-31",
+          "days": null,
+          "kind": "between",
+          "field": "event_date",
+          "start": "2020-01-01"
+        },
+        "label": "cosmetics-9",
+        "elapsed_ms": 10656
+      },
+      {
+        "source": "cosmetics_shop",
+        "status": "answered",
+        "expected": 1321825.06,
+        "actual": 1321825.06,
+        "currency": "USD",
+        "correct": true,
+        "recipe": "revenue",
+        "time_range": {
+          "end": "2020-01-31",
+          "days": null,
+          "kind": "between",
+          "field": "event_date",
+          "start": "2020-01-01"
+        },
+        "label": "cosmetics-10",
+        "elapsed_ms": 11087
+      }
+    ],
+    "step_failure": null,
+    "ordinal_followup": {
+      "status": "answered",
+      "source_ids": [
+        "olist_marketplace"
+      ],
+      "currency_of": {
+        "olist_marketplace": "BRL"
+      },
+      "recipe": "revenue",
+      "shape": "time_trend",
+      "selection": [
+        "event_date"
+      ],
+      "time_range": {
+        "end": "2018-01-31",
+        "days": null,
+        "kind": "between",
+        "field": "event_date",
+        "start": "2018-01-01"
+      },
+      "row_count": 31,
+      "returned_rows": 31,
+      "first_metric": "revenue",
+      "sum_of_daily_metric": 950030.36,
+      "unique_day_values": 31,
+      "elapsed_ms": 28668,
+      "error_code": null,
+      "passed": true,
+      "independent_daily_sql_match": {
+        "passed": true,
+        "matched_rows": 31,
+        "oracle": "Independent handwritten PostgreSQL daily revenue SQL, purchase-role events only."
+      }
+    }
+  },
+  "provider_error_codes": [],
+  "budget": {
+    "calls_before": 2029,
+    "calls_after": 2093,
+    "spent_before_usd": 0.4737925000000002,
+    "spent_after_usd": 0.49140810000000035,
+    "reserved_before_usd": 0.1840762000000001,
+    "reserved_after_usd": 0.1809152000000001,
+    "max_usd": 10
+  },
+  "implementation_commit": "65f1054",
+  "limitations": [
+    "One scripted real-model API conversation, not a population accuracy estimate.",
+    "Concurrent benchmark calls share the budget ledger; before/after ledger deltas cannot be attributed to this regression alone."
+  ]
+}
