@@ -1,0 +1,131 @@
+{
+  "measured_date": "2026-11-04",
+  "evidence_level": "Exploratory synthetic v2 dev runs, different development revisions; not held-out comparison or ablation. Raw logs remain local and gitignored.",
+  "runs": [
+    {
+      "artifact": "luna-direct-dev-20261104.jsonl",
+      "artifact_sha256": "db0f972c23cc9ef5762280e9ae8e87b99f2bee98e45f3549a9e6922f2d6589f0",
+      "summaries": [
+        {
+          "type": "single_turn_summary",
+          "method": "direct",
+          "model": "gpt-6-luna",
+          "engine": {
+            "database": "texa_benchmark",
+            "role": "texa_reader",
+            "postgresql_version": "16.2",
+            "benchmark": {
+              "name": "texa-product-events-v2",
+              "version": 2,
+              "sha256": {
+                "manifest.yaml": "ecd1ea667d8e171d77445a15f2195502b4cf6c87c7a5dcb30cade61856c247da",
+                "fixture.sql": "081f6675aaa1d203d2ec96452b2a7ca1a2e13a856e270cabcaebfa63a96ae5e3",
+                "cases.yaml": "35bf21538f53c202c105e76b55ed6be2a708c7387d8df9ebf03771632c6edc7e",
+                "dialogues.yaml": "9e537555898ecd2e7de7ced7348537db626174d6b3d19e3a7cf7bc9debf84754"
+              }
+            }
+          },
+          "cases": 41,
+          "correct": 40,
+          "in_scope_cases": 41,
+          "in_scope_correct": 40,
+          "executable": 41,
+          "p50_ms": 5925,
+          "p95_ms": 7989
+        }
+      ]
+    },
+    {
+      "artifact": "luna-texa-dev-20261104-migrated.jsonl",
+      "artifact_sha256": "5bd4ed8a62a85efe1731c734f8b6461bd25ee405ba29a8f61aca9a6913761ba1",
+      "summaries": [
+        {
+          "type": "single_turn_summary",
+          "method": "texa",
+          "model": "gpt-6-luna",
+          "engine": {
+            "database": "texa_benchmark",
+            "role": "texa_reader",
+            "postgresql_version": "16.2",
+            "benchmark": {
+              "name": "texa-product-events-v2",
+              "version": 2,
+              "sha256": {
+                "manifest.yaml": "ecd1ea667d8e171d77445a15f2195502b4cf6c87c7a5dcb30cade61856c247da",
+                "fixture.sql": "081f6675aaa1d203d2ec96452b2a7ca1a2e13a856e270cabcaebfa63a96ae5e3",
+                "cases.yaml": "35bf21538f53c202c105e76b55ed6be2a708c7387d8df9ebf03771632c6edc7e",
+                "dialogues.yaml": "9e537555898ecd2e7de7ced7348537db626174d6b3d19e3a7cf7bc9debf84754"
+              }
+            }
+          },
+          "cases": 41,
+          "correct": 37,
+          "in_scope_cases": 41,
+          "in_scope_correct": 37,
+          "executable": 41,
+          "p50_ms": 9986,
+          "p95_ms": 13055
+        }
+      ]
+    },
+    {
+      "artifact": "luna-texa-dev-20261104-filter-prompt.jsonl",
+      "artifact_sha256": "72c03a8eda20f2473a34669ba46459ab267d7dbcc76312158a2ef0e118fdd47b",
+      "summaries": [
+        {
+          "type": "single_turn_summary",
+          "method": "texa",
+          "model": "gpt-6-luna",
+          "engine": {
+            "database": "texa_benchmark",
+            "role": "texa_reader",
+            "postgresql_version": "16.2",
+            "benchmark": {
+              "name": "texa-product-events-v2",
+              "version": 2,
+              "sha256": {
+                "manifest.yaml": "ecd1ea667d8e171d77445a15f2195502b4cf6c87c7a5dcb30cade61856c247da",
+                "fixture.sql": "081f6675aaa1d203d2ec96452b2a7ca1a2e13a856e270cabcaebfa63a96ae5e3",
+                "cases.yaml": "35bf21538f53c202c105e76b55ed6be2a708c7387d8df9ebf03771632c6edc7e",
+                "dialogues.yaml": "9e537555898ecd2e7de7ced7348537db626174d6b3d19e3a7cf7bc9debf84754"
+              }
+            }
+          },
+          "cases": 41,
+          "correct": 41,
+          "in_scope_cases": 41,
+          "in_scope_correct": 41,
+          "executable": 41,
+          "p50_ms": 8967,
+          "p95_ms": 11804
+        }
+      ]
+    },
+    {
+      "artifact": "luna-texa-dialogue-dev-20261104-memory-fix.jsonl",
+      "artifact_sha256": "409a405b3055de6043880741d2251c16e89679fbb3a9c8495bdbd3175847684b",
+      "summaries": [
+        {
+          "type": "dialogue_summary",
+          "method": "texa",
+          "memory_mode": "structured",
+          "action_confusion": {
+            "answer": {
+              "answer": 14
+            },
+            "clarify": {
+              "clarify": 1
+            },
+            "conversation": {
+              "conversation": 4
+            }
+          },
+          "clarification_precision": 1.0,
+          "clarification_recall": 1.0,
+          "dialogues": 6,
+          "dialogue_successes": 6
+        }
+      ]
+    }
+  ]
+}

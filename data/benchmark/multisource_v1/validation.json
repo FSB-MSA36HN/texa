@@ -1,0 +1,137 @@
+{
+  "cases": 24,
+  "splits": {
+    "dev": 24,
+    "test": 0
+  },
+  "families": 8,
+  "dialogues": 6,
+  "answer_turns": 3,
+  "actions": {
+    "clarify": 1,
+    "clarification_answer": 1,
+    "refuse": 4,
+    "answer": 2
+  },
+  "sha256": {
+    "fixture.sql": "2b0037c122265c2924ff5efcf49b2f88bade77b043f5e202ad1873c9ca6e2b2d",
+    "cases.yaml": "25d1b69f89004a0ab4683ac25adcf6bae216ed092d97c1aebb052a93737564fd",
+    "dialogues.yaml": "ed8385ce0f4b875668289be89c15a32758e7ae07dd7327abfff6129f6b125cbe",
+    "manifest.yaml": "3aa78662b2bf9b9f2d37757318f105943020aed6e95dad33e2e2856b6b55f410"
+  },
+  "checked_at": "2026-11-05T05:17:25.413053+00:00",
+  "gold_sql_checked": 27,
+  "gold_sql_correct": 27,
+  "method": "PostgreSQL transaction, fixture and gold executed then rolled back; benchmark.results_equal scorer. Owner role used for fixture validation only.",
+  "live_model_evaluated": false,
+  "checks": [
+    {
+      "id": "msv1_cosmetics_shop_users",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_users_01",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_users_02",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_users_03",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_users_04",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_users_by_category",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_category_hair",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_category_makeup",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_category_skin",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_revenue",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_empty_users",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_daily_purchases",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_users",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_users_01",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_users_02",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_users_03",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_users_04",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_users_by_category",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_category_hair",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_category_skin",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_revenue",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_empty_users",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_daily_purchases",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_purchases",
+      "correct": true
+    },
+    {
+      "id": "msv1_missing_period/2",
+      "correct": true
+    },
+    {
+      "id": "msv1_source_memory/1",
+      "correct": true
+    },
+    {
+      "id": "msv1_source_memory/2",
+      "correct": true
+    }
+  ]
+}

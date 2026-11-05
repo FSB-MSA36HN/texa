@@ -1,0 +1,56 @@
+name: multisource-v1-diagnostic
+version: 1
+engine: PostgreSQL 16+
+source_id:
+- cosmetics_shop
+- olist_marketplace
+timezone: UTC
+date_semantics: event_date UTC inclusive dates
+grain: 'Synthetic diagnostics only: cosmetics rows are events; Olist rows are lifecycle
+  events including one item-row per order item and payment rows.'
+fixture_rows: 16
+schema: 'analytics.event_activity: source_id text, event_id text, event_date date,
+  event_name text, user_id text, session_id text, item_id text, item_category text,
+  revenue numeric, currency text, ep jsonb. Filter to exactly one named source in
+  every query. Synthetic fixture labels are not real warehouses; the existing source
+  identifiers are reused only to exercise catalog behavior.'
+metric_definitions: 'Only existing eight catalog metrics may be requested: events=count
+  event rows; users=distinct user_id; sessions=distinct non-null session_id; viewers=distinct
+  users with view event; buyers=distinct users with purchase-role event; purchases=count
+  purchase-role rows; revenue=sum source-native revenue on purchase-role order item
+  rows (USD cosmetics; BRL Olist order_purchased only, never payment_made); buyer_conversion_rate=buyers/users,
+  zero denominator NULL. Olist item rows are not orders; payment-row/order-deduplicated
+  metrics are unsupported. Olist has no sessions or views; refuse. Do not compare/combine
+  sources or currencies.'
+output_aliases:
+  metrics:
+    events: events
+    users: users
+    sessions: sessions
+    viewers: viewers
+    buyers: buyers
+    purchases: purchases
+    revenue: revenue
+    buyer_conversion_rate: buyer_conversion_rate
+  dimensions:
+    event_date: event_date
+    device_type: device_type
+    campaign_channel: campaign_channel
+    item_category: item_category
+interaction_policy: Development-only diagnostic, no held-out/test split or benchmark
+  claim. Select one explicit source; clarify missing dates; refuse cross-source questions
+  and unsupported Olist sessions/views/payment deduplication.
+result_policy:
+  row_order: ordered where SQL explicitly orders
+  numeric_absolute_tolerance: 1.0e-06
+  numeric_relative_tolerance: 1.0e-06
+limitations: Small deterministic synthetic diagnostic fixtures, not production data
+  or a representative benchmark. No live-model accuracy implied.
+provenance: generate.py computes expected tables from source records using Python
+  aggregates; fixture rows explicitly synthetic.
+case_counts:
+  single_turn_total: 24
+  dev: 24
+  test: 0
+  dialogues: 6
+  dialogue_longest_turns: 2

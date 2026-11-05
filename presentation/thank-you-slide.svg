@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
-  <rect width="1920" height="1080" fill="#fff"/>
-  <text x="960" y="380" font-size="30" font-weight="700" fill="#1f8a7e" letter-spacing="12" text-anchor="middle">TEXA</text>
-  <text x="960" y="530" font-size="110" font-weight="700" fill="#14284b" text-anchor="middle">Cảm ơn đã lắng nghe</text>
-  <rect x="900" y="590" width="120" height="8" rx="4" fill="#1f8a7e"/>
-  <rect x="780" y="660" width="360" height="84" rx="42" fill="#e3f3f0" stroke="#1f8a7e" stroke-width="2"/>
-  <text x="960" y="714" font-size="34" font-weight="700" fill="#1f8a7e" text-anchor="middle">Hỏi &amp; đáp</text>
-  <rect y="1064" width="1920" height="16" fill="#14284b"/>
-</svg>

@@ -1,0 +1,503 @@
+- id: msv1_cosmetics_shop_users
+  split: dev
+  family: users_total
+  question: How many distinct users in cosmetics shop during 2019-12-01 through 2019-12-04?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 5
+  ordered: false
+  in_scope: true
+  intent: users_total
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_users_01
+  split: dev
+  family: users_day
+  question: How many distinct users in cosmetics shop on 2019-12-01?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date='2019-12-01'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 2
+  ordered: false
+  in_scope: true
+  intent: users_day
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_users_02
+  split: dev
+  family: users_day
+  question: How many distinct users in cosmetics shop on 2019-12-02?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date='2019-12-02'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 2
+  ordered: false
+  in_scope: true
+  intent: users_day
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_users_03
+  split: dev
+  family: users_day
+  question: How many distinct users in cosmetics shop on 2019-12-03?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date='2019-12-03'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 2
+  ordered: false
+  in_scope: true
+  intent: users_day
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_users_04
+  split: dev
+  family: users_day
+  question: How many distinct users in cosmetics shop on 2019-12-04?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date='2019-12-04'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 2
+  ordered: false
+  in_scope: true
+  intent: users_day
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_users_by_category
+  split: dev
+  family: top_users_category
+  question: Show the top 3 non-null product categories by distinct recorded users
+    in cosmetics shop for December 1–4, 2019.
+  gold_sql: SELECT item_category, count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2019-12-01' AND '2019-12-04'
+    AND item_category IS NOT NULL GROUP BY 1 ORDER BY 2 DESC,1 LIMIT 3
+  expected_result:
+    columns:
+    - item_category
+    - users
+    rows:
+    - - hair
+      - 2
+    - - makeup
+      - 2
+    - - skin
+      - 2
+  ordered: true
+  in_scope: true
+  intent: top_users_category
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_category_hair
+  split: dev
+  family: category_users
+  question: How many distinct users had recorded events in category hair in cosmetics
+    shop from 2019-12-01 through 2019-12-04?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND item_category='hair' AND event_date BETWEEN
+    '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 2
+  ordered: false
+  in_scope: true
+  intent: category_users
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_category_makeup
+  split: dev
+  family: category_users
+  question: How many distinct users had recorded events in category makeup in cosmetics
+    shop from 2019-12-01 through 2019-12-04?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND item_category='makeup' AND event_date BETWEEN
+    '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 2
+  ordered: false
+  in_scope: true
+  intent: category_users
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_category_skin
+  split: dev
+  family: category_users
+  question: How many distinct users had recorded events in category skin in cosmetics
+    shop from 2019-12-01 through 2019-12-04?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND item_category='skin' AND event_date BETWEEN
+    '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 2
+  ordered: false
+  in_scope: true
+  intent: category_users
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_revenue
+  split: dev
+  family: revenue_total
+  question: What is total purchase value in cosmetics shop, 2019-12-01 through 2019-12-04?
+  gold_sql: SELECT coalesce(sum(revenue),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_name='purchase' AND event_date BETWEEN
+    '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 60
+  ordered: false
+  in_scope: true
+  intent: revenue_total
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_empty_users
+  split: dev
+  family: empty_date
+  question: How many users did cosmetics shop have on 2020-01-01?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date='2020-01-01'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 0
+  ordered: false
+  in_scope: true
+  intent: empty_date
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_daily_purchases
+  split: dev
+  family: daily_purchases
+  question: Show each date with purchase-role rows and its count in cosmetics shop
+    from 2019-12-01 through 2019-12-04.
+  gold_sql: SELECT event_date, count(*)::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_name='purchase' AND event_date BETWEEN
+    '2019-12-01' AND '2019-12-04' GROUP BY 1 ORDER BY 1
+  expected_result:
+    columns:
+    - event_date
+    - purchases
+    rows:
+    - - '2019-12-01'
+      - 1
+    - - '2019-12-02'
+      - 1
+    - - '2019-12-03'
+      - 1
+    - - '2019-12-04'
+      - 1
+  ordered: true
+  in_scope: true
+  intent: daily_purchases
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_olist_marketplace_users
+  split: dev
+  family: users_total
+  question: How many distinct users in Olist marketplace during 2019-12-01 through
+    2019-12-04?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 3
+  ordered: false
+  in_scope: true
+  intent: users_total
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_users_01
+  split: dev
+  family: users_day
+  question: How many distinct users in Olist marketplace on 2019-12-01?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date='2019-12-01'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 1
+  ordered: false
+  in_scope: true
+  intent: users_day
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_users_02
+  split: dev
+  family: users_day
+  question: How many distinct users in Olist marketplace on 2019-12-02?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date='2019-12-02'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 1
+  ordered: false
+  in_scope: true
+  intent: users_day
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_users_03
+  split: dev
+  family: users_day
+  question: How many distinct users in Olist marketplace on 2019-12-03?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date='2019-12-03'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 2
+  ordered: false
+  in_scope: true
+  intent: users_day
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_users_04
+  split: dev
+  family: users_day
+  question: How many distinct users in Olist marketplace on 2019-12-04?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date='2019-12-04'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 1
+  ordered: false
+  in_scope: true
+  intent: users_day
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_users_by_category
+  split: dev
+  family: top_users_category
+  question: Show the top 3 non-null product categories by distinct recorded users
+    in Olist marketplace for December 1–4, 2019.
+  gold_sql: SELECT item_category, count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2019-12-01' AND '2019-12-04'
+    AND item_category IS NOT NULL GROUP BY 1 ORDER BY 2 DESC,1 LIMIT 3
+  expected_result:
+    columns:
+    - item_category
+    - users
+    rows:
+    - - skin
+      - 2
+    - - hair
+      - 1
+  ordered: true
+  in_scope: true
+  intent: top_users_category
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_category_hair
+  split: dev
+  family: category_users
+  question: How many distinct users had recorded events in category hair in Olist
+    marketplace from 2019-12-01 through 2019-12-04?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND item_category='hair' AND event_date BETWEEN
+    '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 1
+  ordered: false
+  in_scope: true
+  intent: category_users
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_category_skin
+  split: dev
+  family: category_users
+  question: How many distinct users had recorded events in category skin in Olist
+    marketplace from 2019-12-01 through 2019-12-04?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND item_category='skin' AND event_date BETWEEN
+    '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 2
+  ordered: false
+  in_scope: true
+  intent: category_users
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_revenue
+  split: dev
+  family: revenue_total
+  question: What is total purchase value in Olist marketplace, 2019-12-01 through
+    2019-12-04?
+  gold_sql: SELECT coalesce(sum(revenue),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_name='order_purchased' AND event_date
+    BETWEEN '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 60
+  ordered: false
+  in_scope: true
+  intent: revenue_total
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_empty_users
+  split: dev
+  family: empty_date
+  question: How many users did Olist marketplace have on 2020-01-01?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date='2020-01-01'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 0
+  ordered: false
+  in_scope: true
+  intent: empty_date
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_daily_purchases
+  split: dev
+  family: daily_purchases
+  question: Show each date with purchase-role rows and its count in Olist marketplace
+    from 2019-12-01 through 2019-12-04.
+  gold_sql: SELECT event_date, count(*)::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_name='order_purchased' AND event_date
+    BETWEEN '2019-12-01' AND '2019-12-04' GROUP BY 1 ORDER BY 1
+  expected_result:
+    columns:
+    - event_date
+    - purchases
+    rows:
+    - - '2019-12-01'
+      - 1
+    - - '2019-12-02'
+      - 1
+    - - '2019-12-03'
+      - 1
+  ordered: true
+  in_scope: true
+  intent: daily_purchases
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_purchases
+  split: dev
+  family: olist_purchases
+  question: How many purchase-role rows did Olist record between 2019-12-01 and 2019-12-04?
+  gold_sql: SELECT count(*)::bigint AS purchases FROM analytics.event_activity WHERE
+    source_id='olist_marketplace' AND event_name='order_purchased' AND event_date
+    BETWEEN '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 3
+  ordered: false
+  in_scope: true
+  intent: olist_purchases
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic

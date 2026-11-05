@@ -1,0 +1,97 @@
+- id: msv1_missing_period
+  split: dev
+  family: missing_period
+  dependency_distance: 0
+  turns:
+  - question: Show users in cosmetics_shop.
+    action: clarify
+    ask_fields:
+    - time_range
+  - question: Use all available dates in cosmetics_shop.
+    action: clarification_answer
+    state:
+      metric: users
+      source_ids:
+      - cosmetics_shop
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+      WHERE source_id='cosmetics_shop'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 5
+    oracle_answers:
+      time_range:
+      - all
+- id: msv1_cross_source
+  split: dev
+  family: cross_source_refusal
+  dependency_distance: 0
+  turns:
+  - question: Compare revenue across cosmetics_shop and olist_marketplace for 2019-12-01
+      through 2019-12-04.
+    action: refuse
+- id: msv1_olist_payment_grain
+  split: dev
+  family: olist_payment_grain
+  dependency_distance: 0
+  turns:
+  - question: How much Olist payment value, deduplicated to orders, was collected
+      from 2019-12-01 through 2019-12-04?
+    action: refuse
+- id: msv1_olist_sessions
+  split: dev
+  family: unsupported_sessions
+  dependency_distance: 0
+  turns:
+  - question: How many sessions did Olist have between 2019-12-01 and 2019-12-04?
+    action: refuse
+- id: msv1_array_refusal
+  split: dev
+  family: unsupported_array
+  dependency_distance: 0
+  turns:
+  - question: For cosmetics_shop, break revenue down by each entry in an event array
+      field for 2019-12-01 through 2019-12-04.
+    action: refuse
+- id: msv1_source_memory
+  split: dev
+  family: source_switch
+  dependency_distance: 1
+  turns:
+  - question: How many users in cosmetics_shop on 2019-12-01?
+    action: answer
+    state:
+      metric: users
+      source_ids:
+      - cosmetics_shop
+      time_range: '2019-12-01'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+      WHERE source_id='cosmetics_shop' AND event_date='2019-12-01'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 2
+  - question: And for Olist on that same day?
+    action: answer
+    state:
+      metric: users
+      source_ids:
+      - olist_marketplace
+      time_range: '2019-12-01'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
+      WHERE source_id='olist_marketplace' AND event_date='2019-12-01'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 1
+    referenced_turn: 1
