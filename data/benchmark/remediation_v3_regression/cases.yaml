@@ -1,0 +1,788 @@
+- id: rv2_cosmetics_users
+  split: dev
+  family: cosmetics_users_total
+  source_id: cosmetics_shop
+  language: vi
+  question: Có bao nhiêu người dùng riêng biệt trong shop mỹ phẩm?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 5
+  business_contract:
+    columns:
+    - id: user_count
+      actual_alias: users
+      gold_alias: users
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - cosmetics_shop
+    time_range:
+    - all
+  oracle_intent:
+    source_id: cosmetics_shop
+    time_range: all
+- id: rv2_cosmetics_purchase_revenue
+  split: dev
+  family: cosmetics_purchase_revenue
+  source_id: cosmetics_shop
+  language: en
+  question: What was the total purchase revenue for the cosmetics shop, in its source currency?
+  gold_sql: SELECT sum(revenue)::numeric AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 60
+  business_contract:
+    columns:
+    - id: purchase_revenue
+      actual_alias: revenue
+      gold_alias: revenue
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - cosmetics_shop
+    time_range:
+    - all
+  oracle_intent:
+    source_id: cosmetics_shop
+    time_range: all
+- id: rv2_cosmetics_category_revenue
+  split: dev
+  family: cosmetics_category_revenue
+  source_id: cosmetics_shop
+  language: vi
+  question: Chia doanh thu mua hàng của shop mỹ phẩm theo danh mục sản phẩm.
+  gold_sql: SELECT item_category, sum(revenue)::numeric AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_name='purchase' GROUP BY item_category ORDER BY item_category
+  expected_result:
+    columns:
+    - item_category
+    - revenue
+    rows:
+    - - hair
+      - 0
+    - - makeup
+      - 30
+    - - skin
+      - 30
+  ordered: false
+  business_contract:
+    columns:
+    - id: item_category_dimension
+      actual_alias: item_category
+      gold_alias: item_category
+    - id: purchase_revenue
+      actual_alias: revenue
+      gold_alias: revenue
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - cosmetics_shop
+    time_range:
+    - all
+  oracle_intent:
+    source_id: cosmetics_shop
+    time_range: all
+- id: rv2_cosmetics_purchase_events
+  split: dev
+  family: cosmetics_purchase_event_count
+  source_id: cosmetics_shop
+  language: en
+  question: How many purchase events were recorded for the cosmetics shop?
+  gold_sql: SELECT count(*)::bigint AS purchases FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase'
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 4
+  business_contract:
+    columns:
+    - id: purchase_event_count
+      actual_alias: purchases
+      gold_alias: purchases
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - cosmetics_shop
+    time_range:
+    - all
+  oracle_intent:
+    source_id: cosmetics_shop
+    time_range: all
+- id: rv2_olist_users
+  split: dev
+  family: olist_users_total
+  source_id: olist_marketplace
+  language: vi
+  question: Có bao nhiêu người dùng riêng biệt trong dữ liệu Olist?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='olist_marketplace'
+  expected_result:
+    columns:
+    - users
+    rows:
+    - - 3
+  business_contract:
+    columns:
+    - id: user_count
+      actual_alias: users
+      gold_alias: users
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - olist_marketplace
+    time_range:
+    - all
+  oracle_intent:
+    source_id: olist_marketplace
+    time_range: all
+- id: rv2_olist_purchase_revenue
+  split: dev
+  family: olist_purchase_revenue
+  source_id: olist_marketplace
+  language: en
+  question: What is Olist's total item revenue from purchase events? Do not add payment events.
+  gold_sql: SELECT sum(revenue)::numeric AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace' AND
+    event_name='order_purchased'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 70
+  business_contract:
+    columns:
+    - id: purchased_item_revenue
+      actual_alias: revenue
+      gold_alias: revenue
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - olist_marketplace
+    time_range:
+    - all
+  oracle_intent:
+    source_id: olist_marketplace
+    time_range: all
+- id: rv2_olist_category_revenue
+  split: dev
+  family: olist_category_revenue
+  source_id: olist_marketplace
+  language: vi
+  question: Phân tách doanh thu mặt hàng đã mua trên Olist theo danh mục.
+  gold_sql: SELECT item_category, sum(revenue)::numeric AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_name='order_purchased' GROUP BY item_category ORDER BY item_category
+  expected_result:
+    columns:
+    - item_category
+    - revenue
+    rows:
+    - - hair
+      - 20
+    - - skin
+      - 50
+  ordered: false
+  business_contract:
+    columns:
+    - id: item_category_dimension
+      actual_alias: item_category
+      gold_alias: item_category
+    - id: purchased_item_revenue
+      actual_alias: revenue
+      gold_alias: revenue
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - olist_marketplace
+    time_range:
+    - all
+  oracle_intent:
+    source_id: olist_marketplace
+    time_range: all
+- id: rv2_olist_purchase_events
+  split: dev
+  family: olist_purchase_event_count
+  source_id: olist_marketplace
+  language: en
+  question: How many purchased-item event rows are in Olist? Do not count payments.
+  gold_sql: SELECT count(*)::bigint AS purchases FROM analytics.event_activity WHERE source_id='olist_marketplace' AND event_name='order_purchased'
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 4
+  business_contract:
+    columns:
+    - id: purchase_item_event_count
+      actual_alias: purchases
+      gold_alias: purchases
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - olist_marketplace
+    time_range:
+    - all
+  oracle_intent:
+    source_id: olist_marketplace
+    time_range: all
+- id: rv2_test_cosmetics_daily_event_trend
+  split: test
+  family: cosmetics_daily_event_trend
+  source_id: cosmetics_shop
+  language: en
+  question: Show the number of all event records per day in the cosmetics shop from December 1 to 4, 2019.
+  gold_sql: SELECT event_date, count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND
+    event_date BETWEEN '2019-12-01' AND '2019-12-04' GROUP BY event_date ORDER BY event_date
+  expected_result:
+    columns:
+    - event_date
+    - events
+    rows:
+    - - '2019-12-01'
+      - 2
+    - - '2019-12-02'
+      - 2
+    - - '2019-12-03'
+      - 2
+    - - '2019-12-04'
+      - 2
+  ordered: false
+  business_contract:
+    columns:
+    - id: event_date
+      actual_alias: event_date
+      gold_alias: event_date
+    - id: event_count
+      actual_alias: events
+      gold_alias: events
+  ask_fields: []
+  oracle_answers:
+    context:source:
+    - cosmetics_shop
+  oracle_intent:
+    source_id: cosmetics_shop
+- id: rv2_test_cosmetics_users_by_category
+  split: test
+  family: cosmetics_distinct_users_by_category
+  source_id: cosmetics_shop
+  language: vi
+  question: Có bao nhiêu người dùng khác nhau ở mỗi danh mục sản phẩm của shop mỹ phẩm?
+  gold_sql: SELECT item_category, count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    GROUP BY item_category ORDER BY item_category
+  expected_result:
+    columns:
+    - item_category
+    - users
+    rows:
+    - - hair
+      - 2
+    - - makeup
+      - 2
+    - - skin
+      - 2
+  ordered: false
+  business_contract:
+    columns:
+    - id: category_dimension
+      actual_alias: item_category
+      gold_alias: item_category
+    - id: distinct_users
+      actual_alias: users
+      gold_alias: users
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - cosmetics_shop
+    time_range:
+    - all
+  oracle_intent:
+    source_id: cosmetics_shop
+    time_range: all
+- id: rv2_test_cosmetics_purchases_per_day
+  split: test
+  family: cosmetics_purchase_daily_trend
+  source_id: cosmetics_shop
+  language: vi
+  question: Mỗi ngày có bao nhiêu giao dịch mua hàng ở shop mỹ phẩm?
+  gold_sql: SELECT event_date, count(*)::bigint AS purchases FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_name='purchase' GROUP BY event_date ORDER BY event_date
+  expected_result:
+    columns:
+    - event_date
+    - purchases
+    rows:
+    - - '2019-12-01'
+      - 1
+    - - '2019-12-02'
+      - 1
+    - - '2019-12-03'
+      - 1
+    - - '2019-12-04'
+      - 1
+  ordered: false
+  business_contract:
+    columns:
+    - id: event_date
+      actual_alias: event_date
+      gold_alias: event_date
+    - id: purchase_count
+      actual_alias: purchases
+      gold_alias: purchases
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - cosmetics_shop
+    time_range:
+    - all
+  oracle_intent:
+    source_id: cosmetics_shop
+    time_range: all
+- id: rv2_test_cosmetics_buyer_rate
+  split: test
+  family: cosmetics_buyer_rate
+  source_id: cosmetics_shop
+  language: vi
+  question: Trong shop mỹ phẩm, tỷ lệ người dùng có mua hàng trên tổng số người dùng quan sát được là bao nhiêu?
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::numeric / NULLIF(count(DISTINCT user_id),0)
+    AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result:
+    columns:
+    - buyer_conversion_rate
+    rows:
+    - - 0.6
+  business_contract:
+    columns:
+    - id: buyer_conversion_rate
+      actual_alias: buyer_conversion_rate
+      gold_alias: buyer_conversion_rate
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - cosmetics_shop
+    time_range:
+    - all
+  oracle_intent:
+    source_id: cosmetics_shop
+    time_range: all
+- id: rv2_test_cosmetics_empty_day
+  split: test
+  family: cosmetics_empty_period_count
+  source_id: cosmetics_shop
+  language: en
+  question: How many events did the cosmetics shop record on January 1, 2020?
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_date='2020-01-01'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 0
+  business_contract:
+    columns:
+    - id: event_count
+      actual_alias: events
+      gold_alias: events
+  ask_fields: []
+  oracle_answers:
+    context:source:
+    - cosmetics_shop
+  oracle_intent:
+    source_id: cosmetics_shop
+- id: rv2_test_cosmetics_product_viewers
+  split: test
+  family: cosmetics_product_viewers
+  source_id: cosmetics_shop
+  language: en
+  question: How many distinct people viewed a product in the cosmetics shop?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS viewers FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_name='view'
+  expected_result:
+    columns:
+    - viewers
+    rows:
+    - - 3
+  business_contract:
+    columns:
+    - id: distinct_viewers
+      actual_alias: viewers
+      gold_alias: viewers
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - cosmetics_shop
+    time_range:
+    - all
+  oracle_intent:
+    source_id: cosmetics_shop
+    time_range: all
+- id: rv2_test_cosmetics_multi_metric
+  split: test
+  family: cosmetics_multi_metric_snapshot
+  source_id: cosmetics_shop
+  language: en
+  question: Give me the total number of distinct users and the total number of events in the cosmetics shop.
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users, count(*)::bigint AS events FROM analytics.event_activity WHERE
+    source_id='cosmetics_shop'
+  expected_result:
+    columns:
+    - users
+    - events
+    rows:
+    - - 5
+      - 8
+  business_contract:
+    columns:
+    - id: users
+      actual_alias: users
+      gold_alias: users
+    - id: events
+      actual_alias: events
+      gold_alias: events
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - cosmetics_shop
+    time_range:
+    - all
+  oracle_intent:
+    source_id: cosmetics_shop
+    time_range: all
+- id: rv2_test_cosmetics_category_users
+  split: test
+  family: cosmetics_user_engagement_by_event
+  source_id: cosmetics_shop
+  language: en
+  question: Show distinct users per event type in cosmetics.
+  gold_sql: SELECT event_name, count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    GROUP BY event_name ORDER BY event_name
+  expected_result:
+    columns:
+    - event_name
+    - users
+    rows:
+    - - cart
+      - 1
+    - - purchase
+      - 3
+    - - view
+      - 3
+  ordered: false
+  business_contract:
+    columns:
+    - id: event_type_dimension
+      actual_alias: event_name
+      gold_alias: event_name
+    - id: distinct_users
+      actual_alias: users
+      gold_alias: users
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - cosmetics_shop
+    time_range:
+    - all
+  oracle_intent:
+    source_id: cosmetics_shop
+    time_range: all
+- id: rv2_test_olist_daily_event_trend
+  split: test
+  family: olist_daily_unique_users
+  source_id: olist_marketplace
+  language: en
+  question: Show how many distinct users generated events on each day in Olist.
+  gold_sql: SELECT event_date, count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    GROUP BY event_date ORDER BY event_date
+  expected_result:
+    columns:
+    - event_date
+    - users
+    rows:
+    - - '2019-12-01'
+      - 1
+    - - '2019-12-02'
+      - 1
+    - - '2019-12-03'
+      - 2
+    - - '2019-12-04'
+      - 1
+  ordered: false
+  business_contract:
+    columns:
+    - id: event_date
+      actual_alias: event_date
+      gold_alias: event_date
+    - id: distinct_users
+      actual_alias: users
+      gold_alias: users
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - olist_marketplace
+    time_range:
+    - all
+  oracle_intent:
+    source_id: olist_marketplace
+    time_range: all
+- id: rv2_test_olist_purchase_daily_trend
+  split: test
+  family: olist_purchase_daily_trend
+  source_id: olist_marketplace
+  language: pt
+  question: Quantos eventos de item comprado foram registrados em cada dia no Olist?
+  gold_sql: SELECT event_date, count(*)::bigint AS purchases FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_name='order_purchased' GROUP BY event_date ORDER BY event_date
+  expected_result:
+    columns:
+    - event_date
+    - purchases
+    rows:
+    - - '2019-12-01'
+      - 1
+    - - '2019-12-02'
+      - 1
+    - - '2019-12-03'
+      - 2
+  ordered: false
+  business_contract:
+    columns:
+    - id: event_date
+      actual_alias: event_date
+      gold_alias: event_date
+    - id: purchase_item_count
+      actual_alias: purchases
+      gold_alias: purchases
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - olist_marketplace
+    time_range:
+    - all
+  oracle_intent:
+    source_id: olist_marketplace
+    time_range: all
+- id: rv2_test_olist_purchase_revenue_trend
+  split: test
+  family: olist_purchase_revenue_trend
+  source_id: olist_marketplace
+  language: en
+  question: Show purchased-item revenue by day in Olist, excluding payment events.
+  gold_sql: SELECT event_date, sum(revenue)::numeric AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_name='order_purchased' GROUP BY event_date ORDER BY event_date
+  expected_result:
+    columns:
+    - event_date
+    - revenue
+    rows:
+    - - '2019-12-01'
+      - 10
+    - - '2019-12-02'
+      - 20
+    - - '2019-12-03'
+      - 40
+  ordered: false
+  business_contract:
+    columns:
+    - id: event_date
+      actual_alias: event_date
+      gold_alias: event_date
+    - id: purchased_item_revenue
+      actual_alias: revenue
+      gold_alias: revenue
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - olist_marketplace
+    time_range:
+    - all
+  oracle_intent:
+    source_id: olist_marketplace
+    time_range: all
+- id: rv2_test_olist_buyer_count
+  split: test
+  family: olist_purchase_buyer_count
+  source_id: olist_marketplace
+  language: en
+  question: How many distinct customers made at least one purchase in Olist?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS buyers FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_name='order_purchased'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 3
+  business_contract:
+    columns:
+    - id: distinct_buyers
+      actual_alias: buyers
+      gold_alias: buyers
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - olist_marketplace
+    time_range:
+    - all
+  oracle_intent:
+    source_id: olist_marketplace
+    time_range: all
+- id: rv2_test_olist_multi_metric
+  split: test
+  family: olist_multi_metric_summary
+  source_id: olist_marketplace
+  language: en
+  question: Show Olist's distinct buyer count and purchase-item revenue in one summary.
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS buyers, sum(revenue)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_name='order_purchased'
+  expected_result:
+    columns:
+    - buyers
+    - revenue
+    rows:
+    - - 3
+      - 70
+  business_contract:
+    columns:
+    - id: buyers
+      actual_alias: buyers
+      gold_alias: buyers
+    - id: revenue
+      actual_alias: revenue
+      gold_alias: revenue
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - olist_marketplace
+    time_range:
+    - all
+  oracle_intent:
+    source_id: olist_marketplace
+    time_range: all
+- id: rv2_test_olist_category_buyers
+  split: test
+  family: olist_purchased_category_buyers
+  source_id: olist_marketplace
+  language: pt
+  question: Mostre quantos compradores distintos houve em cada categoria de item do Olist.
+  gold_sql: SELECT item_category, count(DISTINCT user_id)::bigint AS buyers FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_name='order_purchased' GROUP BY item_category ORDER BY item_category
+  expected_result:
+    columns:
+    - item_category
+    - buyers
+    rows:
+    - - hair
+      - 1
+    - - skin
+      - 2
+  ordered: false
+  business_contract:
+    columns:
+    - id: category_dimension
+      actual_alias: item_category
+      gold_alias: item_category
+    - id: distinct_buyers
+      actual_alias: buyers
+      gold_alias: buyers
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - olist_marketplace
+    time_range:
+    - all
+  oracle_intent:
+    source_id: olist_marketplace
+    time_range: all
+- id: rv2_test_olist_event_types
+  split: test
+  family: olist_event_type_distribution
+  source_id: olist_marketplace
+  language: en
+  question: Count Olist event rows by event type; keep purchases and payments separate.
+  gold_sql: SELECT event_name, count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    GROUP BY event_name ORDER BY event_name
+  expected_result:
+    columns:
+    - event_name
+    - events
+    rows:
+    - - order_approved
+      - 1
+    - - order_delivered
+      - 1
+    - - order_purchased
+      - 4
+    - - payment_made
+      - 3
+  ordered: false
+  business_contract:
+    columns:
+    - id: event_type_dimension
+      actual_alias: event_name
+      gold_alias: event_name
+    - id: events
+      actual_alias: events
+      gold_alias: events
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - olist_marketplace
+    time_range:
+    - all
+  oracle_intent:
+    source_id: olist_marketplace
+    time_range: all
+- id: rv2_test_olist_top_category
+  split: test
+  family: olist_top_purchase_category
+  source_id: olist_marketplace
+  language: en
+  question: Which Olist product category has the most purchased-item events? Show the top category only.
+  gold_sql: SELECT item_category, count(*)::bigint AS purchases FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_name='order_purchased' GROUP BY item_category ORDER BY purchases DESC LIMIT 1
+  expected_result:
+    columns:
+    - item_category
+    - purchases
+    rows:
+    - - skin
+      - 3
+  ordered: false
+  business_contract:
+    columns:
+    - id: item_category
+      actual_alias: item_category
+      gold_alias: item_category
+    - id: purchases
+      actual_alias: purchases
+      gold_alias: purchases
+  ask_fields:
+  - time_range
+  oracle_answers:
+    context:source:
+    - olist_marketplace
+    time_range:
+    - all
+  oracle_intent:
+    source_id: olist_marketplace
+    time_range: all

@@ -213,6 +213,8 @@ def _summarize(runs: list[dict], repeats: list[int], ids: list[str]) -> dict[str
     group_vals: dict[str, list[bool]] = defaultdict(list)
     tp = fp = fn = rounds = 0
     usage_incomplete = usage_rows = 0
+    unsupported_turns = expected_turns = 0
+    unsupported_ids = set()
     slots: dict[str, dict[str, int]] = defaultdict(lambda: {"correct": 0, "total": 0})
     activation = {"turn_observations": 0, "clarification_requested": 0, "guess_invoked": 0}
     activation_reasons, memory_relations = defaultdict(int), defaultdict(int)
@@ -220,8 +222,13 @@ def _summarize(runs: list[dict], repeats: list[int], ids: list[str]) -> dict[str
         scenarios = by_repeat[rep]
         for sid in ids:
             row = scenarios[sid]
-            successes.append(float(row["success"]))
-            group_vals[str(row["group"])].append(row["success"])
+            expected_turns += int(row.get('expected_answer_count', row.get('answer_count', 0)))
+            unsupported_turns += int(row.get('unsupported_answer_count', 0))
+            if row.get('evaluation_status') == 'contains_unsupported_task_kind':
+                unsupported_ids.add(sid)
+            else:
+                successes.append(float(row["success"]))
+                group_vals[str(row["group"])].append(row["success"])
             if row.get("output_contract_compliant") is not None:
                 contract_correctness.append(bool(row["output_contract_compliant"]))
             strict_value = row.get("strict_result_correct", row.get("result_correct"))
@@ -268,16 +275,26 @@ def _summarize(runs: list[dict], repeats: list[int], ids: list[str]) -> dict[str
     # result_correct may be a scenario-only flag when answer_count is absent;
     # when answer_count exists it is the more granular gold-turn accounting.
     accuracy = sum(correctness) / len(correctness) if correctness else None
-    per_repeat_success = {
-        str(rep): statistics.mean(float(by_repeat[rep][sid]["success"]) for sid in ids)
-        for rep in repeats
-    }
-    repeat_means = list(per_repeat_success.values())
-    return {"scenario_success_mean": statistics.mean(successes) if successes else None,
-            "scenario_success_sd": statistics.stdev(successes) if len(successes) > 1 else 0.0 if successes else None,
+    per_repeat_success = {}
+    for rep in repeats:
+        measured = [float(by_repeat[rep][sid]["success"]) for sid in ids
+                    if by_repeat[rep][sid].get('evaluation_status') != 'contains_unsupported_task_kind']
+        per_repeat_success[str(rep)] = statistics.mean(measured) if measured else None
+    repeat_means = [value for value in per_repeat_success.values() if value is not None]
+    return {"scenario_success_mean": statistics.mean(successes) if successes and not unsupported_ids else None,
+            "scenario_success_sd": (statistics.stdev(successes) if len(successes) > 1 else 0.0 if successes else None)
+                                    if not unsupported_ids else None,
             "per_repeat_scenario_success": per_repeat_success,
             "repeat_success_sd": statistics.stdev(repeat_means) if len(repeat_means) > 1 else 0.0 if repeat_means else None,
             "result_accuracy": accuracy, "result_count": len(correctness),
+            "result_accuracy_partial_coverage": bool(unsupported_turns),
+            "answer_coverage": {"expected_sql_turns": expected_turns,
+                                "unsupported_discussion_turns": unsupported_turns,
+                                "evaluation_runs_included": len(runs),
+                                "sql_gradable_turns": sum(r['scenarios'][sid].get('answer_count', 0)
+                                                           for r in runs for sid in ids)},
+            "comparison_status": 'invalid_unsupported_task_kind' if unsupported_ids else 'valid',
+            "unscored_scenarios": sorted(unsupported_ids),
             "strict_result_accuracy": (sum(strict_correctness) / len(strict_correctness)
                                        if strict_correctness else None),
             "strict_result_count": len(strict_correctness),
@@ -314,7 +331,8 @@ def _summarize(runs: list[dict], repeats: list[int], ids: list[str]) -> dict[str
             "slot_accuracy": {key: {"correct": val["correct"], "total": val["total"],
                                     "accuracy": val["correct"]/val["total"] if val["total"] else None}
                               for key, val in sorted(slots.items())},
-            "repeats": len(repeats), "scenarios": len(ids), "run_observations": len(successes)}
+            "repeats": len(repeats), "scenarios": len(ids), "scored_scenarios": len(set(ids)-unsupported_ids),
+            "run_observations": len(successes)}
 
 
 def build_report(paths: list[Path], *, iterations: int = 5000, seed: int = 731904) -> dict[str, Any]:
@@ -345,27 +363,43 @@ def build_report(paths: list[Path], *, iterations: int = 5000, seed: int = 73190
         repeats, ids = _validate_pair(f_runs, left_runs)
         f_runs.sort(key=lambda r: r["manifest"]["repeat"])
         left_runs.sort(key=lambda r: r["manifest"]["repeat"])
+        unsupported_ids = sorted(sid for sid in ids if any(
+            run['scenarios'][sid].get('evaluation_status') == 'contains_unsupported_task_kind'
+            for run in [*f_runs, *left_runs]))
+        invalid = suite == 'memory' and bool(unsupported_ids)
         result = {"suite": suite, "split": split, "control": "F", "variant": variant,
                   "primary": PRIMARY.get(suite) == ("F", variant), "repeats": repeats, "scenarios": len(ids),
+                  "comparison_status": 'invalid_unsupported_task_kind' if invalid else 'valid',
+                  "unscored_scenarios": unsupported_ids,
                   "control_summary": all_summaries[f"{suite}/{split}/F"],
                   "variant_summary": all_summaries[f"{suite}/{split}/{variant}"]}
-        result["delta_control_minus_variant_success"] = _cluster_bootstrap(f_runs, left_runs, repeats, ids,
+        result["delta_control_minus_variant_success"] = ({"delta": None, "ci95_low": None, "ci95_high": None,
+                                                           "clusters": 0, "iterations": 0}
+            if invalid else _cluster_bootstrap(f_runs, left_runs, repeats, ids,
                                                     metric="success", iterations=iterations, seed=seed)
-        result["delta_control_minus_variant_result_accuracy"] = _cluster_bootstrap(f_runs, left_runs, repeats, ids,
+        )
+        result["delta_control_minus_variant_result_accuracy"] = ({"delta": None, "ci95_low": None, "ci95_high": None,
+                                                                  "clusters": 0, "iterations": 0}
+            if invalid else _cluster_bootstrap(f_runs, left_runs, repeats, ids,
                                                     metric="result_accuracy", iterations=iterations, seed=seed + 1)
+        )
         groups_in_suite = sorted({str(f_runs[0]["scenarios"][sid]["group"]) for sid in ids})
-        result["per_group_delta_control_minus_variant"] = {
+        result["per_group_delta_control_minus_variant"] = ({group: {
+                "success": {"delta": None, "ci95_low": None, "ci95_high": None, "clusters": 0, "iterations": 0},
+                "result_accuracy": {"delta": None, "ci95_low": None, "ci95_high": None, "clusters": 0, "iterations": 0}}
+                for group in groups_in_suite} if invalid else {
             group: {
                 "success": _cluster_bootstrap(f_runs, left_runs, repeats, ids, metric="success", group=group,
                                               iterations=iterations, seed=seed + 2 + index),
                 "result_accuracy": _cluster_bootstrap(f_runs, left_runs, repeats, ids, metric="result_accuracy", group=group,
                                                        iterations=iterations, seed=seed + 20 + index),
-            } for index, group in enumerate(groups_in_suite)}
+            } for index, group in enumerate(groups_in_suite)})
         comparisons.append(result)
     return {"type": "ablation_report", "comparisons": comparisons, "summaries": all_summaries,
             "warnings": ["Repeated runs are averaged within scenario; bootstrap clusters are scenarios, not repeats.",
                          "A single repeat gives descriptive results only; it does not demonstrate run-to-run stability.",
                          "Synthetic benchmark results do not establish production generalization.",
+                         "Memory accuracy comparisons are invalid when a predeclared discussion task lacks an SQL-result contract; coverage is reported separately.",
                          "Usage totals are lower bounds if a provider call failed before usage was recorded."]}
 
 
@@ -379,7 +413,13 @@ def render_markdown(report: dict[str, Any]) -> str:
         delta = interval["delta"]
         ci = f"[{interval['ci95_low']*100:.1f}, {interval['ci95_high']*100:.1f}] pp" if interval["ci95_low"] is not None else "N/A"
         fmt = lambda x: "N/A" if x is None else f"{x:.1%}"
-        lines.append(f"| {row['suite']} | {row['split']} | F vs {row['variant']} | {fmt(a['scenario_success_mean'])} / {fmt(b['scenario_success_mean'])} | {fmt(a['result_accuracy'])} / {fmt(b['result_accuracy'])} | {delta*100:+.1f} pp {ci} | {row['repeats']} |")
+        if row.get('comparison_status') != 'valid':
+            scenario, accuracy, delta_text = 'INVALID', 'INVALID', 'N/A'
+        else:
+            scenario = f"{fmt(a['scenario_success_mean'])} / {fmt(b['scenario_success_mean'])}"
+            accuracy = f"{fmt(a['result_accuracy'])} / {fmt(b['result_accuracy'])}"
+            delta_text = f"{delta*100:+.1f} pp {ci}"
+        lines.append(f"| {row['suite']} | {row['split']} | F vs {row['variant']} | {scenario} | {accuracy} | {delta_text} | {row['repeats']} |")
     lines.extend(["", "## Limits", ""])
     lines.extend(f"- {warning}" for warning in report["warnings"])
     return "\n".join(lines) + "\n"

@@ -12,7 +12,9 @@ import pytest
 
 @pytest.fixture
 def runner(monkeypatch):
-    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[1] / 'eval'))
+    project = Path(__file__).resolve().parents[2]
+    monkeypatch.syspath_prepend(str(project / 'backend'))
+    monkeypatch.syspath_prepend(str(project / 'backend/eval'))
     return importlib.import_module('run_ablation')
 
 
@@ -84,6 +86,44 @@ def test_oracle_wrong_field_or_unoffered_choice_is_not_sent(runner, field, choic
     assert session.oracles == [] and not score['success']
 
 
+def test_oracle_delivers_requested_subset_across_multiple_forms(runner):
+    item = expected() | {'ask_fields': ['time_range', 'recipe'],
+        'oracle_answers': {'time_range': ['all'], 'recipe': ['events']}}
+    first = clarify_turn('time_range', ('all', 'last_7'))
+    second = clarify_turn('recipe', ('events', 'users'))
+    session = ScriptedSession([first, second, result_turn()])
+    score = runner.run_interaction(item, session, max_rounds=2)
+    assert score['success']
+    assert session.oracles == [{'time_range': ['all']}, {'recipe': ['events']}]
+    assert score['clarification_rounds'] == 2
+
+
+def test_memory_continuation_honors_configured_round_limit(runner):
+    answer = expected() | {'action': 'answer', 'oracle_answers': {'time_range': ['all']}}
+    session = ScriptedSession([clarify_turn(), clarify_turn()])
+    score = runner.run_memory({'turns': [answer]}, session, max_rounds=1)
+    assert score['turns'][0]['oracle_error'] == 'clarification_limit'
+    assert len(session.oracles) == 1
+
+
+def test_duplicate_form_field_ids_are_rejected(runner):
+    item = expected() | {'oracle_answers': {'time_range': ['all']}}
+    duplicate = clarify_turn()
+    duplicate['form']['fields'].append(duplicate['form']['fields'][0])
+    with pytest.raises(ValueError, match='duplicate'):
+        runner.oracle_for(item, duplicate, {})
+
+
+def test_unsupported_requested_field_is_not_answered_or_leaked(runner):
+    item = expected() | {'ask_fields': ['time_range'], 'oracle_answers': {'time_range': ['all']}}
+    session = ScriptedSession([clarify_turn('private_customer_id', ('x',)), result_turn(7)])
+    score = runner.run_interaction(item, session)
+    assert score['oracle_error'] == 'oracle_mismatch'
+    assert session.oracles == []
+    assert score['turns'][0]['oracle_continuation'][0]['reason'] == 'oracle_field_or_choice_mismatch'
+    assert 'private_customer_id' not in json.dumps(score)
+
+
 def test_explicit_control_counts_unnecessary_clarification(runner):
     item = expected() | {'ask_fields': [], 'oracle_answers': {}}
     session = ScriptedSession([clarify_turn()])
@@ -112,6 +152,47 @@ def test_memory_oracle_reference_resolves_label_without_sending_gold(runner):
     assert score['success']
     assert session.oracles == [{'context:reference': ['t1']}]
     assert len(session.questions) == 2
+
+
+def test_memory_answer_turn_can_legitimately_clarify_and_continue(runner):
+    answer = expected() | {'action': 'answer', 'oracle_answers': {'time_range': ['all']}}
+    session = ScriptedSession([clarify_turn(), result_turn(7)])
+    score = runner.run_memory({'max_clarification_rounds': 2, 'turns': [answer]}, session)
+    assert score['success'] and score['answer_correct'] == 1
+    assert session.oracles == [{'time_range': ['all']}]
+    assert score['turns'][0]['oracle_rounds'] == 1
+
+
+def test_predeclared_discussion_turn_is_retained_but_not_sql_result_scored(runner):
+    first = expected() | {'action': 'answer'}
+    discussion = expected() | {'action': 'answer', 'scoring_kind': 'discussion_answer',
+                               'question': 'How much revenue did the second category have?',
+                               'referenced_turn': 1}
+    discussed = {'id': 't2', 'status': 'discussed', 'insight': {'headline': 'Revenue was 20'}}
+    class Session(ScriptedSession):
+        def output(self, turn):
+            if turn.get('status') == 'discussed':
+                raise AssertionError('discussion must not call full_result')
+            return super().output(turn)
+    score = runner.run_memory({'turns': [first, discussion]}, Session([result_turn(), discussed]))
+    assert score['expected_answer_count'] == 2
+    assert score['answer_count'] == 1
+    assert score['unsupported_answer_count'] == 1
+    assert score['evaluation_status'] == 'contains_unsupported_task_kind'
+    assert score['turns'][1]['evaluation_contract_error'] == 'discussion_answer_has_no_sql_result_contract'
+
+
+@pytest.mark.parametrize('record,wanted', [
+    ({'business_result_correct': True, 'output_contract_compliant': True}, 'correct'),
+    ({'business_result_correct': True, 'output_contract_compliant': False}, 'output_contract_only'),
+    ({'business_result_correct': False, 'answer_count': 1}, 'wrong_business_result'),
+    ({'turns': [{'actual_action': 'clarify', 'expected_action': 'answer'}]}, 'unresolved_clarification'),
+    ({'turns': [{'actual_action': 'refuse'}]}, 'refused'),
+    ({'error': 'ProviderError'}, 'provider_or_runtime_error'),
+    ({'evaluation_status': 'contains_unsupported_task_kind'}, 'evaluation_contract_error'),
+])
+def test_outcome_taxonomy_is_observable_and_nonsemantic(runner, record, wanted):
+    assert runner.outcome_category(record) == wanted
 
 
 def test_failed_memory_turn_remains_in_denominator_and_batch_continues(runner):
@@ -171,7 +252,7 @@ def test_frozen_protocol_rejects_changed_inputs_and_is_required_on_test(runner, 
 
 def test_execute_writes_reportable_complete_records_and_does_not_overwrite(runner, monkeypatch):
     from texa import llm
-    output = runner.ROOT / '.runtime' / 'test-ablation-execute.jsonl'
+    output = Path(__file__).resolve().parents[2] / 'test-ablation-execute.jsonl'
     output.unlink(missing_ok=True)
     args = SimpleNamespace(variant='F', suite='single', split='dev', model='same-model', repeat=1,
         output=str(output), protocol=None, max_model_calls=4, turn_timeout=1, max_clarification_rounds=2)
@@ -211,7 +292,7 @@ def test_execute_writes_reportable_complete_records_and_does_not_overwrite(runne
 
 def test_model_budget_stops_block_without_completing_log(runner, monkeypatch):
     from texa import llm
-    output = runner.ROOT / '.runtime/test-ablation-budget.jsonl'
+    output = Path(__file__).resolve().parents[2] / 'test-ablation-budget.jsonl'
     output.unlink(missing_ok=True)
     args = SimpleNamespace(variant='F', suite='single', split='dev', model='scripted', repeat=1,
         output=str(output), protocol=None, max_model_calls=1, turn_timeout=1, max_clarification_rounds=2)
@@ -242,7 +323,7 @@ def test_model_budget_stops_block_without_completing_log(runner, monkeypatch):
 
 
 def test_source_metadata_hash_is_stable_across_python_hash_seeds(runner):
-    backend = Path(__file__).resolve().parents[1]
+    backend = Path(__file__).resolve().parents[2] / 'backend'
     code = """import sys
 sys.path.insert(0, 'eval')
 from run_ablation import canonical_source_metadata, digest

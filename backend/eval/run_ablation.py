@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -101,17 +102,35 @@ def form_fields(turn: dict) -> set[str]:
     return {f['id'] for f in (turn.get('form') or {}).get('fields', [])} if action(turn) == 'clarify' else set()
 
 
+_SAFE_FORM_FIELDS = {'metric', 'recipe', 'time_range', 'filters', 'breakdown', 'source', 'context:source', 'context:reference'}
+_SAFE_FORM_KINDS = {'single_choice', 'multi_choice', 'text', 'date_range'}
+_SAFE_CANDIDATES = {'all', 'last_7', 'last_30', 'events', 'users', 'revenue', 'purchases', 'buyers',
+                    'viewers', 'cosmetics_shop', 'olist_marketplace', 'item_category', 'event_date'}
+
+
+def safe_field_id(value: str) -> str:
+    return value if value in _SAFE_FORM_FIELDS or re.fullmatch(r'filter:[a-z][a-z0-9_]{0,63}', value) else 'unsupported_field'
+
+
 def oracle_for(item: dict, turn: dict, labels: dict[int, str]) -> dict:
-    """Read hidden choices only at an actual, exactly matching clarification form."""
+    """Answer only fields actually requested and explicitly known to the oracle."""
     fields = (turn.get('form') or {}).get('fields', [])
+    field_ids = [field.get('id') for field in fields]
+    if any(not isinstance(field_id, str) or not field_id for field_id in field_ids):
+        raise ValueError('Clarification form contains an invalid field ID')
+    if len(field_ids) != len(set(field_ids)):
+        raise ValueError('Clarification form contains duplicate field IDs')
     wanted = item.get('oracle_answers') or {}
-    if not fields or set(wanted) != {f['id'] for f in fields}:
-        raise ValueError('Oracle fields do not match actual clarification')
+    if not fields:
+        raise ValueError('Clarification form has no fields')
     selected = {}
     for field in fields:
         key = field['id']
-        values = list(wanted[key])
-        if key == 'context:reference':
+        oracle_key = {'source': 'context:source'}.get(key, key)
+        if oracle_key not in wanted:
+            raise ValueError('Oracle does not know a requested field')
+        values = list(wanted[oracle_key])
+        if oracle_key == 'context:reference':
             target = item.get('oracle_reference_turn')
             if target not in labels:
                 raise ValueError('Oracle reference points to unavailable turn')
@@ -195,15 +214,65 @@ def score_answer(item: dict, turn: dict, session) -> dict:
 
 
 def trace(turn: dict) -> dict:
-    return {key: turn.get(key) for key in ('id', 'status', 'query_spec', 'compiled_sql', 'ablation', 'context', 'dataset_version')}
+    # Keep normal study traces; diagnostics deliberately contain only bounded,
+    # structural clarification metadata (never prompt text or oracle values).
+    result = {key: turn.get(key) for key in ('id', 'status', 'query_spec', 'compiled_sql', 'ablation', 'context', 'dataset_version')}
+    form = (turn.get('form') or {}).get('fields', [])
+    if action(turn) == 'clarify':
+        result['clarification_diagnostic'] = {
+            'reason': 'unspecified',
+            'fields': [{'id': safe_field_id(str(field.get('id', ''))),
+                        'kind': field.get('kind') if field.get('kind') in _SAFE_FORM_KINDS else 'other',
+                        'candidate_count': min(len(field.get('choices') or []), 100),
+                        'candidate_ids': [str(choice.get('id')) if str(choice.get('id')) in _SAFE_CANDIDATES
+                                          else 'redacted_candidate' for choice in (field.get('choices') or [])[:20]]}
+                       for field in form[:20]],
+            'candidate_count_truncated': len(form) > 20,
+        }
+    return result
 
 
-def run_memory(item: dict, session) -> dict:
+def continue_with_oracle(item: dict, current: dict, session, max_rounds: int, labels: dict[int, str]):
+    """Shared, bounded response protocol for interaction and memory suites."""
+    steps, rounds, error = [], 0, None
+    while action(current) == 'clarify':
+        if rounds >= max_rounds:
+            error = 'clarification_limit'
+            break
+        try:
+            choices = oracle_for(item, current, labels)
+        except ValueError as exc:
+            error = 'oracle_mismatch'
+            steps.append({'diagnostic': trace(current).get('clarification_diagnostic'),
+                          'reason': 'oracle_field_or_choice_mismatch'})
+            break
+        diagnostic = trace(current).get('clarification_diagnostic')
+        steps.append({'diagnostic': diagnostic,
+                      'requested_fields': [safe_field_id(field['id']) for field in (current.get('form') or {}).get('fields', [])],
+                      'delivered_fields': sorted(choices)})
+        current = session.resume(current, choices)
+        rounds += 1
+    return current, rounds, error, steps
+
+
+def redact_oracle_steps(steps: list[dict]) -> list[dict]:
+    safe = []
+    for step in steps:
+        requested = step.get('requested_fields', [])
+        safe.append({key: value for key, value in step.items() if key != 'requested_fields'} |
+                    {'requested_fields': [safe_field_id(field) for field in requested]})
+    return safe
+
+
+def run_memory(item: dict, session, max_rounds: int = 2) -> dict:
     rows, labels, pending = [], {}, None
     for index, expected in enumerate(item['turns'], 1):
         is_resume = expected['action'] == 'clarification_answer'
         wanted = 'answer' if is_resume else expected['action']
         row = {'index': index, 'expected_action': wanted}
+        if expected.get('scoring_kind') == 'discussion_answer':
+            row['evaluation_status'] = 'unsupported_task_kind'
+            row['evaluation_contract_error'] = 'discussion_answer_has_no_sql_result_contract'
         try:
             if is_resume:
                 if pending is None:
@@ -214,11 +283,20 @@ def run_memory(item: dict, session) -> dict:
             else:
                 current = session.ask(expected['question'])
                 labels[index] = current['id']
+                continuation = None
+                if wanted == 'answer' and expected.get('oracle_answers'):
+                    current, continuation_rounds, continuation_error, continuation = continue_with_oracle(
+                        expected, current, session, max_rounds, labels)
+                    row['oracle_continuation'] = redact_oracle_steps(continuation)
+                    row['oracle_rounds'] = continuation_rounds
+                    if continuation_error:
+                        row['oracle_error'] = continuation_error
             row.update(actual_action=action(current), action_correct=action(current) == wanted, trace=trace(current))
-            if expected.get('gold_sql'):
+            if expected.get('scoring_kind') != 'discussion_answer' and expected.get('gold_sql'):
                 row.update(score_answer(expected, current, session))
-            expected_fields = expected.get('ask_fields', [])
-            row['clarification_counts'] = clarification_counts(expected_fields, form_fields(current)) if not is_resume else {'tp': 0, 'fp': len(form_fields(current)), 'fn': 0}
+            expected_fields = expected.get('ask_fields', []) if wanted == 'clarify' else []
+            actual_fields = form_fields(current)
+            row['clarification_counts'] = clarification_counts(expected_fields, actual_fields) if wanted == 'clarify' else {'tp': 0, 'fp': 0, 'fn': 0}
             if wanted == 'clarify':
                 row['action_correct'] &= form_fields(current) == set(expected_fields)
             # References are diagnostic only. Neither M6 nor M0 is required to
@@ -241,7 +319,7 @@ def run_memory(item: dict, session) -> dict:
         except Exception as exc:
             row.update(actual_action='error', action_correct=False, error=type(exc).__name__,
                        clarification_counts=clarification_counts(expected.get('ask_fields', []), []))
-            if expected.get('gold_sql'):
+            if expected.get('gold_sql') and expected.get('scoring_kind') != 'discussion_answer':
                 row['result_correct'] = False
                 row['strict_result_correct'] = False
                 row['business_result_correct'] = False
@@ -255,36 +333,39 @@ def run_memory(item: dict, session) -> dict:
     business_answers = [row for row in answers if row.get('business_result_correct') is not None]
     business_correct = (all(row['business_result_correct'] for row in business_answers)
                         if business_answers else None)
+    unsupported = [row for row in rows if row.get('evaluation_status') == 'unsupported_task_kind']
+    expected_answer_count = sum('gold_sql' in turn for turn in item['turns'])
     return {'turns': rows, 'success': all(row.get('observable_success', False) for row in rows),
+            'evaluation_status': 'contains_unsupported_task_kind' if unsupported else 'scored',
+            'expected_answer_count': expected_answer_count,
+            'unsupported_answer_count': len(unsupported),
+            'unsupported_turn_indices': [row['index'] for row in unsupported],
             'result_correct': aggregate_correct, 'strict_result_correct': aggregate_correct,
             'business_result_correct': business_correct,
             'answer_count': len(business_answers), 'answer_correct': sum(row['business_result_correct'] for row in business_answers),
-            'clarification_rounds': sum(row.get('actual_action') == 'clarify' for row in rows),
+            'clarification_rounds': sum(row.get('oracle_rounds', 0) + int(row.get('actual_action') == 'clarify') for row in rows),
             'clarification_counts': {key: sum(row['clarification_counts'][key] for row in rows) for key in ('tp', 'fp', 'fn')}}
 
 
 def run_interaction(item: dict, session, max_rounds: int = 2) -> dict:
-    rows, counts, rounds = [], {'tp': 0, 'fp': 0, 'fn': 0}, 0
+    rows, counts = [], {'tp': 0, 'fp': 0, 'fn': 0}
     current = session.ask(item['question'])
     seen_fields: set[str] = set()
-    oracle_error = None
+    rounds, oracle_error = 0, None
     while True:
         asked = form_fields(current)
         seen_fields |= asked
-        rows.append({'trace': trace(current), 'actual_action': action(current), 'asked': sorted(asked)})
+        rows.append({'trace': trace(current), 'actual_action': action(current), 'asked': sorted(safe_field_id(field) for field in asked)})
         if action(current) != 'clarify':
             break
-        rounds += 1
-        if rounds > max_rounds:
-            oracle_error = 'clarification_limit'
+        current, used, oracle_error, steps = continue_with_oracle(item, current, session, max_rounds-rounds, {})
+        rounds += used
+        rows[-1]['oracle_continuation'] = redact_oracle_steps(steps)
+        for step in steps:
+            seen_fields.update(step.get('requested_fields', []))
+        if oracle_error:
+            rows[-1]['oracle_error'] = oracle_error
             break
-        try:
-            choices = oracle_for(item, current, {})
-        except ValueError:
-            oracle_error = 'oracle_mismatch'
-            break
-        rows[-1]['oracle_delivered_fields'] = sorted(choices)
-        current = session.resume(current, choices)
     counts = clarification_counts(item.get('ask_fields', []), seen_fields)
     result = score_answer(item, current, session)
     # C0 is not failed merely for skipping an expected question; final SQL is
@@ -380,7 +461,8 @@ def preflight(args, directory: Path, rows: list[dict]) -> dict:
                              'max_waiters': llm.ADMISSION.max_waiters,
                              'wait_timeout_s': llm.ADMISSION.wait_timeout_s},
                   max_clarification_rounds=args.max_clarification_rounds, max_model_calls=args.max_model_calls,
-                  turn_timeout_s=args.turn_timeout, max_rounds_protocol='exact fields; no unsolicited oracle')
+                  turn_timeout_s=args.turn_timeout,
+                  max_rounds_protocol='at most configured rounds; requested known-field subset only; no unsolicited oracle')
     # Keep credentials/DSNs/keys out of output; hash provider route if customized.
     config['endpoint_hash'] = digest(effective.get('base_url') or 'provider default')
     inputs = [p for p in directory.iterdir() if p.is_file() and p.suffix in {'.yaml', '.sql', '.json', '.py'}]
@@ -428,6 +510,31 @@ def scenario_base(item: dict) -> dict:
             'group': item.get('phenomenon', item.get('family', 'unlabeled')), 'tags': item.get('tags', []),
             'source_id': item.get('source_id'), 'language': item.get('language'),
             'intent': item.get('family')}
+
+
+def outcome_category(record: dict) -> str:
+    """Observable, non-gold-posthoc outcome class for scenario-level triage."""
+    turns = record.get('turns') or []
+    if record.get('evaluation_status') == 'contains_unsupported_task_kind' or any(
+            turn.get('evaluation_status') == 'unsupported_task_kind' for turn in turns):
+        return 'evaluation_contract_error'
+    if record.get('error') or any(turn.get('error') for turn in turns):
+        return 'provider_or_runtime_error'
+    if any(turn.get('actual_action') == 'refuse' for turn in turns):
+        return 'refused'
+    if record.get('oracle_error') or record.get('actual_action') == 'clarify' or any(turn.get('oracle_error') for turn in turns) or any(
+            turn.get('actual_action') == 'clarify' and turn.get('expected_action') not in {'clarify', None}
+            for turn in turns):
+        return 'unresolved_clarification'
+    if record.get('business_result_correct') is True:
+        if record.get('output_contract_compliant') is False:
+            return 'output_contract_only'
+        return 'correct'
+    if record.get('success') is True:
+        return 'correct'
+    if record.get('business_result_correct') is False or record.get('answer_count', 0) > 0:
+        return 'wrong_business_result'
+    return 'provider_or_runtime_error'
 
 
 def gold_run(args, directory: Path, scenarios: list[dict]) -> int:
@@ -524,15 +631,20 @@ def execute(args, directory: Path, scenarios: list[dict]) -> int:
                         session = TexaSession(args.model, item.get('source_id', manifest.get('source_id', 'event_benchmark')),
                                               args.turn_timeout)
                         if args.suite == 'memory':
-                            record = run_memory(item, session)
+                            record = run_memory(item, session, args.max_clarification_rounds)
                         elif args.suite == 'clarification':
                             record = run_interaction(item, session, args.max_clarification_rounds)
                         else:
-                            current = session.ask(item['question'])
-                            record = score_answer(item, current, session)
-                            business_ok = bool(record.get('business_result_correct', record['result_correct']))
-                            record.update(success=business_ok, answer_count=1,
-                                          answer_correct=int(business_ok), turns=[{'trace': trace(current)}])
+                            if item.get('oracle_answers'):
+                                record = run_interaction(item, session, args.max_clarification_rounds)
+                            else:
+                                current = session.ask(item['question'])
+                                record = score_answer(item, current, session)
+                                record.update(success=bool(record.get('business_result_correct', record['result_correct'])),
+                                              actual_action=action(current),
+                                              answer_count=1,
+                                              answer_correct=int(bool(record.get('business_result_correct', record['result_correct']))),
+                                              turns=[{'trace': trace(current)}])
                         record['usage'] = session.usage()
                 except IncompleteRun:
                     raise
@@ -546,6 +658,7 @@ def execute(args, directory: Path, scenarios: list[dict]) -> int:
                         session.close()
                 record.update(scenario_base(item), latency_ms=round((time.monotonic()-started)*1000),
                               model_call_attempts=attempted_calls-attempts_before)
+                record['outcome_category'] = outcome_category(record)
                 record['usage_complete'] = record['usage']['calls'] == record['model_call_attempts']
                 record['prompt_traces'] = prompt_traces[attempts_before:]
                 write(record)
@@ -602,16 +715,20 @@ def main(argv=None) -> int:
     parser.add_argument('--gold', action='store_true', help='Only check SQL/reference tables, no provider calls')
     parser.add_argument('--max-model-calls', type=int)
     parser.add_argument('--max-clarification-rounds', type=int, default=2)
-    parser.add_argument('--turn-timeout', type=int, default=150)
+    parser.add_argument('--turn-timeout', type=int, default=480)
     parser.add_argument('--output', default=str(ROOT / 'backend/eval/results' / f'ablation-{uuid.uuid4().hex}.jsonl'))
     parser.add_argument('--output-dir', default=str(ROOT / 'backend/eval/results' / f'study-{uuid.uuid4().hex[:12]}'))
     args = parser.parse_args(argv)
     os.environ['TEXA_SOURCE_PROFILE'] = 'evaluation'
     configure_gateway_from_environment(ROOT / '.runtime')
     directory = _project_path(args.dataset_dir)
-    from validate_dataset import validate_ablation_dataset, validate_dataset, validate_remediation_ablation
-    if (directory / 'interactions.yaml').exists():
-        if yaml.safe_load((directory / 'manifest.yaml').read_text()).get('status') == 'candidate_not_sealed':
+    from validate_dataset import (validate_ablation_dataset, validate_dataset, validate_remediation_ablation,
+                                  validate_remediation_regression)
+    manifest = yaml.safe_load((directory / 'manifest.yaml').read_text())
+    if manifest.get('dataset_type') == 'remediation_regression':
+        validate_remediation_regression(directory)
+    elif (directory / 'interactions.yaml').exists():
+        if manifest.get('status') == 'candidate_not_sealed':
             validate_remediation_ablation(directory)
         else:
             validate_ablation_dataset(directory)

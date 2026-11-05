@@ -1,0 +1,30 @@
+{
+  "dataset": "remediation-v3-regression-inspected",
+  "dataset_type": "remediation_regression",
+  "evaluation_purpose": "inspected_regression_unsealed",
+  "not_fresh_holdout": true,
+  "gold_sql_and_expected_result_digest": "fa375b33894b46ef2c046de4326edd6a4425b9748f0e0bee8a318b7de6a0b1a8",
+  "counts": {
+    "single_cases": 24,
+    "clarification_interactions": 4,
+    "memory_dialogues": 4
+  },
+  "intent_label_counts": {
+    "single_time_range_all": 30,
+    "single_source_context": 32
+  },
+  "predeclared_unsupported_turns": [
+    {
+      "dialogue_id": "rv2dlg_test_return_ordinal",
+      "turn": 2,
+      "scoring_kind": "discussion_answer"
+    }
+  ],
+  "hashes": {
+    "cases.yaml": "53f64e80d5ccdc7cf677839951b3e258c703fd893ce5c3c349e4ee80a8d2c5b7",
+    "dialogues.yaml": "15f3e4580a319ede18d9a6e01a987af81fa7c75750282a20f26299e6b5177a63",
+    "fixture.sql": "58ab1217845be4dea25978b58a0a1ce810d7c89ba8f850c4c280324724949aa3",
+    "interactions.yaml": "23d45282599afa5aa646c53154a4ddcb01e6a137a61ab78bdc0e99923ab6af7c",
+    "manifest.yaml": "25841138ae61d712ad316b8ba593a337741a348ed6d5f4a3481a4e0581a9598e"
+  }
+}

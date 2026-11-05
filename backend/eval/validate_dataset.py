@@ -184,6 +184,159 @@ def validate_remediation_ablation(directory: Path, *, check_lock: bool = True) -
     return report
 
 
+def validate_remediation_regression(directory: Path, *, check_lock: bool = True) -> dict:
+    """Validate a versioned, already-inspected remediation regression suite."""
+    manifest_path = directory / 'manifest.yaml'
+    manifest = yaml.safe_load(manifest_path.read_text())
+    if (manifest.get('dataset_type') != 'remediation_regression'
+            or manifest.get('evaluation_purpose') != 'inspected_regression_unsealed'
+            or manifest.get('protocol_version') != 3
+            or manifest.get('status') != 'inspected_regression_unsealed'):
+        raise ValueError('remediation regression requires its declared dataset type and inspected purpose')
+    cases = load_cases(directory / 'cases.yaml')
+    interactions = yaml.safe_load((directory / 'interactions.yaml').read_text())
+    dialogues = yaml.safe_load((directory / 'dialogues.yaml').read_text())
+    if not all(isinstance(value, list) for value in (cases, interactions, dialogues)):
+        raise ValueError('cases, interactions and dialogues must be YAML lists')
+    expected_counts = manifest.get('expected_counts') or {}
+    observed_counts = {'single_cases': len(cases), 'clarification_interactions': len(interactions),
+                       'memory_dialogues': len(dialogues)}
+    if expected_counts != observed_counts:
+        raise ValueError(f'dataset counts differ from manifest: {observed_counts}')
+
+    sources, languages = set(manifest.get('sources', [])), set(manifest.get('languages', []))
+    ids: set[str] = set()
+    unsupported = []
+    expected_time_labels = 0
+    expected_source_labels = 0
+
+    def check_identity(item: dict, label: str) -> None:
+        if not isinstance(item.get('id'), str) or not item['id'] or item['id'] in ids:
+            raise ValueError(f'{label}: missing or duplicate scenario ID')
+        ids.add(item['id'])
+        if item.get('split') not in {'dev', 'test'}:
+            raise ValueError(f'{label}: invalid split')
+        if item.get('source_id') not in sources or item.get('language') not in languages:
+            raise ValueError(f'{label}: source or language is outside manifest scope')
+        if not isinstance(item.get('question'), str) or not item['question'].strip():
+            raise ValueError(f'{label}: missing question')
+
+    def check_result(item: dict, label: str) -> None:
+        result = item.get('expected_result')
+        if not item.get('gold_sql') or not isinstance(result, dict):
+            raise ValueError(f'{label}: gold SQL and expected result are required')
+        columns, rows = result.get('columns'), result.get('rows')
+        if (not isinstance(columns, list) or not columns or len(set(columns)) != len(columns)
+                or not isinstance(rows, list)
+                or any(not isinstance(row, list) or len(row) != len(columns) for row in rows)):
+            raise ValueError(f'{label}: expected result shape is invalid')
+
+    def check_oracle(oracle: dict, label: str, allowed_fields: set[str]) -> None:
+        if not isinstance(oracle, dict) or set(oracle) - allowed_fields:
+            raise ValueError(f'{label}: unsupported oracle field')
+        for key, values in oracle.items():
+            if not isinstance(values, list) or not values or any(not isinstance(value, str) for value in values):
+                raise ValueError(f'{label}: oracle values must be non-empty string lists')
+
+    for case in cases:
+        check_identity(case, case.get('id', 'case'))
+        check_result(case, case['id'])
+        check_oracle(case.get('oracle_answers') or {}, case['id'], {'time_range', 'context:source'})
+        oracle = case.get('oracle_answers') or {}
+        intent = case.get('oracle_intent') or {}
+        if intent.get('source_id') != case['source_id'] or oracle.get('context:source') != [case['source_id']]:
+            raise ValueError(f"{case['id']}: source oracle does not match scenario source")
+        if 'time_range' in intent:
+            if oracle.get('time_range') != [intent['time_range']] or intent['time_range'] not in {'all', 'last_7', 'last_30'}:
+                raise ValueError(f"{case['id']}: period oracle conflicts with declared user intent")
+        elif 'time_range' in oracle:
+            raise ValueError(f"{case['id']}: period oracle exists without declared user intent")
+        expected_time_labels += int('time_range' in intent)
+        expected_source_labels += 1
+        if case.get('ordered') and not isinstance(case.get('ordering_intent'), str):
+            raise ValueError(f"{case['id']}: ordered=true requires a reviewed ordering_intent annotation")
+
+    for item in interactions:
+        check_identity(item, item.get('id', 'interaction'))
+        check_result(item, item['id'])
+        ask_fields = item.get('ask_fields')
+        if not isinstance(ask_fields, list) or len(ask_fields) != len(set(ask_fields)):
+            raise ValueError(f"{item['id']}: ask_fields must be a unique list")
+        check_oracle(item.get('oracle_answers') or {}, item['id'], set(ask_fields))
+        if set(item.get('oracle_answers') or {}) != set(ask_fields):
+            raise ValueError(f"{item['id']}: clarification oracle labels must exactly match requested fields")
+        oracle = item.get('oracle_answers') or {}
+        if 'context:source' in oracle and not set(oracle['context:source']) <= sources:
+            raise ValueError(f"{item['id']}: source oracle value is outside manifest scope")
+        if 'time_range' in oracle and not set(oracle['time_range']) <= {'all', 'last_7', 'last_30'}:
+            raise ValueError(f"{item['id']}: unsupported time-range oracle value")
+        if 'recipe' in oracle and not set(oracle['recipe']) <= set((manifest.get('output_aliases') or {}).get('metrics', {})):
+            raise ValueError(f"{item['id']}: metric oracle value is not in the declared metric scope")
+
+    for dialogue in dialogues:
+        if not isinstance(dialogue.get('turns'), list) or not dialogue['turns']:
+            raise ValueError(f"{dialogue['id']}: turns are required")
+        check_identity(dialogue | {'question': dialogue['turns'][0].get('question')}, dialogue.get('id', 'dialogue'))
+        for number, turn in enumerate(dialogue['turns'], 1):
+            label = f"{dialogue['id']}/{number}"
+            if turn.get('action') not in {'answer', 'clarify', 'clarification_answer', 'refuse', 'conversation'}:
+                raise ValueError(f'{label}: invalid action')
+            if turn.get('action') in {'answer', 'clarification_answer'}:
+                check_result(turn, label)
+            if turn.get('scoring_kind'):
+                if turn['scoring_kind'] != 'discussion_answer':
+                    raise ValueError(f'{label}: unknown scoring kind')
+                unsupported.append({'dialogue_id': dialogue['id'], 'turn': number,
+                                    'scoring_kind': turn['scoring_kind']})
+            oracle = turn.get('oracle_answers') or {}
+            check_oracle(oracle, label, {'time_range', 'context:source', 'recipe'})
+            intent = turn.get('oracle_intent') or {}
+            if intent and intent.get('source_id') != dialogue['source_id']:
+                raise ValueError(f'{label}: source oracle conflicts with declared user intent')
+            if 'context:source' in oracle and oracle['context:source'] != [dialogue['source_id']]:
+                raise ValueError(f'{label}: source oracle does not match dialogue source')
+            if 'time_range' in oracle:
+                if oracle['time_range'] != [intent.get('time_range')]:
+                    raise ValueError(f'{label}: memory period oracle conflicts with declared user intent')
+                if oracle['time_range'][0] not in {'all', 'last_7', 'last_30'}:
+                    raise ValueError(f'{label}: unsupported memory period oracle value')
+                expected_time_labels += 1
+            elif 'time_range' in intent:
+                raise ValueError(f'{label}: declared memory period intent has no matching oracle answer')
+            if 'context:source' in oracle:
+                expected_source_labels += 1
+
+    declared_unsupported = manifest.get('unsupported_task_kinds', [])
+    if declared_unsupported != unsupported:
+        raise ValueError('unsupported task-kind declarations differ from dialogue annotations')
+    fixture = (directory / manifest.get('fixture', 'fixture.sql')).resolve()
+    if not fixture.is_relative_to(ROOT) or not fixture.is_file():
+        raise ValueError('fixture path must be an existing project-local file')
+    all_gold = {
+        'cases': [(item['id'], item['gold_sql'], item['expected_result']) for item in cases],
+        'interactions': [(item['id'], item['gold_sql'], item['expected_result']) for item in interactions],
+        'dialogues': [(dialogue['id'], [(turn.get('question'), turn.get('action'), turn.get('gold_sql'),
+                                       turn.get('expected_result')) for turn in dialogue['turns']])
+                      for dialogue in dialogues],
+    }
+    gold_digest = hashlib.sha256(json.dumps(all_gold, ensure_ascii=False, sort_keys=True,
+                                            separators=(',', ':')).encode()).hexdigest()
+    input_files = sorted(path for path in directory.iterdir()
+                         if path.is_file() and path.suffix in {'.yaml', '.sql'} and path.name != 'validation.json')
+    hashes = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in input_files}
+    report = {'dataset': manifest['name'], 'dataset_type': manifest['dataset_type'],
+              'evaluation_purpose': manifest['evaluation_purpose'], 'not_fresh_holdout': True,
+              'gold_sql_and_expected_result_digest': gold_digest,
+              'counts': observed_counts,
+              'intent_label_counts': {'single_time_range_all': expected_time_labels,
+                                      'single_source_context': expected_source_labels},
+              'predeclared_unsupported_turns': unsupported, 'hashes': hashes}
+    lock = directory / 'validation.json'
+    if check_lock and (not lock.exists() or json.loads(lock.read_text()) != report):
+        raise ValueError('remediation regression validation lock does not match annotations and inputs')
+    return report
+
+
 def validate_ablation_dataset(directory: Path, *, check_lock: bool = True) -> dict:
     """Validate the paired memory/clarification suite; does not execute SQL."""
     manifest = yaml.safe_load((directory / "manifest.yaml").read_text())

@@ -127,3 +127,40 @@ def test_component_activation_deduplicates_resumed_turn_traces(tmp_path):
     assert result['turn_observations'] == 1
     assert result['guess_invoked'] == 1
     assert result['guess_reasons'] == {'selected': 1}
+
+
+def test_predeclared_unsupported_memory_task_invalidates_comparison_and_reports_coverage(tmp_path):
+    f = _write_run(tmp_path / 'f.jsonl', 'F', 1)
+    m = _write_run(tmp_path / 'm.jsonl', 'M6', 1)
+    for path in (f, m):
+        records = [json.loads(line) for line in path.read_text().splitlines()]
+        row = next(row for row in records if row.get('id') == 's2')
+        row.update(evaluation_status='contains_unsupported_task_kind', expected_answer_count=2,
+                   unsupported_answer_count=1, answer_count=1, answer_correct=1)
+        path.write_text('\n'.join(json.dumps(row) for row in records) + '\n')
+    report = reporter.build_report([f, m], iterations=100)
+    comp = report['comparisons'][0]
+    assert comp['comparison_status'] == 'invalid_unsupported_task_kind'
+    assert comp['unscored_scenarios'] == ['s2']
+    assert comp['delta_control_minus_variant_success']['delta'] is None
+    summary = comp['control_summary']
+    assert summary['answer_coverage']['expected_sql_turns'] == 4
+    assert summary['answer_coverage']['unsupported_discussion_turns'] == 1
+    assert summary['result_accuracy_partial_coverage'] is True
+    assert 'INVALID' in reporter.render_markdown(report)
+
+
+def test_all_scenarios_unsupported_reports_coverage_without_stdev_crash(tmp_path):
+    f = _write_run(tmp_path / 'f.jsonl', 'F', 1)
+    m = _write_run(tmp_path / 'm.jsonl', 'M6', 1)
+    for path in (f, m):
+        records = [json.loads(line) for line in path.read_text().splitlines()]
+        for row in records[1:-1]:
+            row.update(evaluation_status='contains_unsupported_task_kind', expected_answer_count=1,
+                       unsupported_answer_count=1, answer_count=0, answer_correct=0)
+        path.write_text('\n'.join(json.dumps(row) for row in records) + '\n')
+    report = reporter.build_report([f, m], iterations=10)
+    summary = report['summaries']['memory/dev/F']
+    assert summary['scenario_success_mean'] is None
+    assert summary['repeat_success_sd'] is None
+    assert summary['answer_coverage']['sql_gradable_turns'] == 0

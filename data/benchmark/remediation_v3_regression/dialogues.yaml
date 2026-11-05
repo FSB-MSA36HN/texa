@@ -1,0 +1,233 @@
+- id: rv2dlg_dev_social_noise
+  split: dev
+  family: social_noise_new_query
+  phenomenon: social_noise
+  cluster_id: social_noise_dev
+  source_id: cosmetics_shop
+  language: en
+  dependency_distance: 0
+  turns:
+  - question: How many purchase events are in the cosmetics shop?
+    action: answer
+    state:
+      metric: purchases
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS purchases FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase'
+    expected_result:
+      columns:
+      - purchases
+      rows:
+      - - 4
+    ask_fields:
+    - time_range
+    oracle_intent:
+      source_id: cosmetics_shop
+      time_range: all
+    oracle_answers:
+      context:source:
+      - cosmetics_shop
+      time_range:
+      - all
+  - question: Thanks, that answers my question.
+    action: conversation
+  - question: And how many distinct users are in that same shop?
+    action: answer
+    state:
+      metric: users
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 5
+    ask_fields:
+    - time_range
+    oracle_intent:
+      source_id: cosmetics_shop
+      time_range: all
+    oracle_answers:
+      context:source:
+      - cosmetics_shop
+      time_range:
+      - all
+- id: rv2dlg_dev_clear_filter
+  split: dev
+  family: clear_previous_filter
+  phenomenon: clear_filter
+  cluster_id: clear_filter_dev
+  source_id: cosmetics_shop
+  language: vi
+  dependency_distance: 0
+  turns:
+  - question: Đếm sự kiện trong danh mục hair của shop mỹ phẩm.
+    action: answer
+    state:
+      metric: events
+      time_range: all
+      filters:
+      - item_category: hair
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND item_category='hair'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 3
+    ask_fields:
+    - time_range
+    oracle_intent:
+      source_id: cosmetics_shop
+      time_range: all
+    oracle_answers:
+      context:source:
+      - cosmetics_shop
+      time_range:
+      - all
+  - question: Bỏ bộ lọc danh mục đó đi, tổng số sự kiện là bao nhiêu?
+    action: answer
+    state:
+      metric: events
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 8
+    ask_fields:
+    - time_range
+    oracle_intent:
+      source_id: cosmetics_shop
+      time_range: all
+    oracle_answers:
+      context:source:
+      - cosmetics_shop
+      time_range:
+      - all
+- id: rv2dlg_test_return_ordinal
+  split: test
+  family: return_to_ordinal_result
+  phenomenon: return_ordinal
+  cluster_id: return_ordinal_test
+  source_id: olist_marketplace
+  language: en
+  dependency_distance: 1
+  turns:
+  - question: Show the top two Olist product categories by purchased-item revenue.
+    action: answer
+    state:
+      metric: revenue
+      time_range: all
+      filters: []
+      breakdown: item_category
+    gold_sql: SELECT item_category, sum(revenue)::numeric AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace'
+      AND event_name='order_purchased' GROUP BY item_category ORDER BY revenue DESC LIMIT 2
+    expected_result:
+      columns:
+      - item_category
+      - revenue
+      rows:
+      - - skin
+        - 50
+      - - hair
+        - 20
+    ask_fields:
+    - time_range
+    oracle_intent:
+      source_id: olist_marketplace
+      time_range: all
+    oracle_answers:
+      context:source:
+      - olist_marketplace
+      time_range:
+      - all
+  - question: How much revenue did the second category have?
+    action: answer
+    scoring_kind: discussion_answer
+    state:
+      metric: revenue
+      time_range: all
+      filters:
+      - item_category: hair
+      breakdown: null
+    gold_sql: SELECT sum(revenue)::numeric AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace' AND
+      event_name='order_purchased' AND item_category='hair'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 20
+    referenced_turn: 1
+    ask_fields:
+    - time_range
+    oracle_intent:
+      source_id: olist_marketplace
+      time_range: all
+    oracle_answers:
+      context:source:
+      - olist_marketplace
+      time_range:
+      - all
+- id: rv2dlg_test_new_topic
+  split: test
+  family: switch_to_new_metric_topic
+  phenomenon: new_topic
+  cluster_id: new_topic_test
+  source_id: olist_marketplace
+  language: pt
+  dependency_distance: 0
+  turns:
+  - question: Qual foi a receita total dos itens comprados no Olist?
+    action: answer
+    state:
+      metric: revenue
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT sum(revenue)::numeric AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace' AND
+      event_name='order_purchased'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 70
+    ask_fields:
+    - time_range
+    oracle_intent:
+      source_id: olist_marketplace
+      time_range: all
+    oracle_answers:
+      context:source:
+      - olist_marketplace
+      time_range:
+      - all
+  - question: 'Mudando de assunto: quantos usuários distintos aparecem no Olist?'
+    action: answer
+    state:
+      metric: users
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 3
+    ask_fields:
+    - time_range
+    oracle_intent:
+      source_id: olist_marketplace
+      time_range: all
+    oracle_answers:
+      context:source:
+      - olist_marketplace
+      time_range:
+      - all
