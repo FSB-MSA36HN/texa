@@ -33,6 +33,17 @@ def digest(value: Any) -> str:
     return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'), default=str).encode()).hexdigest()
 
 
+def canonical_source_metadata(source) -> dict[str, Any]:
+    """Serialize source provenance deterministically, including every set field."""
+    metadata = source.model_dump(mode='json')
+    metadata.pop('snapshot_version', None)
+    for name in source.__class__.model_fields:
+        value = getattr(source, name, None)
+        if isinstance(value, set):
+            metadata[name] = sorted(value)
+    return metadata
+
+
 def load_suite(directory: Path, suite: str, split: str) -> list[dict]:
     path = directory / FILES[suite]
     rows = load_cases(path) if suite == 'single' else yaml.safe_load(path.read_text())
@@ -394,11 +405,7 @@ def preflight(args, directory: Path, rows: list[dict]) -> dict:
         raise ValueError('Commit tracked implementation changes before collecting live experiment results')
     source_metadata = {}
     for source, src in metadata.items():
-        value = src.model_dump(mode='json')
-        value.pop('snapshot_version', None)
-        for key in ('events', 'ep_keys', 'up_keys', 'columns'):
-            value[key] = sorted(value[key])
-        source_metadata[source] = value
+        source_metadata[source] = canonical_source_metadata(src)
     # Full gold validation before a paid run prevents accidental scoring against
     # a fixture that merely happens to share the source name.
     for row in rows:

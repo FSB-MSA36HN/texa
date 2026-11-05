@@ -223,16 +223,19 @@ def _continue(turn: dict, candidate: dict, answers: dict, progress: Progress, ca
     memory_sources = list(named) if inherited_source else []
     literal_mentions = catalog_mod.mentioned_sources(cat, sources, turn["question"])
     text_sources = literal_mentions or ([] if inherited_source else list(named))
-    if literal_mentions:
-        named = literal_mentions
-        candidate = candidate | {"source_ids": named}
+    # A name occurrence is evidence, not an instruction: it may be negated.
+    # Never overwrite semantic interpretation with a lexical positive choice.
+    mention_uncertain = bool(literal_mentions and set(literal_mentions) != set(named))
     resolved_source = answers.get("context:source")
-    if ((scope and named and set(named) != set(scope)) or len(named) > cat.policy.max_sources) and not resolved_source:
+    if (mention_uncertain or (scope and named and set(named) != set(scope))
+            or len(named) > cat.policy.max_sources or len(literal_mentions) > cat.policy.max_sources) and not resolved_source:
         choices = [{"id": sid, "label": sources[sid].label, "description": ""}
-                   for sid in dict.fromkeys([*(scope or []), *named]) if sid in sources]
+                   for sid in dict.fromkeys([*(scope or []), *named, *literal_mentions,
+                                            *(sources if mention_uncertain else [])]) if sid in sources]
         return {"status": "needs_clarification", "candidate": candidate, "answers": answers, "language": lang,
                 "source_resolution": {"ui": scope or [], "text": text_sources, "memory": memory_sources, "effective": None},
-                "form": {"message": ("Nguồn đã chọn khác nguồn của kết quả trước. Chọn nguồn để tiếp tục." if inherited_source else
+                "form": {"message": ("Chưa xác định chắc nguồn bạn muốn dùng. Chọn nguồn để tiếp tục." if mention_uncertain else
+                          "Nguồn đã chọn khác nguồn của kết quả trước. Chọn nguồn để tiếp tục." if inherited_source else
                           "Nguồn đã chọn khác nguồn trong câu hỏi. Chọn nguồn để tiếp tục." if scope else
                           "Mỗi câu hỏi chỉ dùng một nguồn. Chọn nguồn để tiếp tục.") if lang == "vi" else
                          "The chosen source conflicts with the request or referenced result. Choose one to continue.",
@@ -279,7 +282,27 @@ def _continue(turn: dict, candidate: dict, answers: dict, progress: Progress, ca
     result = run_spec(out.spec, cat, sources, progress)
     state = _answered(turn["question"], result, cat, sources, candidate, turn["model"], turn["id"], progress,
                       out.variants, out.notes, earlier_questions=turn["state"].get("context", {}).get("questions", []))
-    return state | {"candidate": candidate, "answers": answers, "ablation": trace, "source_resolution": source_resolution}
+    return state | {"candidate": candidate, "answers": answers, "ablation": trace, "source_resolution": source_resolution,
+                    "filter_binding_trace": _filter_binding_trace(result["query_spec"], candidate, answers, cat, sources)}
+
+
+def _filter_binding_trace(spec, candidate: dict, answers: dict, cat, sources) -> list[dict]:
+    """Record the actual binder boundary, without claiming model intent is certain."""
+    inherited = candidate.get("dialogue", {}).get("slots", {}).get("filters") == "keep"
+    trace = []
+    for f in spec["filters"]:
+        field = f["field"]
+        inputs = [v for item in candidate.get("filters", []) if item["field"] == field
+                  for v in item.get("values_mentioned", [])]
+        selected = answers.get(f"filter:{field}")
+        trace.append({"field_id": field, "source_ids": spec["source_ids"],
+                      "catalog_version": cat.contract_version,
+                      "origin": "clarification" if selected else "memory" if inherited else "question_interpretation",
+                      "input_values": list(selected or inputs), "bound_values": list(f["values"]),
+                      "operator": f["operator"],
+                      "vocabulary_status": {sid: sources[sid].value_vocabulary_status(
+                          cat.mapped_field(cat.dims[field].field, sid)) for sid in spec["source_ids"]}})
+    return trace
 
 
 def ask(question: str, conversation_id: str | None, model: str | None, scope: list[str] | None,

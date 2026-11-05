@@ -1,7 +1,10 @@
 """Provider-free checks of the study protocol, not measurements of Texa quality."""
 import importlib
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 from types import SimpleNamespace
 
 import pytest
@@ -236,3 +239,24 @@ def test_model_budget_stops_block_without_completing_log(runner, monkeypatch):
         assert records[-1]['model_call_attempts'] == 1
     finally:
         output.unlink(missing_ok=True)
+
+
+def test_source_metadata_hash_is_stable_across_python_hash_seeds(runner):
+    backend = Path(__file__).resolve().parents[1]
+    code = """import sys
+sys.path.insert(0, 'eval')
+from run_ablation import canonical_source_metadata, digest
+from texa.catalog import Source
+s=Source(id='x',label='x',description='',currency=None,min_date=None,max_date=None,row_count=0,user_count=0,
+ events={'purchase','view','cart'},ep_keys={'device.type','campaign.channel'},up_keys={'region'},
+ columns={'event_date','event_name','item_category'},value_vocab_fields={'item_category','device_type','region'})
+print(digest(canonical_source_metadata(s)))
+"""
+    hashes = []
+    for seed in ('3', '47', '811'):
+        env = os.environ.copy()
+        env['PYTHONHASHSEED'] = seed
+        run = subprocess.run([sys.executable, '-c', code], cwd=backend, env=env,
+                             capture_output=True, text=True, check=True)
+        hashes.append(run.stdout.strip())
+    assert len(set(hashes)) == 1
