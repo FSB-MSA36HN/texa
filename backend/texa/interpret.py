@@ -1,10 +1,11 @@
 """Context preparation (whole catalog or a shortlist) and the 'understand the question' model call."""
 import json
+import os
 import re
 import unicodedata
 
-from . import db, llm, memory
-from .catalog import Catalog, Source, coverage
+from . import db, llm, memory, examples, consistency
+from .catalog import Catalog, Source, coverage, mentioned_sources
 from .prompts import CANDIDATE_SCHEMA, INTERPRET_INSTRUCTION, SELECT_INSTRUCTION, SELECT_SCHEMA, DIALOGUE_INSTRUCTION, structured_candidate_schema
 from .progress import Progress
 
@@ -122,7 +123,7 @@ def render_previous(previous: list[dict], budget: int = 6000) -> str:
 
 
 def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[str, Source], *, model: str | None,
-              turn_id=None, scope: list[str] | None = None, step=None, context: dict | None = None) -> dict:
+              turn_id=None, scope: list[str] | None = None, step=None, context: dict | None = None, normalize=None, cancelled=lambda: False) -> dict:
     step = step or Progress()
     with step("prepare_context") as s:
         full = render_catalog(cat, sources)
@@ -162,12 +163,34 @@ def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[s
     if scope:
         dynamic.append(f"STORE SCOPE chosen in the app: {', '.join(scope)} (constraint; conflicting text must be resolved before querying)")
     dynamic.append(f"QUESTION\n{question}")
+    retrieval_trace = {"enabled": os.getenv("TEXA_EXAMPLE_RETRIEVAL", "0") == "1"}
+    example_text = ""
+    if retrieval_trace["enabled"]:
+        # Registry and prior-turn evidence are packed first. Demonstrations only
+        # consume remaining space; a UI/text conflict is not a confirmed source.
+        budget = max(0, min(600, db.CONTEXT_BUDGET_TOKENS - estimate_tokens(
+            instruction + catalog_text + "\n\n".join(dynamic)) - 1024))
+        mentions = set(mentioned_sources(cat, sources, question))
+        confirmed = scope if scope and (not mentions or mentions == set(scope)) else ()
+        bank = examples.load_bank(cat)
+        retrieved = examples.retrieve_examples(bank, question, confirmed_sources=confirmed, token_budget=budget)
+        example_text = examples.render_examples(retrieved)
+        retrieval_trace.update(bank_version=bank.version, bank_hash=bank.content_hash, ids=list(retrieved.ids),
+                               scores=list(retrieved.scores), estimated_tokens=retrieved.estimated_tokens)
+    prompt = "CATALOG\n" + catalog_text + "\n\n" + example_text + "\n\n" + "\n\n".join(dynamic)
+    def sample():
+        result = llm.generate_structured(model=model, system=instruction, name="interpret", turn_id=turn_id,
+                                         prompt=prompt, schema=schema)
+        if structured:
+            result["_registry_complete"] = registry_complete
+        return result
     with step("interpret") as s:
         # Static catalog first so the provider's implicit prompt cache can reuse it across questions.
-        candidate = llm.generate_structured(model=model, system=instruction, name="interpret", turn_id=turn_id,
-                                            prompt="CATALOG\n" + catalog_text + "\n\n" + "\n\n".join(dynamic),
-                                            schema=schema)
+        candidate = sample()
         s.note(candidate["outcome"])
-    if structured:
-        candidate["_registry_complete"] = registry_complete
+    trace = {"retrieval": retrieval_trace, "consistency": {"enabled": False}}
+    if os.getenv("TEXA_CONSISTENCY", "0") == "1" and normalize is not None:
+        with step("consistency_selection"):
+            candidate, trace["consistency"] = consistency.select(candidate, sample, normalize, cancelled=cancelled)
+    candidate["_accuracy"] = trace
     return candidate

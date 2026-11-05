@@ -10,7 +10,8 @@ from . import ablation, catalog as catalog_mod
 from . import clarify, db, insight, interpret, llm, memory, suggestions, locale
 from .pipeline import run_spec
 from .progress import Cancelled, Progress
-from .spec import SpecError
+from .spec import SpecError, validate_spec
+from .sanity import check_availability
 from .runtime_guard import BoundedAdmission, AdmissionRejected
 
 STORED_ROWS = 100
@@ -448,8 +449,36 @@ def _question_work(turn_id: str, reference_id: str | None = None):
             s.note(f"{len(selected)} relevant turns · {context['relation']} · catalog v{cat.contract_version}")
         if context.get("clarification_needed"):
             return _reference_form(previous, context, cat, sources) | metadata
+        def normalize(proposal):
+            # Dry-run the same reducer/binder/validator, on this request's catalog,
+            # sources and complete compatible history. No query or durable writes.
+            resolved = {}
+            if context.get("structured_memory"):
+                proposal, resolved = memory.reduce_candidate(proposal, previous, cat.contract_version, reference_id)
+                if resolved.get("clarification_needed"):
+                    return {"kind": "clarify", "field": "context:reference"}
+            if proposal.get("outcome") != "query":
+                return {"kind": proposal.get("outcome")}
+            named = proposal.get("source_ids") or []
+            mentions = catalog_mod.mentioned_sources(cat, sources, question)
+            if (any(sid not in sources for sid in named) or len(named) > cat.policy.max_sources):
+                raise llm.LLMError("MODEL_OUTPUT_INVALID", "Invalid source interpretation")
+            if (mentions and set(mentions) != set(named)) or (scope and named and set(scope) != set(named)):
+                return {"kind": "clarify", "field": "context:source"}
+            out = clarify.advance(proposal, {}, cat, sources, scope=scope, lang=_lang(proposal), question=question)
+            if out.kind != "spec":
+                return {"kind": out.kind}
+            spec = validate_spec(out.spec | {"contract_version": cat.contract_version}, cat, sources)
+            check_availability(spec, cat, sources)
+            return {"kind": "spec", "spec": spec.model_dump(mode="json"),
+                    "dialogue": proposal.get("dialogue"), "references": resolved.get("references", []),
+                    "dataset_version": dataset_version}
         candidate = interpret.interpret(question, selected, cat, sources, model=model, turn_id=turn_id,
-                                        scope=scope, step=progress, context=context)
+                                        scope=scope, step=progress, context=context, normalize=normalize,
+                                        cancelled=progress.cancelled)
+        if candidate.get("_consistency_unresolved"):
+            return {"status": "refused", "message": candidate["reason"], "candidate": candidate,
+                    "language": _lang(candidate), "reason_code": "interpretation_disagreement"} | metadata
         if context.get("structured_memory"):
             candidate, resolved = memory.reduce_candidate(candidate, previous, cat.contract_version, reference_id)
             context.update(resolved)
