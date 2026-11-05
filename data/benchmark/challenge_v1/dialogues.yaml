@@ -1,0 +1,647 @@
+- id: d01_keep_filter
+  split: dev
+  family: keep_clear_filter
+  dependency_distance: 1
+  turns:
+  - question: Cosmetics buyers on Jan 5-7?
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: buyers
+      time_range:
+      - '2025-01-05'
+      - '2025-01-07'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase') AS buyers FROM analytics.event_activity
+      WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-05' AND '2025-01-07'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 1
+  - question: Only mobile, please.
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: buyers
+      time_range:
+      - '2025-01-05'
+      - '2025-01-07'
+      filters:
+      - device_type: mobile
+      breakdown: null
+    gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'') AS buyers FROM analytics.event_activity
+      WHERE source_id=''cosmetics_shop'' AND event_date BETWEEN ''2025-01-05'' AND ''2025-01-07'' AND ep #>> ''{device,type}''=''mobile'''
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 0
+    referenced_turn: 1
+- id: d09_long_reference_after_noise
+  split: test
+  family: long_memory_reference_noise
+  dependency_distance: 13
+  intervening_successful_results: 13
+  social_noise_turns: 1
+  target_result_id: local_r2
+  turns:
+  - question: How many Cosmetics purchases were recorded in January 2025?
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: purchases
+      time_range:
+      - '2025-01-01'
+      - '2025-01-31'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase') AS purchases FROM analytics.event_activity WHERE
+      source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-01' AND '2025-01-31'
+    expected_result:
+      columns:
+      - purchases
+      rows:
+      - - 11
+  - question: How many distinct users were recorded in Olist during January 2018?
+    action: answer
+    result_id: local_r2
+    state:
+      source_id: olist_marketplace
+      metric: users
+      time_range:
+      - '2018-01-01'
+      - '2018-01-31'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) AS users FROM analytics.event_activity WHERE source_id='olist_marketplace'
+      AND event_date BETWEEN '2018-01-01' AND '2018-01-31'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 9
+  - question: How many Cosmetics events happened during February?
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: events
+      time_range:
+      - '2025-02-01'
+      - '2025-02-28'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*) AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_date
+      BETWEEN '2025-02-01' AND '2025-02-28'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 21
+  - question: Count Olist purchase item rows in February 2018.
+    action: answer
+    state:
+      source_id: olist_marketplace
+      metric: purchases
+      time_range:
+      - '2018-02-01'
+      - '2018-02-28'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*) FILTER (WHERE event_name='order_purchased') AS purchases FROM analytics.event_activity
+      WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-01' AND '2018-02-28'
+    expected_result:
+      columns:
+      - purchases
+      rows:
+      - - 14
+  - question: Cosmetics purchase revenue on mobile in February?
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: revenue
+      time_range:
+      - '2025-02-01'
+      - '2025-02-28'
+      filters:
+      - device_type: mobile
+      breakdown: null
+    gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''purchase''),0) AS revenue FROM analytics.event_activity
+      WHERE source_id=''cosmetics_shop'' AND event_date BETWEEN ''2025-02-01'' AND ''2025-02-28'' AND ep #>> ''{device,type}''=''mobile'''
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 56.0
+  - question: Distinct Olist buyers attributed to email?
+    action: answer
+    state:
+      source_id: olist_marketplace
+      metric: buyers
+      time_range: all
+      filters:
+      - campaign_channel: email
+      breakdown: null
+    gold_sql: 'SELECT count(DISTINCT user_id) FILTER (WHERE event_name=''order_purchased'') AS buyers FROM analytics.event_activity
+      WHERE source_id=''olist_marketplace'' AND ep #>> ''{campaign,channel}''=''email'''
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 7
+  - question: How many distinct Cosmetics users are in the snapshot?
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: users
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 21
+  - question: How many Olist users viewed a product during January 2018?
+    action: answer
+    state:
+      source_id: olist_marketplace
+      metric: viewers
+      time_range:
+      - '2018-01-01'
+      - '2018-01-31'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='view') AS viewers FROM analytics.event_activity
+      WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-01' AND '2018-01-31'
+    expected_result:
+      columns:
+      - viewers
+      rows:
+      - - 0
+  - question: Cosmetics purchase rows in February by product category.
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: purchases
+      time_range:
+      - '2025-02-01'
+      - '2025-02-28'
+      filters: []
+      breakdown: item_category
+    gold_sql: SELECT item_category,count(*) FILTER (WHERE event_name='purchase') AS purchases FROM analytics.event_activity
+      WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-02-01' AND '2025-02-28' GROUP BY 1 ORDER BY
+      1
+    expected_result:
+      columns:
+      - item_category
+      - purchases
+      rows:
+      - - cleanser
+        - 2
+      - - cream
+        - 2
+      - - mask
+        - 2
+      - - serum
+        - 2
+      - - sunscreen
+        - 1
+      - - toner
+        - 0
+  - question: Count payment-type events in March 2018 on Olist.
+    action: answer
+    state:
+      source_id: olist_marketplace
+      metric: events
+      time_range:
+      - '2018-03-01'
+      - '2018-03-31'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*) FILTER (WHERE event_name='payment_made') AS events FROM analytics.event_activity WHERE
+      source_id='olist_marketplace' AND event_date BETWEEN '2018-03-01' AND '2018-03-31'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Total purchase-item revenue in Cosmetics for January 2025?
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: revenue
+      time_range:
+      - '2025-01-01'
+      - '2025-01-31'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0) AS revenue FROM analytics.event_activity
+      WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-01' AND '2025-01-31'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 185.0
+  - question: Olist item revenue from mobile devices in January?
+    action: answer
+    state:
+      source_id: olist_marketplace
+      metric: revenue
+      time_range:
+      - '2018-01-01'
+      - '2018-01-31'
+      filters:
+      - device_type: mobile
+      breakdown: null
+    gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''order_purchased''),0) AS revenue FROM analytics.event_activity
+      WHERE source_id=''olist_marketplace'' AND event_date BETWEEN ''2018-01-01'' AND ''2018-01-31'' AND ep #>>
+      ''{device,type}''=''mobile'''
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 50.0
+  - question: Cosmetics daily event counts for the first week of January.
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: events
+      time_range:
+      - '2025-01-01'
+      - '2025-01-07'
+      filters: []
+      breakdown: event_date
+    gold_sql: SELECT event_date,count(*) AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+      AND event_date BETWEEN '2025-01-01' AND '2025-01-07' GROUP BY 1 ORDER BY 1
+    expected_result:
+      columns:
+      - event_date
+      - events
+      rows:
+      - - '2025-01-01'
+        - 1
+      - - '2025-01-02'
+        - 1
+      - - '2025-01-03'
+        - 1
+      - - '2025-01-04'
+        - 1
+      - - '2025-01-05'
+        - 1
+      - - '2025-01-06'
+        - 1
+      - - '2025-01-07'
+        - 1
+  - question: How many distinct Olist sessions are recorded?
+    action: answer
+    state:
+      source_id: olist_marketplace
+      metric: sessions
+      time_range: all
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT session_id) AS sessions FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    expected_result:
+      columns:
+      - sessions
+      rows:
+      - - 21
+  - question: Break Cosmetics buyers down by campaign channel.
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: buyers
+      time_range: all
+      filters: []
+      breakdown: campaign_channel
+    gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel,count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')
+      AS buyers FROM analytics.event_activity WHERE source_id=''cosmetics_shop'' GROUP BY 1 ORDER BY 1 NULLS FIRST'
+    expected_result:
+      columns:
+      - campaign_channel
+      - buyers
+      rows:
+      - - null
+        - 1
+      - - email
+        - 7
+      - - paid
+        - 8
+  - question: Thanks, that's helpful.
+    action: social
+    expected_behavior: brief_acknowledgement
+  - question: Among the users in that Olist January report, what share bought?
+    action: answer
+    state:
+      source_id: olist_marketplace
+      metric: buyer_conversion_rate
+      time_range:
+      - '2018-01-01'
+      - '2018-01-31'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::numeric/nullif(count(DISTINCT
+      user_id),0) AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id='olist_marketplace' AND
+      event_date BETWEEN '2018-01-01' AND '2018-01-31'
+    expected_result:
+      columns:
+      - buyer_conversion_rate
+      rows:
+      - - 0.8888888888888888
+    referenced_turn: 2
+    referenced_result_id: local_r2
+- id: d02_change_metric
+  split: dev
+  family: metric_correction
+  dependency_distance: 1
+  turns:
+  - question: Cosmetics events Jan 5-6?
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: events
+      time_range:
+      - '2025-01-05'
+      - '2025-01-06'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*) AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_date
+      BETWEEN '2025-01-05' AND '2025-01-06'
+    expected_result:
+      columns:
+      - events
+      rows:
+      - - 2
+  - question: Actually, unique users.
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: users
+      time_range:
+      - '2025-01-05'
+      - '2025-01-06'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+      AND event_date BETWEEN '2025-01-05' AND '2025-01-06'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 2
+    referenced_turn: 1
+- id: d03_clear_filter
+  split: dev
+  family: clear_filter
+  dependency_distance: 1
+  turns:
+  - question: Olist item revenue in January 2018, mobile only.
+    action: answer
+    state:
+      source_id: olist_marketplace
+      metric: revenue
+      time_range:
+      - '2018-01-01'
+      - '2018-01-31'
+      filters:
+      - device_type: mobile
+      breakdown: null
+    gold_sql: 'SELECT coalesce(sum(revenue) FILTER (WHERE event_name=''order_purchased''),0) AS revenue FROM analytics.event_activity
+      WHERE source_id=''olist_marketplace'' AND event_date BETWEEN ''2018-01-01'' AND ''2018-01-31'' AND ep #>>
+      ''{device,type}''=''mobile'''
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 50.0
+  - question: Remove that device restriction.
+    action: answer
+    state:
+      source_id: olist_marketplace
+      metric: revenue
+      time_range:
+      - '2018-01-01'
+      - '2018-01-31'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0) AS revenue FROM analytics.event_activity
+      WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-01' AND '2018-01-31'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 216.0
+    referenced_turn: 1
+- id: d04_old_result
+  split: dev
+  family: old_result_reference
+  dependency_distance: 2
+  turns:
+  - question: Cosmetics buyers on Jan 5-7?
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: buyers
+      time_range:
+      - '2025-01-05'
+      - '2025-01-07'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase') AS buyers FROM analytics.event_activity
+      WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-05' AND '2025-01-07'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 1
+  - question: Show revenue instead for the same dates.
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: revenue
+      time_range:
+      - '2025-01-05'
+      - '2025-01-07'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0) AS revenue FROM analytics.event_activity
+      WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-05' AND '2025-01-07'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 18.0
+    referenced_turn: 1
+- id: d05_campaign_breakdown
+  split: test
+  family: nested_breakdown
+  dependency_distance: 1
+  turns:
+  - question: How many distinct Cosmetics buyers by campaign channel?
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: buyers
+      time_range: all
+      filters: []
+      breakdown: campaign_channel
+    gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')
+      AS buyers FROM analytics.event_activity WHERE source_id=''cosmetics_shop'' GROUP BY 1 ORDER BY 1 NULLS FIRST'
+    expected_result:
+      columns:
+      - campaign_channel
+      - buyers
+      rows:
+      - - null
+        - 1
+      - - email
+        - 7
+      - - paid
+        - 8
+  - question: Keep email only.
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: buyers
+      time_range: all
+      filters:
+      - campaign_channel: email
+      breakdown: campaign_channel
+    gold_sql: 'SELECT ep #>> ''{campaign,channel}'' AS campaign_channel, count(DISTINCT user_id) FILTER (WHERE event_name=''purchase'')
+      AS buyers FROM analytics.event_activity WHERE source_id=''cosmetics_shop'' AND ep #>> ''{campaign,channel}''=''email''
+      GROUP BY 1 ORDER BY 1 NULLS FIRST'
+    expected_result:
+      columns:
+      - campaign_channel
+      - buyers
+      rows:
+      - - email
+        - 7
+    referenced_turn: 1
+- id: d06_noise_followup
+  split: test
+  family: noise_topic_switch
+  dependency_distance: 1
+  turns:
+  - question: Olist purchases in January 2018?
+    action: answer
+    state:
+      source_id: olist_marketplace
+      metric: purchases
+      time_range:
+      - '2018-01-01'
+      - '2018-01-31'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(*) FILTER (WHERE event_name='order_purchased') AS purchases FROM analytics.event_activity
+      WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-01' AND '2018-01-31'
+    expected_result:
+      columns:
+      - purchases
+      rows:
+      - - 16
+  - question: Thanks! By the way, what's a good lunch?
+    action: social
+    expected_behavior: brief_acknowledgement
+  - question: And buyers in that same period?
+    action: answer
+    state:
+      source_id: olist_marketplace
+      metric: buyers
+      time_range:
+      - '2018-01-01'
+      - '2018-01-31'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased') AS buyers FROM analytics.event_activity
+      WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-01' AND '2018-01-31'
+    expected_result:
+      columns:
+      - buyers
+      rows:
+      - - 8
+    referenced_turn: 1
+- id: d07_switch_source
+  split: test
+  family: source_switch
+  dependency_distance: 1
+  turns:
+  - question: Cosmetics revenue Jan 5-7?
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: revenue
+      time_range:
+      - '2025-01-05'
+      - '2025-01-07'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0) AS revenue FROM analytics.event_activity
+      WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-05' AND '2025-01-07'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 18.0
+  - question: 'Switch to Olist: item revenue in Jan 2018.'
+    action: answer
+    state:
+      source_id: olist_marketplace
+      metric: revenue
+      time_range:
+      - '2018-01-01'
+      - '2018-01-31'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0) AS revenue FROM analytics.event_activity
+      WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-01' AND '2018-01-31'
+    expected_result:
+      columns:
+      - revenue
+      rows:
+      - - 216.0
+    referenced_turn: 1
+- id: d08_rate_old_result
+  split: test
+  family: ratio_and_reference
+  dependency_distance: 1
+  turns:
+  - question: Cosmetics users Jan 5-6?
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: users
+      time_range:
+      - '2025-01-05'
+      - '2025-01-06'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+      AND event_date BETWEEN '2025-01-05' AND '2025-01-06'
+    expected_result:
+      columns:
+      - users
+      rows:
+      - - 2
+  - question: What fraction of them bought?
+    action: answer
+    state:
+      source_id: cosmetics_shop
+      metric: buyer_conversion_rate
+      time_range:
+      - '2025-01-05'
+      - '2025-01-06'
+      filters: []
+      breakdown: null
+    gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::numeric / nullif(count(DISTINCT
+      user_id),0) AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_date
+      BETWEEN '2025-01-05' AND '2025-01-06'
+    expected_result:
+      columns:
+      - buyer_conversion_rate
+      rows:
+      - - 0.0
+    referenced_turn: 1

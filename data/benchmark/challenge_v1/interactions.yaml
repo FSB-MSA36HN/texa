@@ -1,0 +1,286 @@
+- id: q01_ambiguous_sales
+  split: dev
+  family: ambiguous_sales
+  question: For Cosmetics in January, what were sales?
+  ask_fields:
+  - metric
+  oracle_intent: resolve_revenue
+  oracle_answers:
+    metric:
+    - revenue
+  state:
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range:
+    - '2025-01-01'
+    - '2025-01-31'
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0) AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-01' AND '2025-01-31'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 185.0
+- id: q02_ambiguous_buyers
+  split: test
+  family: ambiguous_customer_count
+  question: Tháng 1 trên Olist có bao nhiêu khách hàng?
+  ask_fields:
+  - metric
+  oracle_intent: buyers
+  oracle_answers:
+    metric:
+    - buyers
+  state:
+    source_id: olist_marketplace
+    metric: buyers
+    time_range:
+    - '2018-01-01'
+    - '2018-01-31'
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased') AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-01' AND '2018-01-31'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 8
+- id: q03_missing_source
+  split: dev
+  family: missing_source_choice
+  question: How many purchases were recorded in January?
+  ask_fields:
+  - source
+  oracle_intent: cosmetics_shop
+  oracle_answers:
+    source:
+    - cosmetics_shop
+  state:
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range:
+    - '2025-01-01'
+    - '2025-01-31'
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase') AS purchases FROM analytics.event_activity WHERE
+    source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-01' AND '2025-01-31'
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 11
+- id: q04_missing_period
+  split: test
+  family: missing_period
+  question: Show Cosmetics revenue.
+  ask_fields:
+  - time_range
+  oracle_intent: explicit_all_time
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0) AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 420.0
+- id: q05_ambiguous_period
+  split: test
+  family: ambiguous_period
+  question: How many distinct Olist buyers are there?
+  ask_fields:
+  - time_range
+  oracle_intent: january_2018
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased') AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 10
+- id: q06_metric_control
+  split: dev
+  family: ambiguous_sales
+  control_of: q01_ambiguous_sales
+  question: For Cosmetics, what was purchase revenue in January 2025?
+  ask_fields: []
+  oracle_intent: explicit_metric
+  oracle_answers: {}
+  state:
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range:
+    - '2025-01-01'
+    - '2025-01-31'
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0) AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-01' AND '2025-01-31'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 185.0
+- id: q07_source_control
+  split: dev
+  family: missing_source_choice
+  control_of: q03_missing_source
+  question: How many Cosmetics purchases were recorded in January 2025?
+  ask_fields: []
+  oracle_intent: explicit_source
+  oracle_answers: {}
+  state:
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range:
+    - '2025-01-01'
+    - '2025-01-31'
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase') AS purchases FROM analytics.event_activity WHERE
+    source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-01' AND '2025-01-31'
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 11
+- id: q08_period_control
+  split: test
+  family: missing_period
+  control_of: q04_missing_period
+  question: Show Cosmetics revenue over all available dates.
+  ask_fields: []
+  oracle_intent: explicit_all_time
+  oracle_answers: {}
+  state:
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0) AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 420.0
+- id: q09_source_conflict
+  split: test
+  family: conflicting_source_mentions
+  question: Report January Olist item purchases using the Cosmetics source.
+  ask_fields:
+  - source
+  oracle_intent: olist_marketplace
+  oracle_answers:
+    source:
+    - olist_marketplace
+  state:
+    source_id: olist_marketplace
+    metric: purchases
+    time_range:
+    - '2018-01-01'
+    - '2018-01-31'
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='order_purchased') AS purchases FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-01' AND '2018-01-31'
+  expected_result:
+    columns:
+    - purchases
+    rows:
+    - - 16
+- id: q10_missing_source_short
+  split: dev
+  family: missing_source_buyers
+  question: How many distinct buyers were there in January?
+  ask_fields:
+  - source
+  oracle_intent: cosmetics_shop
+  oracle_answers:
+    source:
+    - cosmetics_shop
+  state:
+    source_id: cosmetics_shop
+    metric: buyers
+    time_range:
+    - '2025-01-01'
+    - '2025-01-31'
+    filters: []
+    breakdown: null
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase') AS buyers FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-01' AND '2025-01-31'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 9
+- id: q11_ambiguous_sales_semantic
+  split: dev
+  family: ambiguous_sales_semantic
+  question: Cosmetics sales for January 2025?
+  ask_fields:
+  - metric
+  oracle_intent: revenue
+  oracle_answers:
+    metric:
+    - revenue
+  state:
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range:
+    - '2025-01-01'
+    - '2025-01-31'
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0) AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-01' AND '2025-01-31'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 185.0
+- id: q12_missing_reporting_period
+  split: test
+  family: missing_reporting_period_source_known
+  question: Show Olist purchase-item revenue.
+  ask_fields:
+  - time_range
+  oracle_intent: all_available_dates
+  oracle_answers:
+    time_range:
+    - all
+  state:
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0) AS revenue FROM analytics.event_activity
+    WHERE source_id='olist_marketplace'
+  expected_result:
+    columns:
+    - revenue
+    rows:
+    - - 432.0
