@@ -1,0 +1,90 @@
+name: remediation-clarification-protocol4-inspected-regression
+version: 3
+dataset_type: remediation_regression
+evaluation_purpose: inspected_regression_unsealed
+protocol_version: 4
+status: inspected_regression_unsealed
+expected_counts:
+  single_cases: 0
+  clarification_interactions: 4
+  memory_dialogues: 0
+unsupported_task_kinds: []
+engine: PostgreSQL
+fixture: fixture.sql
+sources:
+- cosmetics_shop
+- olist_marketplace
+languages:
+- vi
+- en
+metric_protocol: v2_full_result_contract
+cases_file: cases.yaml
+split_policy: Two dev and two inspected test interactions copied unchanged from v3. Already inspected regression;
+  not confirmatory.
+dataset_policy: Questions and gold SQL are authored independently for this remediation set. Fixtures are synthetic
+  and reused from multisource_v1, so this set is not an independent data-source sample. Families, not paraphrases,
+  are the unit for any future split. A new sealed holdout must be authored after implementation freeze and reviewed
+  by a second human before confirmatory model calls.
+business_column_contract:
+  columns: Each case lists every requested measure and grouping dimension by stable ID, with actual_alias and gold_alias
+    specified before scoring. All listed dimensions and measures are required; extra columns fail output-contract
+    compliance but do not invalidate a correctly projected business answer. No column is selected by matching observed
+    values.
+output_contract:
+  aliases: Exact gold aliases and column order.
+  row_grain: Exactly the requested grain; duplicate rows and NULLs preserved.
+  ordering: Row order is graded only when the question explicitly requests an order or sequence; “per day” or “by
+    category” alone does not request sorting.
+  numeric_tolerance:
+    absolute: 1.0e-06
+    relative: 1.0e-06
+scores:
+  primary: business_result_correct
+  secondary: output_contract_compliant
+  historical: result_correct remains strict and comparable only with its own protocol version.
+limitations:
+- Small diagnostic set; no statistical efficacy claim.
+- Synthetic cosmetics and Olist-like fixture rows; not production datasets.
+- Gold SQL has not received independent second-human adjudication.
+- Candidate test labels are visible and not yet eligible for confirmatory claims.
+schema: analytics.event_activity(source_id text,event_id text,event_date date,event_name text, user_id text,session_id
+  text,item_id text,item_category text,revenue numeric, ep jsonb). One source per query. Olist order_id is nested
+  at ep.order_id.
+metric_definitions: Count event rows for event count; count distinct user_id for users; sum revenue only over purchase-role
+  rows (purchase for cosmetics_shop and order_purchased for olist_marketplace). payment_made rows are not purchased-item
+  revenue. Order IDs are nested and require distinct ep->>'order_id'. Currency remains source-native; do not combine
+  USD and BRL.
+output_aliases:
+  metrics:
+    events: events
+    users: users
+    purchases: purchases
+    revenue: revenue
+    buyers: buyers
+    viewers: viewers
+    buyer_conversion_rate: buyer_conversion_rate
+  dimensions:
+    event_date: event_date
+    event_name: event_name
+    item_category: item_category
+oracle_policy: Hidden complete source/metric/period intent is authored independently of predictions. ask_fields
+  lists expected legitimate clarification needs, not the universe of known oracle facts. Only requested, offered,
+  known fields are delivered, at most two rounds. No numeric gold answer is given to any model.
+discussion_scoring: The return_ordinal follow-up is predeclared as discussion_answer because Texa may answer it
+  from an earlier result without producing a new query-result table. This turn is retained in every variant but
+  is not SQL-result graded. A memory comparison containing this task kind is invalid for efficacy claims; report
+  SQL-gradable coverage separately.
+continuation_protocol: Single-turn, clarification, and memory suites use the same requested-known-fields subset
+  rule and maximum two clarification rounds. User information is revealed only in response to an actual clarification.
+ordering_policy: Set ordered=true only for questions that explicitly request row ordering or sequence. Grouping
+  by a dimension, a daily trend, or asking for a top category does not require presentation-order equality; ranking/selection
+  remains encoded in the expected rows and gold SQL. The copied v3 questions do not explicitly request row order,
+  so their ordered flags are false.
+schema_version: 3
+prior_attempt: The v3 source-conflict interaction omitted hidden period intent. Preserve its raw result and mark
+  that comparison invalid for evaluation; this revision repairs the interaction contract only.
+oracle_field_ids:
+- recipe
+- time_range
+- context:source
+- source

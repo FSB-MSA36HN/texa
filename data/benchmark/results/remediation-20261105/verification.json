@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "verified_at": "2026-11-05",
+  "backend_tests": {
+    "passed": 255,
+    "skipped": 12,
+    "failed": 0
+  },
+  "frontend": {
+    "build": "passed",
+    "lint": "passed"
+  },
+  "playwright_e2e": {
+    "status": "passed",
+    "passed": 15,
+    "total": 15,
+    "elapsed_seconds": 20.6,
+    "database_port": 15433,
+    "fixture_snapshot_restored": true
+  },
+  "additional_checks": [
+    {
+      "artifact": "data/benchmark/results/remediation-20261105/live-api-load.json",
+      "description": "Eight simultaneous real-model API requests with independent session cookies completed correctly; eight cross-session turn reads returned 404. This is a small demo sanity check, not production-capacity evidence."
+    },
+    {
+      "artifact": "data/benchmark/results/remediation-20261105/current-head-regression.json",
+      "description": "Real-model 12-question memory regression answered all 12 expected queries correctly; after social noise, an ordinal follow-up matched independent gold with 31 daily rows and the expected daily-metric sum."
+    }
+  ],
+  "limitations": [
+    "Observed latency is not an established SLO; measure p50/p95 under representative class concurrency before making a capacity claim.",
+    "No independent human-authored holdout has been evaluated; the current suites are small and should not be presented as broad evidence of generalization.",
+    "Memory and clarification v3 ablations are invalid for comparative claims; see regression-v3/validity.json."
+  ]
+}

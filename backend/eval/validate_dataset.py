@@ -190,7 +190,7 @@ def validate_remediation_regression(directory: Path, *, check_lock: bool = True)
     manifest = yaml.safe_load(manifest_path.read_text())
     if (manifest.get('dataset_type') != 'remediation_regression'
             or manifest.get('evaluation_purpose') != 'inspected_regression_unsealed'
-            or manifest.get('protocol_version') != 3
+            or manifest.get('schema_version', manifest.get('protocol_version')) != 3
             or manifest.get('status') != 'inspected_regression_unsealed'):
         raise ValueError('remediation regression requires its declared dataset type and inspected purpose')
     cases = load_cases(directory / 'cases.yaml')
@@ -262,9 +262,37 @@ def validate_remediation_regression(directory: Path, *, check_lock: bool = True)
         ask_fields = item.get('ask_fields')
         if not isinstance(ask_fields, list) or len(ask_fields) != len(set(ask_fields)):
             raise ValueError(f"{item['id']}: ask_fields must be a unique list")
-        check_oracle(item.get('oracle_answers') or {}, item['id'], set(ask_fields))
-        if set(item.get('oracle_answers') or {}) != set(ask_fields):
-            raise ValueError(f"{item['id']}: clarification oracle labels must exactly match requested fields")
+        answers = item.get('oracle_answers') or {}
+        if manifest.get('protocol_version', 3) < 4:
+            check_oracle(answers, item['id'], set(ask_fields))
+            if set(answers) != set(ask_fields):
+                raise ValueError(f"{item['id']}: clarification oracle labels must exactly match requested fields")
+        else:
+            # Expected clarification needs and the user's known intent are
+            # separate contracts. The runner still discloses requested fields only.
+            declared_fields = manifest.get('oracle_field_ids') or []
+            supported_fields = {'recipe', 'time_range', 'source', 'context:source'}
+            if (not isinstance(declared_fields, list)
+                    or any(not isinstance(field, str) for field in declared_fields)
+                    or len(declared_fields) != len(set(declared_fields))
+                    or not set(declared_fields) <= supported_fields):
+                raise ValueError('unsupported interaction oracle field declaration')
+            check_oracle(answers, item['id'], set(declared_fields))
+            if not set(ask_fields) <= set(answers):
+                raise ValueError(f"{item['id']}: expected clarification field lacks known user intent")
+            intent = item.get('oracle_intent') or {}
+            if intent.get('source_id') not in sources:
+                raise ValueError(f"{item['id']}: effective source intent is outside scope")
+            if intent.get('metric') != (item.get('state') or {}).get('metric'):
+                raise ValueError(f"{item['id']}: metric intent differs from authored state")
+            if intent.get('time_range') != (item.get('state') or {}).get('time_range'):
+                raise ValueError(f"{item['id']}: period intent differs from authored state")
+            expected_values = {'source': intent.get('source_id'),
+                               'context:source': intent.get('source_id'),
+                               'recipe': intent.get('metric'), 'time_range': intent.get('time_range')}
+            for field, values in answers.items():
+                if values != [expected_values[field]]:
+                    raise ValueError(f"{item['id']}: oracle answer differs from declared {field} intent")
         oracle = item.get('oracle_answers') or {}
         if 'context:source' in oracle and not set(oracle['context:source']) <= sources:
             raise ValueError(f"{item['id']}: source oracle value is outside manifest scope")

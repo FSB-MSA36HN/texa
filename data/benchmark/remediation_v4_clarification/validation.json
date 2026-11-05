@@ -1,0 +1,24 @@
+{
+  "dataset": "remediation-clarification-protocol4-inspected-regression",
+  "dataset_type": "remediation_regression",
+  "evaluation_purpose": "inspected_regression_unsealed",
+  "not_fresh_holdout": true,
+  "gold_sql_and_expected_result_digest": "adc20bf827ff4457088417e25bd92220f086dc26783006c3fa573215ccb0662f",
+  "counts": {
+    "single_cases": 0,
+    "clarification_interactions": 4,
+    "memory_dialogues": 0
+  },
+  "intent_label_counts": {
+    "single_time_range_all": 0,
+    "single_source_context": 0
+  },
+  "predeclared_unsupported_turns": [],
+  "hashes": {
+    "cases.yaml": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "dialogues.yaml": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "fixture.sql": "58ab1217845be4dea25978b58a0a1ce810d7c89ba8f850c4c280324724949aa3",
+    "interactions.yaml": "44e86e7f088b01984bd01c3e81a4a4b7f4296726094a3ef70ab6ea4f747bf813",
+    "manifest.yaml": "550d9db8405ce1c2c05fb8c2c64e6a672a869213503e786ae4e216978afaa9dd"
+  }
+}

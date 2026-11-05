@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "source_artifacts": "data/benchmark/results/remediation-20261105/regression-v3/",
+  "raw_artifacts_modified": false,
+  "interpretation": {
+    "single": {
+      "status": "valid_descriptive_comparison",
+      "suite": "single",
+      "repeats": 3,
+      "gradable_results": 48,
+      "texa_F": {
+        "correct": 35,
+        "total": 48,
+        "accuracy": 0.7292
+      },
+      "baseline_B0": {
+        "correct": 41,
+        "total": 48,
+        "accuracy": 0.8542
+      },
+      "claim_limit": "Descriptive result for this small frozen suite only; it does not establish general superiority or statistical certainty."
+    },
+    "memory": {
+      "status": "invalid_for_comparison",
+      "comparisons": [
+        "F_vs_M0",
+        "F_vs_M6"
+      ],
+      "repeats": 3,
+      "reason": "For each variant, each repeat has three SQL-gradable turns and one unsupported discussion/reference turn. All nine SQL turns across three repeats are correct, but the three discussion turns lack a defined output contract. Scenario-level memory efficacy comparison is invalid; SQL coverage alone does not establish memory quality.",
+      "use": "Retain raw traces for diagnostics only; do not report the memory scores as an ablation result."
+    },
+    "clarification": {
+      "status": "invalid_for_comparison",
+      "repeats": 3,
+      "raw_report_status": "valid",
+      "reason": "The source-conflict scenario omitted hidden period intent from the user-simulator oracle. After resolving source, Texa legitimately asked for the missing period, but the runner could not answer. This is incomplete evaluation annotation, so the raw valid label does not establish a fair efficacy comparison.",
+      "use": "Retain raw traces for diagnostics only; do not report the clarification scores as evidence that the missing-period behavior is correct."
+    }
+  },
+  "policy": "Do not edit raw runs or retroactively change their scorer. Re-run invalid suites only after freezing an explicit interaction/task-kind contract and independent semantic oracle."
+}

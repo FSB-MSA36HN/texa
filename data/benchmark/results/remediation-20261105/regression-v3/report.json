@@ -1,0 +1,2692 @@
+{
+  "type": "ablation_report",
+  "comparisons": [
+    {
+      "suite": "clarification",
+      "split": "test",
+      "control": "F",
+      "variant": "C0",
+      "primary": false,
+      "repeats": [
+        1,
+        2,
+        3
+      ],
+      "scenarios": 2,
+      "comparison_status": "valid",
+      "unscored_scenarios": [],
+      "control_summary": {
+        "scenario_success_mean": 0.5,
+        "scenario_success_sd": 0.5477225575051661,
+        "per_repeat_scenario_success": {
+          "1": 0.5,
+          "2": 0.5,
+          "3": 0.5
+        },
+        "repeat_success_sd": 0.0,
+        "result_accuracy": 0.5,
+        "result_count": 6,
+        "result_accuracy_partial_coverage": false,
+        "answer_coverage": {
+          "expected_sql_turns": 6,
+          "unsupported_discussion_turns": 0,
+          "evaluation_runs_included": 3,
+          "sql_gradable_turns": 6
+        },
+        "comparison_status": "valid",
+        "unscored_scenarios": [],
+        "strict_result_accuracy": 0.5,
+        "strict_result_count": 6,
+        "output_contract_compliance": 0.5,
+        "output_contract_count": 6,
+        "business_accuracy_by_source": {
+          "cosmetics_shop": {
+            "correct": 3,
+            "answers": 3,
+            "accuracy": 1.0
+          },
+          "olist_marketplace": {
+            "correct": 0,
+            "answers": 3,
+            "accuracy": 0.0
+          }
+        },
+        "business_accuracy_by_language": {
+          "en": {
+            "correct": 0,
+            "answers": 3,
+            "accuracy": 0.0
+          },
+          "vi": {
+            "correct": 3,
+            "answers": 3,
+            "accuracy": 1.0
+          }
+        },
+        "per_group_success": {
+          "missing_period": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "source_conflict": {
+            "n_run_scenarios": 3,
+            "mean": 0
+          }
+        },
+        "per_group_result_accuracy": {
+          "missing_period": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "source_conflict": {
+            "answer_count": 3,
+            "accuracy": 0.0
+          }
+        },
+        "clarification": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "rounds": 6
+        },
+        "latency_ms": {
+          "n": 6,
+          "mean": 7911.333333333333,
+          "p50": 6602.0,
+          "p95": 11014.0
+        },
+        "usage_mean": {
+          "calls": 1.5,
+          "input_tokens": 3745.5,
+          "model_ms": 7660.666666666667,
+          "output_tokens": 189.83333333333334
+        },
+        "usage_completeness": {
+          "scenarios": 6,
+          "incomplete_scenarios": 0,
+          "complete": true,
+          "interpretation": "complete totals"
+        },
+        "component_activation": {
+          "turn_observations": 6,
+          "clarification_requested": 3,
+          "guess_invoked": 0,
+          "guess_reasons": {
+            "not_applicable": 6
+          },
+          "memory_relations": {
+            "new_topic": 6
+          }
+        },
+        "slot_accuracy": {},
+        "repeats": 3,
+        "scenarios": 2,
+        "scored_scenarios": 2,
+        "run_observations": 6
+      },
+      "variant_summary": {
+        "scenario_success_mean": 0.0,
+        "scenario_success_sd": 0.0,
+        "per_repeat_scenario_success": {
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.0
+        },
+        "repeat_success_sd": 0.0,
+        "result_accuracy": 0.0,
+        "result_count": 6,
+        "result_accuracy_partial_coverage": false,
+        "answer_coverage": {
+          "expected_sql_turns": 6,
+          "unsupported_discussion_turns": 0,
+          "evaluation_runs_included": 3,
+          "sql_gradable_turns": 6
+        },
+        "comparison_status": "valid",
+        "unscored_scenarios": [],
+        "strict_result_accuracy": 0.0,
+        "strict_result_count": 6,
+        "output_contract_compliance": 0.0,
+        "output_contract_count": 6,
+        "business_accuracy_by_source": {
+          "cosmetics_shop": {
+            "correct": 0,
+            "answers": 3,
+            "accuracy": 0.0
+          },
+          "olist_marketplace": {
+            "correct": 0,
+            "answers": 3,
+            "accuracy": 0.0
+          }
+        },
+        "business_accuracy_by_language": {
+          "en": {
+            "correct": 0,
+            "answers": 3,
+            "accuracy": 0.0
+          },
+          "vi": {
+            "correct": 0,
+            "answers": 3,
+            "accuracy": 0.0
+          }
+        },
+        "per_group_success": {
+          "missing_period": {
+            "n_run_scenarios": 3,
+            "mean": 0
+          },
+          "source_conflict": {
+            "n_run_scenarios": 3,
+            "mean": 0
+          }
+        },
+        "per_group_result_accuracy": {
+          "missing_period": {
+            "answer_count": 3,
+            "accuracy": 0.0
+          },
+          "source_conflict": {
+            "answer_count": 3,
+            "accuracy": 0.0
+          }
+        },
+        "clarification": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 3,
+          "precision": 1.0,
+          "recall": 0.5,
+          "rounds": 3
+        },
+        "latency_ms": {
+          "n": 6,
+          "mean": 8583.333333333334,
+          "p50": 8430.0,
+          "p95": 10254.0
+        },
+        "usage_mean": {
+          "calls": 2.0,
+          "input_tokens": 3342.0,
+          "model_ms": 8457.5,
+          "output_tokens": 202.0
+        },
+        "usage_completeness": {
+          "scenarios": 6,
+          "incomplete_scenarios": 0,
+          "complete": true,
+          "interpretation": "complete totals"
+        },
+        "component_activation": {
+          "turn_observations": 6,
+          "clarification_requested": 6,
+          "guess_invoked": 6,
+          "guess_reasons": {
+            "guess_not_in_offered_choices": 6
+          },
+          "memory_relations": {
+            "new_topic": 6
+          }
+        },
+        "slot_accuracy": {},
+        "repeats": 3,
+        "scenarios": 2,
+        "scored_scenarios": 2,
+        "run_observations": 6
+      },
+      "delta_control_minus_variant_success": {
+        "delta": 0.5,
+        "ci95_low": 0.0,
+        "ci95_high": 1.0,
+        "clusters": 2,
+        "iterations": 5000
+      },
+      "delta_control_minus_variant_result_accuracy": {
+        "delta": 0.5,
+        "ci95_low": 0.0,
+        "ci95_high": 1.0,
+        "clusters": 2,
+        "iterations": 5000
+      },
+      "per_group_delta_control_minus_variant": {
+        "missing_period": {
+          "success": {
+            "delta": 1.0,
+            "ci95_low": 1.0,
+            "ci95_high": 1.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 1.0,
+            "ci95_low": 1.0,
+            "ci95_high": 1.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "source_conflict": {
+          "success": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        }
+      }
+    },
+    {
+      "suite": "memory",
+      "split": "test",
+      "control": "F",
+      "variant": "M0",
+      "primary": false,
+      "repeats": [
+        1,
+        2,
+        3
+      ],
+      "scenarios": 2,
+      "comparison_status": "invalid_unsupported_task_kind",
+      "unscored_scenarios": [
+        "rv2dlg_test_return_ordinal"
+      ],
+      "control_summary": {
+        "scenario_success_mean": null,
+        "scenario_success_sd": null,
+        "per_repeat_scenario_success": {
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.0
+        },
+        "repeat_success_sd": 0.0,
+        "result_accuracy": 1.0,
+        "result_count": 9,
+        "result_accuracy_partial_coverage": true,
+        "answer_coverage": {
+          "expected_sql_turns": 12,
+          "unsupported_discussion_turns": 3,
+          "evaluation_runs_included": 3,
+          "sql_gradable_turns": 9
+        },
+        "comparison_status": "invalid_unsupported_task_kind",
+        "unscored_scenarios": [
+          "rv2dlg_test_return_ordinal"
+        ],
+        "strict_result_accuracy": 1.0,
+        "strict_result_count": 6,
+        "output_contract_compliance": null,
+        "output_contract_count": 0,
+        "business_accuracy_by_source": {
+          "olist_marketplace": {
+            "correct": 9,
+            "answers": 9,
+            "accuracy": 1.0
+          }
+        },
+        "business_accuracy_by_language": {
+          "en": {
+            "correct": 3,
+            "answers": 3,
+            "accuracy": 1.0
+          },
+          "pt": {
+            "correct": 6,
+            "answers": 6,
+            "accuracy": 1.0
+          }
+        },
+        "per_group_success": {
+          "new_topic": {
+            "n_run_scenarios": 3,
+            "mean": 0
+          }
+        },
+        "per_group_result_accuracy": {
+          "new_topic": {
+            "answer_count": 6,
+            "accuracy": 1.0
+          }
+        },
+        "clarification": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": null,
+          "recall": null,
+          "rounds": 9
+        },
+        "latency_ms": {
+          "n": 6,
+          "mean": 22651.333333333332,
+          "p50": 21852.0,
+          "p95": 29552.0
+        },
+        "usage_mean": {
+          "calls": 4.0,
+          "input_tokens": 9117.666666666666,
+          "model_ms": 22346.0,
+          "output_tokens": 602.0
+        },
+        "usage_completeness": {
+          "scenarios": 6,
+          "incomplete_scenarios": 0,
+          "complete": true,
+          "interpretation": "complete totals"
+        },
+        "component_activation": {
+          "turn_observations": 12,
+          "clarification_requested": 9,
+          "guess_invoked": 0,
+          "guess_reasons": {
+            "not_applicable": 12
+          },
+          "memory_relations": {
+            "new_topic": 9,
+            "followup": 3
+          }
+        },
+        "slot_accuracy": {
+          "breakdown": {
+            "correct": 9,
+            "total": 9,
+            "accuracy": 1.0
+          },
+          "filters": {
+            "correct": 9,
+            "total": 9,
+            "accuracy": 1.0
+          },
+          "metric": {
+            "correct": 9,
+            "total": 9,
+            "accuracy": 1.0
+          },
+          "time_range": {
+            "correct": 0,
+            "total": 9,
+            "accuracy": 0.0
+          }
+        },
+        "repeats": 3,
+        "scenarios": 2,
+        "scored_scenarios": 1,
+        "run_observations": 3
+      },
+      "variant_summary": {
+        "scenario_success_mean": null,
+        "scenario_success_sd": null,
+        "per_repeat_scenario_success": {
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.0
+        },
+        "repeat_success_sd": 0.0,
+        "result_accuracy": 1.0,
+        "result_count": 9,
+        "result_accuracy_partial_coverage": true,
+        "answer_coverage": {
+          "expected_sql_turns": 12,
+          "unsupported_discussion_turns": 3,
+          "evaluation_runs_included": 3,
+          "sql_gradable_turns": 9
+        },
+        "comparison_status": "invalid_unsupported_task_kind",
+        "unscored_scenarios": [
+          "rv2dlg_test_return_ordinal"
+        ],
+        "strict_result_accuracy": 1.0,
+        "strict_result_count": 6,
+        "output_contract_compliance": null,
+        "output_contract_count": 0,
+        "business_accuracy_by_source": {
+          "olist_marketplace": {
+            "correct": 9,
+            "answers": 9,
+            "accuracy": 1.0
+          }
+        },
+        "business_accuracy_by_language": {
+          "en": {
+            "correct": 3,
+            "answers": 3,
+            "accuracy": 1.0
+          },
+          "pt": {
+            "correct": 6,
+            "answers": 6,
+            "accuracy": 1.0
+          }
+        },
+        "per_group_success": {
+          "new_topic": {
+            "n_run_scenarios": 3,
+            "mean": 0
+          }
+        },
+        "per_group_result_accuracy": {
+          "new_topic": {
+            "answer_count": 6,
+            "accuracy": 1.0
+          }
+        },
+        "clarification": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": null,
+          "recall": null,
+          "rounds": 10
+        },
+        "latency_ms": {
+          "n": 6,
+          "mean": 18057.333333333332,
+          "p50": 16874.0,
+          "p95": 22418.0
+        },
+        "usage_mean": {
+          "calls": 3.6666666666666665,
+          "input_tokens": 7581.666666666667,
+          "model_ms": 17746.0,
+          "output_tokens": 411.8333333333333
+        },
+        "usage_completeness": {
+          "scenarios": 6,
+          "incomplete_scenarios": 0,
+          "complete": true,
+          "interpretation": "complete totals"
+        },
+        "component_activation": {
+          "turn_observations": 12,
+          "clarification_requested": 10,
+          "guess_invoked": 0,
+          "guess_reasons": {
+            "not_applicable": 12
+          },
+          "memory_relations": {
+            "disabled": 12
+          }
+        },
+        "slot_accuracy": {
+          "breakdown": {
+            "correct": 9,
+            "total": 9,
+            "accuracy": 1.0
+          },
+          "filters": {
+            "correct": 9,
+            "total": 9,
+            "accuracy": 1.0
+          },
+          "metric": {
+            "correct": 9,
+            "total": 9,
+            "accuracy": 1.0
+          },
+          "time_range": {
+            "correct": 0,
+            "total": 9,
+            "accuracy": 0.0
+          }
+        },
+        "repeats": 3,
+        "scenarios": 2,
+        "scored_scenarios": 1,
+        "run_observations": 3
+      },
+      "delta_control_minus_variant_success": {
+        "delta": null,
+        "ci95_low": null,
+        "ci95_high": null,
+        "clusters": 0,
+        "iterations": 0
+      },
+      "delta_control_minus_variant_result_accuracy": {
+        "delta": null,
+        "ci95_low": null,
+        "ci95_high": null,
+        "clusters": 0,
+        "iterations": 0
+      },
+      "per_group_delta_control_minus_variant": {
+        "new_topic": {
+          "success": {
+            "delta": null,
+            "ci95_low": null,
+            "ci95_high": null,
+            "clusters": 0,
+            "iterations": 0
+          },
+          "result_accuracy": {
+            "delta": null,
+            "ci95_low": null,
+            "ci95_high": null,
+            "clusters": 0,
+            "iterations": 0
+          }
+        },
+        "return_ordinal": {
+          "success": {
+            "delta": null,
+            "ci95_low": null,
+            "ci95_high": null,
+            "clusters": 0,
+            "iterations": 0
+          },
+          "result_accuracy": {
+            "delta": null,
+            "ci95_low": null,
+            "ci95_high": null,
+            "clusters": 0,
+            "iterations": 0
+          }
+        }
+      }
+    },
+    {
+      "suite": "memory",
+      "split": "test",
+      "control": "F",
+      "variant": "M6",
+      "primary": true,
+      "repeats": [
+        1,
+        2,
+        3
+      ],
+      "scenarios": 2,
+      "comparison_status": "invalid_unsupported_task_kind",
+      "unscored_scenarios": [
+        "rv2dlg_test_return_ordinal"
+      ],
+      "control_summary": {
+        "scenario_success_mean": null,
+        "scenario_success_sd": null,
+        "per_repeat_scenario_success": {
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.0
+        },
+        "repeat_success_sd": 0.0,
+        "result_accuracy": 1.0,
+        "result_count": 9,
+        "result_accuracy_partial_coverage": true,
+        "answer_coverage": {
+          "expected_sql_turns": 12,
+          "unsupported_discussion_turns": 3,
+          "evaluation_runs_included": 3,
+          "sql_gradable_turns": 9
+        },
+        "comparison_status": "invalid_unsupported_task_kind",
+        "unscored_scenarios": [
+          "rv2dlg_test_return_ordinal"
+        ],
+        "strict_result_accuracy": 1.0,
+        "strict_result_count": 6,
+        "output_contract_compliance": null,
+        "output_contract_count": 0,
+        "business_accuracy_by_source": {
+          "olist_marketplace": {
+            "correct": 9,
+            "answers": 9,
+            "accuracy": 1.0
+          }
+        },
+        "business_accuracy_by_language": {
+          "en": {
+            "correct": 3,
+            "answers": 3,
+            "accuracy": 1.0
+          },
+          "pt": {
+            "correct": 6,
+            "answers": 6,
+            "accuracy": 1.0
+          }
+        },
+        "per_group_success": {
+          "new_topic": {
+            "n_run_scenarios": 3,
+            "mean": 0
+          }
+        },
+        "per_group_result_accuracy": {
+          "new_topic": {
+            "answer_count": 6,
+            "accuracy": 1.0
+          }
+        },
+        "clarification": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": null,
+          "recall": null,
+          "rounds": 9
+        },
+        "latency_ms": {
+          "n": 6,
+          "mean": 22651.333333333332,
+          "p50": 21852.0,
+          "p95": 29552.0
+        },
+        "usage_mean": {
+          "calls": 4.0,
+          "input_tokens": 9117.666666666666,
+          "model_ms": 22346.0,
+          "output_tokens": 602.0
+        },
+        "usage_completeness": {
+          "scenarios": 6,
+          "incomplete_scenarios": 0,
+          "complete": true,
+          "interpretation": "complete totals"
+        },
+        "component_activation": {
+          "turn_observations": 12,
+          "clarification_requested": 9,
+          "guess_invoked": 0,
+          "guess_reasons": {
+            "not_applicable": 12
+          },
+          "memory_relations": {
+            "new_topic": 9,
+            "followup": 3
+          }
+        },
+        "slot_accuracy": {
+          "breakdown": {
+            "correct": 9,
+            "total": 9,
+            "accuracy": 1.0
+          },
+          "filters": {
+            "correct": 9,
+            "total": 9,
+            "accuracy": 1.0
+          },
+          "metric": {
+            "correct": 9,
+            "total": 9,
+            "accuracy": 1.0
+          },
+          "time_range": {
+            "correct": 0,
+            "total": 9,
+            "accuracy": 0.0
+          }
+        },
+        "repeats": 3,
+        "scenarios": 2,
+        "scored_scenarios": 1,
+        "run_observations": 3
+      },
+      "variant_summary": {
+        "scenario_success_mean": null,
+        "scenario_success_sd": null,
+        "per_repeat_scenario_success": {
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.0
+        },
+        "repeat_success_sd": 0.0,
+        "result_accuracy": 1.0,
+        "result_count": 9,
+        "result_accuracy_partial_coverage": true,
+        "answer_coverage": {
+          "expected_sql_turns": 12,
+          "unsupported_discussion_turns": 3,
+          "evaluation_runs_included": 3,
+          "sql_gradable_turns": 9
+        },
+        "comparison_status": "invalid_unsupported_task_kind",
+        "unscored_scenarios": [
+          "rv2dlg_test_return_ordinal"
+        ],
+        "strict_result_accuracy": 1.0,
+        "strict_result_count": 6,
+        "output_contract_compliance": null,
+        "output_contract_count": 0,
+        "business_accuracy_by_source": {
+          "olist_marketplace": {
+            "correct": 9,
+            "answers": 9,
+            "accuracy": 1.0
+          }
+        },
+        "business_accuracy_by_language": {
+          "en": {
+            "correct": 3,
+            "answers": 3,
+            "accuracy": 1.0
+          },
+          "pt": {
+            "correct": 6,
+            "answers": 6,
+            "accuracy": 1.0
+          }
+        },
+        "per_group_success": {
+          "new_topic": {
+            "n_run_scenarios": 3,
+            "mean": 0
+          }
+        },
+        "per_group_result_accuracy": {
+          "new_topic": {
+            "answer_count": 6,
+            "accuracy": 1.0
+          }
+        },
+        "clarification": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": null,
+          "recall": null,
+          "rounds": 9
+        },
+        "latency_ms": {
+          "n": 6,
+          "mean": 17239.166666666668,
+          "p50": 16866.0,
+          "p95": 19796.0
+        },
+        "usage_mean": {
+          "calls": 3.6666666666666665,
+          "input_tokens": 7692.166666666667,
+          "model_ms": 16993.333333333332,
+          "output_tokens": 424.5
+        },
+        "usage_completeness": {
+          "scenarios": 6,
+          "incomplete_scenarios": 0,
+          "complete": true,
+          "interpretation": "complete totals"
+        },
+        "component_activation": {
+          "turn_observations": 12,
+          "clarification_requested": 9,
+          "guess_invoked": 0,
+          "guess_reasons": {
+            "not_applicable": 12
+          },
+          "memory_relations": {
+            "window6": 12
+          }
+        },
+        "slot_accuracy": {
+          "breakdown": {
+            "correct": 9,
+            "total": 9,
+            "accuracy": 1.0
+          },
+          "filters": {
+            "correct": 9,
+            "total": 9,
+            "accuracy": 1.0
+          },
+          "metric": {
+            "correct": 9,
+            "total": 9,
+            "accuracy": 1.0
+          },
+          "time_range": {
+            "correct": 0,
+            "total": 9,
+            "accuracy": 0.0
+          }
+        },
+        "repeats": 3,
+        "scenarios": 2,
+        "scored_scenarios": 1,
+        "run_observations": 3
+      },
+      "delta_control_minus_variant_success": {
+        "delta": null,
+        "ci95_low": null,
+        "ci95_high": null,
+        "clusters": 0,
+        "iterations": 0
+      },
+      "delta_control_minus_variant_result_accuracy": {
+        "delta": null,
+        "ci95_low": null,
+        "ci95_high": null,
+        "clusters": 0,
+        "iterations": 0
+      },
+      "per_group_delta_control_minus_variant": {
+        "new_topic": {
+          "success": {
+            "delta": null,
+            "ci95_low": null,
+            "ci95_high": null,
+            "clusters": 0,
+            "iterations": 0
+          },
+          "result_accuracy": {
+            "delta": null,
+            "ci95_low": null,
+            "ci95_high": null,
+            "clusters": 0,
+            "iterations": 0
+          }
+        },
+        "return_ordinal": {
+          "success": {
+            "delta": null,
+            "ci95_low": null,
+            "ci95_high": null,
+            "clusters": 0,
+            "iterations": 0
+          },
+          "result_accuracy": {
+            "delta": null,
+            "ci95_low": null,
+            "ci95_high": null,
+            "clusters": 0,
+            "iterations": 0
+          }
+        }
+      }
+    },
+    {
+      "suite": "single",
+      "split": "test",
+      "control": "F",
+      "variant": "B0",
+      "primary": false,
+      "repeats": [
+        1,
+        2,
+        3
+      ],
+      "scenarios": 16,
+      "comparison_status": "valid",
+      "unscored_scenarios": [],
+      "control_summary": {
+        "scenario_success_mean": 0.7291666666666666,
+        "scenario_success_sd": 0.44909286028962936,
+        "per_repeat_scenario_success": {
+          "1": 0.6875,
+          "2": 0.75,
+          "3": 0.75
+        },
+        "repeat_success_sd": 0.03608439182435161,
+        "result_accuracy": 0.7291666666666666,
+        "result_count": 48,
+        "result_accuracy_partial_coverage": false,
+        "answer_coverage": {
+          "expected_sql_turns": 48,
+          "unsupported_discussion_turns": 0,
+          "evaluation_runs_included": 3,
+          "sql_gradable_turns": 48
+        },
+        "comparison_status": "valid",
+        "unscored_scenarios": [],
+        "strict_result_accuracy": 0.7291666666666666,
+        "strict_result_count": 48,
+        "output_contract_compliance": 0.8541666666666666,
+        "output_contract_count": 48,
+        "business_accuracy_by_source": {
+          "cosmetics_shop": {
+            "correct": 20,
+            "answers": 24,
+            "accuracy": 0.8333333333333334
+          },
+          "olist_marketplace": {
+            "correct": 15,
+            "answers": 24,
+            "accuracy": 0.625
+          }
+        },
+        "business_accuracy_by_language": {
+          "en": {
+            "correct": 26,
+            "answers": 33,
+            "accuracy": 0.7878787878787878
+          },
+          "pt": {
+            "correct": 0,
+            "answers": 6,
+            "accuracy": 0.0
+          },
+          "vi": {
+            "correct": 9,
+            "answers": 9,
+            "accuracy": 1.0
+          }
+        },
+        "per_group_success": {
+          "cosmetics_buyer_rate": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "cosmetics_daily_event_trend": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "cosmetics_distinct_users_by_category": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "cosmetics_empty_period_count": {
+            "n_run_scenarios": 3,
+            "mean": 0
+          },
+          "cosmetics_multi_metric_snapshot": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "cosmetics_product_viewers": {
+            "n_run_scenarios": 3,
+            "mean": 0.6666666666666666
+          },
+          "cosmetics_purchase_daily_trend": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "cosmetics_user_engagement_by_event": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "olist_daily_unique_users": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "olist_event_type_distribution": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "olist_multi_metric_summary": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "olist_purchase_buyer_count": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "olist_purchase_daily_trend": {
+            "n_run_scenarios": 3,
+            "mean": 0
+          },
+          "olist_purchase_revenue_trend": {
+            "n_run_scenarios": 3,
+            "mean": 0
+          },
+          "olist_purchased_category_buyers": {
+            "n_run_scenarios": 3,
+            "mean": 0
+          },
+          "olist_top_purchase_category": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          }
+        },
+        "per_group_result_accuracy": {
+          "cosmetics_buyer_rate": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "cosmetics_daily_event_trend": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "cosmetics_distinct_users_by_category": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "cosmetics_empty_period_count": {
+            "answer_count": 3,
+            "accuracy": 0.0
+          },
+          "cosmetics_multi_metric_snapshot": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "cosmetics_product_viewers": {
+            "answer_count": 3,
+            "accuracy": 0.6666666666666666
+          },
+          "cosmetics_purchase_daily_trend": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "cosmetics_user_engagement_by_event": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "olist_daily_unique_users": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "olist_event_type_distribution": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "olist_multi_metric_summary": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "olist_purchase_buyer_count": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "olist_purchase_daily_trend": {
+            "answer_count": 3,
+            "accuracy": 0.0
+          },
+          "olist_purchase_revenue_trend": {
+            "answer_count": 3,
+            "accuracy": 0.0
+          },
+          "olist_purchased_category_buyers": {
+            "answer_count": 3,
+            "accuracy": 0.0
+          },
+          "olist_top_purchase_category": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          }
+        },
+        "clarification": {
+          "tp": 38,
+          "fp": 0,
+          "fn": 4,
+          "precision": 1.0,
+          "recall": 0.9047619047619048,
+          "rounds": 38
+        },
+        "latency_ms": {
+          "n": 48,
+          "mean": 11112.604166666666,
+          "p50": 10495.0,
+          "p95": 15991.0
+        },
+        "usage_mean": {
+          "calls": 1.8541666666666667,
+          "input_tokens": 4345.979166666667,
+          "model_ms": 10979.645833333334,
+          "output_tokens": 325.5625
+        },
+        "usage_completeness": {
+          "scenarios": 48,
+          "incomplete_scenarios": 0,
+          "complete": true,
+          "interpretation": "complete totals"
+        },
+        "component_activation": {
+          "turn_observations": 48,
+          "clarification_requested": 38,
+          "guess_invoked": 0,
+          "guess_reasons": {
+            "not_applicable": 48
+          },
+          "memory_relations": {
+            "new_topic": 48
+          }
+        },
+        "slot_accuracy": {},
+        "repeats": 3,
+        "scenarios": 16,
+        "scored_scenarios": 16,
+        "run_observations": 48
+      },
+      "variant_summary": {
+        "scenario_success_mean": 0.8541666666666666,
+        "scenario_success_sd": 0.3566739576374165,
+        "per_repeat_scenario_success": {
+          "1": 0.875,
+          "2": 0.8125,
+          "3": 0.875
+        },
+        "repeat_success_sd": 0.03608439182435161,
+        "result_accuracy": 0.8541666666666666,
+        "result_count": 48,
+        "result_accuracy_partial_coverage": false,
+        "answer_coverage": {
+          "expected_sql_turns": 48,
+          "unsupported_discussion_turns": 0,
+          "evaluation_runs_included": 3,
+          "sql_gradable_turns": 48
+        },
+        "comparison_status": "valid",
+        "unscored_scenarios": [],
+        "strict_result_accuracy": 0.8541666666666666,
+        "strict_result_count": 48,
+        "output_contract_compliance": 1.0,
+        "output_contract_count": 48,
+        "business_accuracy_by_source": {
+          "cosmetics_shop": {
+            "correct": 20,
+            "answers": 24,
+            "accuracy": 0.8333333333333334
+          },
+          "olist_marketplace": {
+            "correct": 21,
+            "answers": 24,
+            "accuracy": 0.875
+          }
+        },
+        "business_accuracy_by_language": {
+          "en": {
+            "correct": 27,
+            "answers": 33,
+            "accuracy": 0.8181818181818182
+          },
+          "pt": {
+            "correct": 6,
+            "answers": 6,
+            "accuracy": 1.0
+          },
+          "vi": {
+            "correct": 8,
+            "answers": 9,
+            "accuracy": 0.8888888888888888
+          }
+        },
+        "per_group_success": {
+          "cosmetics_buyer_rate": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "cosmetics_daily_event_trend": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "cosmetics_distinct_users_by_category": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "cosmetics_empty_period_count": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "cosmetics_multi_metric_snapshot": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "cosmetics_product_viewers": {
+            "n_run_scenarios": 3,
+            "mean": 0
+          },
+          "cosmetics_purchase_daily_trend": {
+            "n_run_scenarios": 3,
+            "mean": 0.6666666666666666
+          },
+          "cosmetics_user_engagement_by_event": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "olist_daily_unique_users": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "olist_event_type_distribution": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "olist_multi_metric_summary": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "olist_purchase_buyer_count": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "olist_purchase_daily_trend": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "olist_purchase_revenue_trend": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "olist_purchased_category_buyers": {
+            "n_run_scenarios": 3,
+            "mean": 1
+          },
+          "olist_top_purchase_category": {
+            "n_run_scenarios": 3,
+            "mean": 0
+          }
+        },
+        "per_group_result_accuracy": {
+          "cosmetics_buyer_rate": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "cosmetics_daily_event_trend": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "cosmetics_distinct_users_by_category": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "cosmetics_empty_period_count": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "cosmetics_multi_metric_snapshot": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "cosmetics_product_viewers": {
+            "answer_count": 3,
+            "accuracy": 0.0
+          },
+          "cosmetics_purchase_daily_trend": {
+            "answer_count": 3,
+            "accuracy": 0.6666666666666666
+          },
+          "cosmetics_user_engagement_by_event": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "olist_daily_unique_users": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "olist_event_type_distribution": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "olist_multi_metric_summary": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "olist_purchase_buyer_count": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "olist_purchase_daily_trend": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "olist_purchase_revenue_trend": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "olist_purchased_category_buyers": {
+            "answer_count": 3,
+            "accuracy": 1.0
+          },
+          "olist_top_purchase_category": {
+            "answer_count": 3,
+            "accuracy": 0.0
+          }
+        },
+        "clarification": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": null,
+          "recall": null,
+          "rounds": 0
+        },
+        "latency_ms": {
+          "n": 48,
+          "mean": 5837.958333333333,
+          "p50": 5610.0,
+          "p95": 8811.0
+        },
+        "usage_mean": {
+          "calls": 1.0,
+          "input_tokens": 384.8958333333333,
+          "model_ms": 5827.375,
+          "output_tokens": 182.91666666666666
+        },
+        "usage_completeness": {
+          "scenarios": 48,
+          "incomplete_scenarios": 0,
+          "complete": true,
+          "interpretation": "complete totals"
+        },
+        "component_activation": {
+          "turn_observations": 0,
+          "clarification_requested": 0,
+          "guess_invoked": 0,
+          "guess_reasons": {},
+          "memory_relations": {}
+        },
+        "slot_accuracy": {},
+        "repeats": 3,
+        "scenarios": 16,
+        "scored_scenarios": 16,
+        "run_observations": 48
+      },
+      "delta_control_minus_variant_success": {
+        "delta": -0.125,
+        "ci95_low": -0.41666666666666663,
+        "ci95_high": 0.14583333333333337,
+        "clusters": 16,
+        "iterations": 5000
+      },
+      "delta_control_minus_variant_result_accuracy": {
+        "delta": -0.125,
+        "ci95_low": -0.41666666666666663,
+        "ci95_high": 0.14583333333333337,
+        "clusters": 16,
+        "iterations": 5000
+      },
+      "per_group_delta_control_minus_variant": {
+        "cosmetics_buyer_rate": {
+          "success": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "cosmetics_daily_event_trend": {
+          "success": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "cosmetics_distinct_users_by_category": {
+          "success": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "cosmetics_empty_period_count": {
+          "success": {
+            "delta": -1.0,
+            "ci95_low": -1.0,
+            "ci95_high": -1.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": -1.0,
+            "ci95_low": -1.0,
+            "ci95_high": -1.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "cosmetics_multi_metric_snapshot": {
+          "success": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "cosmetics_product_viewers": {
+          "success": {
+            "delta": 0.6666666666666666,
+            "ci95_low": 0.6666666666666666,
+            "ci95_high": 0.6666666666666666,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.6666666666666666,
+            "ci95_low": 0.6666666666666666,
+            "ci95_high": 0.6666666666666666,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "cosmetics_purchase_daily_trend": {
+          "success": {
+            "delta": 0.33333333333333337,
+            "ci95_low": 0.33333333333333337,
+            "ci95_high": 0.33333333333333337,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.33333333333333337,
+            "ci95_low": 0.33333333333333337,
+            "ci95_high": 0.33333333333333337,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "cosmetics_user_engagement_by_event": {
+          "success": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "olist_daily_unique_users": {
+          "success": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "olist_event_type_distribution": {
+          "success": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "olist_multi_metric_summary": {
+          "success": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "olist_purchase_buyer_count": {
+          "success": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "olist_purchase_daily_trend": {
+          "success": {
+            "delta": -1.0,
+            "ci95_low": -1.0,
+            "ci95_high": -1.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": -1.0,
+            "ci95_low": -1.0,
+            "ci95_high": -1.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "olist_purchase_revenue_trend": {
+          "success": {
+            "delta": -1.0,
+            "ci95_low": -1.0,
+            "ci95_high": -1.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": -1.0,
+            "ci95_low": -1.0,
+            "ci95_high": -1.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "olist_purchased_category_buyers": {
+          "success": {
+            "delta": -1.0,
+            "ci95_low": -1.0,
+            "ci95_high": -1.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": -1.0,
+            "ci95_low": -1.0,
+            "ci95_high": -1.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "olist_top_purchase_category": {
+          "success": {
+            "delta": 1.0,
+            "ci95_low": 1.0,
+            "ci95_high": 1.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 1.0,
+            "ci95_low": 1.0,
+            "ci95_high": 1.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        }
+      }
+    }
+  ],
+  "summaries": {
+    "clarification/test/C0": {
+      "scenario_success_mean": 0.0,
+      "scenario_success_sd": 0.0,
+      "per_repeat_scenario_success": {
+        "1": 0.0,
+        "2": 0.0,
+        "3": 0.0
+      },
+      "repeat_success_sd": 0.0,
+      "result_accuracy": 0.0,
+      "result_count": 6,
+      "result_accuracy_partial_coverage": false,
+      "answer_coverage": {
+        "expected_sql_turns": 6,
+        "unsupported_discussion_turns": 0,
+        "evaluation_runs_included": 3,
+        "sql_gradable_turns": 6
+      },
+      "comparison_status": "valid",
+      "unscored_scenarios": [],
+      "strict_result_accuracy": 0.0,
+      "strict_result_count": 6,
+      "output_contract_compliance": 0.0,
+      "output_contract_count": 6,
+      "business_accuracy_by_source": {
+        "cosmetics_shop": {
+          "correct": 0,
+          "answers": 3,
+          "accuracy": 0.0
+        },
+        "olist_marketplace": {
+          "correct": 0,
+          "answers": 3,
+          "accuracy": 0.0
+        }
+      },
+      "business_accuracy_by_language": {
+        "en": {
+          "correct": 0,
+          "answers": 3,
+          "accuracy": 0.0
+        },
+        "vi": {
+          "correct": 0,
+          "answers": 3,
+          "accuracy": 0.0
+        }
+      },
+      "per_group_success": {
+        "missing_period": {
+          "n_run_scenarios": 3,
+          "mean": 0
+        },
+        "source_conflict": {
+          "n_run_scenarios": 3,
+          "mean": 0
+        }
+      },
+      "per_group_result_accuracy": {
+        "missing_period": {
+          "answer_count": 3,
+          "accuracy": 0.0
+        },
+        "source_conflict": {
+          "answer_count": 3,
+          "accuracy": 0.0
+        }
+      },
+      "clarification": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 3,
+        "precision": 1.0,
+        "recall": 0.5,
+        "rounds": 3
+      },
+      "latency_ms": {
+        "n": 6,
+        "mean": 8583.333333333334,
+        "p50": 8430.0,
+        "p95": 10254.0
+      },
+      "usage_mean": {
+        "calls": 2.0,
+        "input_tokens": 3342.0,
+        "model_ms": 8457.5,
+        "output_tokens": 202.0
+      },
+      "usage_completeness": {
+        "scenarios": 6,
+        "incomplete_scenarios": 0,
+        "complete": true,
+        "interpretation": "complete totals"
+      },
+      "component_activation": {
+        "turn_observations": 6,
+        "clarification_requested": 6,
+        "guess_invoked": 6,
+        "guess_reasons": {
+          "guess_not_in_offered_choices": 6
+        },
+        "memory_relations": {
+          "new_topic": 6
+        }
+      },
+      "slot_accuracy": {},
+      "repeats": 3,
+      "scenarios": 2,
+      "scored_scenarios": 2,
+      "run_observations": 6
+    },
+    "clarification/test/F": {
+      "scenario_success_mean": 0.5,
+      "scenario_success_sd": 0.5477225575051661,
+      "per_repeat_scenario_success": {
+        "1": 0.5,
+        "2": 0.5,
+        "3": 0.5
+      },
+      "repeat_success_sd": 0.0,
+      "result_accuracy": 0.5,
+      "result_count": 6,
+      "result_accuracy_partial_coverage": false,
+      "answer_coverage": {
+        "expected_sql_turns": 6,
+        "unsupported_discussion_turns": 0,
+        "evaluation_runs_included": 3,
+        "sql_gradable_turns": 6
+      },
+      "comparison_status": "valid",
+      "unscored_scenarios": [],
+      "strict_result_accuracy": 0.5,
+      "strict_result_count": 6,
+      "output_contract_compliance": 0.5,
+      "output_contract_count": 6,
+      "business_accuracy_by_source": {
+        "cosmetics_shop": {
+          "correct": 3,
+          "answers": 3,
+          "accuracy": 1.0
+        },
+        "olist_marketplace": {
+          "correct": 0,
+          "answers": 3,
+          "accuracy": 0.0
+        }
+      },
+      "business_accuracy_by_language": {
+        "en": {
+          "correct": 0,
+          "answers": 3,
+          "accuracy": 0.0
+        },
+        "vi": {
+          "correct": 3,
+          "answers": 3,
+          "accuracy": 1.0
+        }
+      },
+      "per_group_success": {
+        "missing_period": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "source_conflict": {
+          "n_run_scenarios": 3,
+          "mean": 0
+        }
+      },
+      "per_group_result_accuracy": {
+        "missing_period": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "source_conflict": {
+          "answer_count": 3,
+          "accuracy": 0.0
+        }
+      },
+      "clarification": {
+        "tp": 6,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "rounds": 6
+      },
+      "latency_ms": {
+        "n": 6,
+        "mean": 7911.333333333333,
+        "p50": 6602.0,
+        "p95": 11014.0
+      },
+      "usage_mean": {
+        "calls": 1.5,
+        "input_tokens": 3745.5,
+        "model_ms": 7660.666666666667,
+        "output_tokens": 189.83333333333334
+      },
+      "usage_completeness": {
+        "scenarios": 6,
+        "incomplete_scenarios": 0,
+        "complete": true,
+        "interpretation": "complete totals"
+      },
+      "component_activation": {
+        "turn_observations": 6,
+        "clarification_requested": 3,
+        "guess_invoked": 0,
+        "guess_reasons": {
+          "not_applicable": 6
+        },
+        "memory_relations": {
+          "new_topic": 6
+        }
+      },
+      "slot_accuracy": {},
+      "repeats": 3,
+      "scenarios": 2,
+      "scored_scenarios": 2,
+      "run_observations": 6
+    },
+    "memory/test/F": {
+      "scenario_success_mean": null,
+      "scenario_success_sd": null,
+      "per_repeat_scenario_success": {
+        "1": 0.0,
+        "2": 0.0,
+        "3": 0.0
+      },
+      "repeat_success_sd": 0.0,
+      "result_accuracy": 1.0,
+      "result_count": 9,
+      "result_accuracy_partial_coverage": true,
+      "answer_coverage": {
+        "expected_sql_turns": 12,
+        "unsupported_discussion_turns": 3,
+        "evaluation_runs_included": 3,
+        "sql_gradable_turns": 9
+      },
+      "comparison_status": "invalid_unsupported_task_kind",
+      "unscored_scenarios": [
+        "rv2dlg_test_return_ordinal"
+      ],
+      "strict_result_accuracy": 1.0,
+      "strict_result_count": 6,
+      "output_contract_compliance": null,
+      "output_contract_count": 0,
+      "business_accuracy_by_source": {
+        "olist_marketplace": {
+          "correct": 9,
+          "answers": 9,
+          "accuracy": 1.0
+        }
+      },
+      "business_accuracy_by_language": {
+        "en": {
+          "correct": 3,
+          "answers": 3,
+          "accuracy": 1.0
+        },
+        "pt": {
+          "correct": 6,
+          "answers": 6,
+          "accuracy": 1.0
+        }
+      },
+      "per_group_success": {
+        "new_topic": {
+          "n_run_scenarios": 3,
+          "mean": 0
+        }
+      },
+      "per_group_result_accuracy": {
+        "new_topic": {
+          "answer_count": 6,
+          "accuracy": 1.0
+        }
+      },
+      "clarification": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": null,
+        "recall": null,
+        "rounds": 9
+      },
+      "latency_ms": {
+        "n": 6,
+        "mean": 22651.333333333332,
+        "p50": 21852.0,
+        "p95": 29552.0
+      },
+      "usage_mean": {
+        "calls": 4.0,
+        "input_tokens": 9117.666666666666,
+        "model_ms": 22346.0,
+        "output_tokens": 602.0
+      },
+      "usage_completeness": {
+        "scenarios": 6,
+        "incomplete_scenarios": 0,
+        "complete": true,
+        "interpretation": "complete totals"
+      },
+      "component_activation": {
+        "turn_observations": 12,
+        "clarification_requested": 9,
+        "guess_invoked": 0,
+        "guess_reasons": {
+          "not_applicable": 12
+        },
+        "memory_relations": {
+          "new_topic": 9,
+          "followup": 3
+        }
+      },
+      "slot_accuracy": {
+        "breakdown": {
+          "correct": 9,
+          "total": 9,
+          "accuracy": 1.0
+        },
+        "filters": {
+          "correct": 9,
+          "total": 9,
+          "accuracy": 1.0
+        },
+        "metric": {
+          "correct": 9,
+          "total": 9,
+          "accuracy": 1.0
+        },
+        "time_range": {
+          "correct": 0,
+          "total": 9,
+          "accuracy": 0.0
+        }
+      },
+      "repeats": 3,
+      "scenarios": 2,
+      "scored_scenarios": 1,
+      "run_observations": 3
+    },
+    "memory/test/M0": {
+      "scenario_success_mean": null,
+      "scenario_success_sd": null,
+      "per_repeat_scenario_success": {
+        "1": 0.0,
+        "2": 0.0,
+        "3": 0.0
+      },
+      "repeat_success_sd": 0.0,
+      "result_accuracy": 1.0,
+      "result_count": 9,
+      "result_accuracy_partial_coverage": true,
+      "answer_coverage": {
+        "expected_sql_turns": 12,
+        "unsupported_discussion_turns": 3,
+        "evaluation_runs_included": 3,
+        "sql_gradable_turns": 9
+      },
+      "comparison_status": "invalid_unsupported_task_kind",
+      "unscored_scenarios": [
+        "rv2dlg_test_return_ordinal"
+      ],
+      "strict_result_accuracy": 1.0,
+      "strict_result_count": 6,
+      "output_contract_compliance": null,
+      "output_contract_count": 0,
+      "business_accuracy_by_source": {
+        "olist_marketplace": {
+          "correct": 9,
+          "answers": 9,
+          "accuracy": 1.0
+        }
+      },
+      "business_accuracy_by_language": {
+        "en": {
+          "correct": 3,
+          "answers": 3,
+          "accuracy": 1.0
+        },
+        "pt": {
+          "correct": 6,
+          "answers": 6,
+          "accuracy": 1.0
+        }
+      },
+      "per_group_success": {
+        "new_topic": {
+          "n_run_scenarios": 3,
+          "mean": 0
+        }
+      },
+      "per_group_result_accuracy": {
+        "new_topic": {
+          "answer_count": 6,
+          "accuracy": 1.0
+        }
+      },
+      "clarification": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": null,
+        "recall": null,
+        "rounds": 10
+      },
+      "latency_ms": {
+        "n": 6,
+        "mean": 18057.333333333332,
+        "p50": 16874.0,
+        "p95": 22418.0
+      },
+      "usage_mean": {
+        "calls": 3.6666666666666665,
+        "input_tokens": 7581.666666666667,
+        "model_ms": 17746.0,
+        "output_tokens": 411.8333333333333
+      },
+      "usage_completeness": {
+        "scenarios": 6,
+        "incomplete_scenarios": 0,
+        "complete": true,
+        "interpretation": "complete totals"
+      },
+      "component_activation": {
+        "turn_observations": 12,
+        "clarification_requested": 10,
+        "guess_invoked": 0,
+        "guess_reasons": {
+          "not_applicable": 12
+        },
+        "memory_relations": {
+          "disabled": 12
+        }
+      },
+      "slot_accuracy": {
+        "breakdown": {
+          "correct": 9,
+          "total": 9,
+          "accuracy": 1.0
+        },
+        "filters": {
+          "correct": 9,
+          "total": 9,
+          "accuracy": 1.0
+        },
+        "metric": {
+          "correct": 9,
+          "total": 9,
+          "accuracy": 1.0
+        },
+        "time_range": {
+          "correct": 0,
+          "total": 9,
+          "accuracy": 0.0
+        }
+      },
+      "repeats": 3,
+      "scenarios": 2,
+      "scored_scenarios": 1,
+      "run_observations": 3
+    },
+    "memory/test/M6": {
+      "scenario_success_mean": null,
+      "scenario_success_sd": null,
+      "per_repeat_scenario_success": {
+        "1": 0.0,
+        "2": 0.0,
+        "3": 0.0
+      },
+      "repeat_success_sd": 0.0,
+      "result_accuracy": 1.0,
+      "result_count": 9,
+      "result_accuracy_partial_coverage": true,
+      "answer_coverage": {
+        "expected_sql_turns": 12,
+        "unsupported_discussion_turns": 3,
+        "evaluation_runs_included": 3,
+        "sql_gradable_turns": 9
+      },
+      "comparison_status": "invalid_unsupported_task_kind",
+      "unscored_scenarios": [
+        "rv2dlg_test_return_ordinal"
+      ],
+      "strict_result_accuracy": 1.0,
+      "strict_result_count": 6,
+      "output_contract_compliance": null,
+      "output_contract_count": 0,
+      "business_accuracy_by_source": {
+        "olist_marketplace": {
+          "correct": 9,
+          "answers": 9,
+          "accuracy": 1.0
+        }
+      },
+      "business_accuracy_by_language": {
+        "en": {
+          "correct": 3,
+          "answers": 3,
+          "accuracy": 1.0
+        },
+        "pt": {
+          "correct": 6,
+          "answers": 6,
+          "accuracy": 1.0
+        }
+      },
+      "per_group_success": {
+        "new_topic": {
+          "n_run_scenarios": 3,
+          "mean": 0
+        }
+      },
+      "per_group_result_accuracy": {
+        "new_topic": {
+          "answer_count": 6,
+          "accuracy": 1.0
+        }
+      },
+      "clarification": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": null,
+        "recall": null,
+        "rounds": 9
+      },
+      "latency_ms": {
+        "n": 6,
+        "mean": 17239.166666666668,
+        "p50": 16866.0,
+        "p95": 19796.0
+      },
+      "usage_mean": {
+        "calls": 3.6666666666666665,
+        "input_tokens": 7692.166666666667,
+        "model_ms": 16993.333333333332,
+        "output_tokens": 424.5
+      },
+      "usage_completeness": {
+        "scenarios": 6,
+        "incomplete_scenarios": 0,
+        "complete": true,
+        "interpretation": "complete totals"
+      },
+      "component_activation": {
+        "turn_observations": 12,
+        "clarification_requested": 9,
+        "guess_invoked": 0,
+        "guess_reasons": {
+          "not_applicable": 12
+        },
+        "memory_relations": {
+          "window6": 12
+        }
+      },
+      "slot_accuracy": {
+        "breakdown": {
+          "correct": 9,
+          "total": 9,
+          "accuracy": 1.0
+        },
+        "filters": {
+          "correct": 9,
+          "total": 9,
+          "accuracy": 1.0
+        },
+        "metric": {
+          "correct": 9,
+          "total": 9,
+          "accuracy": 1.0
+        },
+        "time_range": {
+          "correct": 0,
+          "total": 9,
+          "accuracy": 0.0
+        }
+      },
+      "repeats": 3,
+      "scenarios": 2,
+      "scored_scenarios": 1,
+      "run_observations": 3
+    },
+    "single/test/B0": {
+      "scenario_success_mean": 0.8541666666666666,
+      "scenario_success_sd": 0.3566739576374165,
+      "per_repeat_scenario_success": {
+        "1": 0.875,
+        "2": 0.8125,
+        "3": 0.875
+      },
+      "repeat_success_sd": 0.03608439182435161,
+      "result_accuracy": 0.8541666666666666,
+      "result_count": 48,
+      "result_accuracy_partial_coverage": false,
+      "answer_coverage": {
+        "expected_sql_turns": 48,
+        "unsupported_discussion_turns": 0,
+        "evaluation_runs_included": 3,
+        "sql_gradable_turns": 48
+      },
+      "comparison_status": "valid",
+      "unscored_scenarios": [],
+      "strict_result_accuracy": 0.8541666666666666,
+      "strict_result_count": 48,
+      "output_contract_compliance": 1.0,
+      "output_contract_count": 48,
+      "business_accuracy_by_source": {
+        "cosmetics_shop": {
+          "correct": 20,
+          "answers": 24,
+          "accuracy": 0.8333333333333334
+        },
+        "olist_marketplace": {
+          "correct": 21,
+          "answers": 24,
+          "accuracy": 0.875
+        }
+      },
+      "business_accuracy_by_language": {
+        "en": {
+          "correct": 27,
+          "answers": 33,
+          "accuracy": 0.8181818181818182
+        },
+        "pt": {
+          "correct": 6,
+          "answers": 6,
+          "accuracy": 1.0
+        },
+        "vi": {
+          "correct": 8,
+          "answers": 9,
+          "accuracy": 0.8888888888888888
+        }
+      },
+      "per_group_success": {
+        "cosmetics_buyer_rate": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "cosmetics_daily_event_trend": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "cosmetics_distinct_users_by_category": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "cosmetics_empty_period_count": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "cosmetics_multi_metric_snapshot": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "cosmetics_product_viewers": {
+          "n_run_scenarios": 3,
+          "mean": 0
+        },
+        "cosmetics_purchase_daily_trend": {
+          "n_run_scenarios": 3,
+          "mean": 0.6666666666666666
+        },
+        "cosmetics_user_engagement_by_event": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "olist_daily_unique_users": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "olist_event_type_distribution": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "olist_multi_metric_summary": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "olist_purchase_buyer_count": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "olist_purchase_daily_trend": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "olist_purchase_revenue_trend": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "olist_purchased_category_buyers": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "olist_top_purchase_category": {
+          "n_run_scenarios": 3,
+          "mean": 0
+        }
+      },
+      "per_group_result_accuracy": {
+        "cosmetics_buyer_rate": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "cosmetics_daily_event_trend": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "cosmetics_distinct_users_by_category": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "cosmetics_empty_period_count": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "cosmetics_multi_metric_snapshot": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "cosmetics_product_viewers": {
+          "answer_count": 3,
+          "accuracy": 0.0
+        },
+        "cosmetics_purchase_daily_trend": {
+          "answer_count": 3,
+          "accuracy": 0.6666666666666666
+        },
+        "cosmetics_user_engagement_by_event": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "olist_daily_unique_users": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "olist_event_type_distribution": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "olist_multi_metric_summary": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "olist_purchase_buyer_count": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "olist_purchase_daily_trend": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "olist_purchase_revenue_trend": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "olist_purchased_category_buyers": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "olist_top_purchase_category": {
+          "answer_count": 3,
+          "accuracy": 0.0
+        }
+      },
+      "clarification": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": null,
+        "recall": null,
+        "rounds": 0
+      },
+      "latency_ms": {
+        "n": 48,
+        "mean": 5837.958333333333,
+        "p50": 5610.0,
+        "p95": 8811.0
+      },
+      "usage_mean": {
+        "calls": 1.0,
+        "input_tokens": 384.8958333333333,
+        "model_ms": 5827.375,
+        "output_tokens": 182.91666666666666
+      },
+      "usage_completeness": {
+        "scenarios": 48,
+        "incomplete_scenarios": 0,
+        "complete": true,
+        "interpretation": "complete totals"
+      },
+      "component_activation": {
+        "turn_observations": 0,
+        "clarification_requested": 0,
+        "guess_invoked": 0,
+        "guess_reasons": {},
+        "memory_relations": {}
+      },
+      "slot_accuracy": {},
+      "repeats": 3,
+      "scenarios": 16,
+      "scored_scenarios": 16,
+      "run_observations": 48
+    },
+    "single/test/F": {
+      "scenario_success_mean": 0.7291666666666666,
+      "scenario_success_sd": 0.44909286028962936,
+      "per_repeat_scenario_success": {
+        "1": 0.6875,
+        "2": 0.75,
+        "3": 0.75
+      },
+      "repeat_success_sd": 0.03608439182435161,
+      "result_accuracy": 0.7291666666666666,
+      "result_count": 48,
+      "result_accuracy_partial_coverage": false,
+      "answer_coverage": {
+        "expected_sql_turns": 48,
+        "unsupported_discussion_turns": 0,
+        "evaluation_runs_included": 3,
+        "sql_gradable_turns": 48
+      },
+      "comparison_status": "valid",
+      "unscored_scenarios": [],
+      "strict_result_accuracy": 0.7291666666666666,
+      "strict_result_count": 48,
+      "output_contract_compliance": 0.8541666666666666,
+      "output_contract_count": 48,
+      "business_accuracy_by_source": {
+        "cosmetics_shop": {
+          "correct": 20,
+          "answers": 24,
+          "accuracy": 0.8333333333333334
+        },
+        "olist_marketplace": {
+          "correct": 15,
+          "answers": 24,
+          "accuracy": 0.625
+        }
+      },
+      "business_accuracy_by_language": {
+        "en": {
+          "correct": 26,
+          "answers": 33,
+          "accuracy": 0.7878787878787878
+        },
+        "pt": {
+          "correct": 0,
+          "answers": 6,
+          "accuracy": 0.0
+        },
+        "vi": {
+          "correct": 9,
+          "answers": 9,
+          "accuracy": 1.0
+        }
+      },
+      "per_group_success": {
+        "cosmetics_buyer_rate": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "cosmetics_daily_event_trend": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "cosmetics_distinct_users_by_category": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "cosmetics_empty_period_count": {
+          "n_run_scenarios": 3,
+          "mean": 0
+        },
+        "cosmetics_multi_metric_snapshot": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "cosmetics_product_viewers": {
+          "n_run_scenarios": 3,
+          "mean": 0.6666666666666666
+        },
+        "cosmetics_purchase_daily_trend": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "cosmetics_user_engagement_by_event": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "olist_daily_unique_users": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "olist_event_type_distribution": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "olist_multi_metric_summary": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "olist_purchase_buyer_count": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        },
+        "olist_purchase_daily_trend": {
+          "n_run_scenarios": 3,
+          "mean": 0
+        },
+        "olist_purchase_revenue_trend": {
+          "n_run_scenarios": 3,
+          "mean": 0
+        },
+        "olist_purchased_category_buyers": {
+          "n_run_scenarios": 3,
+          "mean": 0
+        },
+        "olist_top_purchase_category": {
+          "n_run_scenarios": 3,
+          "mean": 1
+        }
+      },
+      "per_group_result_accuracy": {
+        "cosmetics_buyer_rate": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "cosmetics_daily_event_trend": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "cosmetics_distinct_users_by_category": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "cosmetics_empty_period_count": {
+          "answer_count": 3,
+          "accuracy": 0.0
+        },
+        "cosmetics_multi_metric_snapshot": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "cosmetics_product_viewers": {
+          "answer_count": 3,
+          "accuracy": 0.6666666666666666
+        },
+        "cosmetics_purchase_daily_trend": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "cosmetics_user_engagement_by_event": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "olist_daily_unique_users": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "olist_event_type_distribution": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "olist_multi_metric_summary": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "olist_purchase_buyer_count": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        },
+        "olist_purchase_daily_trend": {
+          "answer_count": 3,
+          "accuracy": 0.0
+        },
+        "olist_purchase_revenue_trend": {
+          "answer_count": 3,
+          "accuracy": 0.0
+        },
+        "olist_purchased_category_buyers": {
+          "answer_count": 3,
+          "accuracy": 0.0
+        },
+        "olist_top_purchase_category": {
+          "answer_count": 3,
+          "accuracy": 1.0
+        }
+      },
+      "clarification": {
+        "tp": 38,
+        "fp": 0,
+        "fn": 4,
+        "precision": 1.0,
+        "recall": 0.9047619047619048,
+        "rounds": 38
+      },
+      "latency_ms": {
+        "n": 48,
+        "mean": 11112.604166666666,
+        "p50": 10495.0,
+        "p95": 15991.0
+      },
+      "usage_mean": {
+        "calls": 1.8541666666666667,
+        "input_tokens": 4345.979166666667,
+        "model_ms": 10979.645833333334,
+        "output_tokens": 325.5625
+      },
+      "usage_completeness": {
+        "scenarios": 48,
+        "incomplete_scenarios": 0,
+        "complete": true,
+        "interpretation": "complete totals"
+      },
+      "component_activation": {
+        "turn_observations": 48,
+        "clarification_requested": 38,
+        "guess_invoked": 0,
+        "guess_reasons": {
+          "not_applicable": 48
+        },
+        "memory_relations": {
+          "new_topic": 48
+        }
+      },
+      "slot_accuracy": {},
+      "repeats": 3,
+      "scenarios": 16,
+      "scored_scenarios": 16,
+      "run_observations": 48
+    }
+  },
+  "warnings": [
+    "Repeated runs are averaged within scenario; bootstrap clusters are scenarios, not repeats.",
+    "A single repeat gives descriptive results only; it does not demonstrate run-to-run stability.",
+    "Synthetic benchmark results do not establish production generalization.",
+    "Memory accuracy comparisons are invalid when a predeclared discussion task lacks an SQL-result contract; coverage is reported separately.",
+    "Usage totals are lower bounds if a provider call failed before usage was recorded."
+  ]
+}
