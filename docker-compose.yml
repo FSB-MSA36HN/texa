@@ -1,5 +1,6 @@
 services:
   postgres:
+    restart: "no"
     image: postgres:17
     environment:
       POSTGRES_USER: texa
@@ -15,6 +16,7 @@ services:
       retries: 20
 
   airflow:
+    restart: "no"
     image: apache/airflow:2.10.5-python3.12
     command: standalone
     depends_on:
@@ -36,6 +38,7 @@ services:
       - ./data:/opt/texa/data
 
   api:
+    restart: "no"
     build: ./backend
     depends_on:
       postgres: {condition: service_healthy}
@@ -48,6 +51,7 @@ services:
       - ./catalog:/app/catalog:ro
 
   web:
+    restart: "no"
     build: ./web
     depends_on: [api]
     ports: ["15173:80"]
