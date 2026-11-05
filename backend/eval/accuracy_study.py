@@ -13,6 +13,7 @@ SUITE_VARIANTS = {
     "single": set(VARIANTS),
     "clarification": {"B1", "T00", "T10", "T01", "T11"},
     "conversation": {"B1", "T00", "T10", "T01", "T11"},
+    "diagnostic": {"B1", "T00", "T10", "T01", "T11"},
 }
 
 

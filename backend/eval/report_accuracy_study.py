@@ -124,13 +124,20 @@ def compare(runs: list[dict[str, Any]], *, iterations: int = 3000) -> dict[str, 
         retrieved = sum(bool(row.get("retrieval_activated") or (row.get("texa_accuracy_trace") or {}).get("retrieval", {}).get("ids"))
                         for values in ids_to_rows.values() for row in values)
         consistency = sum((t or {}).get("consistency", {}).get("scheduled", 1) > 1 for t in trace_values)
+        diagnostic_rows = [row for values in ids_to_rows.values() for row in values if row.get("action_scorable")]
         summaries[variant] = {"runs": len(variant_runs), "answer_count": answer_total,
             "business_accuracy": answer_correct / answer_total if answer_total else None,
             "latency_ms_p50": statistics.median(latencies) if latencies else None,
             "latency_ms_p95": sorted(latencies)[min(len(latencies)-1, math.ceil(.95*len(latencies))-1)] if latencies else None,
-            "tokens": tokens, "cost_estimated_usd": cost, "retrieval_activated_scenarios": retrieved,
+            "tokens": tokens, "cost_estimated_usd": cost,
+            "diagnostic_action_accuracy": sum(bool(row.get("action_correct")) for row in diagnostic_rows) / len(diagnostic_rows) if diagnostic_rows else None,
+            "usage_incomplete_scenarios": sum(not row.get("usage_complete", False) for values in ids_to_rows.values() for row in values), "retrieval_activated_scenarios": retrieved,
             "consistency_completed_scenarios": consistency,
             "unsupported_diagnostics": sum(int(row.get("unsupported_turn_count", 0)) for values in ids_to_rows.values() for row in values)}
+    if manifests[0]["suite"] == "diagnostic":
+        return {"suite": "diagnostic", "split": manifests[0]["split"], "variants": summaries,
+                "paired_comparisons": {}, "factorial_effects": None,
+                "interpretation": "Observable action diagnostics only; injection and explanation rubrics require manual review. Not SQL result accuracy."}
     names = sorted(by_variant)
     pairs = {}
     rng = random.Random(731904)

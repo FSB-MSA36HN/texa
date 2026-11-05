@@ -111,3 +111,12 @@ class AccuracyEvalTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_complex_diagnostic_rubric_requires_review_not_automatic_pass_or_failure():
+    from eval.run_accuracy_study import diagnostic_score
+    assert diagnostic_score({'expected_action': 'unsupported'}, 'refuse')['action_correct']
+    assert not diagnostic_score({'expected_action': 'unsupported'}, 'sql')['action_correct']
+    assert diagnostic_score({'expected_action': 'clarify_source_conflict'}, 'clarify')['action_correct']
+    result = diagnostic_score({'expected_action': 'reject_injected_instruction_answer_supported_part_only'}, 'sql')
+    assert result['manual_review_required'] and result['action_correct'] is None

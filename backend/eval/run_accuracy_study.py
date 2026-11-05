@@ -41,7 +41,7 @@ def _restore_mapping(mapping, prior):
                 mapping[key] = value
 
 ROOT = Path(__file__).resolve().parents[2]
-SUITE_FILES = {"single": "cases.yaml", "clarification": "interactions.yaml", "conversation": "dialogues.yaml"}
+SUITE_FILES = {"single": "cases.yaml", "clarification": "interactions.yaml", "conversation": "dialogues.yaml", "diagnostic": "cases.yaml"}
 
 
 def load_suite(directory: Path, suite: str, split: str, world: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
@@ -237,6 +237,16 @@ def _score_rows(record: dict, item: dict) -> dict:
         return {"business_result_correct": False, "result_correct": False, "answer_count": 1, "answer_correct": 0}
 
 
+def diagnostic_score(item, actual):
+    expected = item.get("expected_action")
+    allowed = {"unsupported": {"refuse"}, "clarify_source_conflict": {"clarify"},
+               "clarify_or_explain_unsupported": {"clarify", "refuse"}}.get(expected)
+    correct = actual in allowed if allowed is not None else None
+    return {"answer_count": 0, "answer_correct": 0, "expected_action": expected,
+            "actual_action": actual, "action_correct": correct, "action_scorable": allowed is not None,
+            "success": correct, "manual_review_required": allowed is None, "unsupported_turn_count": 1}
+
+
 def protocol_item(item):
     """Normalize public clarification-field spelling, without adding oracle facts."""
     aliases = {"metric": "recipe", "source": "context:source", "source_id": "context:source"}
@@ -366,6 +376,8 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                   "public_context_hash": public_context_hash,
                   "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                   "example_policy": "sql_verified",
+                  "usage_policy": "known completed logical calls; unresolved provider attempt reservations remain in the cumulative gateway ledger",
+                  "sampling_policy": "identical prompts with provider defaults, no assumed diversity",
                   "model": args.model, "feature_config": {"example_retrieval": args.variant in {"T10", "T11"},
                   "consistency": args.variant in {"T01", "T11"}}}
     output = args.output.resolve(); output.relative_to(ROOT)
@@ -435,8 +447,14 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                     row = {**result, "sql": raw_sql, "retrieved_example_ids": selected_examples,
                            "retrieval_activated": bool(selected_examples), "success": bool(result["business_result_correct"])}
                 elif args.variant == "B1":
-                    row = _run_raw_scenario(item, args.suite, manifest,
-                                            RawHistorySession(args.model, dsn, public_context=public_context))
+                    raw_session = RawHistorySession(args.model, dsn, public_context=public_context)
+                    if args.suite == "diagnostic":
+                        current = raw_session.ask(item["question"], manifest, ui_scope=item.get("ui_scope"))
+                        row = diagnostic_score(item, current.get("action"))
+                        row["refusal_reason"] = current.get("reason")
+                        row["sql"] = current.get("sql")
+                    else:
+                        row = _run_raw_scenario(item, args.suite, manifest, raw_session)
                 else:
                     os.environ["TEXA_ABLATION_VARIANT"] = "F"
                     os.environ.pop("TEXA_MEMORY_MODE", None)
@@ -456,6 +474,12 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                                "success": bool(record.get("business_result_correct")), "turns": [{"trace": trace(current)}],
                                "texa_accuracy_trace": ((current.get("candidate") or
                                                         (current.get("state") or {}).get("candidate") or {}).get("_accuracy") )}
+                    elif args.suite == "diagnostic":
+                        current = session.ask(item["question"])
+                        actual = {"answered": "sql", "discussed": "sql", "refused": "refuse",
+                                  "conversation": "conversation", "needs_clarification": "clarify"}.get(current["status"], "error")
+                        row = diagnostic_score(item, actual)
+                        row["turns"] = [{"trace": trace(current)}]
                     elif args.suite == "clarification":
                         row = run_interaction(item, session)
                         row["unsupported_turn_count"] = 0
@@ -500,6 +524,8 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
             input_price = float(os.environ.get("TEXA_GATEWAY_INPUT_PRICE", "0") or 0)
             output_price = float(os.environ.get("TEXA_GATEWAY_OUTPUT_PRICE", "0") or 0)
             usage = row["usage"]
+            row["usage_complete"] = usage["calls"] == row["model_call_attempts"]
+            row["cost_basis"] = "known token usage only; gateway ledger retains uncertain attempt reservations"
             row["cost_estimated_usd"] = (usage["input_tokens"] * input_price +
                                           usage["output_tokens"] * output_price)
             write(row)
@@ -513,7 +539,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset-dir", type=Path, default=ROOT / "data/benchmark/challenge_v1")
     parser.add_argument("--suite", choices=SUITE_FILES, default="single")
-    parser.add_argument("--split", choices=("dev", "test"), default="dev")
+    parser.add_argument("--split", choices=("dev", "test", "diagnostic"), default="dev")
     parser.add_argument("--world", choices=("base", "grain_counterexample", "coverage_edge"), required=True)
     parser.add_argument("--variant", choices=tuple(sorted({v for values in SUITE_VARIANTS.values() for v in values})), default="B0")
     parser.add_argument("--confirmatory", action="store_true", help="refuse unless a genuinely human-reviewed sealed artifact exists")
@@ -524,6 +550,10 @@ def main(argv=None) -> int:
     parser.add_argument("--output", type=Path, default=ROOT / "backend/eval/results" / f"accuracy-{uuid.uuid4().hex}.jsonl")
     args = parser.parse_args(argv)
     try:
+        if args.repeat < 1:
+            raise ValueError("--repeat must be a positive run index")
+        if (args.suite == "diagnostic") != (args.split == "diagnostic"):
+            raise ValueError("diagnostic suite requires --split diagnostic; answer suites require dev/test")
         manifest, rows = load_suite(args.dataset_dir.resolve(), args.suite, args.split, args.world)
         validate_coverage([{"id": row["id"]} for row in rows], [row["id"] for row in rows],
                           variant=args.variant, suite=args.suite)
