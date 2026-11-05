@@ -1,0 +1,14 @@
+{
+  "model": "gpt-6-luna",
+  "code_commit": "f3aef39",
+  "execution": "Sequential independent processes; rotated variant order across3 repeats. One common budget ledger. Same dedicated PostgreSQL16.2 instance and frozen suite snapshots. No prompt retuning after test.",
+  "gateway_wrapper_transport": {
+    "http_timeout_seconds": 60,
+    "sdk_max_retries": 0,
+    "pricing": "gateway model/info verified before each process",
+    "schema_fallback": "existing strict schema to JSON fallback retained"
+  },
+  "provenance_correction": "preflight effective_model_config.retry_policy has generic SDK default text; actual bounded wrapper overrides SDK retries to0 and timeout60. These actual conditions are common to all arms.",
+  "seed": "Not set; provider default; repeats measure variation, not3 independent datasets.",
+  "cost": "Usage-price estimates only; failed/uncertain provider charge reservation retained."
+}

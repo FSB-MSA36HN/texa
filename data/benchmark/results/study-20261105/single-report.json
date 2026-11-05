@@ -1,0 +1,646 @@
+{
+  "type": "ablation_report",
+  "comparisons": [
+    {
+      "suite": "single",
+      "split": "test",
+      "control": "F",
+      "variant": "B0",
+      "primary": false,
+      "repeats": [
+        1,
+        2,
+        3
+      ],
+      "scenarios": 63,
+      "control_summary": {
+        "scenario_success_mean": 0.7566137566137566,
+        "scenario_success_sd": 0.43026607802016575,
+        "per_repeat_scenario_success": {
+          "1": 0.746031746031746,
+          "2": 0.7619047619047619,
+          "3": 0.7619047619047619
+        },
+        "repeat_success_sd": 0.009164289987136885,
+        "result_accuracy": 0.7566137566137566,
+        "result_count": 189,
+        "per_group_success": {
+          "test_breakdown_campaign_channel": {
+            "n_run_scenarios": 24,
+            "mean": 0.9166666666666666
+          },
+          "test_breakdown_device_type": {
+            "n_run_scenarios": 24,
+            "mean": 0.8333333333333334
+          },
+          "test_breakdown_item_category": {
+            "n_run_scenarios": 24,
+            "mean": 0.8333333333333334
+          },
+          "test_date_edges": {
+            "n_run_scenarios": 48,
+            "mean": 0.8958333333333334
+          },
+          "test_empty_aggregate": {
+            "n_run_scenarios": 24,
+            "mean": 0.7916666666666666
+          },
+          "test_event_conditionals": {
+            "n_run_scenarios": 24,
+            "mean": 0
+          },
+          "test_purchase_nested_filters": {
+            "n_run_scenarios": 9,
+            "mean": 1
+          },
+          "test_top_k_ranking": {
+            "n_run_scenarios": 12,
+            "mean": 0.8333333333333334
+          }
+        },
+        "per_group_result_accuracy": {
+          "test_breakdown_campaign_channel": {
+            "answer_count": 24,
+            "accuracy": 0.9166666666666666
+          },
+          "test_breakdown_device_type": {
+            "answer_count": 24,
+            "accuracy": 0.8333333333333334
+          },
+          "test_breakdown_item_category": {
+            "answer_count": 24,
+            "accuracy": 0.8333333333333334
+          },
+          "test_date_edges": {
+            "answer_count": 48,
+            "accuracy": 0.8958333333333334
+          },
+          "test_empty_aggregate": {
+            "answer_count": 24,
+            "accuracy": 0.7916666666666666
+          },
+          "test_event_conditionals": {
+            "answer_count": 24,
+            "accuracy": 0.0
+          },
+          "test_purchase_nested_filters": {
+            "answer_count": 9,
+            "accuracy": 1.0
+          },
+          "test_top_k_ranking": {
+            "answer_count": 12,
+            "accuracy": 0.8333333333333334
+          }
+        },
+        "clarification": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": null,
+          "recall": null,
+          "rounds": 0
+        },
+        "latency_ms": {
+          "n": 189,
+          "mean": 9610.201058201059,
+          "p50": 9554.0,
+          "p95": 12705.0
+        },
+        "usage_mean": {
+          "calls": 1.9312169312169312,
+          "input_tokens": 3487.296296296296,
+          "model_ms": 9516.640211640211,
+          "output_tokens": 263.63492063492066
+        },
+        "usage_completeness": {
+          "scenarios": 189,
+          "incomplete_scenarios": 0,
+          "complete": true,
+          "interpretation": "complete totals"
+        },
+        "component_activation": {
+          "turn_observations": 189,
+          "clarification_requested": 0,
+          "guess_invoked": 0,
+          "guess_reasons": {
+            "not_applicable": 189
+          },
+          "memory_relations": {
+            "new_topic": 189
+          }
+        },
+        "slot_accuracy": {},
+        "repeats": 3,
+        "scenarios": 63,
+        "run_observations": 189
+      },
+      "variant_summary": {
+        "scenario_success_mean": 0.6878306878306878,
+        "scenario_success_sd": 0.46460925347538,
+        "per_repeat_scenario_success": {
+          "1": 0.7301587301587301,
+          "2": 0.6984126984126984,
+          "3": 0.6349206349206349
+        },
+        "repeat_success_sd": 0.048492864496887195,
+        "result_accuracy": 0.6878306878306878,
+        "result_count": 189,
+        "per_group_success": {
+          "test_breakdown_campaign_channel": {
+            "n_run_scenarios": 24,
+            "mean": 1
+          },
+          "test_breakdown_device_type": {
+            "n_run_scenarios": 24,
+            "mean": 0.875
+          },
+          "test_breakdown_item_category": {
+            "n_run_scenarios": 24,
+            "mean": 0.9166666666666666
+          },
+          "test_date_edges": {
+            "n_run_scenarios": 48,
+            "mean": 0.4583333333333333
+          },
+          "test_empty_aggregate": {
+            "n_run_scenarios": 24,
+            "mean": 0.5416666666666666
+          },
+          "test_event_conditionals": {
+            "n_run_scenarios": 24,
+            "mean": 0.2916666666666667
+          },
+          "test_purchase_nested_filters": {
+            "n_run_scenarios": 9,
+            "mean": 1
+          },
+          "test_top_k_ranking": {
+            "n_run_scenarios": 12,
+            "mean": 1
+          }
+        },
+        "per_group_result_accuracy": {
+          "test_breakdown_campaign_channel": {
+            "answer_count": 24,
+            "accuracy": 1.0
+          },
+          "test_breakdown_device_type": {
+            "answer_count": 24,
+            "accuracy": 0.875
+          },
+          "test_breakdown_item_category": {
+            "answer_count": 24,
+            "accuracy": 0.9166666666666666
+          },
+          "test_date_edges": {
+            "answer_count": 48,
+            "accuracy": 0.4583333333333333
+          },
+          "test_empty_aggregate": {
+            "answer_count": 24,
+            "accuracy": 0.5416666666666666
+          },
+          "test_event_conditionals": {
+            "answer_count": 24,
+            "accuracy": 0.2916666666666667
+          },
+          "test_purchase_nested_filters": {
+            "answer_count": 9,
+            "accuracy": 1.0
+          },
+          "test_top_k_ranking": {
+            "answer_count": 12,
+            "accuracy": 1.0
+          }
+        },
+        "clarification": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "precision": null,
+          "recall": null,
+          "rounds": 0
+        },
+        "latency_ms": {
+          "n": 189,
+          "mean": 6238.941798941799,
+          "p50": 5952.0,
+          "p95": 9459.0
+        },
+        "usage_mean": {
+          "calls": 1.0,
+          "input_tokens": 448.15343915343914,
+          "model_ms": 6227.661375661376,
+          "output_tokens": 211.4920634920635
+        },
+        "usage_completeness": {
+          "scenarios": 189,
+          "incomplete_scenarios": 0,
+          "complete": true,
+          "interpretation": "complete totals"
+        },
+        "component_activation": {
+          "turn_observations": 0,
+          "clarification_requested": 0,
+          "guess_invoked": 0,
+          "guess_reasons": {},
+          "memory_relations": {}
+        },
+        "slot_accuracy": {},
+        "repeats": 3,
+        "scenarios": 63,
+        "run_observations": 189
+      },
+      "delta_control_minus_variant_success": {
+        "delta": 0.06878306878306883,
+        "ci95_low": -0.1454545454545455,
+        "ci95_high": 0.26136363636363635,
+        "clusters": 8,
+        "iterations": 5000
+      },
+      "delta_control_minus_variant_result_accuracy": {
+        "delta": 0.06878306878306883,
+        "ci95_low": -0.14583333333333331,
+        "ci95_high": 0.26449275362318847,
+        "clusters": 8,
+        "iterations": 5000
+      },
+      "per_group_delta_control_minus_variant": {
+        "test_breakdown_campaign_channel": {
+          "success": {
+            "delta": -0.08333333333333337,
+            "ci95_low": -0.08333333333333337,
+            "ci95_high": -0.08333333333333337,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": -0.08333333333333337,
+            "ci95_low": -0.08333333333333337,
+            "ci95_high": -0.08333333333333337,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "test_breakdown_device_type": {
+          "success": {
+            "delta": -0.04166666666666663,
+            "ci95_low": -0.04166666666666663,
+            "ci95_high": -0.04166666666666663,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": -0.04166666666666663,
+            "ci95_low": -0.04166666666666663,
+            "ci95_high": -0.04166666666666663,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "test_breakdown_item_category": {
+          "success": {
+            "delta": -0.08333333333333326,
+            "ci95_low": -0.08333333333333326,
+            "ci95_high": -0.08333333333333326,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": -0.08333333333333326,
+            "ci95_low": -0.08333333333333326,
+            "ci95_high": -0.08333333333333326,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "test_date_edges": {
+          "success": {
+            "delta": 0.43750000000000006,
+            "ci95_low": 0.43750000000000006,
+            "ci95_high": 0.43750000000000006,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.43750000000000006,
+            "ci95_low": 0.43750000000000006,
+            "ci95_high": 0.43750000000000006,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "test_empty_aggregate": {
+          "success": {
+            "delta": 0.25,
+            "ci95_low": 0.25,
+            "ci95_high": 0.25,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.25,
+            "ci95_low": 0.25,
+            "ci95_high": 0.25,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "test_event_conditionals": {
+          "success": {
+            "delta": -0.2916666666666667,
+            "ci95_low": -0.2916666666666667,
+            "ci95_high": -0.2916666666666667,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": -0.2916666666666667,
+            "ci95_low": -0.2916666666666667,
+            "ci95_high": -0.2916666666666667,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "test_purchase_nested_filters": {
+          "success": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": 0.0,
+            "ci95_low": 0.0,
+            "ci95_high": 0.0,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        },
+        "test_top_k_ranking": {
+          "success": {
+            "delta": -0.16666666666666663,
+            "ci95_low": -0.16666666666666663,
+            "ci95_high": -0.16666666666666663,
+            "clusters": 1,
+            "iterations": 5000
+          },
+          "result_accuracy": {
+            "delta": -0.16666666666666663,
+            "ci95_low": -0.16666666666666663,
+            "ci95_high": -0.16666666666666663,
+            "clusters": 1,
+            "iterations": 5000
+          }
+        }
+      }
+    }
+  ],
+  "summaries": {
+    "single/test/B0": {
+      "scenario_success_mean": 0.6878306878306878,
+      "scenario_success_sd": 0.46460925347538,
+      "per_repeat_scenario_success": {
+        "1": 0.7301587301587301,
+        "2": 0.6984126984126984,
+        "3": 0.6349206349206349
+      },
+      "repeat_success_sd": 0.048492864496887195,
+      "result_accuracy": 0.6878306878306878,
+      "result_count": 189,
+      "per_group_success": {
+        "test_breakdown_campaign_channel": {
+          "n_run_scenarios": 24,
+          "mean": 1
+        },
+        "test_breakdown_device_type": {
+          "n_run_scenarios": 24,
+          "mean": 0.875
+        },
+        "test_breakdown_item_category": {
+          "n_run_scenarios": 24,
+          "mean": 0.9166666666666666
+        },
+        "test_date_edges": {
+          "n_run_scenarios": 48,
+          "mean": 0.4583333333333333
+        },
+        "test_empty_aggregate": {
+          "n_run_scenarios": 24,
+          "mean": 0.5416666666666666
+        },
+        "test_event_conditionals": {
+          "n_run_scenarios": 24,
+          "mean": 0.2916666666666667
+        },
+        "test_purchase_nested_filters": {
+          "n_run_scenarios": 9,
+          "mean": 1
+        },
+        "test_top_k_ranking": {
+          "n_run_scenarios": 12,
+          "mean": 1
+        }
+      },
+      "per_group_result_accuracy": {
+        "test_breakdown_campaign_channel": {
+          "answer_count": 24,
+          "accuracy": 1.0
+        },
+        "test_breakdown_device_type": {
+          "answer_count": 24,
+          "accuracy": 0.875
+        },
+        "test_breakdown_item_category": {
+          "answer_count": 24,
+          "accuracy": 0.9166666666666666
+        },
+        "test_date_edges": {
+          "answer_count": 48,
+          "accuracy": 0.4583333333333333
+        },
+        "test_empty_aggregate": {
+          "answer_count": 24,
+          "accuracy": 0.5416666666666666
+        },
+        "test_event_conditionals": {
+          "answer_count": 24,
+          "accuracy": 0.2916666666666667
+        },
+        "test_purchase_nested_filters": {
+          "answer_count": 9,
+          "accuracy": 1.0
+        },
+        "test_top_k_ranking": {
+          "answer_count": 12,
+          "accuracy": 1.0
+        }
+      },
+      "clarification": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": null,
+        "recall": null,
+        "rounds": 0
+      },
+      "latency_ms": {
+        "n": 189,
+        "mean": 6238.941798941799,
+        "p50": 5952.0,
+        "p95": 9459.0
+      },
+      "usage_mean": {
+        "calls": 1.0,
+        "input_tokens": 448.15343915343914,
+        "model_ms": 6227.661375661376,
+        "output_tokens": 211.4920634920635
+      },
+      "usage_completeness": {
+        "scenarios": 189,
+        "incomplete_scenarios": 0,
+        "complete": true,
+        "interpretation": "complete totals"
+      },
+      "component_activation": {
+        "turn_observations": 0,
+        "clarification_requested": 0,
+        "guess_invoked": 0,
+        "guess_reasons": {},
+        "memory_relations": {}
+      },
+      "slot_accuracy": {},
+      "repeats": 3,
+      "scenarios": 63,
+      "run_observations": 189
+    },
+    "single/test/F": {
+      "scenario_success_mean": 0.7566137566137566,
+      "scenario_success_sd": 0.43026607802016575,
+      "per_repeat_scenario_success": {
+        "1": 0.746031746031746,
+        "2": 0.7619047619047619,
+        "3": 0.7619047619047619
+      },
+      "repeat_success_sd": 0.009164289987136885,
+      "result_accuracy": 0.7566137566137566,
+      "result_count": 189,
+      "per_group_success": {
+        "test_breakdown_campaign_channel": {
+          "n_run_scenarios": 24,
+          "mean": 0.9166666666666666
+        },
+        "test_breakdown_device_type": {
+          "n_run_scenarios": 24,
+          "mean": 0.8333333333333334
+        },
+        "test_breakdown_item_category": {
+          "n_run_scenarios": 24,
+          "mean": 0.8333333333333334
+        },
+        "test_date_edges": {
+          "n_run_scenarios": 48,
+          "mean": 0.8958333333333334
+        },
+        "test_empty_aggregate": {
+          "n_run_scenarios": 24,
+          "mean": 0.7916666666666666
+        },
+        "test_event_conditionals": {
+          "n_run_scenarios": 24,
+          "mean": 0
+        },
+        "test_purchase_nested_filters": {
+          "n_run_scenarios": 9,
+          "mean": 1
+        },
+        "test_top_k_ranking": {
+          "n_run_scenarios": 12,
+          "mean": 0.8333333333333334
+        }
+      },
+      "per_group_result_accuracy": {
+        "test_breakdown_campaign_channel": {
+          "answer_count": 24,
+          "accuracy": 0.9166666666666666
+        },
+        "test_breakdown_device_type": {
+          "answer_count": 24,
+          "accuracy": 0.8333333333333334
+        },
+        "test_breakdown_item_category": {
+          "answer_count": 24,
+          "accuracy": 0.8333333333333334
+        },
+        "test_date_edges": {
+          "answer_count": 48,
+          "accuracy": 0.8958333333333334
+        },
+        "test_empty_aggregate": {
+          "answer_count": 24,
+          "accuracy": 0.7916666666666666
+        },
+        "test_event_conditionals": {
+          "answer_count": 24,
+          "accuracy": 0.0
+        },
+        "test_purchase_nested_filters": {
+          "answer_count": 9,
+          "accuracy": 1.0
+        },
+        "test_top_k_ranking": {
+          "answer_count": 12,
+          "accuracy": 0.8333333333333334
+        }
+      },
+      "clarification": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": null,
+        "recall": null,
+        "rounds": 0
+      },
+      "latency_ms": {
+        "n": 189,
+        "mean": 9610.201058201059,
+        "p50": 9554.0,
+        "p95": 12705.0
+      },
+      "usage_mean": {
+        "calls": 1.9312169312169312,
+        "input_tokens": 3487.296296296296,
+        "model_ms": 9516.640211640211,
+        "output_tokens": 263.63492063492066
+      },
+      "usage_completeness": {
+        "scenarios": 189,
+        "incomplete_scenarios": 0,
+        "complete": true,
+        "interpretation": "complete totals"
+      },
+      "component_activation": {
+        "turn_observations": 189,
+        "clarification_requested": 0,
+        "guess_invoked": 0,
+        "guess_reasons": {
+          "not_applicable": 189
+        },
+        "memory_relations": {
+          "new_topic": 189
+        }
+      },
+      "slot_accuracy": {},
+      "repeats": 3,
+      "scenarios": 63,
+      "run_observations": 189
+    }
+  },
+  "warnings": [
+    "Repeated runs are averaged within scenario; bootstrap clusters are scenarios, not repeats.",
+    "A single repeat gives descriptive results only; it does not demonstrate run-to-run stability.",
+    "Synthetic benchmark results do not establish production generalization.",
+    "Usage totals are lower bounds if a provider call failed before usage was recorded."
+  ]
+}

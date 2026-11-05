@@ -1,0 +1,12 @@
+{
+  "evidence": "Development-only two-source synthetic diagnostic, one run each; NOT independent heldout benchmark. No prompt/product logic retuned after formal test.",
+  "model": "gpt-6-luna",
+  "formal_commit": "f3aef39709de5c27a8a9a401f1e1195eed81ab67",
+  "dataset_hashes": {
+    "fixture.sql": "58ab1217845be4dea25978b58a0a1ce810d7c89ba8f850c4c280324724949aa3",
+    "generate.py": "23b50608a247ee0c401ef18d3cd1c5855a4d30823acba7bfe726f1b4e7bf73af",
+    "dialogues.yaml": "73370efb6a82bb3f2ad27d8919ffd515b5158103d22c8e209d97d98aae50d3cb",
+    "cases.yaml": "f06a42ae855dc65aaaf324159a472489d0b9dc3993d024004e31c3503d84756b",
+    "manifest.yaml": "5c0c9f5c121dbf7372bb141e5dd71787b5bac827286f5954b73326dd02997f18"
+  }
+}

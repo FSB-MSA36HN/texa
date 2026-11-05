@@ -1,0 +1,24 @@
+{
+  "captured_at": "2026-11-05T08:59:21.718377+00:00",
+  "scope": "Full formal study plus subsequent diagnostic calls made before capture; ledger includes earlier dev usage",
+  "start": {
+    "source": "Ledger read immediately before study; excludes prior development checks",
+    "calls": 292,
+    "input_tokens": 459058,
+    "output_tokens": 34731,
+    "spent_estimated_usd": 0.06327130000000002,
+    "reserved_usd": 0.007732399999999973,
+    "model": "gpt-6-luna",
+    "max_usd": 10
+  },
+  "cumulative": {
+    "model": "gpt-6-luna",
+    "max_usd": 10,
+    "calls": 1830,
+    "input_tokens": 2972913,
+    "output_tokens": 239956,
+    "spent_estimated_usd": 0.41726929999999973,
+    "reserved_usd": 0.179027
+  },
+  "limits": "Usage-based estimate, no cache discounts; unknown provider charges remain reserved. Not an audited gateway invoice. Website calls continue to share same capped ledger."
+}

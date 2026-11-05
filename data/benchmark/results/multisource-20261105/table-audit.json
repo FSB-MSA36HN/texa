@@ -1,0 +1,1691 @@
+[
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_users",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        5
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          5
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_users_01",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_users_02",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_users_03",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_users_04",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_users_by_category",
+    "original_correct": true,
+    "columns": [
+      "item_category",
+      "users"
+    ],
+    "rows": [
+      [
+        "hair",
+        2
+      ],
+      [
+        "makeup",
+        2
+      ],
+      [
+        "skin",
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "item_category",
+        "users"
+      ],
+      "rows": [
+        [
+          "hair",
+          2
+        ],
+        [
+          "makeup",
+          2
+        ],
+        [
+          "skin",
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_category_hair",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_category_makeup",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_category_skin",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_revenue",
+    "original_correct": false,
+    "columns": [
+      "revenue"
+    ],
+    "rows": [
+      [
+        null
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "revenue"
+      ],
+      "rows": [
+        [
+          60
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_empty_users",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_daily_purchases",
+    "original_correct": true,
+    "columns": [
+      "event_date",
+      "purchases"
+    ],
+    "rows": [
+      [
+        "2019-12-01",
+        1
+      ],
+      [
+        "2019-12-02",
+        1
+      ],
+      [
+        "2019-12-03",
+        1
+      ],
+      [
+        "2019-12-04",
+        1
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "event_date",
+        "purchases"
+      ],
+      "rows": [
+        [
+          "2019-12-01",
+          1
+        ],
+        [
+          "2019-12-02",
+          1
+        ],
+        [
+          "2019-12-03",
+          1
+        ],
+        [
+          "2019-12-04",
+          1
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_events",
+    "original_correct": true,
+    "columns": [
+      "events"
+    ],
+    "rows": [
+      [
+        8
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "events"
+      ],
+      "rows": [
+        [
+          8
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_buyers",
+    "original_correct": true,
+    "columns": [
+      "buyers"
+    ],
+    "rows": [
+      [
+        3
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "buyers"
+      ],
+      "rows": [
+        [
+          3
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_sessions",
+    "original_correct": true,
+    "columns": [
+      "sessions"
+    ],
+    "rows": [
+      [
+        6
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "sessions"
+      ],
+      "rows": [
+        [
+          6
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_viewers",
+    "original_correct": true,
+    "columns": [
+      "viewers"
+    ],
+    "rows": [
+      [
+        3
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "viewers"
+      ],
+      "rows": [
+        [
+          3
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_cosmetics_shop_buyer_conversion_rate",
+    "original_correct": true,
+    "columns": [
+      "buyer_conversion_rate"
+    ],
+    "rows": [
+      [
+        "0.60000000000000000000"
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "buyer_conversion_rate"
+      ],
+      "rows": [
+        [
+          0.6
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_users",
+    "original_correct": false,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          3
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_users_01",
+    "original_correct": false,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          1
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_users_02",
+    "original_correct": false,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          1
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_users_03",
+    "original_correct": false,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_users_04",
+    "original_correct": false,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          1
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_users_by_category",
+    "original_correct": false,
+    "columns": [
+      "item_category",
+      "users"
+    ],
+    "rows": [],
+    "expected": {
+      "columns": [
+        "item_category",
+        "users"
+      ],
+      "rows": [
+        [
+          null,
+          3
+        ],
+        [
+          "skin",
+          2
+        ],
+        [
+          "hair",
+          1
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_category_hair",
+    "original_correct": false,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          1
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_category_skin",
+    "original_correct": false,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_revenue",
+    "original_correct": false,
+    "columns": [
+      "revenue"
+    ],
+    "rows": [
+      [
+        null
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "revenue"
+      ],
+      "rows": [
+        [
+          70
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_empty_users",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_daily_purchases",
+    "original_correct": true,
+    "columns": [
+      "event_date",
+      "purchases"
+    ],
+    "rows": [
+      [
+        "2019-12-01",
+        1
+      ],
+      [
+        "2019-12-02",
+        1
+      ],
+      [
+        "2019-12-03",
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "event_date",
+        "purchases"
+      ],
+      "rows": [
+        [
+          "2019-12-01",
+          1
+        ],
+        [
+          "2019-12-02",
+          1
+        ],
+        [
+          "2019-12-03",
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_events",
+    "original_correct": false,
+    "columns": [
+      "events"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "events"
+      ],
+      "rows": [
+        [
+          9
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_buyers",
+    "original_correct": false,
+    "columns": [
+      "buyers"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "buyers"
+      ],
+      "rows": [
+        [
+          3
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_buyer_conversion_payment_only_day",
+    "original_correct": false,
+    "columns": [
+      "buyer_conversion_rate"
+    ],
+    "rows": [
+      [
+        null
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "buyer_conversion_rate"
+      ],
+      "rows": [
+        [
+          0.0
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_buyer_conversion_empty_day",
+    "original_correct": true,
+    "columns": [
+      "buyer_conversion_rate"
+    ],
+    "rows": [
+      [
+        null
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "buyer_conversion_rate"
+      ],
+      "rows": [
+        [
+          null
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "direct",
+    "id": "msv1_olist_marketplace_purchases",
+    "original_correct": false,
+    "columns": [
+      "purchases"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "purchases"
+      ],
+      "rows": [
+        [
+          4
+        ]
+      ]
+    },
+    "projection_correct": false
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_users",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        5
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          5
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_users_01",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_users_02",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_users_03",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_users_04",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_users_by_category",
+    "original_correct": true,
+    "columns": [
+      "item_category",
+      "users"
+    ],
+    "rows": [
+      [
+        "hair",
+        2
+      ],
+      [
+        "makeup",
+        2
+      ],
+      [
+        "skin",
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "item_category",
+        "users"
+      ],
+      "rows": [
+        [
+          "hair",
+          2
+        ],
+        [
+          "makeup",
+          2
+        ],
+        [
+          "skin",
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_category_hair",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_category_makeup",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_category_skin",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_revenue",
+    "original_correct": true,
+    "columns": [
+      "revenue"
+    ],
+    "rows": [
+      [
+        "60.00"
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "revenue"
+      ],
+      "rows": [
+        [
+          60
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_empty_users",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_daily_purchases",
+    "original_correct": true,
+    "columns": [
+      "event_date",
+      "purchases"
+    ],
+    "rows": [
+      [
+        "2019-12-01",
+        1
+      ],
+      [
+        "2019-12-02",
+        1
+      ],
+      [
+        "2019-12-03",
+        1
+      ],
+      [
+        "2019-12-04",
+        1
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "event_date",
+        "purchases"
+      ],
+      "rows": [
+        [
+          "2019-12-01",
+          1
+        ],
+        [
+          "2019-12-02",
+          1
+        ],
+        [
+          "2019-12-03",
+          1
+        ],
+        [
+          "2019-12-04",
+          1
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_events",
+    "original_correct": true,
+    "columns": [
+      "events"
+    ],
+    "rows": [
+      [
+        8
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "events"
+      ],
+      "rows": [
+        [
+          8
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_buyers",
+    "original_correct": true,
+    "columns": [
+      "buyers"
+    ],
+    "rows": [
+      [
+        3
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "buyers"
+      ],
+      "rows": [
+        [
+          3
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_sessions",
+    "original_correct": true,
+    "columns": [
+      "sessions"
+    ],
+    "rows": [
+      [
+        6
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "sessions"
+      ],
+      "rows": [
+        [
+          6
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_viewers",
+    "original_correct": true,
+    "columns": [
+      "viewers"
+    ],
+    "rows": [
+      [
+        3
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "viewers"
+      ],
+      "rows": [
+        [
+          3
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_cosmetics_shop_buyer_conversion_rate",
+    "original_correct": true,
+    "columns": [
+      "buyer_conversion_rate"
+    ],
+    "rows": [
+      [
+        "0.60000000000000000000"
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "buyer_conversion_rate"
+      ],
+      "rows": [
+        [
+          0.6
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_users",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        3
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          3
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_users_01",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        1
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          1
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_users_02",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        1
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          1
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_users_03",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_users_04",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        1
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          1
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_users_by_category",
+    "original_correct": true,
+    "columns": [
+      "item_category",
+      "users"
+    ],
+    "rows": [
+      [
+        null,
+        3
+      ],
+      [
+        "skin",
+        2
+      ],
+      [
+        "hair",
+        1
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "item_category",
+        "users"
+      ],
+      "rows": [
+        [
+          null,
+          3
+        ],
+        [
+          "skin",
+          2
+        ],
+        [
+          "hair",
+          1
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_category_hair",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        1
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          1
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_category_skin",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        2
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          2
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_revenue",
+    "original_correct": true,
+    "columns": [
+      "revenue"
+    ],
+    "rows": [
+      [
+        "70.00"
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "revenue"
+      ],
+      "rows": [
+        [
+          70
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_empty_users",
+    "original_correct": true,
+    "columns": [
+      "users"
+    ],
+    "rows": [
+      [
+        0
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "users"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_daily_purchases",
+    "original_correct": false
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_events",
+    "original_correct": true,
+    "columns": [
+      "events"
+    ],
+    "rows": [
+      [
+        9
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "events"
+      ],
+      "rows": [
+        [
+          9
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_buyers",
+    "original_correct": true,
+    "columns": [
+      "buyers"
+    ],
+    "rows": [
+      [
+        3
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "buyers"
+      ],
+      "rows": [
+        [
+          3
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_buyer_conversion_payment_only_day",
+    "original_correct": true,
+    "columns": [
+      "buyer_conversion_rate"
+    ],
+    "rows": [
+      [
+        "0E-20"
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "buyer_conversion_rate"
+      ],
+      "rows": [
+        [
+          0.0
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_buyer_conversion_empty_day",
+    "original_correct": true,
+    "columns": [
+      "buyer_conversion_rate"
+    ],
+    "rows": [
+      [
+        null
+      ]
+    ],
+    "expected": {
+      "columns": [
+        "buyer_conversion_rate"
+      ],
+      "rows": [
+        [
+          null
+        ]
+      ]
+    },
+    "projection_correct": true
+  },
+  {
+    "method": "texa",
+    "id": "msv1_olist_marketplace_purchases",
+    "original_correct": false
+  }
+]

@@ -11,8 +11,8 @@ def test_multisource_diagnostic_integrity():
     cases = yaml.safe_load((DATA / "cases.yaml").read_text())
     dialogues = yaml.safe_load((DATA / "dialogues.yaml").read_text())
     manifest = yaml.safe_load((DATA / "manifest.yaml").read_text())
-    assert 24 <= len(cases) <= 32
-    assert len(dialogues) <= 6
+    assert {"cosmetics_shop", "olist_marketplace"} <= {tag for case in cases for tag in case["tags"]}
+    assert len(dialogues) == manifest["case_counts"]["dialogues"]
     assert all(case["split"] == "dev" for case in cases)
     assert "test" not in {case["split"] for case in cases}
     assert manifest["case_counts"]["test"] == 0

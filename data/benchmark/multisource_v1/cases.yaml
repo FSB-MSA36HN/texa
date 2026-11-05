@@ -96,11 +96,11 @@
 - id: msv1_cosmetics_shop_users_by_category
   split: dev
   family: top_users_category
-  question: Show the top 3 non-null product categories by distinct recorded users
-    in cosmetics shop for December 1–4, 2019.
+  question: Show the top 3 recorded product-category groups, including the missing-category
+    group, by distinct users in cosmetics shop for December 1–4, 2019.
   gold_sql: SELECT item_category, count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
     WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2019-12-01' AND '2019-12-04'
-    AND item_category IS NOT NULL GROUP BY 1 ORDER BY 2 DESC,1 LIMIT 3
+    GROUP BY 1 ORDER BY 2 DESC,1 ASC NULLS LAST LIMIT 3
   expected_result:
     columns:
     - item_category
@@ -251,6 +251,107 @@
   - synthetic
   - cosmetics_shop
   - diagnostic
+- id: msv1_cosmetics_shop_events
+  split: dev
+  family: events
+  question: How many events in cosmetics shop from 2019-12-01 through 2019-12-04?
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE
+    source_id='cosmetics_shop' AND event_date BETWEEN '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 8
+  ordered: false
+  in_scope: true
+  intent: events
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_buyers
+  split: dev
+  family: buyers
+  question: How many buyers in cosmetics shop from 2019-12-01 through 2019-12-04?
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint
+    AS buyers FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_date
+    BETWEEN '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 3
+  ordered: false
+  in_scope: true
+  intent: buyers
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_sessions
+  split: dev
+  family: sessions
+  question: How many distinct sessions did cosmetics shop record from 2019-12-01 through
+    2019-12-04?
+  gold_sql: SELECT count(DISTINCT session_id)::bigint AS sessions FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - sessions
+    rows:
+    - - 6
+  ordered: false
+  in_scope: true
+  intent: sessions
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_viewers
+  split: dev
+  family: viewers
+  question: How many distinct users viewed a product in cosmetics shop from 2019-12-01
+    through 2019-12-04?
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS viewers FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_name='view' AND event_date BETWEEN
+    '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - viewers
+    rows:
+    - - 3
+  ordered: false
+  in_scope: true
+  intent: viewers
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
+- id: msv1_cosmetics_shop_buyer_conversion_rate
+  split: dev
+  family: buyer_conversion_rate
+  question: What was the buyer-to-observed-user rate in cosmetics shop from 2019-12-01
+    through 2019-12-04?
+  gold_sql: SELECT (count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::numeric
+    / NULLIF(count(DISTINCT user_id),0)) AS buyer_conversion_rate FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - buyer_conversion_rate
+    rows:
+    - - 0.6
+  ordered: false
+  in_scope: true
+  intent: buyer_conversion_rate
+  difficulty: easy
+  tags:
+  - synthetic
+  - cosmetics_shop
+  - diagnostic
 - id: msv1_olist_marketplace_users
   split: dev
   family: users_total
@@ -350,16 +451,18 @@
 - id: msv1_olist_marketplace_users_by_category
   split: dev
   family: top_users_category
-  question: Show the top 3 non-null product categories by distinct recorded users
-    in Olist marketplace for December 1–4, 2019.
+  question: Show the top 3 recorded product-category groups, including the missing-category
+    group, by distinct users in Olist marketplace for December 1–4, 2019.
   gold_sql: SELECT item_category, count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity
     WHERE source_id='olist_marketplace' AND event_date BETWEEN '2019-12-01' AND '2019-12-04'
-    AND item_category IS NOT NULL GROUP BY 1 ORDER BY 2 DESC,1 LIMIT 3
+    GROUP BY 1 ORDER BY 2 DESC,1 ASC NULLS LAST LIMIT 3
   expected_result:
     columns:
     - item_category
     - users
     rows:
+    - - null
+      - 3
     - - skin
       - 2
     - - hair
@@ -426,7 +529,7 @@
     columns:
     - revenue
     rows:
-    - - 60
+    - - 70
   ordered: false
   in_scope: true
   intent: revenue_total
@@ -472,10 +575,90 @@
     - - '2019-12-02'
       - 1
     - - '2019-12-03'
-      - 1
+      - 2
   ordered: true
   in_scope: true
   intent: daily_purchases
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_events
+  split: dev
+  family: events
+  question: How many events in Olist marketplace from 2019-12-01 through 2019-12-04?
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE
+    source_id='olist_marketplace' AND event_date BETWEEN '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - events
+    rows:
+    - - 9
+  ordered: false
+  in_scope: true
+  intent: events
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_buyers
+  split: dev
+  family: buyers
+  question: How many buyers in Olist marketplace from 2019-12-01 through 2019-12-04?
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint
+    AS buyers FROM analytics.event_activity WHERE source_id='olist_marketplace' AND
+    event_date BETWEEN '2019-12-01' AND '2019-12-04'
+  expected_result:
+    columns:
+    - buyers
+    rows:
+    - - 3
+  ordered: false
+  in_scope: true
+  intent: buyers
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_buyer_conversion_payment_only_day
+  split: dev
+  family: buyer_conversion_rate_payment_only
+  question: What was the buyer-to-observed-user rate in Olist on 2019-12-04, when
+    only a payment event was recorded?
+  gold_sql: SELECT (count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::numeric
+    / NULLIF(count(DISTINCT user_id),0)) AS buyer_conversion_rate FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date='2019-12-04'
+  expected_result:
+    columns:
+    - buyer_conversion_rate
+    rows:
+    - - 0.0
+  ordered: false
+  in_scope: true
+  intent: buyer_conversion_rate_payment_only
+  difficulty: easy
+  tags:
+  - synthetic
+  - olist_marketplace
+  - diagnostic
+- id: msv1_olist_marketplace_buyer_conversion_empty_day
+  split: dev
+  family: buyer_conversion_rate_zero_denominator
+  question: What was the buyer-to-observed-user rate in Olist on 2020-01-01?
+  gold_sql: SELECT (count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::numeric
+    / NULLIF(count(DISTINCT user_id),0)) AS buyer_conversion_rate FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date='2020-01-01'
+  expected_result:
+    columns:
+    - buyer_conversion_rate
+    rows:
+    - - null
+  ordered: false
+  in_scope: true
+  intent: buyer_conversion_rate_zero_denominator
   difficulty: easy
   tags:
   - synthetic
@@ -492,7 +675,7 @@
     columns:
     - purchases
     rows:
-    - - 3
+    - - 4
   ordered: false
   in_scope: true
   intent: olist_purchases

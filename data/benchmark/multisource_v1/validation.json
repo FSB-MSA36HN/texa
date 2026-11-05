@@ -1,28 +1,28 @@
 {
-  "cases": 24,
+  "cases": 33,
   "splits": {
-    "dev": 24,
+    "dev": 33,
     "test": 0
   },
-  "families": 8,
-  "dialogues": 6,
+  "families": 15,
+  "dialogues": 7,
   "answer_turns": 3,
   "actions": {
     "clarify": 1,
     "clarification_answer": 1,
-    "refuse": 4,
+    "refuse": 5,
     "answer": 2
   },
   "sha256": {
-    "fixture.sql": "2b0037c122265c2924ff5efcf49b2f88bade77b043f5e202ad1873c9ca6e2b2d",
-    "cases.yaml": "25d1b69f89004a0ab4683ac25adcf6bae216ed092d97c1aebb052a93737564fd",
-    "dialogues.yaml": "ed8385ce0f4b875668289be89c15a32758e7ae07dd7327abfff6129f6b125cbe",
-    "manifest.yaml": "3aa78662b2bf9b9f2d37757318f105943020aed6e95dad33e2e2856b6b55f410"
+    "fixture.sql": "58ab1217845be4dea25978b58a0a1ce810d7c89ba8f850c4c280324724949aa3",
+    "cases.yaml": "f06a42ae855dc65aaaf324159a472489d0b9dc3993d024004e31c3503d84756b",
+    "dialogues.yaml": "73370efb6a82bb3f2ad27d8919ffd515b5158103d22c8e209d97d98aae50d3cb",
+    "manifest.yaml": "5c0c9f5c121dbf7372bb141e5dd71787b5bac827286f5954b73326dd02997f18"
   },
-  "checked_at": "2026-11-05T05:17:25.413053+00:00",
-  "gold_sql_checked": 27,
-  "gold_sql_correct": 27,
-  "method": "PostgreSQL transaction, fixture and gold executed then rolled back; benchmark.results_equal scorer. Owner role used for fixture validation only.",
+  "checked_at": "2026-11-05T08:51:03.736817+00:00",
+  "gold_sql_checked": 36,
+  "gold_sql_correct": 36,
+  "method": "PostgreSQL fixture/gold execution in rolled-back transaction; shared benchmark.results_equal scorer.",
   "live_model_evaluated": false,
   "checks": [
     {
@@ -74,6 +74,26 @@
       "correct": true
     },
     {
+      "id": "msv1_cosmetics_shop_events",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_buyers",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_sessions",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_viewers",
+      "correct": true
+    },
+    {
+      "id": "msv1_cosmetics_shop_buyer_conversion_rate",
+      "correct": true
+    },
+    {
       "id": "msv1_olist_marketplace_users",
       "correct": true
     },
@@ -115,6 +135,22 @@
     },
     {
       "id": "msv1_olist_marketplace_daily_purchases",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_events",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_buyers",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_buyer_conversion_payment_only_day",
+      "correct": true
+    },
+    {
+      "id": "msv1_olist_marketplace_buyer_conversion_empty_day",
       "correct": true
     },
     {

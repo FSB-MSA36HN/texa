@@ -1,0 +1,52 @@
+{
+  "suite": "clarification",
+  "model": "gpt-6-luna",
+  "provenance": {
+    "dataset_hashes": {
+      "data/benchmark/ablation_v1/fixture.sql": "64dfc801a814c8b4eafded09d4b1ee9f5bcc39964066bbe432fd48c703107cf0",
+      "data/benchmark/ablation_v1/generate.py": "77c310eee4ddde5457ad7cfc48ea555892f7ff453c9711a60f54fa93a9de5c55",
+      "data/benchmark/ablation_v1/dialogues.yaml": "090576a92b25047001e298b04de566db86390b83dc491e70a39ceef04b5a8496",
+      "data/benchmark/ablation_v1/cases.yaml": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "data/benchmark/ablation_v1/fixture_rows.json": "16a951a7a1f1244744dca699623ae1445ad76d8cf3ced826cdba801546eb5997",
+      "data/benchmark/ablation_v1/manifest.yaml": "0440c4f48315c735342a208f6d4169647582534622f0ac476d44741c538b38b0",
+      "data/benchmark/ablation_v1/validation.json": "b313bea04d05be2da2b98014d584b585ebde2b400dcbac56a356337afb77b79e",
+      "data/benchmark/ablation_v1/interactions.yaml": "c61bed8b51d0c764a25550453f5942b73f24c9255e9231fcabbd6034674bb096"
+    },
+    "catalog_hash": "4bc0361823b97f8baf1263120ccaef85add8f7169c02390a9f06e9042ce1de01",
+    "prompt_hashes": {
+      "backend/texa/prompts.py": "c08efdb3cc939eb7e825baeec5fc8585c9450d85041996fc99a4631e80ecd3f7",
+      "backend/texa/interpret.py": "a8804b3a26f8e43e593c48bde724b77b30051e0f0a7b924634b51e548135c7b9",
+      "backend/texa/ablation.py": "122f496854dff8cd48c7aa3d7428b2cb4d17252832a809204a0b6a4e9065c490",
+      "backend/eval/run_ablation.py": "6973ba018bc274520eb291e5102014ec64b58c7d04cdf34a45959aa7fed85fd0"
+    },
+    "source_digest": "16a951a7a1f1244744dca699623ae1445ad76d8cf3ced826cdba801546eb5997",
+    "effective_model_config": {
+      "provider": "openai",
+      "max_output_tokens": 4096,
+      "answer_language": "auto",
+      "model": "gpt-6-luna",
+      "context_budget": 32000,
+      "seed": "not set; provider dependent",
+      "temperature": "0 for Gemini; provider default for OpenAI/Anthropic",
+      "http_timeout_s": 90,
+      "stage_output_caps": {
+        "B0": 1200,
+        "C0_guess": 120,
+        "Texa_other_stages": "code/default"
+      },
+      "retry_policy": "provider SDK default; no application-level structured-output retry",
+      "max_clarification_rounds": 2,
+      "max_model_calls": 1000,
+      "turn_timeout_s": 150,
+      "max_rounds_protocol": "exact fields; no unsolicited oracle",
+      "endpoint_hash": "99981d35be438b1abd8afed6d01e5a07cacf3c4207d565e55473109bd7c62f5b"
+    },
+    "commit": "f3aef39709de5c27a8a9a401f1e1195eed81ab67",
+    "postgresql": {
+      "database": "texa_benchmark",
+      "role": "texa_reader",
+      "postgresql_version": "16.2"
+    },
+    "source_metadata_hash": "b5b7705178391a73d89dc413c6233612681ae1843b8a9a36eda89956eb729ffe"
+  }
+}

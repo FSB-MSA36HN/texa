@@ -1,0 +1,32 @@
+{
+  "evidence": "Development-only English synthetic two-source diagnostic; one repeat, not heldout. No prompt/architecture tuning. Fixture metadata corrected before model calls.",
+  "cases": 33,
+  "dialogues": 7,
+  "fixture_rows": 17,
+  "gold_sql_correct": 36,
+  "single": {
+    "direct": {
+      "cases": 33,
+      "correct": 19,
+      "p50_ms": 6106,
+      "p95_ms": 11777
+    },
+    "texa": {
+      "cases": 33,
+      "correct": 31,
+      "p50_ms": 8760,
+      "p95_ms": 15099
+    }
+  },
+  "dialogue_raw_runner_scores": {
+    "direct": {
+      "correct": 4,
+      "total": 7
+    },
+    "texa": {
+      "correct": 7,
+      "total": 7
+    }
+  },
+  "limits": "Raw dialogue runner scores have different internal slot/reference checks by method; do not treat them as formal baseline ablation. F external result/action all passed; report single-turn fair table comparison as primary diagnostic."
+}

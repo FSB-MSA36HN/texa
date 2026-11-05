@@ -1,0 +1,7 @@
+{
+  "type": "provider_incident",
+  "date": "2026-11-05",
+  "affected_run": "memory-test-F-r3.jsonl",
+  "observed": "4 scenarios marked usage_complete=false; attempted provider calls failed without recorded usage. Completed scenario accuracy retained in intention-to-test results. Subsequent M6 r3 initial launch failed pricing preflight, created no run artifact and made no model calls. Pricing endpoint then returned200; resumed only not-started run.",
+  "policy": "Do not replace completed failing outcomes. Report usage lower bound and incident sensitivity; formal metrics include failures. Conservative reservations retained."
+}

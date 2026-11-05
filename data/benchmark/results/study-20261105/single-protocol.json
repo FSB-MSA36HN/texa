@@ -1,0 +1,50 @@
+{
+  "suite": "single",
+  "model": "gpt-6-luna",
+  "provenance": {
+    "dataset_hashes": {
+      "data/benchmark/v2/fixture.sql": "081f6675aaa1d203d2ec96452b2a7ca1a2e13a856e270cabcaebfa63a96ae5e3",
+      "data/benchmark/v2/generate.py": "b024bd952bbace49506457f1ffa68901b6fc0ae0595541c2babf41a2677e4c7c",
+      "data/benchmark/v2/dialogues.yaml": "9e537555898ecd2e7de7ced7348537db626174d6b3d19e3a7cf7bc9debf84754",
+      "data/benchmark/v2/cases.yaml": "35bf21538f53c202c105e76b55ed6be2a708c7387d8df9ebf03771632c6edc7e",
+      "data/benchmark/v2/manifest.yaml": "ecd1ea667d8e171d77445a15f2195502b4cf6c87c7a5dcb30cade61856c247da",
+      "data/benchmark/v2/validation.json": "151f8f7469dcec146fbc19802998c68d45510cc5154e31f34c0625879d98719e"
+    },
+    "catalog_hash": "4bc0361823b97f8baf1263120ccaef85add8f7169c02390a9f06e9042ce1de01",
+    "prompt_hashes": {
+      "backend/texa/prompts.py": "c08efdb3cc939eb7e825baeec5fc8585c9450d85041996fc99a4631e80ecd3f7",
+      "backend/texa/interpret.py": "a8804b3a26f8e43e593c48bde724b77b30051e0f0a7b924634b51e548135c7b9",
+      "backend/texa/ablation.py": "122f496854dff8cd48c7aa3d7428b2cb4d17252832a809204a0b6a4e9065c490",
+      "backend/eval/run_ablation.py": "6973ba018bc274520eb291e5102014ec64b58c7d04cdf34a45959aa7fed85fd0"
+    },
+    "source_digest": "d24ae09f9319aa5de562d642d2d45ba57d72f30b0eb93adb8068c6d79cfd6b6e",
+    "effective_model_config": {
+      "provider": "openai",
+      "max_output_tokens": 4096,
+      "answer_language": "auto",
+      "model": "gpt-6-luna",
+      "context_budget": 32000,
+      "seed": "not set; provider dependent",
+      "temperature": "0 for Gemini; provider default for OpenAI/Anthropic",
+      "http_timeout_s": 90,
+      "stage_output_caps": {
+        "B0": 1200,
+        "C0_guess": 120,
+        "Texa_other_stages": "code/default"
+      },
+      "retry_policy": "provider SDK default; no application-level structured-output retry",
+      "max_clarification_rounds": 2,
+      "max_model_calls": 1000,
+      "turn_timeout_s": 150,
+      "max_rounds_protocol": "exact fields; no unsolicited oracle",
+      "endpoint_hash": "99981d35be438b1abd8afed6d01e5a07cacf3c4207d565e55473109bd7c62f5b"
+    },
+    "commit": "f3aef39709de5c27a8a9a401f1e1195eed81ab67",
+    "postgresql": {
+      "database": "texa_benchmark",
+      "role": "texa_reader",
+      "postgresql_version": "16.2"
+    },
+    "source_metadata_hash": "f54937c2a303773de84d1a63a330350af73e1a2fe3be93d1859f2ece1ffaf790"
+  }
+}

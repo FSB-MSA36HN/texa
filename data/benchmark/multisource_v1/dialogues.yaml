@@ -42,6 +42,13 @@
   - question: How much Olist payment value, deduplicated to orders, was collected
       from 2019-12-01 through 2019-12-04?
     action: refuse
+- id: msv1_olist_order_count
+  split: dev
+  family: unsupported_orders
+  dependency_distance: 0
+  turns:
+  - question: How many distinct Olist orders were placed from 2019-12-01 through 2019-12-04?
+    action: refuse
 - id: msv1_olist_sessions
   split: dev
   family: unsupported_sessions
