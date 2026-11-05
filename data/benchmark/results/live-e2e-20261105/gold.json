@@ -1,0 +1,98 @@
+{
+  "created": "2026-11-05",
+  "environment": "Local Texa Docker Postgres, production-like public warehouse tables; read-only SELECT queries",
+  "source_registry": [
+    {
+      "source_id": "cosmetics_shop",
+      "currency": "USD",
+      "min_date": "2019-12-01",
+      "max_date": "2020-01-31",
+      "row_count": 7389078,
+      "user_count": 725736
+    },
+    {
+      "source_id": "olist_marketplace",
+      "currency": "BRL",
+      "min_date": "2016-09-04",
+      "max_date": "2018-10-17",
+      "row_count": 609800,
+      "user_count": 96096
+    }
+  ],
+  "metric_definition": "Native source revenue summed only on Cosmetics purchase or Olist order_purchased event rows. Olist payment_made is a distinct metric and is not used for item revenue.",
+  "cases": [
+    {
+      "id": "cosmetics_revenue_dec2019",
+      "sql": "SELECT count(*) AS purchase_rows, sum(revenue) AS revenue, min(currency) AS currency, max(currency) AS currency_check FROM analytics.event_activity_cosmetics_shop WHERE event_name='purchase' AND event_date BETWEEN '2019-12-01' AND '2019-12-31';",
+      "result": {
+        "purchase_rows": 213066,
+        "revenue": "1077689.23",
+        "currency": "USD",
+        "currency_check": "USD"
+      }
+    },
+    {
+      "id": "cosmetics_revenue_monthly_dec2019_jan2020",
+      "sql": "SELECT date_trunc('month',event_date)::date AS month, count(*) AS purchase_rows, sum(revenue) AS revenue FROM analytics.event_activity_cosmetics_shop WHERE event_name='purchase' AND event_date BETWEEN '2019-12-01' AND '2020-01-31' GROUP BY 1 ORDER BY 1;",
+      "result": [
+        {
+          "month": "2019-12-01",
+          "purchase_rows": 213066,
+          "revenue": "1077689.23"
+        },
+        {
+          "month": "2020-01-01",
+          "purchase_rows": 263605,
+          "revenue": "1321825.06"
+        }
+      ]
+    },
+    {
+      "id": "cosmetics_top3_category_dec2019",
+      "sql": "SELECT item_category, count(*) AS purchase_rows, sum(revenue) AS revenue FROM analytics.event_activity_cosmetics_shop WHERE event_name='purchase' AND event_date BETWEEN '2019-12-01' AND '2019-12-31' GROUP BY item_category ORDER BY sum(revenue) DESC NULLS LAST LIMIT 3;",
+      "result": [
+        {
+          "item_category": null,
+          "purchase_rows": 210364,
+          "revenue": "1037866.82"
+        },
+        {
+          "item_category": "appliances",
+          "purchase_rows": 652,
+          "revenue": "22964.12"
+        },
+        {
+          "item_category": "furniture",
+          "purchase_rows": 223,
+          "revenue": "7300.22"
+        }
+      ],
+      "caveat": "NULL item_category is genuinely the largest group; UI should disclose missing category if displayed. Excluding NULL changes the question and should not be done silently."
+    },
+    {
+      "id": "cosmetics_filter_category_accessories_dec2019",
+      "sql": "SELECT item_category, count(*) AS purchase_rows, sum(revenue) AS revenue FROM analytics.event_activity_cosmetics_shop WHERE event_name='purchase' AND event_date BETWEEN '2019-12-01' AND '2019-12-31' AND item_category='accessories' GROUP BY item_category;",
+      "result": {
+        "item_category": "accessories",
+        "purchase_rows": 76,
+        "revenue": "2162.26"
+      }
+    },
+    {
+      "id": "olist_item_revenue_jan2018",
+      "sql": "SELECT count(*) AS purchase_item_rows, sum(revenue) AS item_revenue, min(currency) AS currency, max(currency) AS currency_check FROM analytics.event_activity_olist_marketplace WHERE event_name='order_purchased' AND event_date BETWEEN '2018-01-01' AND '2018-01-31';",
+      "result": {
+        "purchase_item_rows": 8208,
+        "item_revenue": "950030.36",
+        "currency": "BRL",
+        "currency_check": "BRL"
+      },
+      "caveat": "Purchase item rows, not unique order count. Payment control is 7563 payment_made rows totaling BRL 1115004.18; do not substitute it for item revenue."
+    },
+    {
+      "id": "cosmetics_users_dec2019",
+      "sql": "SELECT count(DISTINCT user_id) FROM analytics.event_activity_cosmetics_shop WHERE event_date BETWEEN '2019-12-01' AND '2019-12-31'",
+      "result": 370154
+    }
+  ]
+}

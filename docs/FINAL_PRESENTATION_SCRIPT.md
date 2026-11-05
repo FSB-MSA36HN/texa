@@ -1,4 +1,4 @@
-# Kịch bản thuyết trình cuối — Texa (khoảng 15 phút)
+# Kịch bản thuyết trình cuối — Texa (khoảng 16–18 phút)
 
 ## Slide 1 — Texa: hỏi dữ liệu bằng ngôn ngữ tự nhiên (0:45)
 
@@ -82,37 +82,49 @@
 - v2: 96 synthetic events; 104 câu đơn (41 dev, 63 test), 12 hội thoại
 - Baseline B0: cùng model, schema và metric definitions, sinh SQL trực tiếp
 - Execution Accuracy so bảng kết quả thực thi với gold; lỗi/timeout vẫn tính sai
-- Bổ sung diagnostic hai nguồn: 16 event tổng hợp, 24 câu đơn + 6 tình huống (dev)
-- Chưa có test holdout độc lập hoặc kết quả ablation nhiều repeats
+- Ablation memory: 12 hội thoại holdout / 39 lượt gold; clarification: 20 scenario holdout
+- Cùng `gpt-6-luna`, code và dữ liệu đóng băng; ba lần lặp
+- Diagnostic đa nguồn riêng: 17 dòng, 33 câu đơn, 7 hội thoại; dev, English, một lần chạy
 
-**Lời nói:** v2 có 96 event tổng hợp, 104 câu đơn (41 dev, 63 test) và 12 hội thoại. Baseline B0 nhận cùng schema, định nghĩa metric và sinh SQL trực tiếp. Execution Accuracy so bảng PostgreSQL với gold; SQL lỗi, timeout, từ chối sai và sai cấu trúc đều tính trong mẫu số. Ablation có 24 hội thoại/77 lượt trả lời, 20 câu mơ hồ và 20 control: F là pipeline đầy đủ, M6 chỉ dùng sáu lượt gần nhất, M0 không dùng memory, C0 bỏ clarification trong các trường hợp protocol cho phép. Bộ diagnostic bổ sung 24 câu đơn và 6 tình huống cho hai nguồn: kiểm tra tổng/ngày/danh mục/trend, kết quả rỗng, không cộng payment vào revenue, chuyển nguồn khi hỏi tiếp, hỏi lại và từ chối ngoài scope. Đã kiểm tra 27/27 gold SQL của bộ mới khớp bảng đáp án trên PostgreSQL, nhưng chưa chạy model trên bộ này. Các bộ đều là tổng hợp; chưa đo accuracy trên dữ liệu Olist thật hay người dùng thật.
+**Lời nói:** Bộ v2 có 96 event tổng hợp, 104 câu đơn (41 dev, 63 test) và 12 hội thoại. So sánh B0 và Texa dùng cùng `gpt-6-luna`, schema, định nghĩa metric, dữ liệu và code đã đóng băng; B0 sinh SQL trực tiếp còn Texa đi qua resolver, kiểm tra nguồn/phạm vi và compiler. Chấm điểm bằng cách thực thi SQL rồi so toàn bộ bảng với gold; lỗi và timeout vẫn tính sai. Memory ablation dùng 12 hội thoại holdout, clarification ablation dùng 20 scenario holdout. Ngoài ra nhóm chạy diagnostic riêng trên 17 dòng tổng hợp cho hai nguồn, với 33 câu đơn và 7 hội thoại; đây là dev tiếng Anh, một lần chạy, không phải holdout. Tất cả là dữ liệu tổng hợp, nên kết quả không đại diện cho warehouse production hay người dùng thật.
 
-## Slide 11 — Kết quả hiện có và cách diễn giải (1:45)
+## Slide 11 — Kết quả chính: chưa đủ để nói Texa thắng (1:45)
 
-Đo ngày 04/11/2026, `gpt-6-luna`, cùng 41 câu đơn **dev** và snapshot v2:
+Kết quả test holdout, `gpt-6-luna`, 63 câu, ba lần lặp:
 
 | Cấu hình | Kết quả đúng | Tỷ lệ | Trung vị thời gian |
 |---|---:|---:|---:|
-| B0: LLM sinh SQL trực tiếp | 40/41 | 97,6% | 5,925 giây |
-| Texa trước chỉnh prompt | 37/41 | 90,2% | 9,986 giây |
-| Texa sau chỉnh filter/breakdown — vòng dev riêng | 41/41 | 100% | 8,967 giây |
+| B0: LLM sinh SQL trực tiếp | 130/189 | 68,8% | 5,952 giây |
+| Texa: pipeline đầy đủ | 143/189 | 75,7% | 9,554 giây |
 
-Hội thoại dev sau sửa date/memory: **6/6 scenario**, 19/19 lượt đạt tiêu chí; trước sửa là 1/6. Texa đo cả bước viết insight, B0 chỉ sinh SQL. Không dùng các vòng tinh chỉnh này để kết luận thắng trên test.
+Chênh lệch ghép theo scenario: **−14,5 đến +26,1 điểm %** (CI). B0 đạt 89,9% khi bỏ qua cột thừa trong chẩn đoán hậu nghiệm; metric chính yêu cầu toàn bảng khớp. Texa latency gồm cả insight; B0 chỉ sinh SQL.
 
-**Lời nói:** Vòng đầu dev với `gpt-6-luna`: B0 đạt 40/41, Texa 37/41; SQL thực thi được 41/41 ở cả hai. Median latency là 5,925 và 9,986 giây; Texa còn tạo insight. Lỗi phổ biến là tự breakdown khi chỉ cần filter. Sau điều chỉnh hướng dẫn, vòng dev riêng đạt 41/41 câu đơn; hội thoại chuyển từ 1/6 lên 6/6 qua các vòng chỉnh khác. Đây không phải A/B trên test. Chưa có test holdout hay ablation nhiều repeats, nên chưa thể kết luận Texa vượt baseline.
+**Lời nói:** Trên 63 câu test, qua ba lần chạy, Texa đúng 143 trong 189 lượt, tương đương 75,7%; B0 đúng 130, tương đương 68,8%. Nhìn vào điểm trung bình thì Texa cao hơn, nhưng khoảng tin cậy của chênh lệch chạy từ âm 14,5 đến dương 26,1 điểm phần trăm, nên dữ liệu hiện tại chưa đủ để kết luận Texa tốt hơn. B0 thường trả thêm cột; nếu bỏ qua lỗi đó trong phép chẩn đoán thì điểm tăng lên 89,9%, nhưng đó không phải thước đo chính vì bảng trả lời chưa khớp hoàn toàn. Texa cũng chậm hơn trong phép đo này; lưu ý Texa tạo thêm insight còn B0 chỉ sinh SQL.
 
-## Slide 12 — Demo, giới hạn và kết luận (1:35)
+## Slide 12 — Ablation: thành phần nào có ích? (1:30)
+
+| So sánh | Kết quả | Diễn giải |
+|---|---:|---|
+| Memory: F / cửa sổ 6 lượt / không memory — scenario success | 63,9% / 66,7% / 19,4% | Chưa thấy F hơn M6; F hơn M0 |
+| Clarification: F / bỏ hỏi lại — scenario success | 85,0% / 51,7% | Có lợi rõ, chủ yếu khi thiếu kỳ báo cáo |
+
+**Lời nói:** Khi bỏ memory hoàn toàn, tỷ lệ hoàn thành scenario giảm xuống 19,4%; nhưng cấu hình đầy đủ chỉ đạt 63,9%, còn cửa sổ sáu lượt đạt 66,7%. Vì khoảng tin cậy của chênh lệch F–M6 còn chứa 0, chưa thể nói memory cấu trúc tốt hơn cửa sổ sáu lượt. Với clarification, cấu hình đầy đủ đạt 85%, so với 51,7% khi bỏ bước hỏi lại; cải thiện chủ yếu đến từ việc hỏi rõ kỳ báo cáo. Đây là bằng chứng bước đầu trên bộ test tổng hợp, không phải cam kết cho mọi hội thoại. Trong memory run có sự cố gateway ở bốn scenario, nên usage ghi nhận là cận dưới; điểm kết quả vẫn được giữ nguyên. Thời gian clarification chỉ tính xử lý máy và oracle, chưa tính thời gian người dùng thật suy nghĩ/chọn câu trả lời.
+
+## Slide 13 — Demo, giới hạn và kết luận (1:15)
 
 - Demo: hỏi, xem scope/định nghĩa, kiểm tra bảng và SQL, hỏi tiếp
-- Regression mới nhất: backend 169 đạt/23 bỏ qua; scripted E2E 11/11
-- Olist mới được kiểm thử contract/SQL, chưa benchmark model thật
-- Bước tiếp theo: freeze, test holdout, ablation repeats và walkthrough PM/PO
+- Benchmark synthetic; chưa chứng minh kết quả trên warehouse hoặc người dùng thật
+- Cần sửa lỗi diễn giải/filter của Texa, tham chiếu xa và hỏi lại thừa; giảm latency
+- Diagnostic dev hai nguồn: Texa 31/33, baseline 19/33 câu đơn; chưa phải holdout
+- E2E dữ liệu thật: mẫu truy vấn khớp SQL gold; còn lỗi follow-up tiếng Việt và gợi ý ngoài scope
 
-**Lời nói:** Demo theo một hành trình: PM hỏi doanh thu Cosmetics tháng 12/2019, xem breakdown theo danh mục, rồi thêm một điều kiện bằng câu tiếp nối; sau đó hỏi revenue Olist để thấy nguồn phải được nêu rõ và tiền tệ vẫn là BRL. Regression mới nhất: backend 169 đạt/23 bỏ qua; scripted E2E 11/11. Đây xác nhận luồng kỹ thuật, không phải accuracy model. Olist qua contract/SQL tests nhưng chưa benchmark model thật. Tiếp theo cần freeze, chạy 63 câu test, ablation nhiều lượt và walkthrough PM/PO. Texa đã triển khai pipeline có phạm vi và truy vết; chưa đủ bằng chứng để khẳng định ưu thế tổng quát. Xin cảm ơn.
+**Lời nói:** Demo theo một hành trình: PM hỏi doanh thu Cosmetics tháng 12/2019, xem breakdown theo danh mục, rồi thêm điều kiện bằng câu tiếp nối; sau đó hỏi revenue Olist để thấy nguồn phải được chọn rõ và tiền tệ vẫn là BRL. Ở diagnostic đa nguồn nhỏ, Texa đạt 31/33 câu đơn so với baseline 19/33, nhưng đây mới là 33 câu dev tiếng Anh chạy một lần, chưa thể khái quát. Trên benchmark holdout chính, khoảng tin cậy vẫn chưa đủ để kết luận Texa tốt hơn; Texa cũng chậm hơn và cần tiếp tục giảm lỗi diễn giải. Memory cấu trúc chưa thắng rõ cửa sổ sáu lượt, còn clarification cho thấy cải thiện trong bài test. Nhóm cũng đã chạy website và hỏi thật trên Cosmetics/Olist: các mẫu tổng, nhóm tháng, top danh mục và item purchases khớp SQL đối chiếu. Tuy nhiên hai cách nói tiếp nối tiếng Việt vẫn làm mất ngữ cảnh, và gợi ý trang đầu còn vượt scope; nhóm chưa kết luận sẵn sàng mở demo tự do cho cả lớp. Texa là trợ lý phân tích có phạm vi kiểm soát được, chưa phải hệ thống đúng tuyệt đối hay thay thế chuyên viên dữ liệu. Xin cảm ơn.
 
 
 ### Ghi chú cho người trình bày
 
 Mạch kể rút từ slide mẫu: vấn đề → sản phẩm/phạm vi → dữ liệu → phương pháp → ví dụ → đánh giá → demo/giới hạn. Đã bỏ literature review. Bảng điểm chấm **kết quả thực thi**, không lấy QuerySpec khớp làm bằng chứng kết quả đúng.
 
-Số liệu đối chiếu từ JSONL local (Git ignored) trong `backend/eval/results/`: `luna-direct-dev-20261104.jsonl`, `luna-texa-dev-20261104-migrated.jsonl`, `luna-texa-dev-20261104-filter-prompt.jsonl`, `luna-texa-dialogue-dev-20261104-memory-fix.jsonl`. Bản tóm tắt số liệu được lưu tại `data/benchmark/development_results.json`; raw log không được đóng gói cùng hai tài liệu. Các số regression/E2E là lần kiểm thử đã ghi nhận trước lần thu gọn tài liệu, không phải kết quả chạy mới trong lần này.
+Số liệu formal lấy từ report đóng băng tại `backend/eval/results/study-20261105/` (single, memory, clarification); bản report được lưu trong `data/benchmark/results/study-20261105/report.json`. Bốn scenario memory bị gateway incident được ghi tại `data/benchmark/results/study-20261105/provider-incident.json`. Diagnostic đa nguồn riêng: `data/benchmark/results/multisource-20261105/report.json`; 33 câu đơn, dev tiếng Anh, một lần chạy. Runner hội thoại thô báo Texa 7/7 và direct 4/7, nhưng tiêu chí slot/reference nội bộ không giống nhau giữa hai phương pháp nên không trình bày như so sánh công bằng. Không gộp diagnostic với kết quả holdout.
+
+Bằng chứng E2E website với model thật, sau `run.sh`: `data/benchmark/results/live-e2e-20261105/report.json`. Hai phiên browser chạy đồng thời không thay thế kiểm thử tải cả lớp. Download CSV chưa xác minh do timeout của công cụ; không tính là đã đạt.

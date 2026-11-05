@@ -1,0 +1,42 @@
+[
+  {
+    "case": "cosmetics_revenue_total",
+    "question": "Doanh thu Cosmetics shop trong tháng 12/2019 là bao nhiêu?",
+    "observation": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 57 button (expanded) Chi tiết · 14.7 giây, Secondary Actions: Collapse"
+  },
+  {
+    "case": "social_noise",
+    "observation": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 28 text entry area (settable) Câu hỏi"
+  },
+  {
+    "case": "noise_followup_top3",
+    "status": "fail",
+    "observation": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 28 text entry area (settable) Câu hỏi"
+  },
+  {
+    "case": "olist_revenue_total",
+    "status": "pass",
+    "observation": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 0 AXWebArea Texa, URL: localhost:15173/"
+  },
+  {
+    "case": "olist_purchases_followup",
+    "status": "pass",
+    "observation": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 17 text entry area (settable) Câu hỏi"
+  },
+  {
+    "case": "olist_sessions_unavailable",
+    "status": "pass",
+    "observation": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 17 text entry area (settable) Câu hỏi"
+  },
+  {
+    "case": "unsupported_aov",
+    "status": "pass",
+    "observation": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 17 text entry area (settable) Câu hỏi"
+  },
+  {
+    "case": "cross_source_compare",
+    "status": "partial",
+    "note": "Refuses missing coverage but suggests impossible comparisons rather than one-source rule",
+    "observation": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 17 text entry area (settable) Câu hỏi"
+  }
+]

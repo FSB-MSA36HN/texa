@@ -1,0 +1,185 @@
+{
+  "date": "2026-11-05",
+  "method": "Manual browser controller user E2E through run.sh-launched application, real gpt-6-luna, public live Cosmetics/Olist warehouse; no direct API substitutes for UI actions",
+  "code_commit": "f3aef39",
+  "url": "http://localhost:15173",
+  "data_snapshot": "5d931a142670d81dc24d",
+  "catalog_version": 4,
+  "budget": "UI server launched through ignored local shared-budget wrapper; ordinary run.sh does not enable this wrapper automatically",
+  "judgement": "Core explicit single-source queries work on observed samples. Not ready to claim unrestricted class demo: Vietnamese followup classification fails for common phrases; home suggestions exceed scope. No class-scale load test.",
+  "no_aggregate_accuracy": "Purposeful small UX sample, correlated turns; do not treat pass rate as benchmark accuracy.",
+  "scenarios": [
+    {
+      "id": "cosmetics_revenue_total",
+      "status": "pass",
+      "action_or_question": "Doanh thu Cosmetics shop trong tháng 12/2019 là bao nhiêu?",
+      "observed": "1077689.23 USD; exact independent gold"
+    },
+    {
+      "id": "olist_revenue_total",
+      "status": "pass",
+      "action_or_question": "Doanh thu Olist marketplace tháng 1/2018 là bao nhiêu?",
+      "observed": "950030.36 BRL; exact independent gold; native item prices"
+    },
+    {
+      "id": "olist_purchases_followup",
+      "status": "pass",
+      "action_or_question": "Trong cùng tháng đó có bao nhiêu sản phẩm được mua?",
+      "observed": "8208 item lines, preserved Olist Jan2018; explains not orders"
+    },
+    {
+      "id": "social_noise",
+      "status": "pass",
+      "action_or_question": "Cảm ơn bạn",
+      "observed": "Social reply without fabricated metric"
+    },
+    {
+      "id": "noise_followup_top3",
+      "status": "fail",
+      "action_or_question": "Chia kết quả doanh thu vừa rồi theo danh mục, lấy top 3.",
+      "observed": "After Cosmetics Dec2019 + social turn, unnecessarily asks source/date; no context inherited"
+    },
+    {
+      "id": "missing_date_clarification",
+      "status": "pass",
+      "action_or_question": "Doanh thu Cosmetics shop là bao nhiêu?",
+      "observed": "Asks time period; selected Toàn bộ dữ liệu -> 2019-12-01..2020-01-31 and2399514.29 USD, equals independent monthly sum"
+    },
+    {
+      "id": "monthly_followup_after_clarification",
+      "status": "fail",
+      "action_or_question": "Chia doanh thu đó theo từng tháng.",
+      "observed": "Refuses saying prior context unavailable although previous answer exists"
+    },
+    {
+      "id": "trend_by_month_explicit",
+      "status": "pass",
+      "action_or_question": "Doanh thu Cosmetics shop theo từng tháng từ 1/12/2019 đến 31/1/2020.",
+      "observed": "2019-12:1077689.23;2020-01:1321825.06 USD, exact gold; delta244135.83,22.7%"
+    },
+    {
+      "id": "top_categories",
+      "status": "pass",
+      "action_or_question": "Top 3 danh mục có doanh thu cao nhất của Cosmetics shop tháng 12/2019.",
+      "observed": "NULL:1037866.82;appliances:22964.12;furniture:7300.22 USD; exact gold; missing-category and top3-total caveats visible"
+    },
+    {
+      "id": "filter_not_breakdown",
+      "status": "pass",
+      "action_or_question": "Tổng doanh thu Cosmetics shop tháng 12/2019, chỉ tính danh mục accessories.",
+      "observed": "Single total2162.26 USD; correct filter, no unwanted grouping; exact gold"
+    },
+    {
+      "id": "olist_sessions_unsupported",
+      "status": "pass",
+      "action_or_question": "Olist có bao nhiêu sessions trong tháng 1/2018?",
+      "observed": "Explains not tracked, no fabricated zero"
+    },
+    {
+      "id": "unsupported_aov",
+      "status": "pass",
+      "action_or_question": "Tính AOV của Olist tháng 1/2018.",
+      "observed": "Refuses; no order count in catalog; item lines are not orders"
+    },
+    {
+      "id": "cross_source_compare",
+      "status": "partial",
+      "action_or_question": "So sánh doanh thu Cosmetics với Olist tháng 1/2018.",
+      "observed": "Refuses absent Cosmetics coverage, but follow-up suggestions still propose unsupported cross-source comparisons and impossible overlap"
+    },
+    {
+      "id": "coverage_not_zero",
+      "status": "pass",
+      "action_or_question": "Doanh thu Cosmetics shop tháng 1/2018 là bao nhiêu?",
+      "observed": "Explains true source dates2019-12..2020-01; no zero"
+    },
+    {
+      "id": "cancel_request",
+      "status": "pass",
+      "action_or_question": "Tổng số người dùng Cosmetics shop tháng 12/2019.",
+      "observed": "First late cancellation completed normally; second immediate cancellation visibly Đã dừng câu hỏi này."
+    },
+    {
+      "id": "retry_after_cancel",
+      "status": "pass",
+      "action_or_question": "Click Hỏi lại on cancelled users question",
+      "observed": "Same turn answered370154 users; no duplicate question; independent gold verified separately"
+    },
+    {
+      "id": "pagination",
+      "status": "pass",
+      "action_or_question": "Click Trang sau on31-row daily revenue table",
+      "observed": "Page2/2 shows Dec21..31,31 rows retained"
+    },
+    {
+      "id": "history_reload_isolation",
+      "status": "pass",
+      "action_or_question": "Chrome reload then reopen saved conversation",
+      "observed": "Chrome history contains only its own chat, both previous results restore; IAB separate history. Browser-cookie isolation only, no auth/access-attack audit"
+    },
+    {
+      "id": "two_concurrent_sessions",
+      "status": "pass",
+      "action_or_question": "Chrome category filter and IAB explicit monthly request submitted before either completed",
+      "observed": "Both finish with correct independently checked results; not a class-scale load test"
+    },
+    {
+      "id": "shared_settings_readonly",
+      "status": "pass",
+      "action_or_question": "Open Cài đặt model",
+      "observed": "Shows gpt-6-luna and host-managed setting; no editable API key/model"
+    },
+    {
+      "id": "capability_panel",
+      "status": "pass",
+      "action_or_question": "Open Texa đo được gì",
+      "observed": "Eight catalog metrics and dimensions visible with source/semantic limitations"
+    },
+    {
+      "id": "home_suggestions",
+      "status": "fail",
+      "action_or_question": "Inspect new-chat suggestions",
+      "observed": "Still advertises Olist delivery delay, ordered funnel and cross-source AOV, outside current product scope"
+    },
+    {
+      "id": "csv_download",
+      "status": "inconclusive",
+      "action_or_question": "Click Tải CSV on accessories result",
+      "observed": "Browser controller download wait timed out and reset; file contents not verified; no product failure inferred"
+    },
+    {
+      "id": "long_reference",
+      "status": "not_tested",
+      "action_or_question": "Reference result2 after8+ successful results",
+      "observed": "Covered by formal memory suite, not repeated live in browser"
+    },
+    {
+      "id": "provider_failure_retry",
+      "status": "not_tested",
+      "action_or_question": "Inject provider outage then retry",
+      "observed": "Cancel/retry tested; provider outage was not deliberately injected in UI"
+    },
+    {
+      "id": "switch_chat_while_pending",
+      "status": "not_tested",
+      "action_or_question": "Switch new chat while response pending",
+      "observed": "Not executed"
+    }
+  ],
+  "likely_memory_root_cause": {
+    "file": "backend/texa/memory.py",
+    "detail": "Follow-up cue/overlap classifier labels these Vietnamese phrases new_topic and supplies no previous successful query. Prior turn stored successfully at same snapshot/catalog. Diagnostic only; no post-holdout product edits."
+  },
+  "evidence_note": "observations.json saved early browser observations; final-browser-a.txt and final-browser-b.txt preserve later full chat states. Cancel/settings intermediate states also recorded in tool transcript. Download controller timeout reset in-memory observation list; no full transcript claimed.",
+  "cost_snapshot": {
+    "model": "gpt-6-luna",
+    "input_usd_per_token": 1.0000000000000001e-07,
+    "output_usd_per_token": 5e-07,
+    "max_usd": 10,
+    "spent_estimated_usd": 0.4327251000000001,
+    "reserved_usd": 0.17216820000000005,
+    "calls": 1886,
+    "input_tokens": 3089886,
+    "output_tokens": 247473
+  }
+}
