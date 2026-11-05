@@ -16,9 +16,11 @@ SINGLE_VALUE_OPS = {"=", "!=", ">", ">=", "<", "<=", "CONTAINS"}
 
 
 class SpecError(Exception):
-    def __init__(self, code: str, message: str, suggestions: list[str] | None = None):
+    def __init__(self, code: str, message: str, suggestions: list[str] | None = None,
+                 params: dict | None = None):
         super().__init__(message)
         self.code, self.message, self.suggestions = code, message, suggestions or []
+        self.params = params or {}
 
 
 class Strict(BaseModel):
@@ -67,7 +69,7 @@ def validate_spec(raw: dict, cat: Catalog, sources: dict[str, Source]) -> QueryS
     if len(spec.source_ids) > cat.policy.max_sources:
         raise SpecError("source_scope", f"Ask about at most {cat.policy.max_sources} dataset(s) at a time.")
     for sid in spec.source_ids:
-        if cat.allowed_sources and sid not in cat.allowed_sources:
+        if cat.allowed_sources and sid not in cat.sources_for_profile():
             raise SpecError("source_scope", f"Dataset {sid!r} is outside the published product scope.")
         if sid not in sources:
             raise SpecError("unknown_source", f"Unknown store {sid!r}.")
@@ -157,4 +159,24 @@ def validate_spec(raw: dict, cat: Catalog, sources: dict[str, Source]) -> QueryS
                     raise SpecError("invalid_filter", f"{dim.label} needs numbers, got {v!r}.")
         if dim.kind in ("time", "bucket"):
             raise SpecError("invalid_filter", f"Filter {dim.label} through the time range or a numeric field instead.")
+    # Bind every entry point (including API/form-created QuerySpecs), not only model output.
+    from .sanity import match_values
+    for f in spec.filters:
+        dim = cat.dims[f.field]
+        if dim.kind == "source" or f.operator == "CONTAINS":
+            continue
+        bound, unresolved = match_values(cat, dim.id, f.values, [sources[s] for s in spec.source_ids])
+        if unresolved:
+            value, choices = next(iter(unresolved.items()))
+            if choices:
+                raise SpecError("value_ambiguous", f"Could not uniquely resolve {value!r} for {dim.label}.",
+                                suggestions=choices, params={"field": dim.id, "value": value, "choices": choices,
+                                                              "source_ids": spec.source_ids})
+            raise SpecError("value_not_found", f"{value!r} is not a known {dim.label} value for this source.",
+                            params={"field": dim.id, "value": value, "source_ids": spec.source_ids})
+        f.values = list(dict.fromkeys(bound))
+        if len(f.values) > 1 and f.operator == "=":
+            f.operator = "IN"
+        elif len(f.values) > 1 and f.operator == "!=":
+            f.operator = "NOT IN"
     return spec

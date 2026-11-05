@@ -3,6 +3,7 @@ import hashlib
 import json
 import re
 import math
+import os
 import time
 from functools import cached_property
 from typing import Literal
@@ -50,6 +51,7 @@ class EventRole(Strict):
     label: str
     description: str = ""
     events: list[str] = Field(min_length=1)
+    synonyms: list[str] = []
     alternatives: bool = False
     event_conditions: dict[str, list[Condition]] = {}
 
@@ -58,6 +60,8 @@ class Dimension(Strict):
     id: str
     label: str
     description: str = ""
+    labels: dict[str, str] = {}
+    descriptions: dict[str, str] = {}
     synonyms: list[str] = []
     kind: Literal["field", "time", "source", "bucket", "user_type", "days_since"] = "field"
     field: str = ""
@@ -106,6 +110,8 @@ class Metric(Strict):
     id: str
     label: str
     description: str = ""
+    labels: dict[str, str] = {}
+    descriptions: dict[str, str] = {}
     synonyms: list[str] = []
     when_to_use: str = ""
     unit: Literal["count", "number", "percent", "currency", "days", "score"]
@@ -149,6 +155,23 @@ class GlossaryTerm(Strict):
     values: list[str] = []
 
 
+class SemanticValue(Strict):
+    """A business concept whose stored spelling varies by source."""
+    id: str
+    field: str
+    label: str
+    synonyms: list[str] = []
+    source_values: dict[str, list[str]]
+
+
+class MetricAmbiguity(Strict):
+    """Catalog-owned phrase whose valid metric interpretations are genuinely distinct."""
+    id: str
+    phrases: list[str] = Field(min_length=1)
+    metric_ids: list[str] = Field(min_length=2)
+    disambiguators: dict[str, list[str]] = {}
+
+
 class VerifiedQuestion(Strict):
     id: str
     question: str
@@ -169,12 +192,15 @@ class Catalog(Strict):
     version: int
     table: str
     allowed_sources: list[str] = []
+    evaluation_sources: list[str] = []
     event_roles: list[EventRole]
     dimensions: list[Dimension]
     metrics: list[Metric]
     variant_groups: list[VariantGroup] = []
     field_mappings: list[FieldMapping] = []
     glossary: list[GlossaryTerm] = []
+    semantic_values: list[SemanticValue] = []
+    metric_ambiguities: list[MetricAmbiguity] = []
     verified_questions: list[VerifiedQuestion] = []
     data_notes: list[dict] = []
     policy: Policy = Policy()
@@ -198,6 +224,9 @@ class Catalog(Strict):
     def mapped_field(self, field: str, source_id: str) -> str:
         return next((m.to for m in self.field_mappings if m.field == field and m.source == source_id), field)
 
+    def sources_for_profile(self, profile: str | None = None) -> list[str]:
+        profile = profile or os.environ.get("TEXA_SOURCE_PROFILE", "demo")
+        return list(dict.fromkeys(self.allowed_sources + (self.evaluation_sources if profile == "evaluation" else [])))
     def base_simple_metrics(self, metric_id: str) -> list[Metric]:
         """Simple metrics a metric is computed from (itself, ratio parts, or the per-day inner metric)."""
         m = self.mets[metric_id]
@@ -230,6 +259,14 @@ class Catalog(Strict):
         return m.type == "simple" and m.simple.aggregation in ADDITIVE
 
 
+def display_label(item: Dimension | Metric, locale: str = "en") -> str:
+    return item.labels.get((locale or "en").split("-")[0].lower(), item.label)
+
+
+def display_description(item: Dimension | Metric, locale: str = "en") -> str:
+    return item.descriptions.get((locale or "en").split("-")[0].lower(), item.description)
+
+
 def field_type(field: str, cast: str = "text") -> str:
     if field in COLUMNS:
         return COLUMNS[field]
@@ -251,12 +288,29 @@ def validate_catalog(raw: dict) -> Catalog:
         errors.append(f"{where}: unknown field {field!r} (use a column of {cat.table} or ep.<key>/up.<key>)")
 
     for kind, items in (("event role", cat.event_roles), ("dimension", cat.dimensions), ("metric", cat.metrics),
-                        ("variant group", cat.variant_groups), ("glossary term", cat.glossary)):
+                        ("variant group", cat.variant_groups), ("glossary term", cat.glossary),
+                        ("semantic value", cat.semantic_values), ("metric ambiguity", cat.metric_ambiguities)):
         ids = [i.id for i in items]
         for dup in {i for i in ids if ids.count(i) > 1}:
             errors.append(f"duplicate {kind} id {dup!r}")
     if len(set(cat.allowed_sources)) != len(cat.allowed_sources) or any(not s for s in cat.allowed_sources):
         errors.append("allowed_sources must contain unique non-empty source ids")
+    if len(set(cat.evaluation_sources)) != len(cat.evaluation_sources) or set(cat.allowed_sources) & set(cat.evaluation_sources):
+        errors.append("evaluation_sources must be unique and disjoint from demo allowed_sources")
+    for value in cat.semantic_values:
+        check_field(f"semantic value {value.id}", value.field)
+        if not value.source_values or any(not vals for vals in value.source_values.values()):
+            errors.append(f"semantic value {value.id}: each source needs at least one physical value")
+        if set(value.source_values) - set(cat.sources_for_profile("evaluation")):
+            errors.append(f"semantic value {value.id}: references a source outside demo/evaluation scope")
+    for ambiguity in cat.metric_ambiguities:
+        missing = set(ambiguity.metric_ids) - set(cat.mets)
+        if missing:
+            errors.append(f"metric ambiguity {ambiguity.id}: unknown metrics {sorted(missing)}")
+        if len(set(ambiguity.metric_ids)) != len(ambiguity.metric_ids):
+            errors.append(f"metric ambiguity {ambiguity.id}: duplicate metric ids")
+        if set(ambiguity.disambiguators) - set(ambiguity.metric_ids):
+            errors.append(f"metric ambiguity {ambiguity.id}: disambiguators reference a non-member metric")
     for role in cat.event_roles:
         for event, conds in role.event_conditions.items():
             if event not in role.events:
@@ -358,6 +412,7 @@ class Source(BaseModel):
     up_keys: set[str] = set()
     columns: set[str] = set()
     values: dict[str, dict[str, str]] = {}  # field -> lowercased value -> exact value
+    value_vocab_fields: set[str] = set()  # ETL writes complete low-cardinality vocabularies; absence is open/unknown
 
     def has_field(self, field: str) -> bool:
         if field in ALWAYS_FILLED:
@@ -372,6 +427,14 @@ class Source(BaseModel):
             # only for one-level paths; never infer arbitrary descendants from a parent key.
             return ".".join(keys) in known or (len(keys) == 1 and keys[0] in known)
         return False
+
+    def value_vocabulary_status(self, field: str) -> str:
+        """Return complete (closed enum), open (field exists, values not enumerated), or absent."""
+        if field == "event_name":
+            return "complete" if self.events else "absent"
+        if field in self.value_vocab_fields:
+            return "complete"
+        return "open" if self.has_field(field) else "absent"
 
     def logs_role(self, role: EventRole) -> list[str]:
         return [e for e in role.events if e in self.events]
@@ -409,15 +472,17 @@ def load_sources(max_age: float = 300) -> dict[str, Source]:
             s.columns.add(v["value"])
         else:
             s.values.setdefault(v["field"], {})[v["value"].lower()] = v["value"]
+            s.value_vocab_fields.add(v["field"])
     _sources_cache = (time.monotonic(), sources)
     return sources
 
 
 def scoped_sources(cat: Catalog, sources: dict[str, Source]) -> dict[str, Source]:
-    """Apply an optional per-catalog source allowlist; empty retains legacy behavior."""
-    if not cat.allowed_sources:
+    """Expose demo sources by default; evaluation fixtures require an explicit profile."""
+    allowed = cat.sources_for_profile()
+    if not allowed:
         return sources
-    return {sid: source for sid, source in sources.items() if sid in cat.allowed_sources}
+    return {sid: source for sid, source in sources.items() if sid in allowed}
 
 
 # ---------------------------------------------------------------------------
@@ -429,9 +494,25 @@ def fingerprint(raw: dict) -> str:
 
 def check_against_sources(cat: Catalog, sources: dict[str, Source]) -> list[str]:
     """Require each role to be observed, not every optional event alias in a snapshot."""
-    sources = scoped_sources(cat, sources)
-    logged = set().union(*(s.events for s in sources.values())) if sources else set()
-    return [f"event role {r.id}: no in-scope source logs any of {r.events!r}" for r in cat.event_roles if not logged.intersection(r.events)]
+    visible = {sid: src for sid, src in sources.items() if sid in cat.sources_for_profile("evaluation")}
+    logged = set().union(*(s.events for s in visible.values())) if visible else set()
+    errors = [f"event role {r.id}: no in-scope source logs any of {r.events!r}"
+              for r in cat.event_roles if not logged.intersection(r.events)]
+    for concept in cat.semantic_values:
+        for sid, expected in concept.source_values.items():
+            src = sources.get(sid)
+            if src is None:
+                errors.append(f"semantic value {concept.id}: source {sid!r} has no metadata")
+                continue
+            field = cat.mapped_field(concept.field, sid)
+            available = src.events if concept.field == "event_name" else src.values.get(field, {})
+            if concept.field != "event_name" and not src.has_field(field):
+                errors.append(f"semantic value {concept.id}: source {sid!r} has no field {field!r}")
+            elif (concept.field == "event_name" or field in src.value_vocab_fields) and any(
+                    value.casefold() not in {v.casefold() for v in available} for value in expected):
+                missing = [v for v in expected if v.casefold() not in {v.casefold() for v in available}]
+                errors.append(f"semantic value {concept.id}: source {sid!r} is missing physical values {missing!r}")
+    return errors
 
 
 def publish(path=db.CATALOG_PATH) -> int:

@@ -1,6 +1,7 @@
 """Fail closed before running SQL: a store that never logs what a question needs is refused or named,
 never reported as 0. Also normalizes filter values to what the data actually contains."""
 import difflib
+import unicodedata
 from dataclasses import dataclass, field
 
 from .catalog import Catalog, Source
@@ -35,7 +36,9 @@ def check_availability(spec: QuerySpec, cat: Catalog, sources: dict[str, Source]
             continue
         if missing_dims:
             if len(spec.source_ids) == 1:
-                raise SpecError("field_not_tracked", f"{src.label} does not record {', '.join(d.label for d in missing_dims)}.")
+                raise SpecError("field_not_tracked", f"{src.label} does not record {', '.join(d.label for d in missing_dims)}.",
+                                params={"source_id": sid, "field_ids": [d.id for d in missing_dims],
+                                        "fields": [d.label for d in missing_dims]})
             av.warnings.append(f"{src.label} does not record {', '.join(d.label for d in missing_dims)}; its rows show it as empty.")
         usable = []
         for m in spec.metric_ids:
@@ -62,9 +65,13 @@ def check_availability(spec: QuerySpec, cat: Catalog, sources: dict[str, Source]
             av.unavailable_metrics[m] = "; ".join(reasons)
     if not av.sources:
         reasons = "; ".join(av.sources_without_data.values())
-        raise SpecError("not_tracked", f"This cannot be answered from the data: {reasons}.")
+        raise SpecError("not_tracked", f"This cannot be answered from the data: {reasons}.",
+                        params={"source_ids": spec.source_ids, "metric_ids": spec.metric_ids,
+                                "unavailable": av.sources_without_data})
     if spec.metric_ids and all(not av.metric_sources[m] for m in spec.metric_ids):
-        raise SpecError("not_tracked", "; ".join(r for g in gaps_by_metric.values() for r in g.values()) + ".")
+        raise SpecError("not_tracked", "; ".join(r for g in gaps_by_metric.values() for r in g.values()) + ".",
+                        params={"source_ids": spec.source_ids, "metric_ids": spec.metric_ids,
+                                "unavailable": gaps_by_metric})
     currencies = {sources[s].currency for s in av.sources}
     if len(currencies) > 1 and any(cat.mets[m].unit == "currency" and not cat.mets[m].currency for m in spec.metric_ids):
         av.warnings.append(f"Amounts are in different currencies ({', '.join(f'{sources[s].label}: {sources[s].currency}' for s in av.sources)}) and are not converted; compare trends, not totals.")
@@ -72,25 +79,71 @@ def check_availability(spec: QuerySpec, cat: Catalog, sources: dict[str, Source]
 
 
 def match_values(cat: Catalog, dim_id: str, typed: list[str], sources: list[Source]) -> tuple[list[str], dict[str, list[str]]]:
-    """Map typed values to exact stored values. Returns (resolved, unresolved -> close suggestions).
-    Fields without a value vocabulary (too many values) pass through unchanged."""
+    """Bind display/business values to physical values for the selected sources.
+
+    ETL-emitted low-cardinality vocabularies are complete; missing vocabulary means
+    open/high-cardinality or unknown, so a literal may pass only for a present field.
+    """
     dim = cat.dims[dim_id]
+    field = dim.field
     known: dict[str, str] = {}
-    has_vocab = False
+    complete = field == "event_name"
     for src in sources:
-        vocab = src.values.get(cat.mapped_field(dim.field, src.id))
-        if vocab is not None:
-            has_vocab = True
-            known |= vocab
-    if not has_vocab or dim.value_type == "number":
+        physical = cat.mapped_field(field, src.id)
+        vocab = src.values.get(physical, {})
+        known.update(vocab)
+        if physical in src.value_vocab_fields:
+            complete = True
+        if field == "event_name":
+            known.update({v.casefold(): v for v in src.events})
+    if dim.value_type == "number":
         return typed, {}
+
+    def norm(value: str) -> str:
+        text = " ".join(value.casefold().split())
+        return "".join(c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn")
+
     resolved, unresolved = [], {}
     for t in typed:
-        hit = known.get(t.strip().lower())
+        text = t.strip()
+        semantic = []
+        for concept in cat.semantic_values:
+            if concept.field != field:
+                continue
+            aliases = [concept.id, concept.label, *concept.synonyms]
+            if norm(text) in {norm(a) for a in aliases}:
+                semantic.append(concept)
+        concept_ids = {c.id for c in semantic}
+        if len(concept_ids) > 1:
+            unresolved[t] = [c.label for c in semantic]
+            continue
+        if semantic:
+            concept = semantic[0]
+            translated = []
+            for src in sources:
+                values = concept.source_values.get(src.id, [])
+                physical = cat.mapped_field(field, src.id)
+                available = src.events if field == "event_name" else src.values.get(physical, {})
+                if field == "event_name":
+                    translated.extend(v for v in values if v in available)
+                elif physical in src.value_vocab_fields:
+                    translated.extend(v for v in values if v.casefold() in available)
+                elif src.has_field(physical):
+                    # Open vocabulary: keep the curated physical value from the semantic contract.
+                    translated.extend(values)
+            if translated:
+                resolved.extend(dict.fromkeys(translated))
+            else:
+                unresolved[t] = []
+            continue
+        hit = known.get(text.casefold())
         if hit:
             resolved.append(hit)
             continue
+        if not complete:
+            resolved.append(text)
+            continue
         close = difflib.get_close_matches(t.strip().lower(), list(known), n=6, cutoff=0.6)
-        contains = [k for k in known if t.strip().lower() in k][:6]
+        contains = [k for k in known if text.casefold() in k][:6]
         unresolved[t] = [known[k] for k in dict.fromkeys(contains + close)][:6]
     return resolved, unresolved

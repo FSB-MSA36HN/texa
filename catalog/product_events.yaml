@@ -4,6 +4,7 @@ table: analytics.event_activity
 allowed_sources:
 - cosmetics_shop
 - olist_marketplace
+evaluation_sources:
 - event_benchmark
 event_roles:
 - id: any_event
@@ -37,6 +38,8 @@ event_roles:
 dimensions:
 - id: event_date
   label: Day
+  labels: {vi: Ngày}
+  descriptions: {vi: 'Ngày diễn ra sự kiện.'}
   kind: time
   field: event_date
   grain: day
@@ -47,6 +50,8 @@ dimensions:
   - ngày
 - id: event_week
   label: Week
+  labels: {vi: Tuần}
+  descriptions: {vi: 'Gom dữ liệu theo tuần diễn ra sự kiện.'}
   kind: time
   field: event_date
   grain: week
@@ -56,6 +61,8 @@ dimensions:
   - tuần
 - id: event_month
   label: Month
+  labels: {vi: Tháng}
+  descriptions: {vi: 'Gom dữ liệu theo tháng diễn ra sự kiện.'}
   kind: time
   field: event_date
   grain: month
@@ -65,7 +72,9 @@ dimensions:
   - tháng
 - id: source
   label: Store
+  labels: {vi: Cửa hàng}
   description: Which data source (store) the event came from.
+  descriptions: {vi: 'Nguồn dữ liệu của cửa hàng.'}
   kind: source
   synonyms:
   - shop
@@ -75,7 +84,9 @@ dimensions:
   - cửa hàng
 - id: event_name
   label: Event name
+  labels: {vi: Tên sự kiện}
   description: Raw event name as the source logs it.
+  descriptions: {vi: 'Tên sự kiện gốc do nguồn dữ liệu ghi nhận; không dịch giá trị khi truy vấn.'}
   field: event_name
   synonyms:
   - event
@@ -83,7 +94,9 @@ dimensions:
   - sự kiện
 - id: item_category
   label: Product category
+  labels: {vi: Danh mục sản phẩm}
   description: Top-level product category.
+  descriptions: {vi: 'Nhóm sản phẩm cấp cao nhất trong dữ liệu.'}
   field: item_category
   synonyms:
   - category
@@ -91,6 +104,7 @@ dimensions:
   - ngành hàng
 - id: item_brand
   label: Brand
+  labels: {vi: Thương hiệu}
   field: item_brand
   synonyms:
   - brand
@@ -117,8 +131,10 @@ dimensions:
 metrics:
 - id: users
   label: Users
+  labels: {vi: Người dùng}
   description: Distinct users with any event in the period. Olist observes only customers
     who ordered, not all website visitors; source populations are not comparable.
+  descriptions: {vi: 'Số người dùng duy nhất có sự kiện được ghi nhận trong kỳ. Olist chỉ quan sát khách đã đặt hàng, không phải toàn bộ khách truy cập.'}
   synonyms:
   - active users
   - customers
@@ -131,7 +147,9 @@ metrics:
     event_role: any_event
 - id: events
   label: Events
+  labels: {vi: Lượt sự kiện}
   description: Number of logged events of any kind.
+  descriptions: {vi: 'Tổng số sự kiện được ghi nhận trong kỳ.'}
   synonyms:
   - event count
   - số sự kiện
@@ -142,7 +160,9 @@ metrics:
     event_role: any_event
 - id: sessions
   label: Sessions
+  labels: {vi: Phiên truy cập}
   description: Distinct sessions (cosmetics shop only).
+  descriptions: {vi: 'Số phiên truy cập duy nhất; hiện chỉ có ở nguồn Cosmetics.'}
   synonyms:
   - visits
   - phiên
@@ -154,7 +174,9 @@ metrics:
     field: session_id
 - id: viewers
   label: Users who viewed
+  labels: {vi: Người xem sản phẩm}
   description: Distinct users with a product view.
+  descriptions: {vi: 'Số người dùng duy nhất đã xem sản phẩm.'}
   synonyms:
   - viewers
   type: simple
@@ -164,7 +186,9 @@ metrics:
     event_role: product_view
 - id: purchases
   label: Items purchased
+  labels: {vi: Sản phẩm đã mua}
   description: Purchased item lines (one per item).
+  descriptions: {vi: 'Số dòng sản phẩm đã mua; không phải số đơn hàng.'}
   synonyms:
   - purchases
   - items sold
@@ -177,7 +201,9 @@ metrics:
     event_role: purchase
 - id: buyers
   label: Buyers
+  labels: {vi: Người mua}
   description: Distinct users with at least one purchase.
+  descriptions: {vi: 'Số người dùng duy nhất có ít nhất một sự kiện mua hàng.'}
   synonyms:
   - paying users
   - payers
@@ -190,9 +216,11 @@ metrics:
     event_role: purchase
 - id: buyer_conversion_rate
   label: Buyer conversion rate
+  labels: {vi: Tỷ lệ người mua}
   description: Distinct buyers / distinct active users in the selected period. This
     is a period-level buyer/user ratio, not an ordered funnel conversion. Olist only
     observes ordering customers; its ratio is not visitor-to-buyer conversion.
+  descriptions: {vi: 'Tỷ lệ người mua trên người dùng quan sát được trong kỳ; không phải tỷ lệ chuyển đổi khách truy cập website, đặc biệt với Olist.'}
   synonyms:
   - conversion rate
   - CVR
@@ -205,8 +233,10 @@ metrics:
     denominator: users
 - id: revenue
   label: Revenue
+  labels: {vi: Doanh thu}
   description: Sum of revenue on purchase item events, in the selected dataset currency;
     excludes tax, freight and refunds unless recorded. Not accounting revenue.
+  descriptions: {vi: 'Tổng giá trị sản phẩm trên sự kiện mua hàng, theo tiền tệ của nguồn; không gồm thuế, vận chuyển hoặc hoàn tiền nếu không được ghi nhận. Không phải doanh thu kế toán.'}
   synonyms:
   - sales
   - GMV
@@ -219,6 +249,26 @@ metrics:
     aggregation: sum
     event_role: purchase
     field: revenue
+semantic_values:
+- id: purchase_event
+  field: event_name
+  label: Sự kiện mua hàng
+  synonyms:
+  - mua hàng
+  - đã mua
+  - purchase
+  - purchased
+  source_values:
+    cosmetics_shop: [purchase]
+    olist_marketplace: [order_purchased]
+    event_benchmark: [purchase]
+metric_ambiguities:
+- id: sales_amount_or_volume
+  phrases: [sales, doanh số, bán được bao nhiêu]
+  metric_ids: [revenue, purchases]
+  disambiguators:
+    revenue: [revenue, doanh thu, amount, value, dollars, tiền]
+    purchases: [units, items, item lines, products, quantity, volume, số lượng, sản phẩm]
 policy:
   min_sample: 30
   ask_when_missing: []

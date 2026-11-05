@@ -1,10 +1,12 @@
 """Turn the model's reading (candidate) plus the user's form answers into a QuerySpec, or ask with buttons.
 No model call happens here: answering a form re-runs this function only."""
 import datetime as dt
+import re
+import unicodedata
 from dataclasses import dataclass, field
 
 from . import llm
-from .catalog import Catalog, Source
+from .catalog import Catalog, Source, display_label, display_description
 from .sanity import _metric_gaps, match_values
 
 TEXT = {
@@ -49,8 +51,36 @@ def _choice(id_, label, description=""):
     return {"id": id_, "label": label, "description": description}
 
 
+def _catalog_ambiguities(cat: Catalog, question: str, sources: dict[str, Source], scope: list[str] | None,
+                         candidate_sources: list[str] | None = None) -> list[str]:
+    """Return answerable metrics declared for a matched ambiguous phrase, independent of LLM confidence."""
+    text = _normalize(question)
+    selected = scope or candidate_sources
+    candidates = [sources[s] for s in selected if s in sources] if selected else list(sources.values())
+    found = []
+    for rule in cat.metric_ambiguities:
+        if not any(re.search(rf"(?<!\w){re.escape(_normalize(phrase))}(?!\w)", text) for phrase in rule.phrases):
+            continue
+        available = [metric for metric in rule.metric_ids
+                     if any(not _metric_gaps(cat, metric, src) for src in candidates)]
+        explicit = [metric for metric, terms in rule.disambiguators.items()
+                    if any(re.search(rf"(?<!\w){re.escape(_normalize(term))}(?!\w)", text) for term in terms)]
+        if len(explicit) == 1:
+            continue
+        if len(explicit) > 1:
+            available = [metric for metric in available if metric in explicit]
+        if len(available) > 1:
+            found.extend(available)
+    return list(dict.fromkeys(found))
+
+
+def _normalize(text: str) -> str:
+    text = " ".join((text or "").casefold().split())
+    return "".join(c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn")
+
+
 def advance(candidate: dict, answers: dict[str, list[str]], cat: Catalog, sources: dict[str, Source],
-            scope: list[str] | None = None, lang: str = "en") -> Outcome:
+            scope: list[str] | None = None, lang: str = "en", question: str = "") -> Outcome:
     fields, notes = [], []
     examples = [q.question for q in cat.verified_questions[:3]]
 
@@ -61,11 +91,17 @@ def advance(candidate: dict, answers: dict[str, list[str]], cat: Catalog, source
     if unknown:
         raise llm.LLMError("MODEL_OUTPUT_INVALID", f"The model used ids that are not in the catalog: {', '.join(unknown)}. Retry or rephrase.")
     if len(metric_ids) > 4:
-        return Outcome("refuse", message="Ask for at most 4 metrics at once; split the question.", suggestions=examples)
+        return Outcome("refuse", message="Mỗi câu hỏi tối đa 4 chỉ số. Hãy chia thành nhiều câu hỏi." if lang == "vi" else "Ask for at most 4 metrics at once; split the question.", suggestions=examples)
 
     # -- metric --------------------------------------------------------------------------------------------
     variants = []
     recipe, metrics = candidate["recipe"], list(candidate["metrics"])
+    policy_ambiguities = [] if answers.get("recipe") else _catalog_ambiguities(
+        cat, question, sources, scope, candidate.get("source_ids") or None)
+    if policy_ambiguities:
+        candidate = dict(candidate, recipe="", metrics=[], recipe_alternatives=policy_ambiguities,
+                         recipe_stated=False)
+        recipe, metrics = "", []
     if len(metrics) == 1:
         recipe, metrics = metrics[0], []
     if answers.get("recipe"):
@@ -76,7 +112,7 @@ def advance(candidate: dict, answers: dict[str, list[str]], cat: Catalog, source
             recipe, metrics = "", []
             fields.append({"id": "recipe", "label": t(lang, "which_metric"), "kind": "single_choice", "required": True,
                            "allow_other": False, "default": [],
-                           "choices": [_choice(a, cat.mets[a].label, cat.mets[a].description) for a in alts]})
+                           "choices": [_choice(a, display_label(cat.mets[a], lang), display_description(cat.mets[a], lang)) for a in alts]})
     elif not recipe and not metrics and candidate["recipe_alternatives"]:
         alts = list(dict.fromkeys(candidate["recipe_alternatives"]))
         if len(alts) == 1:
@@ -84,7 +120,7 @@ def advance(candidate: dict, answers: dict[str, list[str]], cat: Catalog, source
         else:
             fields.append({"id": "recipe", "label": t(lang, "which_metric"), "kind": "single_choice", "required": True,
                            "allow_other": False, "default": [],
-                           "choices": [_choice(a, cat.mets[a].label, cat.mets[a].description) for a in alts]})
+                           "choices": [_choice(a, display_label(cat.mets[a], lang), display_description(cat.mets[a], lang)) for a in alts]})
     shape = candidate["shape"]
     selection = list(dict.fromkeys(candidate["selection"]))
     if not recipe and not metrics and shape != "distinct_values" and not any(f["id"] == "recipe" for f in fields):
@@ -92,7 +128,7 @@ def advance(candidate: dict, answers: dict[str, list[str]], cat: Catalog, source
     if recipe:
         g = cat.variant_group_of(recipe)
         if g:
-            variants = [{"id": m, "label": cat.mets[m].label, "description": cat.mets[m].description} for m in g.metrics]
+            variants = [{"id": m, "label": display_label(cat.mets[m], lang), "description": display_description(cat.mets[m], lang)} for m in g.metrics]
 
     # -- shape follows the selection -----------------------------------------------------------------------
     if shape != "distinct_values":
@@ -114,14 +150,14 @@ def advance(candidate: dict, answers: dict[str, list[str]], cat: Catalog, source
         if len(candidates_) == 1:
             chosen = candidates_
             if len(sources) > 1:
-                notes.append(f"Only {sources[chosen[0]].label} records this.")
+                notes.append(f"Chỉ {sources[chosen[0]].label} ghi nhận dữ liệu này." if lang == "vi" else f"Only {sources[chosen[0]].label} records this.")
         else:
             fields.append({"id": "source", "label": t(lang, "which_store"), "kind": "single_choice", "required": True,
                            "allow_other": False, "default": [],
                            "choices": [_choice(s, sources[s].label, f"{sources[s].min_date} → {sources[s].max_date}")
                                        for s in candidates_] + ([_choice("__all__", t(lang, "all_stores"))] if cat.policy.max_sources > 1 else [])})
     if len(chosen) > cat.policy.max_sources:
-        return Outcome("refuse", message=f"Choose one dataset per question (limit: {cat.policy.max_sources}).", suggestions=examples)
+        return Outcome("refuse", message="Mỗi câu hỏi chỉ dùng một nguồn dữ liệu." if lang == "vi" else f"Choose one dataset per question (limit: {cat.policy.max_sources}).", suggestions=examples)
 
     # -- period --------------------------------------------------------------------------------------------
     tr = candidate["time_range"]
@@ -160,17 +196,15 @@ def advance(candidate: dict, answers: dict[str, list[str]], cat: Catalog, source
             typed = answers[fid]
         if not typed:
             continue
-        resolved, unresolved = match_values(cat, dim.id, typed, target_sources)
-        if answers.get(fid):
-            resolved, unresolved = typed, {}  # chosen from the data (or typed under "Other")
+        resolved, unresolved = (typed, {}) if f["operator"] == "CONTAINS" else match_values(cat, dim.id, typed, target_sources)
         for value, close in unresolved.items():
             if close:
-                fields.append({"id": fid, "label": t(lang, "which_value", value=value, field=dim.label),
+                fields.append({"id": fid, "label": t(lang, "which_value", value=value, field=display_label(dim, lang)),
                                "kind": "multi_choice", "required": True, "allow_other": True, "default": [],
                                "choices": [_choice(c, c) for c in close]})
             else:
                 known = sorted({v for s in target_sources for v in s.values.get(cat.mapped_field(dim.field, s.id), {}).values()})
-                return Outcome("refuse", message=t(lang, "no_value", value=value, field=dim.label,
+                return Outcome("refuse", message=t(lang, "no_value", value=value, field=display_label(dim, lang),
                                                    examples=", ".join(known[:8]) or "—"), suggestions=examples)
         if unresolved:
             continue
@@ -192,7 +226,7 @@ def advance(candidate: dict, answers: dict[str, list[str]], cat: Catalog, source
         if answers.get(f"filter:{dim_id}"):
             filters.append({"field": dim_id, "operator": "IN", "values": answers[f"filter:{dim_id}"]})
         elif len(values) > 1:
-            fields.append({"id": f"filter:{dim_id}", "label": t(lang, "missing", field=dim.label), "kind": "multi_choice",
+            fields.append({"id": f"filter:{dim_id}", "label": t(lang, "missing", field=display_label(dim, lang)), "kind": "multi_choice",
                            "required": True, "allow_other": False, "default": [], "choices": [_choice(v, v) for v in values[:50]]})
 
     if fields:
