@@ -17,10 +17,10 @@ from typing import Any
 import yaml
 
 try:
-    from .accuracy_study import SUITE_VARIANTS, confirmatory_eligibility, validate_coverage, sql_error_diagnostic, expected_answer_count
+    from .accuracy_study import SUITE_VARIANTS, confirmatory_eligibility, validate_coverage, sql_error_diagnostic, expected_answer_count, gold_targets
     from .benchmark import execute_readonly, results_equal, score_business_result, score_expected_result, server_metadata, validate_business_contract
 except ImportError:
-    from accuracy_study import SUITE_VARIANTS, confirmatory_eligibility, validate_coverage, sql_error_diagnostic, expected_answer_count
+    from accuracy_study import SUITE_VARIANTS, confirmatory_eligibility, validate_coverage, sql_error_diagnostic, expected_answer_count, gold_targets
     from benchmark import execute_readonly, results_equal, score_business_result, score_expected_result, server_metadata, validate_business_contract
 
 SQL_SCHEMA = {"type": "object", "properties": {"sql": {"type": "string"}},
@@ -333,13 +333,10 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
     dsn = os.environ.get("TEXA_BENCHMARK_DSN")
     if not dsn:
         raise ValueError("TEXA_BENCHMARK_DSN is required for read-only evaluation")
-    for scenario in rows:
-        for target in scenario.get("turns", [scenario]):
-            if "gold_sql" not in target:
-                continue
-            gold_check = score_expected_result(dsn, target["gold_sql"], target["expected_result"])
-            if not gold_check.get("result_correct"):
-                raise ValueError(f"gold validation failed for {scenario['id']}")
+    for scenario_id, target in gold_targets(rows):
+        gold_check = score_expected_result(dsn, target["gold_sql"], target["expected_result"])
+        if not gold_check.get("result_correct"):
+            raise ValueError(f"gold validation failed for {scenario_id}")
     # Keep the challenge's two product sources only; the legacy event_benchmark
     # source is neither part of the authored scope nor a hidden third option.
     os.environ["TEXA_SOURCE_PROFILE"] = "demo"

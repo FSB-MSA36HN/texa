@@ -214,3 +214,17 @@ def test_complex_diagnostic_rubric_requires_review_not_automatic_pass_or_failure
     assert diagnostic_score({'expected_action': 'clarify_source_conflict'}, 'clarify')['action_correct']
     result = diagnostic_score({'expected_action': 'reject_injected_instruction_answer_supported_part_only'}, 'sql')
     assert result['manual_review_required'] and result['action_correct'] is None
+
+
+def test_action_diagnostics_without_sql_are_not_answer_gold():
+    from eval.accuracy_study import gold_targets
+    target = {'id': 'q', 'gold_sql': 'SELECT 1', 'expected_result': {'columns': ['n'], 'rows': [[1]]}}
+    assert list(gold_targets([{'id': 'unsupported', 'gold_sql': ''}, target])) == [('q', target)]
+
+
+def test_partial_gold_pair_is_rejected_before_provider_calls():
+    import pytest
+    from eval.accuracy_study import gold_targets
+    for target in [{'id': 'x', 'gold_sql': 'SELECT 1'}, {'id': 'x', 'gold_sql': '', 'expected_result': {}}]:
+        with pytest.raises(ValueError, match='provided together'):
+            list(gold_targets([target]))
