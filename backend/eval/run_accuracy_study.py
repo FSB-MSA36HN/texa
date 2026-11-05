@@ -377,6 +377,7 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
     budget_exhausted = False
     call_lock = threading.Lock()
     call_names = []
+    call_prefix = uuid.uuid4().hex
     original_generate = llm.generate_structured
     def budgeted_generate(**kwargs):
         nonlocal calls, budget_exhausted
@@ -385,7 +386,7 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                 budget_exhausted = True
                 raise RuntimeError("accuracy model-call budget exhausted; run left incomplete")
             calls += 1
-            kwargs["name"] = f"accuracy_{args.variant.lower()}_{calls}"
+            kwargs["name"] = f"accuracy_{args.variant.lower()}_{call_prefix}_{calls}"
             call_names.append(kwargs["name"])
         return original_generate(**kwargs)
     llm.generate_structured = budgeted_generate
