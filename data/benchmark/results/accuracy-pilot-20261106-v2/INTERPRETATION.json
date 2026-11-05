@@ -1,0 +1,10 @@
+{
+  "status": "excluded_from_release_evidence",
+  "purpose": "runner smoke and annotation audit; dev only",
+  "frozen_commit": "5dea842",
+  "reasons": [
+    "Unqualified reporting periods were incorrectly annotated as immediately answerable all-time singles.",
+    "Synthetic Olist fixture incorrectly exposed order identifiers as sessions and included visitor/view tracking contrary to product source semantics."
+  ],
+  "policy": "Preserve the complete pilot records. Repair semantic annotations and source coverage uniformly, version the candidate, then rerun every compared variant on the same frozen inputs. No test outcome selected or used to tune product logic."
+}

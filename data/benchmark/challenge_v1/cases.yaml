@@ -574,7 +574,7 @@
     - events
     rows:
     - - 18
-  business_contract: Count the literal source event payment_made, not a payment method dimension.
+  business_note: Count the literal source event payment_made, not a payment method dimension.
   expected_results_by_world:
     base: *id019
     grain_counterexample:

@@ -19,6 +19,9 @@ except ImportError:
 
 DATA = ROOT / "data/benchmark/challenge_v1"
 WORLDS = ("base", "grain_counterexample", "coverage_edge")
+C19_ID = "c19_olist_payment_records"
+C19_OLD_CONTRACT = "Count the literal source event payment_made, not a payment method dimension."
+C19_CASES_SHA256 = "09227310147908d26ea20803943cfd7d2070e616b6515f836abfbde7facbb32f"
 
 
 def _identity(dsn: str, *, require_owner: bool) -> tuple[str, int, str, bool]:
@@ -53,21 +56,44 @@ def _apply_world(owner_dsn: str, world_path: Path) -> None:
 
 
 def _candidate_sql(record: dict[str, Any]) -> list[str]:
-    found = []
-    if isinstance(record.get("sql"), str) and record["sql"].strip():
-        found.append(record["sql"])
-    for turn in record.get("turns") or []:
-        if isinstance(turn.get("sql"), str) and turn["sql"].strip():
-            found.append(turn["sql"])
-        trace = turn.get("trace") or {}
-        sql = trace.get("compiled_sql")
+    top = record.get("sql")
+    if isinstance(top, str) and top.strip():
+        return [top]
+    if "turns" in record:
+        turns = record.get("turns") or []
+        if not turns:
+            return []
+        turn = turns[-1]
+        sql = turn.get("sql")
         if isinstance(sql, str) and sql.strip():
-            found.append(sql)
-    if not found:
-        for trace in record.get("interpretation_traces") or []:
-            if isinstance(trace.get("compiled_sql"), str) and trace["compiled_sql"].strip():
-                found.append(trace["compiled_sql"])
-    return found
+            return [sql]
+        compiled = (turn.get("trace") or {}).get("compiled_sql")
+        return [compiled] if isinstance(compiled, str) and compiled.strip() else []
+    traces = record.get("interpretation_traces") or []
+    if traces:
+        compiled = traces[-1].get("compiled_sql")
+        return [compiled] if isinstance(compiled, str) and compiled.strip() else []
+    return []
+
+
+def _values_equal(actual_columns: Any, actual_rows: Any, expected_columns: Any,
+                  expected_rows: Any, *, ordered: bool = False) -> bool:
+    actual_columns, expected_columns = tuple(actual_columns), tuple(expected_columns)
+    if len(actual_columns) != len(expected_columns):
+        return False
+    return results_equal(tuple(range(len(actual_columns))), actual_rows,
+                         tuple(range(len(expected_columns))), expected_rows, ordered=ordered)
+
+
+def _effective_contract(case_id: str, case: dict[str, Any], *, erratum: str | None,
+                        case_hash: str) -> dict[str, Any] | None:
+    contract = case.get("business_contract")
+    if contract is None or isinstance(contract, dict):
+        return contract
+    if (erratum == "c19-prose-contract-v1" and case_id == C19_ID
+            and case_hash == C19_CASES_SHA256 and contract == C19_OLD_CONTRACT):
+        return None
+    raise ValueError(f"{case_id}: malformed business_contract; explicit matching annotation erratum required")
 
 
 def _load_cases(path: Path) -> dict[str, dict]:
@@ -104,8 +130,9 @@ def _validate_provenance(runs: list[dict], cases: dict[str, dict]) -> None:
     base = runs[0]["manifest"]
     run_worlds = set()
     world_pools = base.get("world_pool_ids")
-    if not isinstance(world_pools, dict) or set(world_pools) != set(WORLDS):
-        raise ValueError("run manifest must pin the complete world_pool_ids mapping")
+    if not isinstance(world_pools, dict) or not world_pools or not set(world_pools) <= set(WORLDS):
+        raise ValueError("run manifest must pin a valid world_pool_ids mapping")
+    case_hash = hashlib.sha256((DATA / "cases.yaml").read_bytes()).hexdigest()
     shared_provenance = {k: v for k, v in (base.get("provenance") or {}).items() if k != "public_context_hash"}
     for run in runs:
         m = run["manifest"]
@@ -114,6 +141,8 @@ def _validate_provenance(runs: list[dict], cases: dict[str, dict]) -> None:
         if m.get("model") != base.get("model") or {k: v for k, v in (m.get("provenance") or {}).items()
                 if k != "public_context_hash"} != shared_provenance:
             raise ValueError("runs differ in model or frozen implementation/data provenance")
+        if (m.get("provenance", {}).get("dataset_hashes", {}).get("cases.yaml") != case_hash):
+            raise ValueError("run does not pin current cases.yaml hash")
         world = m.get("fixture_world")
         if world not in WORLDS:
             raise ValueError("run manifest has unknown fixture_world")
@@ -136,12 +165,25 @@ def _validate_provenance(runs: list[dict], cases: dict[str, dict]) -> None:
             hashes = run["manifest"].get("provenance", {}).get("dataset_hashes", {})
             if hashes.get(rel) != expected_hash:
                 raise ValueError(f"{world}: run does not pin the current fixture SQL hash")
+    if run_worlds != {world for world, ids in world_pools.items() if ids}:
+        raise ValueError("missing source-world run for one or more nonempty case pools")
 
 
 def check_worlds(runs: list[dict], cases: dict[str, dict], reader_dsn: str,
                  *, apply_fixtures: bool, owner_dsn: str | None = None,
-                 apply_world=_apply_world, execute=execute_readonly) -> dict[str, Any]:
+                 apply_world=_apply_world, execute=execute_readonly,
+                 annotation_erratum: str | None = None) -> dict[str, Any]:
     _validate_provenance(runs, cases)
+    case_hash = hashlib.sha256((DATA / "cases.yaml").read_bytes()).hexdigest()
+    try:
+        from .benchmark import validate_business_contract
+    except ImportError:
+        from benchmark import validate_business_contract
+    contracts = {case_id: _effective_contract(case_id, case, erratum=annotation_erratum, case_hash=case_hash)
+                 for case_id, case in cases.items()}
+    for case_id, case in cases.items():
+        if "expected_result" in case:
+            validate_business_contract(contracts[case_id], case["expected_result"]["columns"], context=case_id)
     _identity(reader_dsn, require_owner=False)
     if not apply_fixtures:
         raise ValueError("cross-world scoring requires explicit --apply-isolated-fixtures confirmation")
@@ -154,10 +196,7 @@ def check_worlds(runs: list[dict], cases: dict[str, dict], reader_dsn: str,
     observations: dict[str, dict[str, tuple[tuple, list[tuple]] | None]] = {}
     base_run = worlds_to_runs["base"]
     base_records = {r["id"]: r for r in base_run["rows"]}
-    candidates = {}
-    for run in runs:
-        for record in run["rows"]:
-            candidates.setdefault(record["id"], record)
+    candidates = {row["id"]: row for run in runs for row in run["rows"]}
     all_ids = sorted(candidates)
     try:
         for world in WORLDS:
@@ -171,6 +210,7 @@ def check_worlds(runs: list[dict], cases: dict[str, dict], reader_dsn: str,
                 expected = case.get("expected_results_by_world", {}).get(world)
                 result_row = {"id": case_id, "world": world, "sql_count": len(sqls),
                               "primary_base_correct": None, "world_correct": False,
+                              "result_values_correct": False,
                               "accidental_same_result_counts": False}
                 if not sqls:
                     result_row.update(status="no_candidate_sql", world_correct=False)
@@ -184,10 +224,18 @@ def check_worlds(runs: list[dict], cases: dict[str, dict], reader_dsn: str,
                 for sql in sqls:
                     try:
                         cols, values = execute(reader_dsn, sql)
+                        # Replay the product's actual public-output boundary. Ratio
+                        # SQL includes auxiliary denominator samples hidden by runtime.
+                        if base_run["manifest"]["variant"].startswith("T"):
+                            from texa.execute import is_public_column
+                            indices = [i for i, col in enumerate(cols) if is_public_column(col)]
+                            cols, values = tuple(cols[i] for i in indices), [tuple(row[i] for i in indices) for row in values]
                         actual_results.append((tuple(cols), [tuple(row) for row in values]))
                         score = score_business_result(cols, values, expected["columns"], expected["rows"],
-                            ordered=bool(case.get("ordered")), contract=case.get("business_contract"))
+                            ordered=bool(case.get("ordered")), contract=contracts[case_id])
                         sql_scores.append(bool(score["business_result_correct"]))
+                        result_row["result_values_correct"] = _values_equal(cols, values,
+                            expected["columns"], expected["rows"], ordered=bool(case.get("ordered")))
                     except Exception as exc:
                         result_row["error_class"] = type(exc).__name__
                         sql_scores.append(False)
@@ -216,24 +264,37 @@ def check_worlds(runs: list[dict], cases: dict[str, dict], reader_dsn: str,
                 continue
             intended_world_change = not score_business_result(base_expected["columns"], base_expected["rows"],
                 current_expected["columns"], current_expected["rows"], ordered=bool(case.get("ordered")),
-                contract=case.get("business_contract"))["business_result_correct"]
+                contract=contracts[case_id])["business_result_correct"]
             same_as_base_output = results_equal(actual[0], actual[1], base_actual[0], base_actual[1],
                                                 ordered=bool(case.get("ordered")))
             if intended_world_change and same_as_base_output and not result_lookup[(case_id, world)]["world_correct"]:
                 result_lookup[(case_id, world)]["accidental_same_result_counts"] = True
     summary = {world: {"cases": sum(r["world"] == world for r in output_rows),
                        "correct": sum(r["world"] == world and r["world_correct"] for r in output_rows),
+                       "values_correct": sum(r["world"] == world and r["result_values_correct"] for r in output_rows),
                        "missing_sql": sum(r["world"] == world and r["status"] == "no_candidate_sql" for r in output_rows)}
                for world in WORLDS}
     return {"type": "world_robustness", "variant": base_run["manifest"]["variant"],
             "split": base_run["manifest"]["split"], "repeat": base_run["manifest"]["repeat"],
             "summary": summary, "cases": output_rows,
+            "values_correct_interpretation": "Posthoc exploratory alias-insensitive comparison of full ordered columns and rows; strict world_correct remains the primary metric.",
+            "all_world_case_counts": {case_id: {
+                "strict_correct_worlds": sum(row["id"] == case_id and row["world_correct"] for row in output_rows),
+                "values_correct_worlds": sum(row["id"] == case_id and row["result_values_correct"] for row in output_rows)}
+                for case_id in all_ids},
             "provenance": {"run_files": [str(r["path"]) for r in runs],
                 "world_hashes": {r["manifest"]["fixture_world"]: r["manifest"]["fixture_hash"] for r in runs},
-                "case_hash": hashlib.sha256((DATA / "cases.yaml").read_bytes()).hexdigest()}}
+                "case_hash": case_hash,
+                "output_projection": "Texa uses the shared runtime public-column rule; SQL controls retain all columns",
+                "run_file_sha256": {str(r["path"]): hashlib.sha256(r["path"].read_bytes()).hexdigest()
+                                    for r in runs if r["path"].is_file()},
+                "annotation_erratum": ({"id": annotation_erratum, "case_id": C19_ID,
+                    "note": "Treat c19 prose-only business_contract as absent for scoring.",
+                    "original_cases_sha256": case_hash} if annotation_erratum else None)}}
 
 
 def main(argv=None) -> int:
+    global DATA
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("runs", nargs="+", type=Path)
     parser.add_argument("--reader-dsn", default=os.environ.get("TEXA_BENCHMARK_DSN"))
@@ -241,13 +302,16 @@ def main(argv=None) -> int:
     parser.add_argument("--apply-isolated-fixtures", action="store_true",
                         help="replace only challenge rows in texa_benchmark on isolated port 15433, then restore base")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--annotation-erratum", choices=["c19-prose-contract-v1"])
+    parser.add_argument("--dataset-dir", type=Path, default=DATA, help="exact frozen dataset snapshot")
     args = parser.parse_args(argv)
+    DATA = args.dataset_dir.resolve()
     if not args.reader_dsn:
         parser.error("--reader-dsn or TEXA_BENCHMARK_DSN is required")
     try:
         runs, cases = _load_runs([p.resolve() for p in args.runs])
         result = check_worlds(runs, cases, args.reader_dsn, apply_fixtures=args.apply_isolated_fixtures,
-                              owner_dsn=args.owner_dsn)
+                              owner_dsn=args.owner_dsn, annotation_erratum=args.annotation_erratum)
         rendered = json.dumps(result, ensure_ascii=False, indent=2, default=str)
         if args.output:
             path = args.output.resolve(); path.relative_to(ROOT)

@@ -1,0 +1,108 @@
+schema_version: 1
+name: texa-ecommerce-workflow-challenge-v1
+status: design_draft_not_executable
+purpose: diagnostic_challenge_not_production_distribution
+scope:
+  engine: PostgreSQL
+  sources: [cosmetics_shop, olist_marketplace]
+  languages: [vi, en]
+  max_sources_per_query: 1
+  max_metrics_per_query: 1
+  metrics: [events, users, sessions, viewers, purchases, buyers, revenue, buyer_conversion_rate]
+  nested_paths: [ep.device.type, ep.campaign.channel]
+  capability_rule: answerable_only_when_source_snapshot_supports_required_fields_and_roles
+  excluded: [cross_source_joins, multi_metric, arrays, order_count, aov, fx, delivery, review, retention, causality]
+single_strata:
+  core_control:
+    dev: 12
+    test: 24
+    definition: Explicit metric, source and period, at most one simple condition.
+  semantic_data_shape:
+    dev: 24
+    test: 48
+    definition: At least one material semantic or data-shape distinction, with a discriminating counterexample fixture.
+  composed_in_scope:
+    dev: 24
+    test: 48
+    definition: At least two interacting distinctions within one supported metric and source, not just long wording.
+interactive_targets:
+  clarification: {dev: 8, test: 16}
+  conversation: {dev: 8, test: 16}
+stress_separate:
+  unsupported_or_adversarial:
+    target_min: 12
+    split: diagnostic
+    denominator: action_correctness_only
+    included_in_answerable_sql_accuracy: false
+phenomena:
+  - metric_role_vs_event_literal
+  - item_vs_order_grain
+  - distinct_user_vs_event_count
+  - purchase_vs_payment
+  - ratio_denominator
+  - group_row_domain
+  - zero_vs_absent_vs_unavailable
+  - null_and_duplicate_semantics
+  - explicit_and_relative_date_boundary
+  - declared_nested_scalar
+  - filter_boolean_and_operator
+  - top_k_and_ties
+  - ambiguous_business_term
+  - missing_period
+  - source_conflict_or_negation
+  - keep_set_clear_followup
+  - old_result_reference
+  - unrelated_noise_and_topic_switch
+  - unsupported_scope
+  - prompt_injection
+source_test_quota:
+  cosmetics_shop: {single_min: 48, clarification_min: 6, conversation_min: 6}
+  olist_marketplace: {single_min: 48, clarification_min: 6, conversation_min: 6}
+language_test_quota:
+  vi: {single_min: 72}
+  en: {single_min: 36}
+memory_distance:
+  unit: intervening_successful_results
+  test_buckets:
+    - {min: 0, max: 2, min_dialogues: 4}
+    - {min: 3, max: 6, min_dialogues: 4}
+    - {min: 7, max: 10, min_dialogues: 4}
+    - {min: 11, max: null, min_dialogues: 4}
+  also_record: [intervening_messages, social_noise_turns, source_switches, target_result_id]
+baselines:
+  B0: {suites: [single], additional_examples: false, generator: direct_sql}
+  B0R: {suites: [single], additional_examples: true, generator: direct_sql}
+  B1: {suites: [single, clarification, conversation], additional_examples: false, generator: direct_sql, raw_history: true, clarification: true, sql_error_correction_rounds: 1}
+  T00: {suites: [single, clarification, conversation], retrieval: false, consistency: false}
+  T10: {suites: [single, clarification, conversation], retrieval: true, consistency: false}
+  T01: {suites: [single, clarification, conversation], retrieval: false, consistency: true}
+  T11: {suites: [single, clarification, conversation], retrieval: true, consistency: true}
+metrics:
+  single_primary: business_result_accuracy_all_answerable_cases
+  challenge_summary: fixed_stratum_weighted_accuracy
+  stratum_weights: {core_control: 0.2, semantic_data_shape: 0.4, composed_in_scope: 0.4}
+  clarification_primary: scenario_success_after_requested_fields_oracle
+  conversation_primary: all_required_turn_contracts_correct
+  secondary: [output_contract_compliance, false_refusal, unnecessary_clarification, clarification_rounds, cost_per_success, provider_attempts, p50_p95_latency, consensus_harmful_override]
+  never_pool: [single, clarification, conversation, unsupported_or_adversarial]
+quality_gates:
+  difficulty_assigned_before_model_runs: true
+  baseline_score_target: null
+  drop_cases_based_on_winner: false
+  family_disjoint_bank_dev_test: true
+  shared_definitions_and_source_information: true
+  authored_sql_independent_of_compiler: true
+  counterexample_fixture_required_for_noncore: true
+  human_reviewers_required: 2
+  test_labels_exposed_to_implementer: false
+  raw_failures_and_timeouts_retained: true
+  freeze_code_data_bank_scorer_protocol: true
+execution:
+  currently_runnable: false
+  repeats: 3
+  max_clarification_rounds: 2
+  all_answerable_failures_in_denominator: true
+  reserve_usd_within_shared_ledger: 6
+  averaging_assumption_conversation_user_turns: 10
+  averaging_assumption_clarification_user_turns: 2
+  baseline_evaluation_mode: same_model_same_information_bounded_tools

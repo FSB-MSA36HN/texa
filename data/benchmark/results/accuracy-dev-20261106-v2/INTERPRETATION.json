@@ -1,0 +1,15 @@
+{
+  "status": "exploratory_dev_only_not_sealed",
+  "generation_commit": "81b3d3c",
+  "single_primary": "Use single-summary-corrected.json. Raw scores retained; c19 prose annotation corrected uniformly using hash-pinned opt-in erratum.",
+  "robustness": "Use world-robustness-<variant>-v2.json. Unsuffixed robustness reports are superseded: compiler auxiliary ratio sample columns were incorrectly treated as public answer columns. v2 uses the shared product output projection. Alias-insensitive values counts are posthoc supplemental, not the primary metric.",
+  "conversation": "Original comparison INVALID: B1 d03 encountered local Decimal/date JSON serialization TypeError, losing partial records and incorrectly recording answer_count=0 instead of 2. No model-quality or memory comparison should use this suite. A repaired matched suite is run separately.",
+  "baseline_single_limitation": "B1 c25/c49/c50 returned clarify but no matching oracle answer was declared. End-to-end failures retained; raw requested fields were not preserved so protocol-vs-model cause cannot be fully adjudicated.",
+  "annotation_revision": "Current candidate moved c19 prose to business_note only. Exact original input corpus is frozen_dataset/. Questions, gold SQL, answer tables unchanged.",
+  "limitations": [
+    "one repeat on 30 dev single questions",
+    "no independent human-reviewed sealed test",
+    "synthetic fixtures; Olist nested fields are challenge-only extensions",
+    "no demonstrated accuracy superiority; new feature flags remain off"
+  ]
+}

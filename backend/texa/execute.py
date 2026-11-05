@@ -17,6 +17,11 @@ def _json_value(v):
     return v
 
 
+def is_public_column(name: str) -> bool:
+    """Compiler auxiliary columns are diagnostics, never part of the answer table."""
+    return not name.startswith("__")
+
+
 def display_sql(compiled: Compiled) -> str:
     """The query with parameters inlined, for people to read and copy (never executed)."""
     with db.reader_conn() as conn:
@@ -31,7 +36,7 @@ def run(compiled: Compiled, limit: int) -> dict:
     rows = rows[:limit]
     clean, samples = [], []
     for r in rows:
-        clean.append({k: _json_value(v) for k, v in r.items() if not k.startswith("__")})
+        clean.append({k: _json_value(v) for k, v in r.items() if is_public_column(k)})
         samples.append({k[len("__sample_"):]: _json_value(v) for k, v in r.items() if k.startswith("__sample_")})
     return {"rows": clean, "samples": samples, "row_count": len(clean), "partial": partial,
             "ms": int((time.monotonic() - started) * 1000)}

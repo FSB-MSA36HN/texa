@@ -17,11 +17,11 @@ from typing import Any
 import yaml
 
 try:
-    from .accuracy_study import SUITE_VARIANTS, confirmatory_eligibility, validate_coverage, sql_error_diagnostic
-    from .benchmark import execute_readonly, results_equal, score_business_result, score_expected_result, server_metadata
+    from .accuracy_study import SUITE_VARIANTS, confirmatory_eligibility, validate_coverage, sql_error_diagnostic, expected_answer_count
+    from .benchmark import execute_readonly, results_equal, score_business_result, score_expected_result, server_metadata, validate_business_contract
 except ImportError:
-    from accuracy_study import SUITE_VARIANTS, confirmatory_eligibility, validate_coverage, sql_error_diagnostic
-    from benchmark import execute_readonly, results_equal, score_business_result, score_expected_result, server_metadata
+    from accuracy_study import SUITE_VARIANTS, confirmatory_eligibility, validate_coverage, sql_error_diagnostic, expected_answer_count
+    from benchmark import execute_readonly, results_equal, score_business_result, score_expected_result, server_metadata, validate_business_contract
 
 SQL_SCHEMA = {"type": "object", "properties": {"sql": {"type": "string"}},
               "required": ["sql"], "additionalProperties": False}
@@ -55,6 +55,14 @@ def load_suite(directory: Path, suite: str, split: str, world: str) -> tuple[dic
     ids = [row.get("id") for row in selected]
     if len(ids) != len(set(ids)):
         raise ValueError("duplicate scenario IDs")
+    for row in selected:
+        for target in row.get("turns", [row]):
+            if "expected_result" in target:
+                validate_business_contract(
+                    target.get("business_contract"),
+                    (target.get("expected_result") or {}).get("columns", []),
+                    context=f"{row.get('id')}:{target.get('id', 'turn')}",
+                )
     return manifest, selected
 
 
@@ -121,7 +129,7 @@ class RawHistorySession:
             question += "\nExplicit user-selected source scope: " + ", ".join(ui_scope)
         if choices:
             question += "\nUser clarification (only selected offered options): " + json.dumps(choices, ensure_ascii=False)
-        prompt = "Prior conversation (user questions and actual returned result summaries only):\n" + json.dumps(self.history, ensure_ascii=False) + "\n\nLatest request:\n" + question
+        prompt = "Prior conversation (user questions and actual returned result summaries only):\n" + json.dumps(self.history, ensure_ascii=False, default=str) + "\n\nLatest request:\n" + question
         response = self.llm.generate_structured(model=self.model,
             system="You answer analytics questions directly with SQL. Choose sql, clarify, refuse, or conversation. "
                    "For sql, provide one SELECT only. For clarify, list only missing field IDs from "
@@ -305,6 +313,7 @@ def _run_raw_scenario(item: dict, suite: str, manifest: dict, session: RawHistor
                     "refusal_reason": got.get("reason") if got.get("action") == "refuse" else None,
                     "error_class": got.get("error_class"), "scorable": "expected_result" in target,
                     "sql": got.get("sql"), "clarification_rounds": rounds,
+                    "requested_clarification_fields": got.get("ask_fields", []),
                     **scoring})
     scored = [r for r in out if r.get("scorable")]
     return {"turns": out, "answer_count": sum(r.get("answer_count", 0) for r in scored),
@@ -412,6 +421,7 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                "repeat": args.repeat, "model": args.model, "provenance": provenance, "expected_ids": [x["id"] for x in rows],
                "dataset": manifest, "status": "diagnostic_candidate", "fixture_world": args.world,
                "confirmatory_requested": args.confirmatory,
+               "expected_answer_counts": {item["id"]: expected_answer_count(item) for item in rows},
                "fixture_hash": provenance["dataset_hashes"].get(f"worlds/{args.world}.sql"),
                "world_pool_ids": world_pools(directory, args.suite, args.split)})
         for original_item in rows:
@@ -507,10 +517,10 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
             except RuntimeError as exc:
                 if "budget exhausted" in str(exc).lower() or isinstance(exc, IncompleteAccuracyRun):
                     raise
-                row = {"success": False, "answer_count": int("expected_result" in item), "answer_correct": 0,
+                row = {"success": False, "answer_count": expected_answer_count(item), "answer_correct": 0,
                        "error_class": sql_error_diagnostic(exc), "error_type": type(exc).__name__}
             except Exception as exc:
-                row = {"success": False, "answer_count": int("expected_result" in item), "answer_correct": 0,
+                row = {"success": False, "answer_count": expected_answer_count(item), "answer_correct": 0,
                        "error_class": sql_error_diagnostic(exc), "error_type": type(exc).__name__, "sql": raw_sql,
                        "retrieved_example_ids": selected_examples, "retrieval_activated": bool(selected_examples)}
             finally:

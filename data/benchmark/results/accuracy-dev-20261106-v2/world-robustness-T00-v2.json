@@ -1,0 +1,1070 @@
+{
+  "type": "world_robustness",
+  "variant": "T00",
+  "split": "dev",
+  "repeat": 1,
+  "summary": {
+    "base": {
+      "cases": 30,
+      "correct": 27,
+      "values_correct": 29,
+      "missing_sql": 1
+    },
+    "grain_counterexample": {
+      "cases": 30,
+      "correct": 27,
+      "values_correct": 29,
+      "missing_sql": 1
+    },
+    "coverage_edge": {
+      "cases": 30,
+      "correct": 27,
+      "values_correct": 29,
+      "missing_sql": 1
+    }
+  },
+  "cases": [
+    {
+      "id": "c01_cosmetics_jan_events",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c02_cosmetics_users",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c03_cosmetics_revenue",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c04_cosmetics_mobile_buyers",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c05_cosmetics_conversion",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c13_cosmetics_sessions",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c14_cosmetics_viewers",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c15_cosmetics_mobile_revenue",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c16_cosmetics_mobile_purchase_rows",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": false,
+      "world_correct": false,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c17_cosmetics_category_revenue_control",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c18_olist_payment_exclusion",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c19_olist_payment_records",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c20_cosmetics_sessions",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c21_olist_users",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c22_olist_category_purchase_rows",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c23_olist_category_revenue",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c25_cosmetics_email_events",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c37_cosmetics_purchase_total",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": false,
+      "world_correct": false,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c38_olist_event_total",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c39_cosmetics_buyers_total",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c43_cosmetics_lines_vs_buyers",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c44_olist_null_purchase_revenue",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c45_cosmetics_purchase_zero_included",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c49_cosmetics_feb_mobile_revenue_category",
+      "world": "base",
+      "sql_count": 0,
+      "primary_base_correct": null,
+      "world_correct": false,
+      "result_values_correct": false,
+      "accidental_same_result_counts": false,
+      "status": "no_candidate_sql"
+    },
+    {
+      "id": "c50_olist_feb_paid_revenue",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c51_cosmetics_event_counts_by_device",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c52_olist_mobile_buyers",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c53_cosmetics_conversion_by_channel",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c54_olist_conversion_by_device",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c60_olist_monthly_buyers",
+      "world": "base",
+      "sql_count": 1,
+      "primary_base_correct": true,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c01_cosmetics_jan_events",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c02_cosmetics_users",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c03_cosmetics_revenue",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c04_cosmetics_mobile_buyers",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c05_cosmetics_conversion",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c13_cosmetics_sessions",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c14_cosmetics_viewers",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c15_cosmetics_mobile_revenue",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c16_cosmetics_mobile_purchase_rows",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": false,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c17_cosmetics_category_revenue_control",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c18_olist_payment_exclusion",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c19_olist_payment_records",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c20_cosmetics_sessions",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c21_olist_users",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c22_olist_category_purchase_rows",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c23_olist_category_revenue",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c25_cosmetics_email_events",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c37_cosmetics_purchase_total",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": false,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c38_olist_event_total",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c39_cosmetics_buyers_total",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c43_cosmetics_lines_vs_buyers",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c44_olist_null_purchase_revenue",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c45_cosmetics_purchase_zero_included",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c49_cosmetics_feb_mobile_revenue_category",
+      "world": "grain_counterexample",
+      "sql_count": 0,
+      "primary_base_correct": null,
+      "world_correct": false,
+      "result_values_correct": false,
+      "accidental_same_result_counts": false,
+      "status": "no_candidate_sql"
+    },
+    {
+      "id": "c50_olist_feb_paid_revenue",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c51_cosmetics_event_counts_by_device",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c52_olist_mobile_buyers",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c53_cosmetics_conversion_by_channel",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c54_olist_conversion_by_device",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c60_olist_monthly_buyers",
+      "world": "grain_counterexample",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c01_cosmetics_jan_events",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c02_cosmetics_users",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c03_cosmetics_revenue",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c04_cosmetics_mobile_buyers",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c05_cosmetics_conversion",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c13_cosmetics_sessions",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c14_cosmetics_viewers",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c15_cosmetics_mobile_revenue",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c16_cosmetics_mobile_purchase_rows",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": false,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c17_cosmetics_category_revenue_control",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c18_olist_payment_exclusion",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c19_olist_payment_records",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c20_cosmetics_sessions",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c21_olist_users",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c22_olist_category_purchase_rows",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c23_olist_category_revenue",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c25_cosmetics_email_events",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c37_cosmetics_purchase_total",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": false,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c38_olist_event_total",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c39_cosmetics_buyers_total",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c43_cosmetics_lines_vs_buyers",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c44_olist_null_purchase_revenue",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c45_cosmetics_purchase_zero_included",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c49_cosmetics_feb_mobile_revenue_category",
+      "world": "coverage_edge",
+      "sql_count": 0,
+      "primary_base_correct": null,
+      "world_correct": false,
+      "result_values_correct": false,
+      "accidental_same_result_counts": false,
+      "status": "no_candidate_sql"
+    },
+    {
+      "id": "c50_olist_feb_paid_revenue",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c51_cosmetics_event_counts_by_device",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c52_olist_mobile_buyers",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c53_cosmetics_conversion_by_channel",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c54_olist_conversion_by_device",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    },
+    {
+      "id": "c60_olist_monthly_buyers",
+      "world": "coverage_edge",
+      "sql_count": 1,
+      "primary_base_correct": null,
+      "world_correct": true,
+      "result_values_correct": true,
+      "accidental_same_result_counts": false,
+      "status": "scored"
+    }
+  ],
+  "values_correct_interpretation": "Posthoc exploratory alias-insensitive comparison of full ordered columns and rows; strict world_correct remains the primary metric.",
+  "all_world_case_counts": {
+    "c01_cosmetics_jan_events": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c02_cosmetics_users": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c03_cosmetics_revenue": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c04_cosmetics_mobile_buyers": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c05_cosmetics_conversion": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c13_cosmetics_sessions": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c14_cosmetics_viewers": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c15_cosmetics_mobile_revenue": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c16_cosmetics_mobile_purchase_rows": {
+      "strict_correct_worlds": 0,
+      "values_correct_worlds": 3
+    },
+    "c17_cosmetics_category_revenue_control": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c18_olist_payment_exclusion": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c19_olist_payment_records": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c20_cosmetics_sessions": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c21_olist_users": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c22_olist_category_purchase_rows": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c23_olist_category_revenue": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c25_cosmetics_email_events": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c37_cosmetics_purchase_total": {
+      "strict_correct_worlds": 0,
+      "values_correct_worlds": 3
+    },
+    "c38_olist_event_total": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c39_cosmetics_buyers_total": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c43_cosmetics_lines_vs_buyers": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c44_olist_null_purchase_revenue": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c45_cosmetics_purchase_zero_included": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c49_cosmetics_feb_mobile_revenue_category": {
+      "strict_correct_worlds": 0,
+      "values_correct_worlds": 0
+    },
+    "c50_olist_feb_paid_revenue": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c51_cosmetics_event_counts_by_device": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c52_olist_mobile_buyers": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c53_cosmetics_conversion_by_channel": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c54_olist_conversion_by_device": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    },
+    "c60_olist_monthly_buyers": {
+      "strict_correct_worlds": 3,
+      "values_correct_worlds": 3
+    }
+  },
+  "provenance": {
+    "run_files": [
+      "/Users/thanhhigk/Study/NLP/Final/data/benchmark/results/accuracy-dev-20261106-v2/single-dev-T00-base-r1.jsonl"
+    ],
+    "world_hashes": {
+      "base": "dee8420aedaf21991b24034b5abc340e6eafe90973806fabf325f6e66b3b14a9"
+    },
+    "case_hash": "09227310147908d26ea20803943cfd7d2070e616b6515f836abfbde7facbb32f",
+    "output_projection": "Texa uses the shared runtime public-column rule; SQL controls retain all columns",
+    "run_file_sha256": {
+      "/Users/thanhhigk/Study/NLP/Final/data/benchmark/results/accuracy-dev-20261106-v2/single-dev-T00-base-r1.jsonl": "a8f5a2f63f596d7a04b8717a045f498801262389a8495279fdea524bb23613c5"
+    },
+    "annotation_erratum": {
+      "id": "c19-prose-contract-v1",
+      "case_id": "c19_olist_payment_records",
+      "note": "Treat c19 prose-only business_contract as absent for scoring.",
+      "original_cases_sha256": "09227310147908d26ea20803943cfd7d2070e616b6515f836abfbde7facbb32f"
+    }
+  }
+}

@@ -47,6 +47,22 @@ def test_missing_information_never_triggers_extra_samples():
     assert selected == proposal() and trace['scheduled'] == 1
 
 
+def test_two_complete_guesses_cannot_override_validated_missing_information():
+    responses = iter([proposal(1), proposal('missing')])
+    lock = threading.Lock()
+    def sample():
+        with lock:
+            return next(responses)
+    def resolve(p):
+        if p['value'] == 'missing':
+            return {'kind': 'clarify', 'field': 'context:source'}
+        return normalize(p)
+    selected, trace = consistency.select(proposal(1), sample, resolve)
+    assert selected == proposal('missing')
+    assert trace['vote_counts'] == [2]
+    assert trace['fallback'] == 'clarification_required'
+
+
 def test_cancelled_request_cannot_select_candidate():
     with pytest.raises(Cancelled):
         consistency.select(proposal(), lambda: proposal(), normalize, cancelled=lambda: True)

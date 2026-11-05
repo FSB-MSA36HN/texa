@@ -9,6 +9,11 @@ from __future__ import annotations
 from typing import Any
 
 VARIANTS = ("B0", "B0R", "B1", "T00", "T10", "T01", "T11")
+
+
+def expected_answer_count(item: dict[str, Any]) -> int:
+    """Count authored answer slots even when execution fails before any turn returns."""
+    return sum("expected_result" in target for target in item.get("turns", [item]))
 SUITE_VARIANTS = {
     "single": set(VARIANTS),
     "clarification": {"B1", "T00", "T10", "T01", "T11"},

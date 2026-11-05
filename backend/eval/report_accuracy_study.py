@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+import copy
+import hashlib
 import json
 import math
 import random
@@ -9,6 +11,13 @@ import statistics
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
+
+try:
+    from .check_world_robustness import (C19_CASES_SHA256, C19_ID, DATA as CHALLENGE_DATA,
+                                        _effective_contract, _load_cases)
+except ImportError:
+    from check_world_robustness import (C19_CASES_SHA256, C19_ID, DATA as CHALLENGE_DATA,
+                                       _effective_contract, _load_cases)
 
 try:
     from .accuracy_study import confirmatory_eligibility, validate_coverage
@@ -25,7 +34,82 @@ def read_run(path: Path) -> dict[str, Any]:
     validate_coverage(rows, manifest.get("expected_ids"), variant=manifest.get("variant"), suite=manifest.get("suite"))
     if records[-1].get("scenarios") != len(rows):
         raise ValueError(f"{path}: completion count mismatch")
-    return {"manifest": manifest, "rows": rows}
+    return {"manifest": manifest, "rows": rows, "path": path}
+
+
+def apply_annotation_erratum(runs: list[dict[str, Any]], annotation_erratum: str | None,
+                              *, dataset_dir: Path | None = None) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    """Overlay the pinned C19 prose-contract correction without mutating source runs."""
+    if annotation_erratum is None:
+        return runs, None
+    if annotation_erratum != "c19-prose-contract-v1":
+        raise ValueError(f"unknown annotation erratum: {annotation_erratum}")
+    cases_path = (dataset_dir or CHALLENGE_DATA) / "cases.yaml"
+    if not cases_path.is_file():
+        raise ValueError(f"dataset cases.yaml not found: {cases_path}")
+    cases_hash = hashlib.sha256(cases_path.read_bytes()).hexdigest()
+    if cases_hash != C19_CASES_SHA256:
+        raise ValueError("annotation erratum refused: cases.yaml hash does not match frozen C19 dataset")
+    cases = _load_cases(cases_path)
+    case = cases.get(C19_ID)
+    if case is None:
+        raise ValueError(f"annotation erratum refused: frozen dataset lacks {C19_ID}")
+    # Reuse the robustness checker's exact opt-in contract/hash gate.
+    if _effective_contract(C19_ID, case, erratum=annotation_erratum, case_hash=cases_hash) is not None:
+        raise ValueError("annotation erratum refused: C19 annotation does not match frozen prose contract")
+
+    overlays = []
+    corrections = []
+    run_file_hashes = {}
+    for run in runs:
+        manifest = run["manifest"]
+        if manifest.get("suite") != "single":
+            raise ValueError("C19 annotation erratum is restricted to single-suite runs")
+        declared_hash = (manifest.get("provenance") or {}).get("dataset_hashes", {}).get("cases.yaml")
+        if declared_hash != C19_CASES_SHA256:
+            raise ValueError("annotation erratum refused: run manifest cases.yaml hash mismatch")
+        for row in run["rows"]:
+            if row.get("id") not in cases:
+                raise ValueError(f"annotation erratum refused: unknown case ID {row.get('id')!r}")
+
+        overlay = {key: value for key, value in run.items() if key != "rows"}
+        overlay["rows"] = []
+        for original in run["rows"]:
+            row = copy.deepcopy(original)
+            if row.get("id") == C19_ID:
+                old = {key: row.get(key) for key in ("business_result_correct", "answer_correct", "success")}
+                turns = row.get("turns")
+                if isinstance(turns, list) and any(isinstance(turn, dict) and "result_correct" in turn for turn in turns):
+                    for turn in turns:
+                        if isinstance(turn, dict) and "result_correct" in turn:
+                            turn["business_result_correct"] = bool(turn["result_correct"])
+                    raw_values = [bool(turn.get("result_correct")) for turn in turns
+                                  if isinstance(turn, dict) and "result_correct" in turn]
+                    corrected_count = sum(raw_values)
+                    row["answer_correct"] = corrected_count
+                    row["business_result_correct"] = bool(raw_values) and all(raw_values)
+                else:
+                    row["business_result_correct"] = bool(row.get("result_correct", False))
+                    row["answer_correct"] = int(row["business_result_correct"])
+                row["success"] = bool(row["business_result_correct"])
+                new = {key: row.get(key) for key in ("business_result_correct", "answer_correct", "success")}
+                corrections.append({"variant": manifest.get("variant"), "split": manifest.get("split"),
+                    "repeat": manifest.get("repeat"), "id": C19_ID, "old": old, "new": new})
+            overlay["rows"].append(row)
+        overlays.append(overlay)
+        path = run.get("path")
+        if path is not None and Path(path).is_file():
+            run_file_hashes[str(path)] = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    metadata = {"name": annotation_erratum, "case_id": C19_ID,
+        "cases_sha256": cases_hash, "cases_path": str(cases_path),
+        "corrections": corrections, "original_run_file_sha256": run_file_hashes}
+    return overlays, metadata
+
+
+def _component_traces(row: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return per-decision traces, using the singular field only for legacy rows."""
+    traces = row.get("texa_accuracy_traces") if "texa_accuracy_traces" in row else [row.get("texa_accuracy_trace")]
+    return [trace for trace in (traces or []) if isinstance(trace, dict)]
 
 
 def summarize(runs: list[dict[str, Any]], *, confirmatory: bool = False) -> dict[str, Any]:
@@ -60,6 +144,11 @@ def compare(runs: list[dict[str, Any]], *, iterations: int = 3000) -> dict[str, 
     if not runs:
         raise ValueError("no runs supplied")
     for run in runs:
+        declared_counts = run["manifest"].get("expected_answer_counts")
+        if declared_counts is not None:
+            if set(declared_counts) != {row["id"] for row in run["rows"]} or any(
+                    row.get("answer_count") != declared_counts[row["id"]] for row in run["rows"]):
+                raise ValueError("answer denominator differs from frozen authored answer slots")
         eligible, reason = confirmatory_eligibility(run["manifest"].get("dataset", {}))
         if run["manifest"].get("confirmatory_requested") and not eligible:
             raise ValueError(f"confirmatory comparison refused: {reason}")
@@ -120,10 +209,36 @@ def compare(runs: list[dict[str, Any]], *, iterations: int = 3000) -> dict[str, 
         tokens = sum(float((row.get("usage") or {}).get("input_tokens", 0)) +
                      float((row.get("usage") or {}).get("output_tokens", 0)) for values in ids_to_rows.values() for row in values)
         cost = sum(float(row.get("cost_estimated_usd", 0)) for values in ids_to_rows.values() for row in values)
-        trace_values = [row.get("texa_accuracy_trace") for values in ids_to_rows.values() for row in values]
-        retrieved = sum(bool(row.get("retrieval_activated") or (row.get("texa_accuracy_trace") or {}).get("retrieval", {}).get("ids"))
-                        for values in ids_to_rows.values() for row in values)
-        consistency = sum((t or {}).get("consistency", {}).get("scheduled", 1) > 1 for t in trace_values)
+        # The plural field is emitted by multi-turn runs; the singular field is
+        # retained for older/single-turn records. Count component decisions per
+        # trace, but scenario activation once if any decision activated it.
+        trace_values = []
+        retrieval_scenarios = 0
+        for values in ids_to_rows.values():
+            for row in values:
+                traces = _component_traces(row)
+                trace_values.extend(traces)
+                if bool(row.get("retrieval_activated")) or any(
+                        bool((trace.get("retrieval") or {}).get("ids")) for trace in traces):
+                    retrieval_scenarios += 1
+        retrieval_decisions = sum(bool((trace.get("retrieval") or {}).get("ids"))
+                                  for trace in trace_values)
+        consistency_scheduled_samples = sum(
+            int((trace.get("consistency") or {}).get("scheduled", 0)) for trace in trace_values)
+        consistency_completed_samples = sum(
+            int((trace.get("consistency") or {}).get("completed", 0)) for trace in trace_values)
+        consistency_scheduled_decisions = sum(
+            int((trace.get("consistency") or {}).get("scheduled", 0)) > 1 for trace in trace_values)
+        consistency_completed_decisions = sum(
+            int((trace.get("consistency") or {}).get("completed", 0)) > 1 for trace in trace_values)
+        consistency_scheduled_scenarios = sum(
+            any(int((trace.get("consistency") or {}).get("scheduled", 0)) > 1
+                for trace in _component_traces(row))
+            for values in ids_to_rows.values() for row in values)
+        consistency_completed_scenarios = sum(
+            any(int((trace.get("consistency") or {}).get("completed", 0)) > 1
+                for trace in _component_traces(row))
+            for values in ids_to_rows.values() for row in values)
         diagnostic_rows = [row for values in ids_to_rows.values() for row in values if row.get("action_scorable")]
         summaries[variant] = {"runs": len(variant_runs), "answer_count": answer_total,
             "business_accuracy": answer_correct / answer_total if answer_total else None,
@@ -131,8 +246,17 @@ def compare(runs: list[dict[str, Any]], *, iterations: int = 3000) -> dict[str, 
             "latency_ms_p95": sorted(latencies)[min(len(latencies)-1, math.ceil(.95*len(latencies))-1)] if latencies else None,
             "tokens": tokens, "cost_estimated_usd": cost,
             "diagnostic_action_accuracy": sum(bool(row.get("action_correct")) for row in diagnostic_rows) / len(diagnostic_rows) if diagnostic_rows else None,
-            "usage_incomplete_scenarios": sum(not row.get("usage_complete", False) for values in ids_to_rows.values() for row in values), "retrieval_activated_scenarios": retrieved,
-            "consistency_completed_scenarios": consistency,
+            "usage_incomplete_scenarios": sum(not row.get("usage_complete", False) for values in ids_to_rows.values() for row in values),
+            "retrieval_activated_scenarios": retrieval_scenarios,
+            "retrieval_activated_decisions": retrieval_decisions,
+            "component_decision_count": len(trace_values),
+            "consistency_scheduled_decisions": consistency_scheduled_decisions,
+            "consistency_completed_decisions": consistency_completed_decisions,
+            "consistency_scheduled_samples": consistency_scheduled_samples,
+            "consistency_completed_samples": consistency_completed_samples,
+            "consistency_scheduled_scenarios": consistency_scheduled_scenarios,
+            # Retained for existing consumers, now genuinely means completed.
+            "consistency_completed_scenarios": consistency_completed_scenarios,
             "unsupported_diagnostics": sum(int(row.get("unsupported_turn_count", 0)) for values in ids_to_rows.values() for row in values)}
     if manifests[0]["suite"] == "diagnostic":
         return {"suite": "diagnostic", "split": manifests[0]["split"], "variants": summaries,
@@ -213,14 +337,22 @@ def main(argv=None) -> int:
     parser.add_argument("runs", nargs="+", type=Path)
     parser.add_argument("--confirmatory", action="store_true")
     parser.add_argument("--compare", action="store_true", help="compare matched complete variant runs")
+    parser.add_argument("--annotation-erratum", choices=("c19-prose-contract-v1",),
+                        help="apply a hash-pinned correction to the C19 business-contract annotation")
+    parser.add_argument("--dataset-dir", type=Path,
+                        help="challenge dataset directory containing the frozen cases.yaml")
     args = parser.parse_args(argv)
     parsed = [read_run(path) for path in args.runs]
+    parsed, erratum_metadata = apply_annotation_erratum(parsed, args.annotation_erratum,
+                                                         dataset_dir=args.dataset_dir)
     if args.confirmatory:
         for run in parsed:
             eligible, reason = confirmatory_eligibility(run["manifest"].get("dataset", {}))
             if not eligible:
                 raise ValueError(f"confirmatory report refused: {reason}")
     result = compare(parsed) if args.compare else summarize(parsed, confirmatory=args.confirmatory)
+    if erratum_metadata is not None:
+        result["annotation_erratum"] = erratum_metadata
     print(json.dumps(result, indent=2))
     return 0
 

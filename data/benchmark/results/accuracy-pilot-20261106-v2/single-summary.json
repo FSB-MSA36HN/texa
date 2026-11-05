@@ -1,0 +1,52 @@
+{
+  "suite": "single",
+  "split": "dev",
+  "variants": {
+    "B0": {
+      "runs": 1,
+      "answer_count": 30,
+      "business_accuracy": 0.8666666666666667,
+      "latency_ms_p50": 4317.0,
+      "latency_ms_p95": 8292.0,
+      "tokens": 98404.0,
+      "cost_estimated_usd": 0.011540000000000002,
+      "retrieval_activated_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 0
+    },
+    "T00": {
+      "runs": 1,
+      "answer_count": 30,
+      "business_accuracy": 0.5,
+      "latency_ms_p50": 7013.5,
+      "latency_ms_p95": 12346.0,
+      "tokens": 117999.0,
+      "cost_estimated_usd": 0.014661500000000001,
+      "retrieval_activated_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 0
+    }
+  },
+  "paired_comparisons": {
+    "B0_vs_T00": {
+      "paired_accuracy_delta_right_minus_left": -0.36666666666666664,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 0.0009765625,
+      "cluster_bootstrap_ci95": [
+        -0.5483870967741935,
+        -0.2
+      ],
+      "clusters": 27,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 11,
+      "mcnemar_discordant_right_only": 0
+    }
+  },
+  "factorial_effects": null,
+  "interpretation": "diagnostic exploratory candidate results; not confirmatory human-reviewed holdout evidence"
+}

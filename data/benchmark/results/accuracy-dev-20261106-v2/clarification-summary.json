@@ -1,0 +1,264 @@
+{
+  "suite": "clarification",
+  "split": "dev",
+  "variants": {
+    "B1": {
+      "runs": 1,
+      "answer_count": 12,
+      "business_accuracy": 0.75,
+      "latency_ms_p50": 4274.0,
+      "latency_ms_p95": 8599.0,
+      "tokens": 46933.0,
+      "cost_estimated_usd": 0.005404900000000001,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 0
+    },
+    "T00": {
+      "runs": 1,
+      "answer_count": 12,
+      "business_accuracy": 0.8333333333333334,
+      "latency_ms_p50": 10008.5,
+      "latency_ms_p95": 21070.0,
+      "tokens": 53425.0,
+      "cost_estimated_usd": 0.0069753,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 0
+    },
+    "T01": {
+      "runs": 1,
+      "answer_count": 12,
+      "business_accuracy": 0.9166666666666666,
+      "latency_ms_p50": 10152.5,
+      "latency_ms_p95": 12904.0,
+      "tokens": 54226.0,
+      "cost_estimated_usd": 0.0069538,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 0
+    },
+    "T10": {
+      "runs": 1,
+      "answer_count": 12,
+      "business_accuracy": 1.0,
+      "latency_ms_p50": 8934.5,
+      "latency_ms_p95": 14457.0,
+      "tokens": 56832.0,
+      "cost_estimated_usd": 0.006964400000000001,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 12,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 0
+    },
+    "T11": {
+      "runs": 1,
+      "answer_count": 12,
+      "business_accuracy": 0.8333333333333334,
+      "latency_ms_p50": 9061.0,
+      "latency_ms_p95": 13875.0,
+      "tokens": 55350.0,
+      "cost_estimated_usd": 0.0071454000000000005,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 12,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 0
+    }
+  },
+  "paired_comparisons": {
+    "B1_vs_T00": {
+      "paired_accuracy_delta_right_minus_left": 0.08333333333333333,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 1.0,
+      "cluster_bootstrap_ci95": [
+        0.0,
+        0.25
+      ],
+      "clusters": 7,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 1
+    },
+    "B1_vs_T01": {
+      "paired_accuracy_delta_right_minus_left": 0.16666666666666666,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 0.5,
+      "cluster_bootstrap_ci95": [
+        0.0,
+        0.35714285714285715
+      ],
+      "clusters": 7,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 2
+    },
+    "B1_vs_T10": {
+      "paired_accuracy_delta_right_minus_left": 0.25,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 0.25,
+      "cluster_bootstrap_ci95": [
+        0.07142857142857142,
+        0.5
+      ],
+      "clusters": 7,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 3
+    },
+    "B1_vs_T11": {
+      "paired_accuracy_delta_right_minus_left": 0.08333333333333333,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 1.0,
+      "cluster_bootstrap_ci95": [
+        0.0,
+        0.25
+      ],
+      "clusters": 7,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 1
+    },
+    "T00_vs_T01": {
+      "paired_accuracy_delta_right_minus_left": 0.08333333333333333,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 1.0,
+      "cluster_bootstrap_ci95": [
+        0.0,
+        0.25
+      ],
+      "clusters": 7,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 1
+    },
+    "T00_vs_T10": {
+      "paired_accuracy_delta_right_minus_left": 0.16666666666666666,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 0.5,
+      "cluster_bootstrap_ci95": [
+        0.0,
+        0.4166666666666667
+      ],
+      "clusters": 7,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 2
+    },
+    "T00_vs_T11": {
+      "paired_accuracy_delta_right_minus_left": 0.0,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 1.0,
+      "cluster_bootstrap_ci95": [
+        0.0,
+        0.0
+      ],
+      "clusters": 7,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 0
+    },
+    "T01_vs_T10": {
+      "paired_accuracy_delta_right_minus_left": 0.08333333333333333,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 1.0,
+      "cluster_bootstrap_ci95": [
+        0.0,
+        0.3
+      ],
+      "clusters": 7,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 1
+    },
+    "T01_vs_T11": {
+      "paired_accuracy_delta_right_minus_left": -0.08333333333333333,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 1.0,
+      "cluster_bootstrap_ci95": [
+        -0.25,
+        0.0
+      ],
+      "clusters": 7,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 1,
+      "mcnemar_discordant_right_only": 0
+    },
+    "T10_vs_T11": {
+      "paired_accuracy_delta_right_minus_left": -0.16666666666666666,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 0.5,
+      "cluster_bootstrap_ci95": [
+        -0.4,
+        0.0
+      ],
+      "clusters": 7,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 2,
+      "mcnemar_discordant_right_only": 0
+    }
+  },
+  "factorial_effects": {
+    "retrieval_main_effect": 0.04166666666666674,
+    "consistency_main_effect": -0.04166666666666674,
+    "interaction": -0.2499999999999999
+  },
+  "interpretation": "diagnostic exploratory candidate results; not confirmatory human-reviewed holdout evidence"
+}

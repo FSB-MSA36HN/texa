@@ -21,6 +21,51 @@ ABS_TOL = 1e-6
 REL_TOL = 1e-6
 
 
+def validate_business_contract(contract: Any, expected_columns: Iterable[str], *, context: str = "business contract") -> None:
+    """Validate an optional preregistered column mapping against the full gold schema.
+
+    ``None`` means no contract was declared. A declared contract must map every
+    gold output column exactly once; this preflight prevents malformed metadata
+    from silently degrading the scored business metric.
+    """
+    if contract is None:
+        return
+    def invalid(reason: str) -> None:
+        raise ValueError(f"{context}: invalid business_contract: {reason}")
+
+    if not isinstance(contract, dict):
+        invalid("must be a mapping")
+    specs = contract.get("columns")
+    if not isinstance(specs, list):
+        invalid("columns must be a list")
+    if not specs:
+        invalid("columns must not be empty")
+    ids: list[str] = []
+    actual_aliases: list[str] = []
+    gold_aliases: list[str] = []
+    for index, spec in enumerate(specs):
+        if not isinstance(spec, dict):
+            invalid(f"columns[{index}] must be a mapping")
+        for field in ("id", "actual_alias", "gold_alias"):
+            value = spec.get(field)
+            if not isinstance(value, str) or not value.strip():
+                invalid(f"columns[{index}].{field} must be a non-empty string")
+        ids.append(spec["id"])
+        actual_aliases.append(spec["actual_alias"])
+        gold_aliases.append(spec["gold_alias"])
+    if len(set(ids)) != len(ids):
+        invalid("column ids must be unique")
+    if len(set(actual_aliases)) != len(actual_aliases):
+        invalid("actual_alias values must be unique")
+    if len(set(gold_aliases)) != len(gold_aliases):
+        invalid("gold_alias values must be unique")
+    columns = list(expected_columns)
+    if any(not isinstance(column, str) or not column.strip() for column in columns):
+        invalid("gold output columns must be non-empty strings")
+    if len(set(columns)) != len(columns) or set(gold_aliases) != set(columns) or len(gold_aliases) != len(columns):
+        invalid("gold_alias values must cover every gold output column exactly once")
+
+
 def load_cases(path: Path = CASES_PATH) -> list[dict[str, Any]]:
     cases = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(cases, list):

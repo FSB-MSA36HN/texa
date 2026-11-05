@@ -75,3 +75,6 @@ source_capability_notes:
 version_change_reason: v2 removes synthetic Olist visitors and order IDs masquerading as sessions; uses canonical
   Olist event names, aligns every all-time question explicitly with the full available date scope, and adds matched
   clarification/control cases for omitted periods.
+
+annotation_revision: 1
+annotation_change_note: Moved c19 prose business_contract to business_note; questions, gold SQL and expected tables unchanged. Original candidate v2 preserved in accuracy-dev-20261106-v2/frozen_dataset.

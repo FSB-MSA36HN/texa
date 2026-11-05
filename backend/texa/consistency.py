@@ -127,14 +127,15 @@ def select(primary, sample, normalize, *, cancelled=lambda: False, timeout=DEADL
         counts = Counter(k for k in keys if k is not None)
         trace.update(fingerprints=keys, vote_counts=sorted(counts.values(), reverse=True),
                      distinct_valid=len(counts))
+        # A validated missing-information/source-conflict decision is a constraint,
+        # not another query vote. Two complete guesses must not erase that ask.
+        for proposal, bundle in zip(proposals, bundles):
+            if bundle and bundle.get("kind") == "clarify":
+                return proposal, trace | {"selected": proposals.index(proposal), "fallback": "clarification_required"}
         winner = next((k for k, count in counts.items() if count >= 2), None)
         if winner:
             index = keys.index(winner)
             return proposals[index], trace | {"selected": index, "fallback": None}
-        # Agreement cannot fill missing information. Preserve an actual ask if one arose.
-        for proposal, bundle in zip(proposals, bundles):
-            if bundle and bundle.get("kind") == "clarify":
-                return proposal, trace | {"selected": proposals.index(proposal), "fallback": "clarification_required"}
         out = deepcopy(primary)
         out.update(_consistency_unresolved=True, outcome="unsupported", reason=(
             "Chưa xác định chắc cách hiểu câu hỏi. Bạn hãy nêu rõ chỉ số, nguồn, thời gian và điều kiện lọc."

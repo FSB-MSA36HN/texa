@@ -1,0 +1,77 @@
+name: texa-ecommerce-workflow-challenge-v2-candidate
+dataset_type: challenge_candidate
+version: 2
+status: candidate_agent_reviewed_not_sealed
+engine: PostgreSQL 16+
+timezone: UTC
+sources:
+- cosmetics_shop
+- olist_marketplace
+metrics:
+- events
+- users
+- sessions
+- viewers
+- purchases
+- buyers
+- revenue
+- buyer_conversion_rate
+nested_scalar_paths:
+- ep.device.type
+- ep.campaign.channel
+fixture: worlds/base.sql
+fixture_worlds:
+  base:
+    file: worlds/base.sql
+    cosmetics_rows: 60
+    olist_rows: 60
+  grain_counterexample:
+    file: worlds/grain_counterexample.sql
+    cosmetics_rows: 60
+    olist_rows: 61
+    perturbation: one additional synthetic item-line twin
+  coverage_edge:
+    file: worlds/coverage_edge.sql
+    cosmetics_rows: 59
+    olist_rows: 59
+    perturbation: one purchase row removed from each source
+fixture_policy: Synthetic challenge-only rows registered under the two catalog source IDs. Olist rows use order_purchased,
+  payment_made, and order_approved for synthetic observed customers; Olist session_id is NULL and no visitor/viewer
+  rows are invented. Synthetic ep.device.type and ep.campaign.channel are declared challenge-only extensions, not
+  claims about real Olist. One event_activity row is one event; Olist purchase events model item lines.
+metric_policy: events counts rows; users/sessions/viewers/buyers are distinct IDs; viewers require view; buyers
+  require purchase; purchases count purchase rows (item-line grain); revenue sums purchase revenue only and empty
+  sum is zero; buyer_conversion_rate is distinct buyers / distinct observed users, NULL for zero denominator. Group
+  domains contain eligible observed events; ratio groups retain rows supported by numerator OR denominator population,
+  so a legitimate zero numerator is retained. Missing/NULL nested scalars do not match filters. No inferred calendar
+  rows.
+result_policy:
+  row_order: unordered_unless_ranked
+  numeric_absolute_tolerance: 1.0e-06
+  numeric_relative_tolerance: 1.0e-06
+counts:
+  single_total: 60
+  single_dev: 30
+  single_test: 30
+  clarification_total: 24
+  clarification_dev: 12
+  clarification_test: 12
+  conversation_total: 9
+  conversation_dev: 4
+  conversation_test: 5
+  diagnostics: 12
+coverage_gap: 'Candidate v2 remains below the approved 180 singles / 24 clarification dialogues / 24 conversations
+  design target: 60 answerable singles, 24 clarification records (12 matched query/control pairs), and 9 conversation
+  dialogues. All results remain unsealed pending human review.'
+quality:
+  gold_independent_of_compiler: true
+  human_review: pending
+  test_labels_exposed_to_author: true
+  sealed: false
+source_capability_notes:
+  cosmetics_shop: synthetic purchase/view/cart events and session ids; declared scalar ep.device.type and ep.campaign.channel
+  olist_marketplace: synthetic order_purchased/payment_made/order_approved records for ordering customers; no session_id
+    or visitor/viewer tracking; device/campaign nested fields synthetic challenge extensions only
+version_change_reason: v2 removes synthetic Olist visitors and order IDs masquerading as sessions; uses canonical
+  Olist event names, aligns every all-time question explicitly with the full available date scope, and adds matched
+  clarification/control cases for omitted periods.

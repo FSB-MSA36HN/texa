@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from eval.check_world_robustness import DATA, WORLDS, _apply_world, _candidate_sql, _identity, _validate_provenance, check_worlds
+from eval.check_world_robustness import C19_CASES_SHA256, DATA, WORLDS, _apply_world, _candidate_sql, _effective_contract, _identity, _validate_provenance, check_worlds, _values_equal
 
 
 def make_runs(cases):
@@ -12,6 +12,7 @@ def make_runs(cases):
     ids = pools["base"]
     hashes = {f"worlds/{world}.sql": hashlib.sha256((DATA / "worlds" / f"{world}.sql").read_bytes()).hexdigest()
               for world in WORLDS}
+    hashes["cases.yaml"] = hashlib.sha256((DATA / "cases.yaml").read_bytes()).hexdigest()
     rows = [{"id": sid, "sql": "SELECT 1", "business_result_correct": True} for sid in ids]
     return [{"path": Path("base.jsonl"), "manifest": {"suite": "single", "split": "dev",
         "variant": "B0", "repeat": 1, "model": "model", "provenance": {"hash": "frozen", "dataset_hashes": hashes},
@@ -41,11 +42,38 @@ class WorldRobustnessTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "frozen case pool"):
             _validate_provenance(self.runs, self.cases)
 
-    def test_candidate_sql_extraction_and_missing_sql(self):
-        self.assertEqual(_candidate_sql({"sql": "SELECT 1", "turns": [{"sql": "SELECT 2"}]}),
-                         ["SELECT 1", "SELECT 2"])
-        self.assertEqual(_candidate_sql({"turns": [{"trace": {"compiled_sql": "SELECT 3"}}]}), ["SELECT 3"])
+    def test_candidate_sql_selects_final_answer_only(self):
+        self.assertEqual(_candidate_sql({"sql": "SELECT 1", "turns": [{"sql": "SELECT 2"}]}), ["SELECT 1"])
+        self.assertEqual(_candidate_sql({"turns": [{"sql": "SELECT old"}, {"action": "refuse"}],
+                                         "interpretation_traces": [{"compiled_sql": "SELECT stale"}]}), [])
+        self.assertEqual(_candidate_sql({"turns": [{"sql": "SELECT old"},
+            {"trace": {"compiled_sql": "SELECT final"}}]}), ["SELECT final"])
+        self.assertEqual(_candidate_sql({"interpretation_traces": [{"compiled_sql": "SELECT 3"}]}), ["SELECT 3"])
         self.assertEqual(_candidate_sql({"turns": []}), [])
+
+    def test_values_comparison_ignores_aliases_but_not_shape_or_order(self):
+        self.assertTrue(_values_equal(["events"], [[18]], ["purchases"], [[18]]))
+        self.assertFalse(_values_equal(["a", "b"], [[1, 2]], ["b", "a"], [[2, 1]]))
+        self.assertFalse(_values_equal(["a"], [[1]], ["a", "b"], [[1, 2]]))
+
+    def test_case_hash_and_erratum_guards(self):
+        _validate_provenance(self.runs, self.cases)
+        self.runs[0]["manifest"]["provenance"]["dataset_hashes"]["cases.yaml"] = "wrong"
+        with self.assertRaisesRegex(ValueError, "cases.yaml hash"):
+            _validate_provenance(self.runs, self.cases)
+        case = {"business_contract": "Count the literal source event payment_made, not a payment method dimension."}
+        digest = C19_CASES_SHA256
+        self.assertIsNone(_effective_contract("c19_olist_payment_records", case,
+            erratum="c19-prose-contract-v1", case_hash=digest))
+        for cid, erratum, altered, bad_hash in [
+            ("c19_olist_payment_records", None, case, digest),
+            ("other", "c19-prose-contract-v1", case, digest),
+            ("c19_olist_payment_records", "unknown", case, digest),
+            ("c19_olist_payment_records", "c19-prose-contract-v1", {"business_contract": "mutated"}, digest),
+            ("c19_olist_payment_records", "c19-prose-contract-v1", case, "bad"),
+        ]:
+            with self.assertRaisesRegex(ValueError, "malformed business_contract"):
+                _effective_contract(cid, altered, erratum=erratum, case_hash=bad_hash)
 
     def test_cross_world_scoring_uses_candidate_sql_not_gold_sql(self):
         calls = []
@@ -63,6 +91,19 @@ class WorldRobustnessTests(unittest.TestCase):
         self.assertEqual(result["summary"]["base"]["correct"], 3)
         self.assertEqual(result["summary"]["grain_counterexample"]["correct"], 0)
         self.assertEqual(applied, ["base", "grain_counterexample", "coverage_edge", "base"])
+
+    def test_replay_retains_product_public_output_boundary_for_ratio_samples(self):
+        def execute(dsn, sql):
+            return ('__sample_ratio', 'n'), ((15, 1),)
+        with patch('eval.check_world_robustness._identity'):
+            self.runs[0]['manifest']['variant'] = 'T00'
+            product = check_worlds(self.runs, self.cases, 'reader', apply_fixtures=True,
+                owner_dsn='owner', apply_world=lambda *args: None, execute=execute)
+            self.runs[0]['manifest']['variant'] = 'B0'
+            baseline = check_worlds(self.runs, self.cases, 'reader', apply_fixtures=True,
+                owner_dsn='owner', apply_world=lambda *args: None, execute=execute)
+        self.assertEqual(product['summary']['base']['correct'], 3)
+        self.assertEqual(baseline['summary']['base']['correct'], 0)
 
     def test_fixture_apply_requires_owner_and_is_explicit(self):
         with patch("eval.check_world_robustness._identity") as identity:
