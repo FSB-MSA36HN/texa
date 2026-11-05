@@ -334,6 +334,9 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
     # metadata-only so baseline variants receive no benchmark training examples.
     public_cat = cat.model_copy(update={"verified_questions": []})
     public_context = render_catalog(public_cat, {sid: source_map[sid] for sid in manifest["sources"]})
+    public_context += "\nPHYSICAL METRIC DEFINITIONS (public business contract, no examples)\n" + json.dumps(
+        public_cat.model_dump(mode="json", include={"event_roles", "field_mappings", "semantic_values", "metrics"}),
+        ensure_ascii=False, sort_keys=True)
     public_context_hash = hashlib.sha256(public_context.encode()).hexdigest()
     bank = None
     if args.variant == "B0R":
