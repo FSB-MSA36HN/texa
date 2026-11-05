@@ -1,0 +1,237 @@
+# Texa — Plan tăng độ đúng bằng ví dụ đã kiểm chứng và self-consistency
+
+Cập nhật 05/11/2026. **Chỉ nghiên cứu và lên kế hoạch; chưa triển khai các kỹ thuật mới.** Mốc trước thay đổi: `83403e3`. Giữ PostgreSQL, Cosmetics + Olist, một nguồn/truy vấn, tám metric và nested scalar theo catalog. Không mở rộng engine, domain hoặc SQL tự do.
+
+## 1. Kết luận nghiên cứu
+
+Hai ý tưởng có cơ sở, nhưng cần gọi đúng tên và áp dụng đúng tầng:
+
+| Mô tả | Tên và cách hiểu chính xác | Hướng cho Texa |
+|---|---|---|
+| Cho model tham khảo câu hỏi và truy vấn đúng | **Few-shot in-context learning (ICL)**. Nếu lấy ví dụ phù hợp từ kho theo từng câu hỏi: **retrieval-augmented few-shot prompting / demonstration retrieval**. Snowflake gọi kho nghiệp vụ này là **Verified Query Repository (VQR)**. | Kho ví dụ đã kiểm chứng, truy hồi ít ví dụ liên quan; chủ yếu dạy `câu hỏi → candidate intent`, kèm QuerySpec chuẩn để kiểm tra. |
+| Gọi cùng model nhiều lần rồi chọn phương án được đồng thuận | **Self-consistency / multi-sample consistency selection**, lấy nhiều mẫu đủ đa dạng rồi tổng hợp đáp án. | Chỉ lấy thêm mẫu ở yêu cầu khó; so sánh ý định có cấu trúc, giữ compiler hiện có. |
+| Gọi các model khác nhau | **Multi-model ensemble**; không đồng nghĩa với self-consistency cùng model. | Chưa ưu tiên: thêm cấu hình, kiểm soát chi phí và khó tách hiệu quả của model khỏi hệ thống. |
+| Model kiểm tra/chấm các phương án | **Verifier / reranker**. Có nhiều vòng phản biện qua lại mới là debate. | Chưa đưa vào bản đầu; kiểm tra bằng catalog/code trước, đo nhu cầu rồi mới thử verifier. |
+
+Đây không phải fine-tuning: không cập nhật trọng số model. Ví dụ trong prompt hướng dẫn cách xử lý yêu cầu mới, không được trở thành bảng tra câu trả lời theo câu hỏi.
+
+### Nguồn chính đã đọc và điều rút ra
+
+1. [OpenAI — Prompt engineering, “Few-shot learning”](https://developers.openai.com/api/docs/guides/prompt-engineering): đưa một số cặp input/output đa dạng vào prompt để hướng dẫn tác vụ, khác fine-tuning.
+2. [Gao và cộng sự — DAIL-SQL](https://arxiv.org/abs/2308.15363), phần example selection/organization và Appendix A.2: chọn ví dụ dựa trên câu hỏi và cấu trúc truy vấn; có masking để giảm lệ thuộc tên schema/value. Bản mở rộng dùng voting **năm truy vấn**, temperature 1.0. Paper báo Spider EX từ **86,2% lên 86,6%**, đồng thời cảnh báo rất tốn thời gian và chi phí nhiều lần. Đây là **0,4 điểm phần trăm trong thiết lập đó**, không phải bảo đảm tăng mạnh cho Texa. Đoạn này không đủ xác định vote theo SQL text hay execution result; không gán cách vote của Texa cho paper.
+3. [Snowflake — Cortex Analyst VQR](https://docs.snowflake.com/en/user-guide/views-semantic/verified-query-repository): lưu câu hỏi và SQL đã kiểm chứng, dùng truy vấn liên quan cho câu hỏi tương tự; SQL dùng tên logical của semantic model. Tài liệu yêu cầu kiểm tra SQL/kết quả và cảnh báo ví dụ sai có thể giảm độ chính xác.
+4. [Wang và cộng sự — Self-Consistency, ICLR 2023](https://arxiv.org/abs/2203.11171), §2: cùng model lấy nhiều reasoning paths và tổng hợp đáp án cuối. Bằng chứng gốc trên reasoning benchmarks; không tự chứng minh hiệu quả Text2SQL hay Texa.
+5. [Sun và cộng sự — SQL-PaLM](https://arxiv.org/abs/2306.00739), §6.2–6.3: consistency decoding có lọc lỗi thực thi; test-time selection còn dùng đa số execution outcomes giữa các phương án. SQL chạy được vẫn chưa chắc đúng nghiệp vụ.
+6. [Databricks — Tune Genie quality](https://docs.databricks.com/aws/en/genie-agents/tune-quality): example SQL/instructions là kiến thức được quản trị; đây là một ví dụ sản phẩm tương tự, không phải tên khác của VQR.
+7. [OpenAI — Evaluation best practices](https://developers.openai.com/api/docs/guides/evaluation-best-practices): đánh giá theo tác vụ thật, có ca thường/biên/đối kháng, gold và human review; đánh giá từng điểm có tính bất định.
+8. [OpenAI — Latency optimization](https://developers.openai.com/api/docs/guides/latency-optimization): giảm lượt gọi, giới hạn output và chạy song song phần độc lập. Song song giảm đường chờ so với chạy tuần tự, không làm các lượt gọi miễn phí.
+
+**Phần Texa đề xuất dưới đây là thiết kế thích nghi**, không phải tái hiện nguyên bản DAIL-SQL/SQL-PaLM và không được mượn điểm của các paper làm điểm sản phẩm.
+
+## 2. Điểm xuất phát và việc phải xử lý trước
+
+### Bằng chứng hiện có
+
+- Regression v3: 16 câu × ba lần, Texa **35/48 = 72,9%**, B0 **41/48 = 85,4%**. Đây là bộ đã nhìn thấy, có cả PT stress ngoài ngôn ngữ sản phẩm chính Việt/Anh; không phải holdout.
+- 13 lượt lỗi của Texa gồm **bảy refusal** và **sáu sai bảng kết quả**. Không coi toàn bộ là lỗi hiểu câu hỏi.
+- Clarification v4: đầy đủ F **6/6**, C0 **1/6**; chỉ hai tình huống lặp ba lần. Memory v3 chưa đủ contract để kết luận ablation.
+- Backend **261 passed, 12 skipped**; Playwright **15/15** với provider mô phỏng. Model thật: tám request đồng thời đúng trong một lượt sanity; p50/p95 end-to-end **21,2/36,5 giây**. Chưa xác lập sức chứa lớp học.
+- Artifacts nguyên gốc: `data/benchmark/results/remediation-20261105/scorecard.json` và các thư mục được tham chiếu ở đó.
+
+### P0: phân biệt lỗi compiler/semantic contract với lỗi LLM
+
+Đã đối chiếu hai trace của `single-test-F-r1.jsonl`:
+
+- `rv2_test_olist_purchase_revenue_trend`: QuerySpec đã chọn revenue theo ngày; compiler dùng `SUM(...) FILTER (purchase role)` nhưng `GROUP BY` vẫn nhìn toàn bộ event. Ngày chỉ có payment có thể xuất hiện thêm với revenue 0, trong khi gold chỉ nhóm purchase rows.
+- `rv2_test_olist_category_buyers`: cùng cơ chế tạo category chỉ có event khác, buyers 0, trong khi gold chỉ có category có purchase.
+
+Hai ca này lặp lỗi ba lần, chiếm sáu lượt sai bảng. **Đây là bất đồng về miền dòng tạo nhóm, không thể chữa bằng thêm prompt hoặc voting.** Cần review định nghĩa nghiệp vụ/gold trước khi quyết định hành vi; việc gold hiện có một đáp án chưa tự chứng minh gold đúng.
+
+Việc tiên quyết:
+
+1. Định nghĩa trong semantic contract: metric lấy những event nào; tập dòng nào tạo nhóm; có chủ động điền kỳ/category không phát sinh hay không; khác biệt giữa `0`, không có nhóm và unavailable.
+2. Sau khi adjudicate, đưa quy tắc miền nhóm vào catalog/compiler, không yêu cầu LLM tự thêm filter để bù lỗi compiler. Một metric purchase có thể nhóm trên eligible purchase rows nếu contract quy định như vậy. Ratio phải giữ support của cả tử/mẫu; không đẩy predicate tử số xuống WHERE làm sai mẫu số. Không mở multi-metric trong scope này.
+3. Không dùng `HAVING value != 0` hay xóa các hàng 0 sau truy vấn. Purchase có giá trị 0, doanh thu bù trừ về 0 và nhóm có buyer thật vẫn phải được giữ khi contract yêu cầu.
+4. Test độc lập: payment-only day/category, purchase giá 0, NULL category, kỳ rỗng, event không có coverage, conversion denominator. Gold SQL được viết/review độc lập; công bố mọi thay đổi annotation bằng version mới.
+5. Trace refusal phải lưu reason code và candidate đủ để phân biệt: ngoài scope thật, model đọc sai, hoặc guard/capability từ chối. Bảy refusal hiện chỉ là phân loại kết quả quan sát được, chưa đủ để khẳng định cùng một root cause.
+
+Mốc này phải đo riêng. Các cấu hình ablation sau đó đều dùng **cùng compiler/contract đã sửa**, tránh gán công của sửa compiler cho hai kỹ thuật mới.
+
+## 3. Kiến trúc dự kiến
+
+```text
+Câu hỏi + UI source + registry/snapshot
+ → catalog/capability và policy bắt buộc
+ → truy hồi 0–3 ví dụ đã kiểm chứng, đúng version/phạm vi
+ → interpret structured candidate lần đầu
+ → kiểm tra candidate bằng binder/reducer ở chế độ không ghi trạng thái
+ → đủ điều kiện bình thường: dùng phương án đầu
+ → có tín hiệu bất định kỹ thuật và đủ ngân sách:
+      thêm hai mẫu interpret song song → chuẩn hóa → consistency selection
+ → policy hỏi lại / từ chối / QuerySpec đã validate
+ → compiler → PostgreSQL read-only → facts → trả kết quả
+```
+
+LLM hiện trả **candidate** có thể chứa thiếu thông tin/mơ hồ; `QuerySpec` là contract nghiêm ngặt ở bước sau. Không ép candidate chưa rõ thành QuerySpec hợp lệ chỉ để vote. Chỉ ghi candidate thắng vào turn; chỉ cập nhật memory sau luồng chính như hiện tại. Khi user trả lời form, dùng candidate/answers đã lưu, không gọi voting lại và làm thay đổi câu đang được hỏi.
+
+## 4. Thành phần A — Kho ví dụ đã kiểm chứng và retrieval
+
+### 4.1. Không bắt đầu từ số không
+
+`interpret.render_catalog()` đã đưa `catalog.verified_questions` dạng `question → reading` vào prompt. Vì vậy thay đổi là **nâng cấp governance, độ đầy đủ và lựa chọn ví dụ**, không gọi là lần đầu Texa có few-shot. Control giữ nguyên các ví dụ legacy đã đóng băng; cờ mới chỉ bật/tắt kho truy hồi bổ sung. Dedupe và kế hoạch bỏ legacy nếu cần phải là một thử nghiệm riêng.
+
+### 4.2. Contract của ví dụ
+
+Kho khoảng **32–48 ví dụ để khởi đầu**, chọn theo coverage, không xem số lượng này là tối ưu đã được chứng minh. Đặt ở `catalog/verified_examples.yaml`; loader/validator riêng, liên kết với catalog hiện có.
+
+Mỗi ví dụ có:
+
+- ID, version, template/paraphrase family, ngôn ngữ, source applicability, catalog/contract version và capability requirements.
+- Câu hỏi mẫu; context đầu vào nếu là follow-up; candidate output đúng schema; QuerySpec mong đợi nếu đã đủ thông tin, hoặc action/form fields mong đợi nếu phải hỏi lại/từ chối.
+- Ghi chú nghiệp vụ ngắn dùng semantic IDs; độc lập với raw event literal của từng source.
+- SQL tham chiếu và fixture kiểm chứng **dành cho review/CI**, không nhét toàn bộ SQL vào interpret prompt và không dùng lại SQL đó làm truy vấn sản phẩm.
+- Người review, thời điểm, trạng thái draft/approved, provenance và hash. Agent review không được ghi thành human review.
+
+Coverage: tám metric theo nguồn có hỗ trợ; aggregate/trend/breakdown/top-k; nested scalar đã khai báo; item vs order/payment; đủ/thiếu kỳ; xung đột nguồn; kết quả rỗng hợp lệ; unsupported thật; follow-up đổi kỳ/filter, giữ/xóa slot và tham chiếu kết quả cũ. Không viết một ví dụ khớp từng câu test. Ví dụ follow-up dùng local placeholder result ID được remap trong block, không mang ID thật từ chat khác.
+
+### 4.3. Retrieval rẻ trước, chỉ thêm embedding khi có bằng chứng
+
+1. Chỉ đọc bank approved, đúng catalog version và quyền/phạm vi hiện tại. Source đã được user xác nhận có thể hard-filter; source đang xung đột chưa được coi là đã xác nhận.
+2. Xếp hạng lexical/BM25 trên câu hỏi, nhãn/synonym trong catalog và tags; chuẩn hóa Việt/Anh, mask giá trị cụ thể ở nơi có cấu trúc chắc chắn. Không thêm lượt LLM để tạo SQL sơ bộ chỉ nhằm retrieval.
+3. Chọn tối đa ba ví dụ, ưu tiên đa dạng template và xử lý khác nhau; nếu không có ví dụ phù hợp thì dùng zero additional examples. Ngưỡng relevancy được chọn trên dev, không mặc định top-1 luôn đúng.
+4. Mục tiêu trung bình **≤600 input tokens** bổ sung; hard cap dự kiến **1.200 tokens** theo tokenizer được kiểm chứng. Hiện `len(text)//4` chỉ là ước lượng; phải ghi cả actual usage, dùng packing bảo thủ và không cắt dở block JSON.
+5. Giữ chỗ cho catalog, câu hỏi và registry trước; thiếu context budget thì bỏ bớt ví dụ, không cắt bằng chứng tham chiếu để giữ few-shot. Thứ tự: static catalog → examples → dynamic user/registry theo context packer đã đo.
+6. Trace IDs/scores/version/token estimate. Cache bank/index theo content hash + catalog version; cache retrieval chỉ theo các đầu vào công khai tương ứng, không cache output hay memory xuyên phiên.
+
+So sánh dev với vài ví dụ cố định cùng số lượng/token budget để biết ích lợi do **retrieval** hay chỉ do thêm ví dụ. Chỉ thử local multilingual embeddings nếu lexical retrieval thiếu recall trên tập relevance do người review; không thêm vector DB/service ở bản đầu. Đây là retrieval-ICL nhẹ, không tuyên bố triển khai đầy đủ thuật toán DAIL-SQL.
+
+Ví dụ chỉ là bằng chứng hướng dẫn; catalog, capability, user context và binder vẫn có thẩm quyền. Không cho retrieved text đổi policy, source, thời gian hay tự tạo metric ngoài scope. Không tự đưa truy vấn user chạy thành công vào bank approved.
+
+## 5. Thành phần B — Consistency selection có điều kiện
+
+### 5.1. Giới hạn và điều kiện gọi thêm
+
+- Giữ `gpt-6-luna` qua gateway hiện tại, chưa mua thêm model. Lấy mẫu cùng model là thử nghiệm đầu tiên; không mặc định model đa dạng hơn thì chắc chắn tốt hơn.
+- Mặc định một interpret. Nếu trigger, thêm **hai mẫu độc lập song song**, tổng tối đa ba candidate cho một quyết định. Không cho các mẫu đọc đáp án của nhau.
+- Trước tiên kiểm tra gateway/model hỗ trợ sampling parameters nào và có tạo đa dạng thực tế hay không. Khóa cấu hình được chấp nhận vào protocol; không mặc định temperature 1.0 của DAIL dùng được cho model này. Nếu không có diversity hữu ích, không rollout voting và không âm thầm đổi model.
+- Trigger dự kiến: candidate không hợp lệ sau normalization; model từ chối nhưng catalog capability cho thấy có khả năng hỗ trợ; hoặc binding/reference có nhiều phương án mà cần xác minh cách đọc. Từng trigger cần có detector generic và test; không dựa vào case ID/câu hỏi benchmark, hoặc confidence do model tự chấm.
+- **Không vote để đoán thông tin user chưa cung cấp.** Thiếu kỳ, mơ hồ nghiệp vụ thật, xung đột UI source hoặc registry bị cắt phải tuân policy hỏi lại. Nhiều mẫu cùng đoán một kỳ không biến kỳ đó thành ý định của user.
+- Mục tiêu trigger rate dev khoảng ≤15%; đây là mục tiêu đo, không bỏ ngẫu nhiên các ca khó để đạt tỷ lệ. Có ngân sách/deadline cứng và policy fallback, cấu hình đóng băng trước test.
+
+### 5.2. Chuẩn hóa và chọn phương án
+
+Tách phần binder/reducer/validation cần dùng thành hàm có thể chạy dry-run trên cùng snapshot. Mỗi candidate được kiểm tra riêng, không query kết quả/ghi DB để “học” đáp án. Value binding có thể cần đọc vocabulary/source metadata từ DB; các lần đọc phải cùng snapshot, không ghi state và không làm mất trạng thái unresolved/ambiguous.
+
+Khóa so sánh gồm outcome và trạng thái làm rõ, source, metric, shape, selection, filters đã bind, time range, top-k/limit; với follow-up thêm target result ID và thao tác keep/set/clear, lineage/snapshot. Query đủ rõ có thể so canonical QuerySpec; query chưa đủ rõ phải so normalized resolution bundle và các ambiguity còn lại.
+
+- Chỉ chuẩn hóa tương đương đã định nghĩa: thứ tự các filter AND độc lập, số/date theo type, semantic ID → raw value theo catalog.
+- Giữ khác biệt về toán tử, kiểu, NULL, thiếu vs clear, mục tiêu tham chiếu, source, kỳ và grain. Không sắp xếp dimensions khi thứ tự có ý nghĩa với output contract.
+- Không vote bằng chuỗi SQL, câu diễn giải hay bảng kết quả trên một fixture. Hai query sai có thể cùng trả rỗng hoặc cùng một con số.
+- Với ba mẫu đã lên lịch, cần ít nhất **hai mẫu hợp lệ đồng ý đầy đủ**; không lấy một mẫu hợp lệ còn lại làm “đa số” sau khi loại hai mẫu lỗi. Không ghép metric từ mẫu A với kỳ từ mẫu B để tạo candidate chưa ai đề xuất.
+- Đồng thuận vẫn phải qua toàn bộ policy/binder/QuerySpec validation. Nếu hòa/bất đồng trọng yếu thì tạo form theo các field có lựa chọn hợp lệ. Không đủ dữ kiện tạo form thì báo giới hạn/retry phù hợp, không bịa lựa chọn.
+- Candidate consensus không phải xác suất đúng đã hiệu chỉnh. Đo cả trường hợp đồng thuận sai.
+
+### 5.3. Runtime, memory và chi phí
+
+Giữ guard chi phí theo từng attempt: provider SDK retry tắt, application retry hiện tối đa hai provider attempts cho lỗi được phép retry, cùng deadline hiện tại. Hai samples bổ sung là hai logical calls, mọi attempt đều phải reserve/settle đúng. Giữ reservation khi usage chưa rõ như hiện tại.
+
+Run admission và LLM admission hiện là hai semaphore riêng. Mỗi provider request chỉ lấy LLM admission một lần; không bọc cả quyết định bằng một LLM slot rồi chờ các sample con lấy lại chính semaphore đó. Dùng giới hạn riêng cho sampling với tổng provider in-flight nằm trong mức hiện có; giữ chỗ công bằng cho người dùng khác. Khi tám người cùng dùng, ưu tiên đường một mẫu; không mở concurrency vô hạn để giữ thời gian của một request.
+
+Trace: trigger reason, số mẫu lên lịch/hoàn thành/lỗi, semantic fingerprints, vote counts, disagreement fields, selected candidate, retrieval IDs, stage timings, actual tokens/cost, timeout/fallback. Trace không chứa API key, hidden gold hay memory của phiên khác. Hủy yêu cầu không cho sample muộn ghi đè turn đã cancel; ngân sách vẫn phải được settlement khi có usage.
+
+## 6. Ước tính thời gian và chi phí
+
+Các con số dưới là **ước tính kế hoạch**, chưa phải kết quả của tính năng mới.
+
+Gateway ledger tại thời điểm nghiên cứu ghi input **0,10 USD/triệu tokens**, output **0,50 USD/triệu tokens**; đây là giá gateway đang cấu hình, không khẳng định là bảng giá OpenAI. Tổng chi ước tính **0,556704 USD**, reserved **0,189662 USD**, cap dùng chung **10 USD**; còn khả dụng khoảng **9,253634 USD**, không reset ledger hay tự giải phóng khoản chưa rõ.
+
+V3 Texa trung bình khoảng 4.346 input + 326 output tokens/câu, tương đương **0,000597 USD/câu** ở giá ghi nhận. Tổng này gồm các stage, không phải chỉ interpret.
+
+Ví dụ dự toán:
+
+- Retrieval bổ sung trung bình 600 input tokens: khoảng **0,000060 USD/câu**.
+- Giả sử mỗi mẫu bổ sung 3.000 input + 300 output: **0,000450 USD/mẫu**. Hai mẫu ở 15% câu: trung bình **0,000135 USD/câu**.
+- Tổng khoảng **0,000792 USD/câu**, tăng khoảng **33%**. Chưa gồm retry, context dài hơn hoặc thay đổi số stage; phải thay bằng actual usage sau pilot. Nếu không đạt gate chi phí thì giảm/bỏ consistency, không che giấu token.
+
+Latency đường trigger gần `T_primary + max(T_sample2, T_sample3) + T_select`, còn phụ thuộc queue; không phải ba mẫu song song ngay từ đầu nên không hứa latency bằng một lần gọi. Theo dõi riêng nhóm trigger, toàn bộ traffic và tải tám phiên. Khi tỷ lệ trigger thấp, p95 vẫn có thể tăng mạnh.
+
+## 7. Thiết kế benchmark để biết thành phần nào có ích
+
+### 7.1. Các cấu hình
+
+| Nhãn kế hoạch | Cấu hình | Mục đích |
+|---|---|---|
+| B0 | Cùng LLM sinh SQL trực tiếp, schema + định nghĩa nghiệp vụ, không thêm bank mới | Baseline hiện có |
+| B0+R | B0 thêm Q→SQL demonstrations từ cùng bank approved | Control công bằng về lợi ích thông tin ví dụ |
+| T00 | Texa sau sửa P0, không retrieval mới, không consistency | Control hệ thống; giữ legacy examples như hiện tại |
+| T10 | T00 + retrieval | Tách đóng góp A |
+| T01 | T00 + consistency | Tách đóng góp B |
+| T11 | T00 + cả hai | Lợi ích kết hợp và tương tác |
+
+Các nhãn này là thiết kế mới, chưa là CLI variants đã implement. Ánh xạ rõ tới config, không đổi ý nghĩa các F/B0/M6/M0/C0 lịch sử. Giai đoạn dev có thêm static-few-shot và always-three-samples diagnostic để đo selection/trigger; không mở rộng matrix cuối khi chưa khóa protocol.
+
+B0/B0+R trên hội thoại cần adapter đánh giá được định nghĩa trước: cùng raw user history và các bảng kết quả trước được cung cấp theo cùng budget; model có thể trả SQL hoặc yêu cầu làm rõ qua schema chung, nhận cùng requested-fields oracle. Không cấp QuerySpec/memory reducer của Texa cho baseline. Đây là mở rộng baseline cho interactive evaluation, phải khóa prompt/contract riêng; không xem là runner B0 hiện tại tự hỗ trợ sẵn. Nếu adapter chưa hoàn chỉnh thì chỉ công bố B0 trên câu đơn, không điền điểm hội thoại giả. B0+R là external baseline với dạng ví dụ Q→SQL khác Texa; hiệu ứng retrieval bên trong Texa được tách bằng **T10 so với T00**, không bằng B0+R so với T10.
+
+Giữ cùng model, source snapshot, catalog definitions, thông tin user, SQL read-only và oracle clarification. B0 không được thấy đáp án test; B0+R thấy SQL của **ví dụ training/bank**, không phải gold test. Giới hạn output theo schema mỗi hệ thống có thể khác; ghi rõ chứ không gọi mọi yếu tố inference là giống hệt.
+
+### 7.2. Dataset và tránh leakage
+
+- Các bộ đã dùng giữ làm regression/dev, không đổi tên thành holdout.
+- Dự kiến bộ mới: **180 câu đơn (60 dev/120 test)**, **18 hội thoại (6/12)**, **18 tình huống clarification (6/12)**. Hội thoại khoảng tám user turns để tính ngân sách; cần ca >6, >10 kết quả và noise. Final counts khóa sau review, trước các lượt test.
+- Hai source hiện tại; chủ yếu Việt/Anh theo scope, báo riêng PT stress nếu giữ. Mỗi nguồn, metric được hỗ trợ và nhóm query phải có coverage, công bố bảng số lượng thay vì chỉ tổng số câu.
+- Chia theo template/paraphrase families trước khi sinh biến thể; bank/dev/test không trùng câu hoặc họ paraphrase. Shared primitive như revenue/day được phép dùng, nhưng không copy gold mẫu rồi thay ngày/tên và gọi là test độc lập. Có holdout composed intents và wording do thành viên chưa xem prompt soạn.
+- Có các ca phân biệt được: purchase/payment, item/order, category chỉ có non-purchase, event zero revenue, empty vs unavailable, NULL/duplicate, boundary dates, source negation/conflict, nested scalar có/không coverage, out-of-scope và prompt injection trong user text. Unsupported có action contract riêng, không trộn vào mẫu số SQL answerable.
+- Gold SQL viết độc lập với compiler. Hai thành viên review scope, metric/grain, bảng, kỳ và oracle; lưu reviewer thật. Chưa có review người thứ hai thì chỉ được gọi là pilot/regression.
+- Oracle lưu đầy đủ ý định ẩn nhưng chỉ trả field hệ thống hỏi, tối đa số vòng đã khóa. Tách `expected ask_fields` với toàn bộ ý định user như protocol4, không lặp lỗi thiếu period.
+- Thiết kế thêm counterexample fixture để SQL sai không vô tình bằng gold trên một DB. Có thể kiểm lại cùng predicted SQL trên các fixture đồng schema; báo robustness riêng. Nếu thời gian/nguồn thay đổi làm câu hỏi đổi nghĩa thì phải instantiate gold/context tương ứng, không dùng lại SQL một cách mù quáng.
+- Memory: mỗi turn có action, target result, QuerySpec/slot ops hoặc tập facts tham chiếu mong đợi. Discussion phải có contract facts/provenance và human-adjudication cho đáp án không tự chấm được; không regex một con số rồi xem là đúng. Chưa có scorer thì báo không chấm được, không công bố efficacy memory.
+
+### 7.3. Metric và protocol
+
+**Chính:** business-result accuracy trên toàn bộ câu answerable; đúng khi bảng sau truy vấn đáp ứng đủ measure, dimension, grain, rows, NULL/duplicate, tolerance và ordering đã khai báo trước. SQL không phải giống gold. Refusal sai, lỗi, timeout vẫn là sai; không chỉ tính trên câu chạy SQL được.
+
+**Phụ:** output-contract compliance; false refusal; unsupported/action correctness; clarification precision/recall và số vòng; conversation all-required-turn success khi mọi turn chấm được; memory reference/slot accuracy dùng để chẩn đoán; tokens/USD, calls/attempts, queue/interpret/SQL-ready/end-to-end p50/p95.
+
+Riêng thành phần mới: retrieval relevance/coverage theo nhãn; trigger rate; có ích khi override phương án đầu bao nhiêu; override làm đúng thành sai bao nhiêu; sai dù đồng thuận; tỷ lệ không đạt đồng thuận/fallback. Không dùng đồng thuận hoặc exact QuerySpec làm metric cuối thay cho đáp án truy vấn.
+
+- Khóa code, bank/index, sampling config, trigger thresholds, seed nếu provider hỗ trợ, catalog, fixture, scorer và hashes **trước test**.
+- Chạy ba repeats, thứ tự variant được xoay; cùng case dùng các cấu hình để so paired. Không tune sau khi xem test. Nếu phát hiện lỗi protocol, giữ raw và đánh dấu invalid trước khi chạy version mới.
+- Báo điểm từng repeat và trung bình; paired confidence interval resample theo independent question/template hoặc dialogue cluster, không coi ba repeats hay tám turns trong một chat là các mẫu độc lập.
+- Báo chênh lệch điểm phần trăm và error reduction khi phù hợp, không hứa “accuracy tăng nhiều lần”. Khoảng tin cậy chứa 0 thì chưa có bằng chứng thắng. 120 câu test có thể chưa đủ phát hiện chênh lệch nhỏ; dùng discordance trên dev để dự toán precision/power trước khi khóa cỡ mẫu, không mở rộng tùy kết quả test.
+
+### 7.4. Ngân sách chạy
+
+Với sáu cấu hình × ba repeats, 120 câu đơn + 12 hội thoại × khoảng tám turns + 12 clarification × khoảng hai turns: khoảng **4.320 user-turn executions**. Dùng giá trung bình v3 khoảng 0,000597 USD/turn là **2,58 USD**; nhân 1,5 để dự phòng cấu hình mới/context là khoảng **3,87 USD**, cộng pilot dự kiến **0,75 USD**, tổng **4,62 USD**. Đây chỉ là sizing, không cam kết chi phí hội thoại dài bằng câu đơn.
+
+Đặt sub-budget dự kiến **6 USD cho phần nghiên cứu thực nghiệm mới**, luôn nhỏ hơn ngân sách khả dụng của ledger gốc. Sau pilot thay dự toán bằng actual per-suite cost, tính cả retry/reservations; chỉ chạy matrix nếu phần còn lại đủ cho một paired block hoàn chỉnh. Thiếu tiền thì dừng có báo coverage, không chọn bỏ các lượt thất bại. Không gọi thêm model trong giai đoạn plan này.
+
+## 8. Thứ tự implement và commit
+
+Mỗi bước lớn commit trên `main`, không tạo branch mới. Chưa thực hiện các bước này trong lượt viết plan.
+
+| Bước | Việc và điểm sửa dự kiến | Điều kiện xong |
+|---|---|---|
+| 0 | Adjudicate miền nhóm/empty/coverage; `catalog/product_events.yaml`, `catalog.py`, `compile.py`; trace refusal trong `answer.py`/eval | Regression độc lập cho compiler; lý do refusal truy được; artifact pre/post riêng |
+| 1 | Contract bank approved + validator, ví dụ đa dạng có review; `catalog/verified_examples.yaml`, module loader mới, liên kết `catalog.py` | Sai ID/version/source/QuerySpec bị reject; CI kiểm độc lập reference SQL; bank không đọc thư mục eval test |
+| 2 | Module retrieval/packing mới, tích hợp `interpret.py`/`prompts.py`; cờ R mặc định tắt | Dev relevance + no-example fallback; token budget; catalog/registry ưu tiên; trace IDs, không thêm LLM call |
+| 3 | Tách normalization/binder/reducer dry-run thành contract không ghi state; module decision mới nếu cần | Candidate query/clarify/refuse/follow-up giữ nghĩa; bộ test equivalence/không-equivalence, source/time/NULL/ops và version guards |
+| 4 | Sampling config và selective consistency; `llm.py`, `interpret.py`, `answer.py`, `runtime_guard.py`, `gateway_budget.py` | Sampling capability được xác minh; tối đa ba candidate; budget/timeout/cancel/no late write; hai samples cùng context, không chia sẻ state mutable |
+| 5 | Cờ đánh giá độc lập R/C, mở rộng `ablation.py`, `eval/run_ablation.py`, `report_ablation.py`, `validate_dataset.py` và provenance | Matrix 2×2 + B0/B0+R; bỏ thành phần thật sự bỏ prompt/calls đó; coverage và invalid protocol được phát hiện |
+| 6 | Pilot/dev, chọn bank/retrieval/trigger bằng dữ liệu dev, khóa protocol | Chứng minh có diversity và lợi ích đủ bù chi phí; nếu voting không ích lợi thì không bật |
+| 7 | Chạy holdout có review, ba repeats + raw reports; kiểm load và E2E | Paired blocks đầy đủ, không thay test/gold để tăng điểm; báo cả regressions/CI và actual cost |
+| 8 | Chọn cấu hình rollout theo gate; cập nhật `PRODUCT_SCOPE.md`, `FINAL_PRESENTATION_SCRIPT.md`, tracker này và issue plan | Script chỉ dùng số đã đo đúng phiên bản; toggle rollback hoạt động; commit/push và `run.sh` + smoke |
+
+File/module mới có thể đổi tên khi implement theo convention hiện có; các điểm tích hợp được xác nhận là `interpret.py:23/145`, `prompts.py`, `answer.py` (interpret rồi memory/clarify), `compile.py:150–196`, `spec.py:44`, `llm.py` và eval runners. Không chuyển LLM sang sinh SQL trực tiếp để dễ dùng ví dụ SQL.
+
+## 9. Kiểm thử và gate quyết định bật
+
+Các ngưỡng sau là **đề xuất acceptance criteria cần khóa trên dev**, không phải kết quả đã đạt:
+
+1. T11 so với T00: mục tiêu tăng ít nhất **5 điểm phần trăm** trên primary answerable holdout; báo paired CI. Nếu CI chưa xác lập lợi ích thì chưa tuyên bố hơn. Vẫn phải báo B0 và B0+R dù baseline thắng.
+2. Retrieval hoặc consistency không đạt lợi ích riêng thì cân nhắc chỉ bật thành phần còn lại; có thể chọn T10 thay T11. Không bắt buộc triển khai cả hai để hợp với ý tưởng ban đầu.
+3. Không có regression đã xác nhận về source/currency/grain/khả năng ghi DB, session isolation, memory lineage hay hỏi lại bắt buộc; mọi lỗi nghiêm trọng là rollout blocker, không được bù bằng điểm trung bình cao.
+4. Chi phí trung bình mục tiêu ≤**1,5× T00**; single-user p95 end-to-end ≤**1,25× T00** trên workload giống nhau. Đo riêng trigger p95 để không che đuôi chậm. Nếu trượt thì ưu tiên retrieval-only hoặc giữ cờ off.
+5. Tải tám phiên thật: không thêm provider attempt lỗi/cross-session reads, đo throughput và queue p95, không chỉ một batch; so với T00 cùng tải và không gọi đó là classroom capacity nếu chưa thử tải đại diện. Retry/timeout vẫn nằm trong mẫu số.
+6. Backend tests phù hợp thay đổi; Playwright mock kiểm retrieval trace, conflict form, pending/cancel, sửa câu, stale bank/catalog và nhiều session. Sau đó `run.sh` và browser dùng model thật: hai source, tám metric hỗ trợ đúng, ca khó/không hỗ trợ, >10 kết quả + noise, follow-up sửa/xóa filter, export/history. Ghi cả lỗi và chi phí.
+
+Nếu không đạt gate, kết quả hợp lệ vẫn được giữ và báo cáo. Thành công của công việc là biết thành phần nào giúp sản phẩm với chi phí chấp nhận được; không phải làm benchmark xanh bằng mọi giá.
