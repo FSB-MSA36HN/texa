@@ -1,0 +1,5 @@
+{
+  "status": "preflight_failed_no_model_calls",
+  "reason": "Empty gold_sql in action-only diagnostics was incorrectly treated as executable answer gold; fixed validation before rerun.",
+  "implementation_commit": "04aaca5"
+}

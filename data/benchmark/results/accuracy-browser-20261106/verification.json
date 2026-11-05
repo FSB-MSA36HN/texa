@@ -1,0 +1,25 @@
+{
+  "backend": {
+    "passed": 323,
+    "skipped": 36
+  },
+  "playwright": {
+    "passed": 15,
+    "duration_seconds": 19.5,
+    "provider": "scripted mock",
+    "isolated_database": true
+  },
+  "browser": "CUA real model gpt-6-luna; see browser-check.json",
+  "services_after_test": {
+    "web_15173": "stopped",
+    "api_18000": "stopped",
+    "postgres_15433": "stopped",
+    "docker": "off throughout testing"
+  },
+  "budget": {
+    "model": "gpt-6-luna",
+    "max_usd": 10,
+    "spent_estimated_usd": 0.8220942999999992,
+    "reserved_usd": 0.18966220000000023
+  }
+}

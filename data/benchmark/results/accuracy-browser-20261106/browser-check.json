@@ -1,0 +1,1972 @@
+{
+  "type": "browser_controller_real_model_check",
+  "model": "gpt-6-luna",
+  "features": {
+    "retrieval": false,
+    "consistency": false
+  },
+  "fixture": "challenge_v1/worlds/base.sql",
+  "fixture_sha256": "dee8420aedaf21991b24034b5abc340e6eafe90973806fabf325f6e66b3b14a9",
+  "method": "Questions submitted through actual CUA browser UI, then complete saved tables checked against independently handwritten SQL. No generated SQL/QuerySpec used to derive gold.",
+  "turns": 23,
+  "answerable_queries": 21,
+  "correct_full_results": 19,
+  "memory_check": {
+    "successful_results_before_reference": 13,
+    "target": 2,
+    "target_id": "a059d1bf-4b3e-470d-853b-d28a8ccafea0",
+    "referenced_correctly": true,
+    "noise_intervened": true
+  },
+  "ui_verified": [
+    "SQL details",
+    "CSV download",
+    "source conflict form and picker sync",
+    "missing period form",
+    "organizer-only model settings without API key",
+    "cancellation visible then retry succeeds",
+    "reload then restore saved conversation",
+    "nested filters and selective removal"
+  ],
+  "limitations": [
+    "scripted synthetic fixture; not a random holdout or classroom load benchmark",
+    "supported view-event and viewers questions falsely refused; preserved as failures",
+    "new features disabled by rollout gate; their real model evaluation is in separate factorial artifacts"
+  ],
+  "records": [
+    {
+      "id": "af870ce0-2ae2-4653-b017-c45dfc7a911e",
+      "question": "Tổng doanh thu Cosmetics Shop trên toàn bộ dữ liệu là bao nhiêu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "revenue": 420.0
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' ",
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "420.00"
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "a059d1bf-4b3e-470d-853b-d28a8ccafea0",
+      "question": "Tổng doanh thu Olist trên toàn bộ dữ liệu là bao nhiêu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "olist_marketplace"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "revenue": 432.0
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "olist_marketplace"
+        ],
+        "model": [
+          "olist_marketplace"
+        ],
+        "memory": [],
+        "effective": [
+          "olist_marketplace"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace' ",
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "432.00"
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c",
+      "question": "Cosmetics Shop có bao nhiêu người mua trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "buyers",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "buyers": 9
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "clear",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT count(DISTINCT user_id) FILTER(WHERE event_name IN ('purchase','order_purchased')) AS buyers FROM analytics.event_activity WHERE source_id='cosmetics_shop' ",
+      "expected_columns": [
+        "buyers"
+      ],
+      "expected_rows": [
+        [
+          9
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "e1c335d8-48fe-4da6-bd73-ffa2ca6526ce",
+      "question": "Cosmetics Shop có bao nhiêu lượt xem sản phẩm trên toàn bộ dữ liệu?",
+      "status": "refused",
+      "spec": null,
+      "rows": null,
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "clear",
+          "recipe": "clear",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "clear",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": "Danh mục không có chỉ số đếm lượt xem sản phẩm cho Cosmetics Shop. Chỉ số viewers đếm người dùng riêng biệt đã xem sản phẩm, không phải số lượt xem.",
+      "source_resolution": null,
+      "reference_sql": "SELECT count(*) AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='view'",
+      "expected_columns": [
+        "events"
+      ],
+      "expected_rows": [
+        [
+          24
+        ]
+      ],
+      "full_result_correct": false
+    },
+    {
+      "id": "20c3de28-abe6-4638-a76d-c4c52748cc14",
+      "question": "Cosmetics Shop có bao nhiêu người dùng duy nhất đã xem sản phẩm trên toàn bộ dữ liệu?",
+      "status": "refused",
+      "spec": null,
+      "rows": null,
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "clear",
+          "recipe": "clear",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": "Danh mục không có metric để đếm số người dùng duy nhất đã xem sản phẩm cho Cosmetics Shop. Metric “viewers” được định nghĩa là số người dùng duy nhất có lượt xem sản phẩm, nhưng cửa hàng này không ghi nhận dữ liệu đó.",
+      "source_resolution": null,
+      "reference_sql": "SELECT count(DISTINCT user_id) AS viewers FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='view'",
+      "expected_columns": [
+        "viewers"
+      ],
+      "expected_rows": [
+        [
+          12
+        ]
+      ],
+      "full_result_correct": false
+    },
+    {
+      "id": "78a4c205-4714-48cd-8686-603089b931d7",
+      "question": "Tổng số phiên truy cập Cosmetics Shop trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "sessions",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "sessions": 30
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT count(DISTINCT session_id) AS sessions FROM analytics.event_activity WHERE source_id='cosmetics_shop' ",
+      "expected_columns": [
+        "sessions"
+      ],
+      "expected_rows": [
+        [
+          30
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "282f7194-2aab-45b3-9c67-a506a4cd0a77",
+      "question": "Tổng số người dùng duy nhất của Cosmetics Shop trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "users",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "users": 21
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "78a4c205-4714-48cd-8686-603089b931d7": 4,
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT count(DISTINCT user_id) AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop' ",
+      "expected_columns": [
+        "users"
+      ],
+      "expected_rows": [
+        [
+          21
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "2d292551-cc48-4440-9087-3c0f4050b26a",
+      "question": "Tổng số sự kiện Cosmetics Shop trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "events",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "events": 60
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "282f7194-2aab-45b3-9c67-a506a4cd0a77": 5,
+          "78a4c205-4714-48cd-8686-603089b931d7": 4,
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT count(*) AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop' ",
+      "expected_columns": [
+        "events"
+      ],
+      "expected_rows": [
+        [
+          60
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "0b86c031-edc7-43e7-a221-3ce70744ffdb",
+      "question": "Tổng số dòng sản phẩm được mua Cosmetics Shop trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "purchases",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "purchases": 24
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "282f7194-2aab-45b3-9c67-a506a4cd0a77": 5,
+          "2d292551-cc48-4440-9087-3c0f4050b26a": 6,
+          "78a4c205-4714-48cd-8686-603089b931d7": 4,
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT count(*) FILTER(WHERE event_name IN ('purchase','order_purchased')) AS purchases FROM analytics.event_activity WHERE source_id='cosmetics_shop' ",
+      "expected_columns": [
+        "purchases"
+      ],
+      "expected_rows": [
+        [
+          24
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "1ffe43a3-d320-4a87-90a4-f35b851e4210",
+      "question": "Tỷ lệ người mua trên người dùng quan sát của Cosmetics Shop trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "buyer_conversion_rate",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "buyer_conversion_rate": 0.42857142857142855
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "0b86c031-edc7-43e7-a221-3ce70744ffdb": 7,
+          "282f7194-2aab-45b3-9c67-a506a4cd0a77": 5,
+          "2d292551-cc48-4440-9087-3c0f4050b26a": 6,
+          "78a4c205-4714-48cd-8686-603089b931d7": 4,
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT count(DISTINCT user_id) FILTER(WHERE event_name='purchase')::numeric / NULLIF(count(DISTINCT user_id),0) AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id='cosmetics_shop' ",
+      "expected_columns": [
+        "buyer_conversion_rate"
+      ],
+      "expected_rows": [
+        [
+          "0.42857142857142857143"
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "353b8e33-37f6-444a-8ff6-bbb4e1160bb8",
+      "question": "Doanh thu Cosmetics Shop theo tháng trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "time_trend",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [],
+        "metrics": [],
+        "selection": [
+          "event_month"
+        ],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "revenue": 185.0,
+          "event_month": "2025-01-01"
+        },
+        {
+          "revenue": 205.0,
+          "event_month": "2025-02-01"
+        },
+        {
+          "revenue": 30.0,
+          "event_month": "2025-03-01"
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "0b86c031-edc7-43e7-a221-3ce70744ffdb": 7,
+          "1ffe43a3-d320-4a87-90a4-f35b851e4210": 8,
+          "282f7194-2aab-45b3-9c67-a506a4cd0a77": 5,
+          "2d292551-cc48-4440-9087-3c0f4050b26a": 6,
+          "78a4c205-4714-48cd-8686-603089b931d7": 4,
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "clear",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT date_trunc('month',event_date)::date AS event_month, coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase' GROUP BY 1",
+      "expected_columns": [
+        "event_month",
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "2025-01-01",
+          "185.00"
+        ],
+        [
+          "2025-02-01",
+          "205.00"
+        ],
+        [
+          "2025-03-01",
+          "30.00"
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "ded8eee4-499d-42e8-8608-38a896b26e76",
+      "question": "Tổng số người mua Olist trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "buyers",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "olist_marketplace"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "buyers": 10
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "0b86c031-edc7-43e7-a221-3ce70744ffdb": 7,
+          "1ffe43a3-d320-4a87-90a4-f35b851e4210": 8,
+          "282f7194-2aab-45b3-9c67-a506a4cd0a77": 5,
+          "2d292551-cc48-4440-9087-3c0f4050b26a": 6,
+          "353b8e33-37f6-444a-8ff6-bbb4e1160bb8": 9,
+          "78a4c205-4714-48cd-8686-603089b931d7": 4,
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "olist_marketplace"
+        ],
+        "model": [
+          "olist_marketplace"
+        ],
+        "memory": [],
+        "effective": [
+          "olist_marketplace"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT count(DISTINCT user_id) FILTER(WHERE event_name IN ('purchase','order_purchased')) AS buyers FROM analytics.event_activity WHERE source_id='olist_marketplace' ",
+      "expected_columns": [
+        "buyers"
+      ],
+      "expected_rows": [
+        [
+          10
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "4928e64e-18be-4982-88bf-932031e8067e",
+      "question": "Tổng số dòng sản phẩm được mua Olist trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "purchases",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "olist_marketplace"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "purchases": 30
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "0b86c031-edc7-43e7-a221-3ce70744ffdb": 7,
+          "1ffe43a3-d320-4a87-90a4-f35b851e4210": 8,
+          "282f7194-2aab-45b3-9c67-a506a4cd0a77": 5,
+          "2d292551-cc48-4440-9087-3c0f4050b26a": 6,
+          "353b8e33-37f6-444a-8ff6-bbb4e1160bb8": 9,
+          "78a4c205-4714-48cd-8686-603089b931d7": 4,
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "ded8eee4-499d-42e8-8608-38a896b26e76": 10,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "olist_marketplace"
+        ],
+        "model": [
+          "olist_marketplace"
+        ],
+        "memory": [],
+        "effective": [
+          "olist_marketplace"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT count(*) FILTER(WHERE event_name IN ('purchase','order_purchased')) AS purchases FROM analytics.event_activity WHERE source_id='olist_marketplace' ",
+      "expected_columns": [
+        "purchases"
+      ],
+      "expected_rows": [
+        [
+          30
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "567c1970-7839-4b82-b169-04f3adba491a",
+      "question": "Doanh thu Cosmetics Shop theo thiết bị trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "breakdown",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [],
+        "metrics": [],
+        "selection": [
+          "device_type"
+        ],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "revenue": 148.0,
+          "device_type": "tablet"
+        },
+        {
+          "revenue": 142.0,
+          "device_type": "desktop"
+        },
+        {
+          "revenue": 99.0,
+          "device_type": "mobile"
+        },
+        {
+          "revenue": 31.0,
+          "device_type": null
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "0b86c031-edc7-43e7-a221-3ce70744ffdb": 7,
+          "1ffe43a3-d320-4a87-90a4-f35b851e4210": 8,
+          "282f7194-2aab-45b3-9c67-a506a4cd0a77": 5,
+          "2d292551-cc48-4440-9087-3c0f4050b26a": 6,
+          "353b8e33-37f6-444a-8ff6-bbb4e1160bb8": 9,
+          "4928e64e-18be-4982-88bf-932031e8067e": 11,
+          "78a4c205-4714-48cd-8686-603089b931d7": 4,
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "ded8eee4-499d-42e8-8608-38a896b26e76": 10,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT ep->'device'->>'type' AS device_type, coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase' GROUP BY 1",
+      "expected_columns": [
+        "device_type",
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          null,
+          "31.00"
+        ],
+        [
+          "mobile",
+          "99.00"
+        ],
+        [
+          "desktop",
+          "142.00"
+        ],
+        [
+          "tablet",
+          "148.00"
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "829a9e4e-9613-4ab9-bd05-50b6beb4a85c",
+      "question": "Người mua Cosmetics Shop theo kênh chiến dịch trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "breakdown",
+        "top_k": null,
+        "recipe": "buyers",
+        "filters": [],
+        "metrics": [],
+        "selection": [
+          "campaign_channel"
+        ],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "buyers": 8,
+          "campaign_channel": "paid"
+        },
+        {
+          "buyers": 7,
+          "campaign_channel": "email"
+        },
+        {
+          "buyers": 1,
+          "campaign_channel": null
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "0b86c031-edc7-43e7-a221-3ce70744ffdb": 7,
+          "1ffe43a3-d320-4a87-90a4-f35b851e4210": 8,
+          "282f7194-2aab-45b3-9c67-a506a4cd0a77": 5,
+          "2d292551-cc48-4440-9087-3c0f4050b26a": 6,
+          "353b8e33-37f6-444a-8ff6-bbb4e1160bb8": 9,
+          "4928e64e-18be-4982-88bf-932031e8067e": 11,
+          "567c1970-7839-4b82-b169-04f3adba491a": 12,
+          "78a4c205-4714-48cd-8686-603089b931d7": 4,
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "ded8eee4-499d-42e8-8608-38a896b26e76": 10,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT ep->'campaign'->>'channel' AS campaign_channel, count(DISTINCT user_id) FILTER(WHERE event_name IN ('purchase','order_purchased')) AS buyers FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase' GROUP BY 1",
+      "expected_columns": [
+        "campaign_channel",
+        "buyers"
+      ],
+      "expected_rows": [
+        [
+          "email",
+          7
+        ],
+        [
+          "paid",
+          8
+        ],
+        [
+          null,
+          1
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "c9a6da10-d694-44d6-867b-b5ad62824612",
+      "question": "Cảm ơn nhé, hôm nay trời đẹp quá.",
+      "status": "conversation",
+      "spec": null,
+      "rows": null,
+      "context": {
+        "language": "vi",
+        "relation": "social",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "0b86c031-edc7-43e7-a221-3ce70744ffdb": 7,
+          "1ffe43a3-d320-4a87-90a4-f35b851e4210": 8,
+          "282f7194-2aab-45b3-9c67-a506a4cd0a77": 5,
+          "2d292551-cc48-4440-9087-3c0f4050b26a": 6,
+          "353b8e33-37f6-444a-8ff6-bbb4e1160bb8": 9,
+          "4928e64e-18be-4982-88bf-932031e8067e": 11,
+          "567c1970-7839-4b82-b169-04f3adba491a": 12,
+          "78a4c205-4714-48cd-8686-603089b931d7": 4,
+          "829a9e4e-9613-4ab9-bd05-50b6beb4a85c": 13,
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "ded8eee4-499d-42e8-8608-38a896b26e76": 10,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": "Không có gì! Đúng là trời đẹp thật 😊",
+      "source_resolution": null
+    },
+    {
+      "id": "024b91bd-ab5a-423c-b645-4660e1ad035f",
+      "question": "Quay lại kết quả thứ hai và chia theo tháng giúp tôi.",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "time_trend",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [],
+        "metrics": [],
+        "selection": [
+          "event_month"
+        ],
+        "source_ids": [
+          "olist_marketplace"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "revenue": 216.0,
+          "event_month": "2018-01-01"
+        },
+        {
+          "revenue": 216.0,
+          "event_month": "2018-02-01"
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "followup",
+        "questions": [
+          "Tổng doanh thu Olist trên toàn bộ dữ liệu là bao nhiêu?"
+        ],
+        "references": [
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0"
+        ],
+        "catalog_version": 5,
+        "inherited_slots": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "revenue",
+          "filters": [],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "olist_marketplace"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 5
+        },
+        "result_ordinals": {
+          "0b86c031-edc7-43e7-a221-3ce70744ffdb": 7,
+          "1ffe43a3-d320-4a87-90a4-f35b851e4210": 8,
+          "282f7194-2aab-45b3-9c67-a506a4cd0a77": 5,
+          "2d292551-cc48-4440-9087-3c0f4050b26a": 6,
+          "353b8e33-37f6-444a-8ff6-bbb4e1160bb8": 9,
+          "4928e64e-18be-4982-88bf-932031e8067e": 11,
+          "567c1970-7839-4b82-b169-04f3adba491a": 12,
+          "78a4c205-4714-48cd-8686-603089b931d7": 4,
+          "829a9e4e-9613-4ab9-bd05-50b6beb4a85c": 13,
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "ded8eee4-499d-42e8-8608-38a896b26e76": 10,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "keep",
+          "recipe": "keep",
+          "filters": "keep",
+          "metrics": "keep",
+          "selection": "set",
+          "source_ids": "keep",
+          "time_range": "keep"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [],
+        "model": [
+          "olist_marketplace"
+        ],
+        "memory": [
+          "olist_marketplace"
+        ],
+        "effective": [
+          "olist_marketplace"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT date_trunc('month',event_date)::date AS event_month, coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace' AND event_name='order_purchased' GROUP BY 1",
+      "expected_columns": [
+        "event_month",
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "2018-02-01",
+          "216.00"
+        ],
+        [
+          "2018-01-01",
+          "216.00"
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "98fc764e-106a-4b02-8b24-3436abe07cb7",
+      "question": "Tổng số người mua Olist trên toàn bộ dữ liệu là bao nhiêu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "buyers",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "olist_marketplace"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "buyers": 10
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "024b91bd-ab5a-423c-b645-4660e1ad035f": 14,
+          "0b86c031-edc7-43e7-a221-3ce70744ffdb": 7,
+          "1ffe43a3-d320-4a87-90a4-f35b851e4210": 8,
+          "282f7194-2aab-45b3-9c67-a506a4cd0a77": 5,
+          "2d292551-cc48-4440-9087-3c0f4050b26a": 6,
+          "353b8e33-37f6-444a-8ff6-bbb4e1160bb8": 9,
+          "4928e64e-18be-4982-88bf-932031e8067e": 11,
+          "567c1970-7839-4b82-b169-04f3adba491a": 12,
+          "78a4c205-4714-48cd-8686-603089b931d7": 4,
+          "829a9e4e-9613-4ab9-bd05-50b6beb4a85c": 13,
+          "a059d1bf-4b3e-470d-853b-d28a8ccafea0": 2,
+          "af870ce0-2ae2-4653-b017-c45dfc7a911e": 1,
+          "ded8eee4-499d-42e8-8608-38a896b26e76": 10,
+          "e3ef83c0-6b2d-409b-b3a9-3e597afebe9c": 3
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [
+          "cosmetics_shop"
+        ],
+        "text": [
+          "olist_marketplace"
+        ],
+        "model": [
+          "olist_marketplace"
+        ],
+        "memory": [],
+        "effective": [
+          "olist_marketplace"
+        ],
+        "resolved_by_user": true
+      },
+      "reference_sql": "SELECT count(DISTINCT user_id) FILTER(WHERE event_name IN ('purchase','order_purchased')) AS buyers FROM analytics.event_activity WHERE source_id='olist_marketplace' ",
+      "expected_columns": [
+        "buyers"
+      ],
+      "expected_rows": [
+        [
+          10
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "ecb3cebc-6269-43e3-89b1-1df1c8902651",
+      "question": "Doanh thu",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "olist_marketplace"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "revenue": 432.0
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "clear",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "clear",
+          "source_ids": "clear",
+          "time_range": "clear"
+        },
+        "structured_memory": true,
+        "clarification_needed": false
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [
+          "olist_marketplace"
+        ],
+        "text": [],
+        "model": [],
+        "memory": [],
+        "effective": [
+          "olist_marketplace"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace' ",
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "432.00"
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "13a773c4-af62-45d1-9232-17029688d7b2",
+      "question": "Olist có bao nhiêu phiên truy cập trên toàn bộ dữ liệu?",
+      "status": "refused",
+      "spec": null,
+      "rows": null,
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "ecb3cebc-6269-43e3-89b1-1df1c8902651": 1
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": "Olist không ghi nhận phiên truy cập; dữ liệu không có session_id để đếm số phiên.",
+      "source_resolution": null
+    },
+    {
+      "id": "48962a8b-2158-46b7-a18a-29c220429608",
+      "question": "Doanh thu Cosmetics Shop trên toàn bộ dữ liệu, chỉ thiết bị mobile và kênh paid?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [
+          {
+            "field": "device_type",
+            "values": [
+              "mobile"
+            ],
+            "operator": "="
+          },
+          {
+            "field": "campaign_channel",
+            "values": [
+              "paid"
+            ],
+            "operator": "="
+          }
+        ],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "revenue": 62.0
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "clear",
+          "recipe": "set",
+          "filters": "set",
+          "metrics": "clear",
+          "selection": "clear",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [
+          "cosmetics_shop"
+        ],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND ep->'device'->>'type'='mobile' AND ep->'campaign'->>'channel'='paid'",
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "62.00"
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "ce6785de-38b4-4e33-bff2-71924d391cca",
+      "question": "Bỏ điều kiện thiết bị, giữ nguyên các điều kiện còn lại.",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [
+          {
+            "field": "campaign_channel",
+            "values": [
+              "paid"
+            ],
+            "operator": "="
+          }
+        ],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "revenue": 204.0
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "followup",
+        "questions": [
+          "Doanh thu Cosmetics Shop trên toàn bộ dữ liệu, chỉ thiết bị mobile và kênh paid?"
+        ],
+        "references": [
+          "48962a8b-2158-46b7-a18a-29c220429608"
+        ],
+        "catalog_version": 5,
+        "inherited_slots": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "revenue",
+          "filters": [
+            {
+              "field": "device_type",
+              "values": [
+                "mobile"
+              ],
+              "operator": "="
+            },
+            {
+              "field": "campaign_channel",
+              "values": [
+                "paid"
+              ],
+              "operator": "="
+            }
+          ],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 5
+        },
+        "result_ordinals": {
+          "48962a8b-2158-46b7-a18a-29c220429608": 1
+        },
+        "slot_operations": {
+          "shape": "keep",
+          "top_k": "keep",
+          "recipe": "keep",
+          "filters": "set",
+          "metrics": "keep",
+          "selection": "keep",
+          "source_ids": "keep",
+          "time_range": "keep"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [
+          "cosmetics_shop"
+        ],
+        "text": [],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [
+          "cosmetics_shop"
+        ],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND ep->'campaign'->>'channel'='paid'",
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "204.00"
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "id": "946ed2b0-acd1-4f96-ae66-31885a2851a4",
+      "question": "Số người mua Cosmetics Shop theo tháng trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "spec": {
+        "limit": 1000,
+        "shape": "time_trend",
+        "top_k": null,
+        "recipe": "buyers",
+        "filters": [],
+        "metrics": [],
+        "selection": [
+          "event_month"
+        ],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 5
+      },
+      "rows": [
+        {
+          "buyers": 9,
+          "event_month": "2025-01-01"
+        },
+        {
+          "buyers": 9,
+          "event_month": "2025-02-01"
+        },
+        {
+          "buyers": 4,
+          "event_month": "2025-03-01"
+        }
+      ],
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 5,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "48962a8b-2158-46b7-a18a-29c220429608": 1,
+          "ce6785de-38b4-4e33-bff2-71924d391cca": 2
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "set",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "message": null,
+      "source_resolution": {
+        "ui": [
+          "cosmetics_shop"
+        ],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "reference_sql": "SELECT date_trunc('month',event_date)::date AS event_month, count(DISTINCT user_id) FILTER(WHERE event_name IN ('purchase','order_purchased')) AS buyers FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase' GROUP BY 1",
+      "expected_columns": [
+        "event_month",
+        "buyers"
+      ],
+      "expected_rows": [
+        [
+          "2025-01-01",
+          9
+        ],
+        [
+          "2025-02-01",
+          9
+        ],
+        [
+          "2025-03-01",
+          4
+        ]
+      ],
+      "full_result_correct": true
+    }
+  ]
+}

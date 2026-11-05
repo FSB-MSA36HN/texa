@@ -1,6 +1,6 @@
 # Texa — Product scope
 
-Cập nhật 05/11/2026. Kịch bản trình bày hiện hành: [FINAL_PRESENTATION_SCRIPT](FINAL_PRESENTATION_SCRIPT.md).
+Cập nhật 06/11/2026. Kịch bản trình bày hiện hành: [FINAL_PRESENTATION_SCRIPT](FINAL_PRESENTATION_SCRIPT.md).
 
 ## Sản phẩm và người dùng
 
@@ -44,20 +44,22 @@ Memory giữ tham chiếu kết quả theo ID và các slot QuerySpec; slot ch�
 
 ## Benchmark và mức bằng chứng
 
-Baseline B0 là cùng model sinh SQL trực tiếp từ câu hỏi/schema/định nghĩa nghiệp vụ. Texa dùng cùng model và thêm semantic resolver, clarification, memory, catalog validation và compiler. Metric chính protocol v2 là business-result correctness theo output contract đã khai báo; metric phụ là output-contract compliance. Không so chuỗi SQL và không thay điểm lịch sử bằng protocol mới.
+Protocol hiện tại dùng một bộ candidate dev gồm **60 câu đơn (30 dev/30 test), 24 bản ghi hỏi lại, 9 hội thoại và 12 ca chẩn đoán**; có ba fixture worlds (120 dòng base, gồm phần mở rộng synthetic nested cho Olist). Lượt đo hiện tại dùng 30 câu đơn dev, 12 ca hỏi lại dev và bốn hội thoại dev (tám lượt chấm). Đây là **một repeat, bộ đã thấy, chưa có holdout được người thẩm định độc lập và khóa lại**. Score chính là strict business-result correctness theo contract nghiệp vụ; C19 có annotation erratum tường minh, hash-pinned, chỉ sửa điểm dựa trên `result_correct` raw. Kiểm tra robustness bổ sung là posthoc alias-insensitive so sánh full result values; đây là metric riêng, không thay score chính.
 
-Lượt mới dùng `data/benchmark/remediation_v3_regression/`: **24 câu đơn** (8 dev/16 test nhìn thấy), **4 hội thoại**, **4 tình huống clarification**, trên **17 dòng tổng hợp cho hai nguồn**. Mỗi cấu hình lặp ba lần. Protocol 3 sửa phần oracle/tiêu chí thứ tự dòng của bộ candidate đã kiểm tra; câu hỏi, gold SQL và bảng đáp án giữ nguyên. Oracle chỉ trả các field hệ thống thực sự hỏi, theo ý định khai báo trước; không đưa số gold vào prompt. Vì đã nhìn thấy bộ này và chưa có reviewer thứ hai, đây là **regression diagnostic**, không phải holdout hay accuracy production.
+Các cấu hình: **B0** là cùng model sinh SQL trực tiếp; **B0R** thêm retrieval ví dụ SQL đã xác minh; **B1** là baseline SQL với history văn bản thuần, không dùng đường QuerySpec/compiler của Texa; **T00/T10/T01/T11** lần lượt tắt cả hai/tăng retrieval/tăng self-consistency/bật cả hai. Bank có 45 ví dụ (42 được agent duyệt, trong đó 7 có SQL được thực thi kiểm chứng độc lập); cùng tập 7 ví dụ này làm nền so sánh retrieval. Self-consistency tối đa 3 mẫu, có giới hạn và không đoán khi thiếu thông tin. Retrieval và consistency là toggle thử nghiệm; không có bằng chứng cải thiện đã được chứng minh, và không bật làm mặc định.
 
-**Kết quả câu đơn v3:** Texa 35/48 = 72,9%; B0 41/48 = 85,4% (16 câu test × 3 lần). Baseline cao hơn 12,5 điểm phần trăm trong lượt regression này; chưa chứng minh Texa tốt hơn. Clarification được chạy lại riêng bằng protocol 4 vì v3 thiếu oracle kỳ báo cáo: F 6/6 (100%), C0 1/6 (16,7%) trên hai tình huống × ba lần; chỉ là regression nhỏ đã nhìn thấy, không suy rộng. Memory có một task trả lời bằng lời từ bảng trước, chưa có contract chấm bằng SQL-result; báo cáo đánh dấu so sánh đó không hợp lệ và công bố coverage, không tự suy ra đúng từ một con số trong câu trả lời. Lượt candidate trước bị thiếu oracle kỳ và gián đoạn timeout được giữ nguyên trong `initial-protocol-attempt/`.
+**Single dev đã hiệu chỉnh** (`accuracy-dev-20261106-v2/single-summary-corrected.json`, 30 cases mỗi variant, một lần): B0 **29/30 (96,7%)**, B0R **29/30**, B1 **25/30 (83,3%)**, T00 **27/30 (90,0%)**, T10 **26/30 (86,7%)**, T01 **28/30 (93,3%)**, T11 **27/30 (90,0%)**. Đây là mô tả bộ dev, không chứng minh feature hay Texa cải thiện. Các world robustness v2 cho cùng số ở cả ba worlds; strict/full-value counts lần lượt: B0 29/29, B0R 29/29, B1 25/25 (4 thiếu SQL), T00 27/29 (1 thiếu), T10 26/28 (1 thiếu), T01 28/29 (1 thiếu), T11 27/28 (1 thiếu). Cột sau là full-result values, bỏ qua khác biệt alias output, chỉ là kiểm tra bổ sung sau chấm.
 
-Các formal scores protocol cũ (63 câu × 3 lần: Texa 143/189 = 75,7%, B0 130/189 = 68,8%; CI95% chênh lệch −14,5…+26,1 điểm %) vẫn là bằng chứng lịch sử của code/scorer cũ. Không so trực tiếp với lượt regression mới. Formal cũ chưa chứng minh Texa hơn baseline.
+Hỏi lại dev: B1 **9/12**, T00 **10/12**, T10 **12/12**, T01 **11/12**, T11 **10/12**. Hội thoại chạy lại sau sửa adapter: B1 **7/8**, T00/T10/T01 **8/8**, T11 **7/8**, trên bốn hội thoại ngắn và một repeat. Diagnostic có 10 ca chấm action: B1 **2/10**, T00/T01/T11 **7/10**, T10 **6/10**; hai ca còn lại cần rubric review riêng. Nhiều điểm trượt là hỏi lại thay vì từ chối ngay, không đồng nghĩa chạy SQL nguy hiểm. T10 có một lượt trả lời AOV bằng metric khác: regression thật, chặn rollout. Không gộp các nhóm thành một accuracy chung.
+
+Artifacts hiện hành: `accuracy-dev-20261106-v2/`, `accuracy-conversation-20261106-v3/`, `accuracy-diagnostic-20261106-v4/` trong `data/benchmark/results/`. Các lần chạy lỗi/protocol cũ được giữ và có ghi chú; lịch sử xa hơn tại `remediation-20261105/`.
 
 ## Kiểm thử runtime
 
-- Backend: **261 passed, 12 skipped**; Playwright **15/15**. Playwright dùng provider mô phỏng, gồm tám phiên browser và kiểm tra isolation; không dùng nó làm accuracy của LLM.
+- Backend: **323 passed, 36 skipped**; Playwright **15/15** với provider mô phỏng. Đây là test chức năng/isolation, không phải accuracy của LLM.
 - Model thật: tám request đồng thời đều đúng số và tiền tệ; tám lượt đọc chéo phiên đều trả 404. End-to-end p50 **21,2 giây**, p95 **36,5 giây**; queue p50/p95 **6,3/16,3 giây**. Đây là sanity test một lượt, chưa phải sức chứa lớp học.
-- Một hội thoại model thật có **12/12** kết quả đúng; sau social noise, “kết quả thứ hai” quay lại đúng Olist 01/2018. Cả **31 dòng theo ngày** khớp SQL độc lập. Browser cũng đã kiểm nguồn xung đột, chọn lại nguồn, ordinal bằng chữ và cả Cosmetics/Olist.
-- Bằng chứng: `data/benchmark/results/remediation-20261105/`. Không suy rộng các ví dụ đúng thành cam kết mọi câu đều đúng.
+- Browser thật lượt mới: 23 lượt hỏi, 21 câu có đáp án bảng; **19/21** khớp SQL viết độc lập, hai câu về view/viewers bị từ chối sai. Đã kiểm SQL/CSV, hỏi lại, xung đột nguồn, nested filters/xóa filter, cancel/retry, cài đặt demo và reload lịch sử. Sau 13 kết quả thành công + noise, tham chiếu kết quả thứ hai chọn đúng Olist và chia tháng đúng. Dùng synthetic fixture cô lập, cờ mới tắt; không phải holdout hoặc kiểm tải lớp học. Evidence: `accuracy-browser-20261106/browser-check.json`.
+- Bằng chứng mới: `data/benchmark/results/accuracy-dev-20261106-v2/`; lịch sử: `data/benchmark/results/remediation-20261105/`. Không suy rộng ví dụ đúng thành cam kết mọi câu đều đúng.
 - Một API worker; RUNS/SSE và semaphore là process-local. Mặc định tối đa bốn lượt xử lý, 16 lượt chờ, timeout hàng đợi 30 giây. Startup đánh dấu lượt dở là INTERRUPTED. `first_result_ms` đo SQL-ready phía server; UI hiện vẫn chờ phần nhận xét để hiển thị trọn câu trả lời.
 
 ## Còn phải xác minh trước khi mở demo rộng

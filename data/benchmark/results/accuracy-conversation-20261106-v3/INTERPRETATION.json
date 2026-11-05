@@ -1,0 +1,13 @@
+{
+  "status": "complete_exploratory_repaired_dev",
+  "implementation_commit": "04aaca5",
+  "coverage": "four dev dialogues, eight scored answers each variant; one repeat",
+  "scores": {
+    "B1": "7/8",
+    "T00": "8/8",
+    "T10": "8/8",
+    "T01": "8/8",
+    "T11": "7/8"
+  },
+  "limitation": "Short dev dialogues only; not evidence for long-distance memory or unseen dialogue generalization. Previous invalid comparison remains in accuracy-dev-20261106-v2."
+}

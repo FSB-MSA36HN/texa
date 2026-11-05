@@ -253,7 +253,7 @@ Với B0/B0+R chỉ chạy 120 câu đơn; B1 và bốn cấu hình Texa chạy 
 
 ## 8. Thứ tự implement và commit
 
-Mỗi bước lớn commit trên `main`, không tạo branch mới. Chưa thực hiện các bước này trong lượt viết plan.
+Mỗi bước lớn commit trên `main`, không tạo branch mới. Trạng thái triển khai thực tế ở mục 10; các gate chưa đạt vẫn giữ mở.
 
 | Bước | Việc và điểm sửa dự kiến | Điều kiện xong |
 |---|---|---|
@@ -283,11 +283,23 @@ Các ngưỡng sau là **đề xuất acceptance criteria cần khóa trên dev*
 
 Nếu không đạt gate, kết quả hợp lệ vẫn được giữ và báo cáo. Thành công của công việc là biết thành phần nào giúp sản phẩm với chi phí chấp nhận được; không phải làm benchmark xanh bằng mọi giá.
 
-## 10. Trạng thái phần benchmark đang triển khai
+## 10. Trạng thái triển khai ngày 06/11/2026
 
-- Đã cập nhật thiết kế challenge, bảy cấu hình so sánh và ma trận kiểm chứng đóng góp ở trên.
-- Đã có `challenge_v1/design.yaml` và **24 scenario blueprints**: 16 câu đơn, ba clarification, ba hội thoại và hai ca unavailable. Đây là mẫu để review cách đặt bài, không phải toàn bộ 228 scenario dự kiến hay một holdout đã khóa.
-- Đã có `backend/eval/validate_challenge_design.py`: kiểm contract phạm vi, tỷ trọng/quota, source/language, catalog IDs, family/pair, memory distance và policy đánh giá khai báo. Không thể dùng việc pass validator làm bằng chứng gold đúng hoặc human review đã diễn ra.
-- Kiểm tra provider-free: **10 test đạt**, CLI đọc được 24 bản nháp; `--require-ready` phải từ chối vì chưa có bộ executable/gold/review. Không gọi model hoặc chạy benchmark trả phí trong bước này.
-- Tiếp theo: viết fixture/counterexample và gold độc lập, review blueprint → executable cases, hoàn tất coverage/split và adapter B1; sau đó mới freeze và đo. P0 compiler được sửa theo semantic contract chung đã thống nhất; không chạy/tune prompt theo test để chọn câu có lợi cho Texa.
-- Theo yêu cầu tiết kiệm tài nguyên: đã dừng Web/API, Airflow và cả PostgreSQL demo/benchmark. Các bước soạn dữ liệu/validator không cần bật Texa; chỉ bật dịch vụ khi thực sự kiểm thử.
+- Đã sửa miền nhóm trong catalog/compiler bằng `metric_support`; ratio giữ support của cả tử và mẫu. Có kiểm thử PostgreSQL độc lập cho payment-only groups, zero và NULL.
+- Đã tích hợp retrieval có version/fingerprint, source gating, whole-example packing và trace; bank 45 bản ghi, 42 được agent review, ba draft bị loại. Chỉ bảy ví dụ SQL đã được thực thi kiểm chứng độc lập; nghiên cứu B0R/T10/T11 dùng cùng tập bảy ví dụ này. Không gọi đó là human review.
+- Đã tích hợp selective self-consistency: primary + hai samples tối đa, cùng model/prompt/provider defaults, chuẩn hóa qua reducer/binder/validator không ghi trạng thái. Bounded executor, admission, cancellation, timeout và ledger áp dụng cho mọi call. Clarification hợp lệ không bị hai phương án đoán đủ slot bỏ phiếu lấn át. Không có majority thì từ chối bảo thủ.
+- Hai cờ `TEXA_EXAMPLE_RETRIEVAL` và `TEXA_CONSISTENCY` **mặc định tắt**. Không suy diễn rằng các sample cùng model chắc chắn đa dạng hay voting chắc chắn tốt hơn.
+- Candidate hiện có 60 câu đơn (30 dev/30 test), 24 clarification records (12 cặp), chín hội thoại và 12 diagnostic cases. Ba worlds có 120/121/118 dòng; 180 bảng đáp án câu đơn được SQL độc lập tính trên ba worlds. Olist không có viewer/session; nested Olist là synthetic challenge extension. Bộ này chưa đạt cỡ mẫu mục 7, chưa được người thẩm định và chưa phải holdout sealed.
+- Dev matrix dùng `gpt-6-luna`, một repeat tại `81b3d3c`: câu đơn B0/B0R 29/30, B1 25/30, T00 27/30, T10 26/30, T01 28/30, T11 27/30 sau sửa lỗi annotation c19. Raw giữ nguyên; `single-summary-corrected.json` ghi hash và mọi thay đổi điểm. Câu hỏi/gold SQL/đáp án không đổi; prose c19 được chuyển sang `business_note` ở candidate hiện hành.
+- Cross-world replay không gọi model: mọi cấu hình giữ cùng số đúng trên cả ba worlds. Replay áp dụng đúng public-output projection của Texa, không chấm auxiliary sample columns như dữ liệu người dùng. Kiểm tra phụ bỏ qua alias: B0/T00/T01 cùng 29/30; T10/T11 28/30. Đây là phân tích phụ sau quan sát, không thay primary protocol hay chứng minh superiority.
+- Clarification dev: B1 9/12, T00 10/12, T10 12/12, T01 11/12, T11 10/12. Một lượt, nhỏ và đã nhìn thấy; không suy rộng. Raw memory comparison đầu bị lỗi JSON Decimal/date và mẫu số khi baseline runner thất bại; đánh dấu không hợp lệ, sửa adapter và chạy lại đủ năm cấu hình riêng.
+- Evidence: `data/benchmark/results/accuracy-dev-20261106-v2/INTERPRETATION.json`, `single-summary-corrected.json`, `world-robustness-*-v2.json`; có snapshot bộ dữ liệu gốc để tái lập erratum. Pilot sai protocol và world reports trước sửa projection vẫn được giữ, có chú thích không dùng làm kết luận.
+- Chưa đạt gate tăng accuracy: không bật tính năng mới mặc định, không tuyên bố Texa hơn LLM trực tiếp. Hội thoại repaired: B1 7/8, T00/T10/T01 8/8, T11 7/8. Diagnostic action: B1 2/10, T00/T01/T11 7/10, T10 6/10; hai rubric cần review riêng. Browser model thật: 19/21 bảng đúng, hai false refusals; memory ordinal đúng sau 13 kết quả + noise. Backend 323 passed/36 skipped; Playwright 15/15. Không gộp các nhóm hoặc biến scripted checks thành holdout.
+
+Việc còn bắt buộc trước nghiên cứu xác nhận: review nghiệp vụ độc lập (đặc biệt câu dễ nhầm source với category), bổ sung case thực tế theo strata đã chốt, review gold và seal test, ba repeats có xoay thứ tự, paired CI và tải đại diện. Không làm khó bộ câu hỏi chỉ để baseline giảm điểm. Điểm baseline cao trong scope hẹp không tự chứng minh benchmark sai.
+
+### Gate sau đo
+
+Không rollout retrieval/consistency: T11 không tăng điểm so với T00 (paired delta 0, CI95% khoảng −9,7…+10,0 điểm % trên dev), p95 câu đơn 22,4 giây so với 15,2 giây (1,48×, vượt gate 1,25×). Chi phí 30 câu đơn T11 khoảng 0,02064 USD, T00 0,01922 USD (1,07×). Retrieval-only có một diagnostic AOV bị đổi thành metric khác. Các số này là dev một lượt; không thay thế gate holdout.
+
+Tái lập correction trên artifact gốc: dùng `report_accuracy_study.py --compare --annotation-erratum c19-prose-contract-v1 --dataset-dir data/benchmark/results/accuracy-dev-20261106-v2/frozen_dataset` với các `single-*.jsonl`. Replay worlds dùng cùng snapshot, `check_world_robustness.py`, reader không superuser và database cô lập 15433; cần explicit fixture flag, có restore trong finally. Không gọi thêm model khi replay. Hai feature flags cũng được ghi trong `.env.example`.
