@@ -1,0 +1,23 @@
+{
+  "method": "Browser click on restored history result; inspect actual newest Chrome download",
+  "filename": "texa-result (1).csv",
+  "rows": [
+    [
+      "Product category",
+      "Revenue"
+    ],
+    [
+      "",
+      "1037866.82"
+    ],
+    [
+      "appliances",
+      "22964.12"
+    ],
+    [
+      "furniture",
+      "7300.22"
+    ]
+  ],
+  "status": "pass"
+}

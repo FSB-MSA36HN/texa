@@ -1,0 +1,163 @@
+[
+  {
+    "id": "source_selector_olist",
+    "status": "pass",
+    "note": "Selected Olist; question omitted source; correct950030.36 BRL",
+    "observed_at": "2026-11-05T09:21:58.482Z",
+    "state": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 0 AXWebArea Texa, URL: localhost:15173/"
+  },
+  {
+    "id": "source_switch_followup",
+    "status": "pass",
+    "note": "Cosmetics-only accessories2162.26 USD, updated source and period",
+    "observed_at": "2026-11-05T09:22:45.449Z",
+    "state": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 46 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "long_turn3_olist_items",
+    "status": "pass",
+    "note": "8208 item lines",
+    "observed_at": "2026-11-05T09:23:25.084Z",
+    "state": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 46 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "long_turn4_january",
+    "status": "pass",
+    "note": "1321825.06 USD; prior accessories filter cleared",
+    "observed_at": "2026-11-05T09:24:08.242Z",
+    "state": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 46 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "csv_from_history",
+    "status": "pass",
+    "note": "Actual downloaded CSV verified separately: display headers,3 rows, NULL category preserved, numeric values match gold",
+    "observed_at": "2026-11-05T09:24:44.087Z",
+    "state": "Browser tab: 2030182807, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 67 button Tải CSV"
+  },
+  {
+    "id": "long_turn5_buyers",
+    "status": "pass",
+    "note": "25613 buyers exact gold",
+    "observed_at": "2026-11-05T09:24:58.884Z",
+    "state": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 46 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "switch_pending_new_chat_blank",
+    "status": "pass",
+    "note": "Original request running -> new chat blank, no old content",
+    "observed_at": "2026-11-05T09:25:09.340Z",
+    "state": "Browser tab: 2030182807, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 26 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "long_turn6_viewers",
+    "status": "pass",
+    "note": "358212 distinct viewers exact gold",
+    "observed_at": "2026-11-05T09:25:40.417Z",
+    "state": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 46 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "new_chat_olist_not_polluted",
+    "status": "pass",
+    "note": "Only Olist950030.36BRL answer after leaving pending Cosmetics",
+    "observed_at": "2026-11-05T09:25:40.509Z",
+    "state": "Browser tab: 2030182807, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 0 AXWebArea Texa, URL: localhost:15173/"
+  },
+  {
+    "id": "switch_pending_old_chat_result",
+    "status": "pass",
+    "note": "Original Cosmetics completes1077689.23USD in its own saved conversation",
+    "observed_at": "2026-11-05T09:25:51.109Z",
+    "state": "Browser tab: 2030182807, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 22 button Doanh thu Cosmetics shop tháng 12/2019 là bao nhiêu?"
+  },
+  {
+    "id": "long_turn7_sessions",
+    "status": "pass",
+    "note": "839812 sessions exact gold",
+    "observed_at": "2026-11-05T09:26:13.963Z",
+    "state": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 46 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "edit_question",
+    "status": "pass",
+    "note": "Original single question replaced, one2162.26USD filtered total, no duplicate turn; sidebar title remains old",
+    "observed_at": "2026-11-05T09:26:39.576Z",
+    "state": "Browser tab: 2030182807, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 0 AXWebArea Texa, URL: localhost:15173/"
+  },
+  {
+    "id": "long_turn8_events",
+    "status": "pass",
+    "note": "3349426 events exact gold; eight successful distinct queries now in chat",
+    "observed_at": "2026-11-05T09:26:39.700Z",
+    "state": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 46 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "long_reference_spelled_second",
+    "status": "fail",
+    "note": "After8 successful results, asks which result; offers turns1 and4, omits actual result2 (Cosmetics Dec accessories2162.26). Expected monthly accessories2162.26USD.",
+    "observed_at": "2026-11-05T09:27:36.344Z",
+    "state": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 46 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "source_selector_conflict",
+    "status": "partial",
+    "note": "Explicit Cosmetics question wins over Olist dropdown; result correct but selector remains Olist without conflict warning",
+    "observed_at": "2026-11-05T09:27:36.605Z",
+    "state": "Browser tab: 2030182807, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 54 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "long_reference_numeric_2",
+    "status": "pass",
+    "note": "Numeric2 resolves correct distant result2 after8 answers; retains source, period, accessories filter; monthly2162.26USD",
+    "observed_at": "2026-11-05T09:28:30.802Z",
+    "state": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 46 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "nested_campaign_missing",
+    "status": "pass",
+    "note": "Refuses absent campaign field, no fabricated breakdown; response unexpectedly English",
+    "observed_at": "2026-11-05T09:28:31.069Z",
+    "state": "Browser tab: 2030182807, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 54 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "buyer_conversion_rate",
+    "status": "pass_display",
+    "note": "Displays6.9%; gold25613/370154=6.9195524%, correct rounding; raw CSV next",
+    "observed_at": "2026-11-05T09:29:13.856Z",
+    "state": "Browser tab: 2030182807, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 54 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "long_social_noise",
+    "status": "pass",
+    "note": "Social reply after distant reference",
+    "observed_at": "2026-11-05T09:29:13.923Z",
+    "state": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 46 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "long_return_first_after_noise",
+    "status": "pass",
+    "note": "After8 base answers plus references/social, numeric1 restores Olist Jan2018, month950030.36BRL",
+    "observed_at": "2026-11-05T09:30:11.525Z",
+    "state": "Browser tab: 1, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 46 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "conversion_raw_csv",
+    "status": "pass",
+    "note": "Actual conversion CSV0.06919552402513549 matches gold25613/370154",
+    "observed_at": "2026-11-05T09:30:11.695Z",
+    "state": "Browser tab: 2030182807, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 54 text entry area (settable) Câu hỏi"
+  },
+  {
+    "id": "csv_native_save_dialog",
+    "status": "observed",
+    "note": "Daily CSV opened macOS Save dialog; saved to project test directory, no product error inferred",
+    "observed_at": "2026-11-05T09:34:22.567Z",
+    "state": "Browser tab: 2030182807, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 292 button Tải CSV"
+  },
+  {
+    "id": "csv_daily_all31",
+    "status": "pass",
+    "note": "Actual browser-saved CSV31 data rows all dates/amounts match independent PostgreSQL gold; more rows than current20-row page",
+    "observed_at": "2026-11-05T09:35:02.399Z",
+    "state": "Browser tab: 2030182807, Title: \"Texa\", URL: \"http://localhost:15173/\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 292 button Tải CSV"
+  }
+]

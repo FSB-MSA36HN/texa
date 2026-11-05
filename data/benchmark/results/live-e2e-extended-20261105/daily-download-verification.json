@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "data_rows": 31,
+  "header": [
+    "Day",
+    "Revenue"
+  ],
+  "comparison": "Every date and raw numeric value matched independent PostgreSQL gold",
+  "download_file": "daily-browser-download.csv",
+  "native_save_dialog_completed": true
+}

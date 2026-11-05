@@ -1,0 +1,179 @@
+{
+  "date": "2026-11-05",
+  "code_commit": "21d8197",
+  "product_changes": false,
+  "launch": "Restarted ./run.sh with existing local shared-budget launcher; PostgreSQL, Airflow, Uvicorn18000,Vite15173 started successfully. Model gpt-6-luna, same protected gateway and shared10USD ledger.",
+  "url": "http://localhost:15173",
+  "warehouse_snapshot": "5d931a142670d81dc24d",
+  "catalog_version": 4,
+  "method": "Direct native/Playwright browser-controller interactions through IAB and Chrome; independently authored read-only PostgreSQL gold; actual browser download files checked. No direct API substitute for UI actions.",
+  "previous_round": "../live-e2e-20261105/report.json",
+  "new_checkpoints": 23,
+  "not_an_accuracy_estimate": "Checkpoints overlap and are purposeful functional samples, not independent test examples; do not calculate/generalize a pass rate.",
+  "acceptance": {
+    "functional_core": "Observed explicit source/metric/date requests return correct values across both sources. Across both browser rounds all8 metric types sampled with independent gold.",
+    "conversation": "Eight successful distinct query results created in one chat. Numeric result2 restores Cosmetics/accessories/Dec2019 and monthly2162.26USD after6 intervening successful results. Spelled Vietnamese thứ hai fails, asks choices omitting actual result2. Numeric result1 after social noise correctly restores Olist Jan2018 monthly950030.36BRL.",
+    "interactions": "Leaving a pending query for a new chat keeps old result in original history; new Olist result is not polluted. Edit replaces the single previous question without duplication and returns filtered2162.26USD. Sidebar title remains old.",
+    "csv": "Top3 history CSV preserves NULL category and all3 exact values. Conversion CSV0.06919552402513549 matches25613/370154. Daily CSV includes31 data rows beyond current page, each date/value matches independent SQL. Native macOS Save dialog accounted for apparent wait, not a product failure.",
+    "coverage": "Campaign-channel field absent in real Cosmetics is refused without fabricated groups, response language English despite Vietnamese input.",
+    "source_conflict": "Explicit Cosmetics question overrides Olist selector. Correct Cosmetics result/scope displayed, but dropdown remains Olist without warning; classify UX partial.",
+    "latency": "Observed individual answer times in this round include7.9s..28.8s; this is a small convenience sample, not a formal latency distribution.",
+    "load": "Two independent browser sessions run concurrently; no class-size load, queue saturation or multi-replica test."
+  },
+  "judgement": "Suitable for a guided demo with explicit questions and acknowledged limitations. Not ready for unrestricted whole-class trial until common Vietnamese memory expressions and out-of-scope suggestions are fixed and regression tested.",
+  "next_fixes": [
+    {
+      "priority": "P1",
+      "issue": "Common Vietnamese references (đó, vừa rồi, thứ hai) lose or mis-select context",
+      "acceptance": "Both numeric and natural Vietnamese references resolve same correct source/date/filters after8+ results and social noise; ask only when genuinely ambiguous; correct target must be present in choices"
+    },
+    {
+      "priority": "P1",
+      "issue": "Home and refusal suggestions advertise delivery/funnel/cross-source AOV beyond scope",
+      "acceptance": "Suggestions drawn from supported catalog/source coverage; no impossible overlap period or unavailable metric"
+    },
+    {
+      "priority": "P2",
+      "issue": "Conflicting source selector and text, stale history title, mixed-language explanation",
+      "acceptance": "Clearly communicate precedence/conflict; title reflects edit; Vietnamese UI explanations consistent"
+    },
+    {
+      "priority": "P2",
+      "issue": "Some warehouse queries take20-29s; class load unverified",
+      "acceptance": "Measure concurrent-user latency/error rate and isolate slow SQL before class rollout"
+    }
+  ],
+  "not_executed": [
+    "Deliberate provider-outage injection and recovery",
+    "Class-size concurrent-load test",
+    "Comprehensive security/access-control audit"
+  ],
+  "budget_snapshot": {
+    "model": "gpt-6-luna",
+    "input_usd_per_token": 1.0000000000000001e-07,
+    "output_usd_per_token": 5e-07,
+    "max_usd": 10,
+    "spent_estimated_usd": 0.44112149999999994,
+    "reserved_usd": 0.17216820000000005,
+    "calls": 1920,
+    "input_tokens": 3156155,
+    "output_tokens": 251012
+  },
+  "checks": [
+    {
+      "id": "source_selector_olist",
+      "status": "pass",
+      "observation": "Selected Olist; question omitted source; correct950030.36 BRL"
+    },
+    {
+      "id": "source_switch_followup",
+      "status": "pass",
+      "observation": "Cosmetics-only accessories2162.26 USD, updated source and period"
+    },
+    {
+      "id": "long_turn3_olist_items",
+      "status": "pass",
+      "observation": "8208 item lines"
+    },
+    {
+      "id": "long_turn4_january",
+      "status": "pass",
+      "observation": "1321825.06 USD; prior accessories filter cleared"
+    },
+    {
+      "id": "csv_from_history",
+      "status": "pass",
+      "observation": "Actual downloaded CSV verified separately: display headers,3 rows, NULL category preserved, numeric values match gold"
+    },
+    {
+      "id": "long_turn5_buyers",
+      "status": "pass",
+      "observation": "25613 buyers exact gold"
+    },
+    {
+      "id": "switch_pending_new_chat_blank",
+      "status": "pass",
+      "observation": "Original request running -> new chat blank, no old content"
+    },
+    {
+      "id": "long_turn6_viewers",
+      "status": "pass",
+      "observation": "358212 distinct viewers exact gold"
+    },
+    {
+      "id": "new_chat_olist_not_polluted",
+      "status": "pass",
+      "observation": "Only Olist950030.36BRL answer after leaving pending Cosmetics"
+    },
+    {
+      "id": "switch_pending_old_chat_result",
+      "status": "pass",
+      "observation": "Original Cosmetics completes1077689.23USD in its own saved conversation"
+    },
+    {
+      "id": "long_turn7_sessions",
+      "status": "pass",
+      "observation": "839812 sessions exact gold"
+    },
+    {
+      "id": "edit_question",
+      "status": "pass",
+      "observation": "Original single question replaced, one2162.26USD filtered total, no duplicate turn; sidebar title remains old"
+    },
+    {
+      "id": "long_turn8_events",
+      "status": "pass",
+      "observation": "3349426 events exact gold; eight successful distinct queries now in chat"
+    },
+    {
+      "id": "long_reference_spelled_second",
+      "status": "fail",
+      "observation": "After8 successful results, asks which result; offers turns1 and4, omits actual result2 (Cosmetics Dec accessories2162.26). Expected monthly accessories2162.26USD."
+    },
+    {
+      "id": "source_selector_conflict",
+      "status": "partial",
+      "observation": "Explicit Cosmetics question wins over Olist dropdown; result correct but selector remains Olist without conflict warning"
+    },
+    {
+      "id": "long_reference_numeric_2",
+      "status": "pass",
+      "observation": "Numeric2 resolves correct distant result2 after8 answers; retains source, period, accessories filter; monthly2162.26USD"
+    },
+    {
+      "id": "nested_campaign_missing",
+      "status": "pass",
+      "observation": "Refuses absent campaign field, no fabricated breakdown; response unexpectedly English"
+    },
+    {
+      "id": "buyer_conversion_rate",
+      "status": "pass_display",
+      "observation": "Displays6.9%; gold25613/370154=6.9195524%, correct rounding; raw CSV next"
+    },
+    {
+      "id": "long_social_noise",
+      "status": "pass",
+      "observation": "Social reply after distant reference"
+    },
+    {
+      "id": "long_return_first_after_noise",
+      "status": "pass",
+      "observation": "After8 base answers plus references/social, numeric1 restores Olist Jan2018, month950030.36BRL"
+    },
+    {
+      "id": "conversion_raw_csv",
+      "status": "pass",
+      "observation": "Actual conversion CSV0.06919552402513549 matches gold25613/370154"
+    },
+    {
+      "id": "csv_native_save_dialog",
+      "status": "observed",
+      "observation": "Daily CSV opened macOS Save dialog; saved to project test directory, no product error inferred"
+    },
+    {
+      "id": "csv_daily_all31",
+      "status": "pass",
+      "observation": "Actual browser-saved CSV31 data rows all dates/amounts match independent PostgreSQL gold; more rows than current20-row page"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "source": "Local Docker PostgreSQL warehouse; read-only independent SQL gold",
+  "metrics": {
+    "definition": "Catalog product_events.yaml: events=count all event rows; users=distinct user_id in period; sessions=distinct non-null session_id; viewers=distinct user_id with event_name view; purchases=count rows where event_name purchase or order_purchased; buyers=distinct user_id with those purchase-role events; revenue=sum revenue on purchase-role events.",
+    "cosmetics_shop_2019-12": {
+      "currency": "USD",
+      "events": 3349426,
+      "users": 370154,
+      "sessions": 839812,
+      "viewers": 358212,
+      "purchases": 213066,
+      "buyers": 25613,
+      "revenue": "1077689.23"
+    },
+    "cosmetics_shop_2020-01_revenue": {
+      "currency": "USD",
+      "revenue": "1321825.06"
+    },
+    "olist_marketplace_2018-01": {
+      "currency": "BRL",
+      "events": 42827,
+      "users": 9762,
+      "purchases": 8208,
+      "buyers": 7120,
+      "revenue": "950030.36",
+      "sessions": null,
+      "viewers": null
+    }
+  },
+  "queries": [
+    "SELECT source_id, min(currency), count(*) FILTER (WHERE event_date BETWEEN '2019-12-01' AND '2019-12-31') AS events, count(DISTINCT user_id) FILTER (WHERE event_date BETWEEN '2019-12-01' AND '2019-12-31') AS users, count(DISTINCT session_id) FILTER (WHERE event_date BETWEEN '2019-12-01' AND '2019-12-31' AND session_id IS NOT NULL) AS sessions, count(DISTINCT user_id) FILTER (WHERE event_date BETWEEN '2019-12-01' AND '2019-12-31' AND event_name='view') AS viewers, count(*) FILTER (WHERE event_date BETWEEN '2019-12-01' AND '2019-12-31' AND event_name IN ('purchase','order_purchased')) AS purchases, count(DISTINCT user_id) FILTER (WHERE event_date BETWEEN '2019-12-01' AND '2019-12-31' AND event_name IN ('purchase','order_purchased')) AS buyers, sum(revenue) FILTER (WHERE event_date BETWEEN '2019-12-01' AND '2019-12-31' AND event_name IN ('purchase','order_purchased')) AS revenue_dec, sum(revenue) FILTER (WHERE event_date BETWEEN '2020-01-01' AND '2020-01-31' AND event_name IN ('purchase','order_purchased')) AS revenue_jan2020 FROM analytics.event_activity WHERE source_id IN ('cosmetics_shop','olist_marketplace') AND ((source_id='cosmetics_shop' AND event_date BETWEEN '2019-12-01' AND '2020-01-31') OR (source_id='olist_marketplace' AND event_date BETWEEN '2018-01-01' AND '2018-01-31')) GROUP BY source_id ORDER BY source_id",
+    "SELECT min(currency), count(*) AS events, count(DISTINCT user_id) AS users, count(*) FILTER (WHERE event_name IN ('purchase','order_purchased')) AS purchases, count(DISTINCT user_id) FILTER (WHERE event_name IN ('purchase','order_purchased')) AS buyers, sum(revenue) FILTER (WHERE event_name IN ('purchase','order_purchased')) AS revenue FROM analytics.event_activity_olist_marketplace WHERE event_date BETWEEN '2018-01-01' AND '2018-01-31'"
+  ],
+  "notes": "Olist sessions and viewers are unavailable, not zero. No private credentials included."
+}
