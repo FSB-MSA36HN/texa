@@ -1,4 +1,6 @@
-# Kiểm thử demo lớp học — 04/11/2026
+# Kiểm thử demo lớp học — cập nhật 05/11/2026
+
+Các vòng model thật bên dưới được chạy ngày 04/11, trước khi thêm Olist vào catalog sản phẩm. Thay đổi Olist ngày 05/11 được xác minh bằng contract/SQL tests, không phải benchmark LLM trên Olist. Scope hiện hành ở [PRODUCT_SCOPE](PRODUCT_SCOPE.md); cách đọc chỉ số ở [EVALUATION](EVALUATION.md).
 
 Tách hai mục tiêu: E2E kiểm tra website hoạt động; benchmark model thật kiểm tra hiểu câu hỏi và kết quả truy vấn. E2E dùng model giả không chứng minh độ chính xác của LLM.
 
@@ -39,7 +41,7 @@ Các con số sau tinh chỉnh là **development checks**, không thay thế vò
 
 Gateway báo giá input $0,10/triệu token, output $0,50/triệu token; wrapper không trừ cache discount. Tổng ledger kiểm tra: 292 lượt provider thành công có usage, 459.058 input tokens, 34.731 output tokens; chi phí ước tính **$0,06328**, cộng **$0,00774** dự trữ giữ lại cho lượt lỗi/không chắc chắn. Tổng bảo thủ dưới $0,08, thấp hơn trần $10. Chưa đối soát hóa đơn tài khoản gateway. Các thông tin này chỉ nói về vòng kiểm thử, không đặt giới hạn chi tiêu cho website khi công khai.
 
-Backend regression sau sửa memory: **164 passed, 23 skipped**, với product/metadata/shared-session PostgreSQL tests bật. Các skip không được tính là test đạt. Các bộ test cần ablation fixture hoặc warehouse cũ được giữ riêng, không nạp các fixture đó đè lên pilot trong vòng kiểm tra này. Frontend build và lint đạt.
+Backend regression sau sửa memory ngày 04/11: **164 passed, 23 skipped**, với product/metadata/shared-session PostgreSQL tests bật. Các skip không được tính là test đạt. Các bộ test cần ablation fixture hoặc warehouse cũ được giữ riêng, không nạp các fixture đó đè lên pilot trong vòng kiểm tra này. Frontend build và lint đạt.
 
 ## Chạy website cho nhiều người
 
@@ -99,3 +101,9 @@ backend/.venv/bin/python backend/eval/run_gateway_check.py \
 ```
 
 Đặt thêm `TEXA_BENCHMARK_DSN` tới reader của DB benchmark, nạp fixture v2 trước vòng này. Cùng model/dataset cho direct baseline và Texa. Không thay đổi fixture trong khi runner đang chạy. Dev dùng để phát hiện lỗi; không coi đây là kết quả cuối trên test hoặc bằng chứng ablation.
+
+## Xác minh sau thêm Olist — 05/11/2026
+
+Catalog cho phép cả Cosmetics và Olist, vẫn một nguồn mỗi câu hỏi và tám metric. Đã thêm năm test contract/SQL, gồm PostgreSQL với dữ liệu Olist nhỏ trong transaction rollback: revenue chỉ cộng item purchase, không cộng payment; purchases đếm item lines, không phải orders. Prompt/kết quả có ghi chú giới hạn Olist.
+
+Backend đầy đủ trên DB pilot riêng: **169 passed, 23 skipped**; E2E Chromium **11/11**, frontend build/lint đạt. E2E vẫn dùng scripted provider và pilot synthetic, không phải end-to-end accuracy model trên Olist. API/DB của website thật không được khởi động hoặc publish catalog trong đợt đó; cần publish vào đúng DB ứng dụng trước khi tải lại trang.

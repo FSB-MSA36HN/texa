@@ -1,5 +1,7 @@
 # Synthetic event benchmark pilot
 
+See [the evaluation status and measured-model results](../../docs/EVALUATION.md). These pilot/v2/ablation datasets are synthetic event fixtures, not Olist data; their accuracy must not be described as accuracy measured on Olist. The configured product scope is Cosmetics + Olist, one source, eight metrics, and nested scalar paths up to two keys.
+
 The expanded [v2 dataset](v2/README.md) contains 104 single-turn cases, 12 dialogues and a richer 96-event fixture. Select it explicitly with `--dataset-dir ../data/benchmark/v2` from `backend`; default commands below preserve pilot regression behavior.
 
 This pilot contains 24 single-turn questions (12 dev, 12 test), six annotated dialogue scenarios, and a deterministic 12-row event fixture. It exercises evaluator behavior and elementary event/nested-path distinctions; it is not evidence of broad product accuracy or a substitute for a larger held-out evaluation.

@@ -1,5 +1,7 @@
 # Chạy ablation study Texa
 
+Trạng thái và các kết quả model thật hiện có được tổng hợp tại [docs/EVALUATION.md](../../docs/EVALUATION.md) và [docs/CLASS_DEMO_CHECKS.md](../../docs/CLASS_DEMO_CHECKS.md). Benchmark là fixture event tổng hợp, không phải dữ liệu Olist hoặc độ chính xác đo trên Olist. Phạm vi sản phẩm được cấu hình hiện tại là Cosmetics + Olist, một nguồn, tám metric và nested scalar tối đa hai cấp; suite này không mở rộng phạm vi đó.
+
 Các biến thể đã triển khai:
 
 | ID | Thay đổi | Suite |
@@ -121,3 +123,5 @@ TEXA_PRODUCT_TEST_DSN=1 TEXA_ABLATION_TEST_DSN=1 \
 ```
 
 Integration ablation yêu cầu đúng fixture ablation và DSN bước 1; mọi model call được mô phỏng. Những kiểm tra này xác nhận code/protocol/gold, không cung cấp số liệu model accuracy.
+
+Các lệnh chạy live ở trên là workflow giao thức còn dùng được; chúng chưa đồng nghĩa với một full ablation đã hoàn tất. Mọi lần chạy holdout 63 câu và full F/M6/M0/C0 nhiều repeat vẫn pending. Kết quả dev exploratory, cùng phiên bản/model/cấu hình và giới hạn của chúng, được ghi trong báo cáo đánh giá canonical.

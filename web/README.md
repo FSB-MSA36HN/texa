@@ -1,54 +1,16 @@
-# React + TypeScript + Vite
+# Texa web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript + Vite. Scope sản phẩm và cách chuẩn bị API/DB ở [README gốc](../README.md); luồng UI/API ở [kiến trúc](../docs/ARCHITECTURE.md).
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```sh
+npm ci
+npm run dev
+npm run build
+npm run lint
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Vite dùng cổng `15173`, proxy `/api` tới API `18000`. `TEXA_WEB_PORT` và `TEXA_API_TARGET` cho phép cấu hình môi trường dev/test; cổng bị chiếm sẽ báo lỗi. Docker nginx giữ web và API cùng origin, tắt buffering SSE.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+UI chọn Cosmetics hoặc Olist, mỗi query chỉ một nguồn. Trong shared demo, model do người tổ chức chọn, settings chỉ đọc và lịch sử tách theo cookie browser; localStorage không phải quyền truy cập dữ liệu. Nguồn không ghi nhận metric phải hiển thị lý do thay vì giả số liệu.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+`npm run test:e2e` cần DB pilot riêng, Chromium và `TEXA_E2E_TEST_DSN=1`. Test tự chạy API scripted và Vite trên cổng riêng; không dùng provider thật. Chuẩn bị môi trường theo [CLASS_DEMO_CHECKS](../docs/CLASS_DEMO_CHECKS.md), không chạy fixture vào DB đang demo.

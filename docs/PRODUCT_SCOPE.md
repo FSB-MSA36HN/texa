@@ -1,5 +1,7 @@
 # Product contract: conversational product analytics
 
+Cập nhật 05/11/2026. Đây là scope hiện hành; [kiến trúc](ARCHITECTURE.md) và [đánh giá](EVALUATION.md) mô tả cách triển khai/kiểm chứng.
+
 ## Người dùng và công việc
 
 PM/PO theo dõi một sản phẩm thương mại điện tử: hỏi số người dùng/người mua, lượt xem/lượt mua, doanh thu ghi nhận; đổi kỳ, filter hoặc breakdown qua hội thoại. Persona là giả thuyết, chưa có user study. Câu trả lời cần hiện định nghĩa, nguồn, kỳ thời gian và filter. Không suy luận nguyên nhân nhân quả từ tương quan.
@@ -15,6 +17,23 @@ PM/PO theo dõi một sản phẩm thương mại điện tử: hỏi số ngư�
 - Top-k hỗ trợ một metric và breakdown không phải thời gian: metric giảm dần, key tăng dần khi hòa. Top-k là phạm vi truy vấn, không phải cắt preview; tổng trên kết quả chỉ là tổng trong các nhóm top-k.
 - Thời gian theo event UTC date. QuerySpec `between` dùng start/end DATE bao gồm cả ngày cuối để tương thích UI hiện có; tương đương `[start, end + 1 ngày)`. Benchmark phải cố định mốc dữ liệu cho relative date.
 - Không có order/AOV, FX, retention, Olist delivery/review, join đa doanh nghiệp, tự sinh catalog từ tài liệu hoặc tích hợp nhiều DB trong bản đầu.
+
+### Tám metric nghĩa là gì?
+
+Đây là tám phép đo được định nghĩa sẵn, không phải chỉ tám câu hỏi. Mỗi phép đo có thể hỏi theo kỳ, filter hoặc breakdown được hỗ trợ. Không phải mọi nguồn đều có đủ tám phép đo.
+
+| Metric | Cách hiểu | Cosmetics | Olist |
+|---|---|---|---|
+| events | Số event được ghi nhận | Có | Có, gồm lifecycle/payment/review event |
+| users | Số user duy nhất có event trong kỳ | Có | Có, chỉ quần thể khách đã đặt hàng |
+| sessions | Số session duy nhất | Có | Không ghi nhận |
+| viewers | Số user đã xem sản phẩm | Có | Không ghi nhận |
+| purchases | Số purchase item events | Có | Có, không phải số order |
+| buyers | Số user duy nhất có item purchase | Có | Có |
+| revenue | Tổng revenue trên item purchase | USD | BRL, không cộng payment/freight |
+| buyer_conversion_rate | buyers/users được quan sát trong kỳ | Có, không phải funnel tuần tự | Tính được tỷ lệ quan sát; không phải visitor conversion |
+
+Các phép so sánh giữa hai nguồn không cùng quần thể/event/currency; phiên bản này không thực hiện truy vấn so sánh/gộp hai nguồn. Tám metric là phạm vi có thể kiểm thử của đồ án; mức đủ cho công việc PM/PO vẫn cần walkthrough xác nhận.
 
 ## Vận hành
 

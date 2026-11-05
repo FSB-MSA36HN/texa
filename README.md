@@ -1,157 +1,92 @@
 # Texa
 
-Texa là trợ lý hỏi đáp dữ liệu hội thoại dành cho **PM/PO của một sản phẩm thương mại điện tử**. Người dùng hỏi về hành vi và kết quả sản phẩm; LLM chọn định nghĩa trong semantic catalog để tạo QuerySpec, Python validate và compile SQL PostgreSQL, sau đó câu trả lời sử dụng facts từ dữ liệu.
+Texa là trợ lý hỏi đáp dữ liệu thương mại điện tử cho **PM/PO không chuyên SQL**. LLM hiểu câu hỏi; Python kiểm tra QuerySpec, compile SQL PostgreSQL và lấy kết quả để viết nhận xét có truy vết. Persona chưa được kiểm chứng bằng user study; không cam kết trả lời đúng tuyệt đối.
 
-Scope hiện tại đang được triển khai theo [kế hoạch refinement](PLAN_REFINEMENT_EVENT_CONVERSATIONAL_QA.md): một dataset event mỗi câu hỏi (Cosmetics hoặc Olist), 8 metric trong catalog, nested object có giới hạn; memory có cấu trúc và đánh giá kết quả thực thi. Không phải nền tảng tích hợp mọi database hoặc báo cáo tài chính. PM/PO là persona giả thuyết cần kiểm chứng bằng task walkthrough; quản lý là nhóm người dùng phụ.
+## Scope hiện tại — 05/11/2026
 
-Catalog bản sản phẩm là `catalog/product_events.yaml`; `catalog/ecommerce.yaml` giữ để chạy regression cũ. Chỉ catalog được publish mới có hiệu lực trong DB đã tồn tại. Những giới hạn và lệnh kiểm tra cập nhật nằm trong [scope contract](docs/PRODUCT_SCOPE.md).
+- Hai nguồn được cấu hình sẵn: **Cosmetics shop và Olist marketplace**. Mỗi câu hỏi dùng **một nguồn**, không cộng hoặc join hai cửa hàng.
+- Một engine: PostgreSQL. Catalog sản phẩm: `catalog/product_events.yaml`.
+- Tám metric: events, users, sessions, viewers, purchases, buyers, revenue, buyer_conversion_rate. Nguồn phải có dữ liệu phù hợp mới tính được; Olist thiếu sessions và viewers.
+- Nested object dưới `ep`/`up`, tối đa hai key, chỉ scalar trong catalog; không expand arrays.
+- Không hỗ trợ metric giao trễ/review, order/AOV, retention, FX, suy luận nguyên nhân hay tự chuẩn hóa mọi database. Dữ liệu Olist có các event lifecycle nhưng điều đó không tự bật thêm metric.
+- Olist chỉ quan sát khách đã đặt hàng. Buyer/user ratio không phải chuyển đổi visitor thành buyer. Purchases đếm item lines; revenue chỉ cộng giá item mua, loại payment/freight; Olist dùng BRL, Cosmetics dùng USD.
 
-Thiết kế chi tiết nằm ở [PLAN.md](PLAN.md).
+## Tài liệu nên đọc
 
-```
-event snapshot ──metadata refresh──► analytics.event_activity (một nguồn mỗi câu hỏi)
-                                    source_registry / nested vocabulary
-catalog/product_events.yaml ──publish──► app.catalog_versions
-web (React) ◄──SSE── api: structured memory → interpret → clarify → validate
-                         → PostgreSQL compiler → read-only run → facts → insight
-```
-
-## Bản triển khai hiện tại
-
-Đã bổ sung structured memory, hỗ trợ nested object hai key, source scope và thông tin cách tính trên giao diện. [Trạng thái triển khai và kiểm chứng](docs/IMPLEMENTATION_STATUS.md) phân biệt rõ tính năng đã có với thí nghiệm còn phải chạy. [Benchmark pilot](data/benchmark/README.md) có SQL gold, direct LLM baseline và hội thoại. Đã bắt đầu kiểm tra model thật trên tập dev; kết quả và giới hạn nằm trong [kiểm thử demo lớp học](docs/CLASS_DEMO_CHECKS.md).
-
-## Chạy nhanh (dev)
-
-Các lệnh FX/Olist bên dưới là luồng dữ liệu/regression cũ. Scope sản phẩm dùng Cosmetics hoặc benchmark riêng; không cần nạp Olist để dùng catalog sản phẩm.
-
-TEXA dùng cổng riêng, tách khỏi Inwave và DI Platform:
-
-| Dịch vụ | Cổng trên máy |
+| Tài liệu | Nội dung |
 |---|---|
-| Web (Docker, Vite dev/preview) | `15173` |
-| API | `18000` |
-| Airflow | `18080` |
-| PostgreSQL | `15432` |
+| [Mục lục tài liệu](docs/README.md) | Điểm vào duy nhất và trạng thái từng tài liệu |
+| [Scope](docs/PRODUCT_SCOPE.md) | Người dùng, metric, nguồn và giới hạn |
+| [Kiến trúc](docs/ARCHITECTURE.md) | Luồng truy vấn, memory và website dùng chung |
+| [Đánh giá](docs/EVALUATION.md) | Baseline, dataset, metric và ablation |
+| [Trạng thái triển khai](docs/IMPLEMENTATION_STATUS.md) | Đã có gì, đã kiểm tra gì, còn thiếu gì |
+| [Demo và kết quả dev](docs/CLASS_DEMO_CHECKS.md) | Lệnh E2E, vận hành và số liệu có giới hạn |
+| [Thuyết trình](presentation/OUTLINE.md) | Dàn ý; script và sơ đồ trong cùng thư mục |
 
-Proxy dev trỏ tới API `18000`; Vite sẽ báo lỗi nếu cổng `15173` đã được dùng. Các cổng nội bộ Docker vẫn giữ nguyên.
+## Chạy local
 
-```bash
-cp .env.example .env
-docker compose up -d postgres airflow
+Tất cả lệnh từ thư mục gốc `Final` trừ khi có `cd`. Cần Docker Desktop, `uv`, Node.js/npm. Cổng dự án: web `15173`, API `18000`, PostgreSQL `15432`, Airflow `18080`.
+
+```sh
+test -f .env || cp .env.example .env
+# Điền key/model và shared-demo settings nếu cần; không commit .env.
+docker compose up -d --wait postgres
+docker compose up -d airflow
 ```
 
-**1. Nạp dữ liệu.** Nạp tỷ giá trước, rồi tới hai cửa hàng (bước nạp cửa hàng dùng tỷ giá để tính `revenue_usd`). Có hai cách:
+Nếu đã nạp dữ liệu, bỏ qua bước ingest. Nạp mới từng nguồn bằng pipeline được cấu hình sẵn; có thể tốn thời gian/tải nhiều dữ liệu. Lệnh chạy toàn pipeline sẽ dựng lại partition của nguồn tương ứng, không dùng như thao tác refresh nhẹ:
 
-- **Qua Airflow:** mở Airflow tại http://localhost:18080 (user `admin`; mật khẩu nằm trong `docker compose logs airflow | grep password`), trigger DAG `ingest_fx_rates`, rồi `ingest_olist_marketplace` và `ingest_cosmetics_shop`.
-- **Không qua Airflow:** chạy cùng các bước đó trực tiếp:
-
-```bash
-cd pipeline && uv run --python 3.12 --with 'psycopg[binary]' python -m texa_etl.run fx_rates
-```
-
-```bash
-cd pipeline && uv run --python 3.12 --with 'psycopg[binary]' python -m texa_etl.run olist_marketplace
-```
-
-Tỷ giá lấy từ chuỗi [FRED DEXBZUS](https://fred.stlouisfed.org/series/DEXBZUS) (BRL cho 1 USD, hằng ngày, không cần key). Mỗi sự kiện được quy đổi theo tỷ giá đúng ngày của nó (ngày nghỉ dùng ngày giao dịch gần nhất trước đó, trong vòng 7 ngày). `load_mart` tính USD ngay lúc INSERT; Cosmetics vốn dùng USD nên `revenue_usd = revenue`.
-
-Nếu dữ liệu cửa hàng đã có trong mart, dùng `refresh_revenue_usd` để tính lại USD sau khi nạp tỷ giá. Bước này chỉ cập nhật giá trị thay đổi, không xóa và nạp lại toàn bộ sự kiện như `load_mart`. Chạy từ thư mục `Final`:
-
-```bash
+```sh
 (
-  cd pipeline &&
-  uv run --python 3.12 --with 'psycopg[binary]' python -m texa_etl.run fx_rates &&
-  uv run --python 3.12 --with 'psycopg[binary]' python -m texa_etl.run olist_marketplace refresh_revenue_usd refresh_metadata &&
-  uv run --python 3.12 --with 'psycopg[binary]' python -m texa_etl.run cosmetics_shop refresh_revenue_usd refresh_metadata
+  cd pipeline
+  uv run --python 3.12 --with 'psycopg[binary]' python -m texa_etl.run cosmetics_shop
+  uv run --python 3.12 --with 'psycopg[binary]' python -m texa_etl.run olist_marketplace
 )
 ```
 
-`refresh_metadata` vẫn quét dữ liệu để cập nhật vocabulary nên có thể mất thời gian với Cosmetics. Nếu dừng bằng Ctrl+C, bước đang chạy sẽ rollback; những bước trước đã commit vẫn được giữ lại. `KeyboardInterrupt` trong log là do thao tác ngắt này.
+Pipeline cũ còn tạo cột `revenue_usd`/bảng FX để tương thích regression; catalog sản phẩm chỉ dùng `revenue` theo tiền gốc. Không cần tải tỷ giá để hỏi doanh thu trong scope hiện tại. Không mô tả adapter của hai nguồn này là bộ chuẩn hóa mọi DB.
 
-Không cần Kaggle API key: bước `download` tự tải dataset public. Nếu muốn tải tay thì đặt file CSV vào `data/landing/<source_id>/`.
+Publish catalog và chạy API:
 
-**2. Publish catalog.** Lệnh `coverage` cho biết mỗi nguồn trả lời được những metric nào.
-
-```bash
-cd backend && uv sync && uv run texa catalog publish ../catalog/product_events.yaml && uv run texa catalog coverage
+```sh
+cd backend
+uv sync
+uv run texa catalog publish ../catalog/product_events.yaml
+uv run texa catalog coverage
+uv run uvicorn texa.main:app --port 18000
 ```
 
-**3. Chạy API và web.**
+Trong terminal khác:
 
-```bash
-cd backend && uv run uvicorn texa.main:app --port 18000
+```sh
+cd web
+npm ci
+npm run dev
 ```
 
-```bash
-cd web && npm install && npm run dev
+Mở `http://localhost:15173`. Local mặc định cho phép cấu hình model trong Cài đặt; hỗ trợ OpenAI-compatible gateway, Anthropic và Gemini. API key được mã hóa khi lưu DB và không gửi lại trình duyệt. Biến môi trường là fallback nếu DB chưa có model connection. `uv` không tự nạp `.env` khi chạy các lệnh API riêng: cung cấp cấu hình trong môi trường process; `run.sh` và Docker Compose có bước nạp `.env`.
+
+Có thể dùng `./run.sh` sau khi đã chuẩn bị dữ liệu; script khởi động các dịch vụ local, publish catalog, và dừng dịch vụ do script quản lý khi thoát. Với Docker API/web, `docker compose up -d api web`; DB đang có catalog cũ vẫn cần publish bản sản phẩm bằng CLI trong môi trường DB đó.
+
+## Nhiều người dùng một website
+
+Bật `TEXA_SHARED_DEMO=1`, đặt admin token ngẫu nhiên ít nhất 24 ký tự; chỉ công khai web qua HTTPS, API/DB nội bộ. Mỗi browser profile có cookie riêng để tách lịch sử, cấu hình model do người tổ chức quản lý. Một API worker; chưa có đăng nhập hoặc mở rộng nhiều replica. Xem [hướng dẫn demo](docs/CLASS_DEMO_CHECKS.md) trước khi đưa cho lớp dùng.
+
+## Kiểm thử và kết quả
+
+```sh
+backend/.venv/bin/python -m pytest backend/tests -q
+cd web
+npm run build
+npm run lint
 ```
 
-Mở http://localhost:15173, bấm ⚙ **Cài đặt**, chọn provider (**Google Gemini**, **Anthropic Claude** hoặc **OpenAI**), nhập API key, bấm "Kiểm tra key & tải danh sách model", chọn model rồi Lưu.
+Các test PostgreSQL cần DB riêng `texa_benchmark` và opt-in; không chạy fixture vào warehouse demo. E2E scripted dùng pilot 12 events; v2 và ablation dùng fixture khác. Chi tiết ở [đánh giá](docs/EVALUATION.md).
 
-**Gateway của tổ chức:** chọn provider có API giống gateway (đa số gateway như LiteLLM, OpenRouter, Azure OpenAI, vLLM… tương thích OpenAI), điền key do gateway cấp và **Base URL** của gateway (ví dụ `https://litellm.congty.vn/v1`). Nếu gateway không hỗ trợ `json_schema`, Texa tự chuyển sang JSON mode và vẫn kiểm tra kết quả theo schema. Cũng có thể đặt sẵn trong `.env`: `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GEMINI_API_KEY`, cùng `TEXA_BASE_URL` và `TEXA_DEFAULT_MODEL`.
+Kiểm tra mới nhất sau bật Olist: **169 backend test đạt, 23 bỏ qua; 11/11 Playwright E2E đạt**, build/lint đạt. E2E dùng model giả, bao gồm 8 browser sessions đồng thời; không phải kiểm thử tải model thật.
 
-Muốn chạy cả `api` lẫn `web` bằng Docker thì dùng `docker compose up -d`, web sẽ ở http://localhost:15173. Trong trường hợp này hãy đặt `TEXA_SECRET_KEY` trong `.env`; key này dùng để mã hóa API key đã lưu.
+Model thật `gpt-6-luna`, trên synthetic v2 **dev**: baseline 40/41, Texa ban đầu 37/41; sau tinh chỉnh Texa đạt 41/41 câu đơn và 6/6 hội thoại dev ở các vòng riêng. Chưa chạy test độc lập hay đầy đủ ablation nhiều lượt; chưa có bằng chứng Texa vượt baseline hoặc đạt các điểm đó trên Olist. Xem [báo cáo dev](docs/CLASS_DEMO_CHECKS.md).
 
-## Con số trong câu trả lời
+## Bố cục code
 
-Model không bao giờ tự gõ con số. Mỗi số trong câu trả lời có một trong ba nguồn, và giao diện đánh dấu khác nhau:
-
-| Đánh dấu | Nguồn |
-|---|---|
-| Tô vàng | Lấy thẳng từ kết quả SQL |
-| Tô vàng + gạch chấm (bấm để xem công thức) | Texa tính từ các số trên: model viết công thức (`f_a / u_rate`), Python tính (`backend/texa/derive.py`) |
-| Gạch chân | Số bạn đưa ra trong câu hỏi, ví dụ một tỷ giá. Số model "nhớ" mà bạn chưa gõ sẽ bị loại |
-
-Vì vậy các câu như "quy đổi theo tỷ giá 5,2", "tháng 1 tăng bao nhiêu % so với tháng 12" được trả lời; còn "quy đổi sang euro" khi chưa có tỷ giá euro thì Texa hỏi lại tỷ giá thay vì đoán.
-
-## Kiểm thử
-
-```bash
-cd backend && uv run pytest
-```
-
-Cần đã nạp warehouse. Bộ test gồm:
-- validator;
-- facts;
-- placeholder của insight;
-- kiểm tra prompt không chứa từ nghiệp vụ;
-- so số liệu của compiler với SQL viết tay;
-- luồng hội thoại với model giả.
-
-Golden eval chạy với model thật (cần đã kết nối model trong Cài đặt, hoặc đặt một trong các key ở `.env`):
-
-```bash
-cd backend && uv run python eval/run_golden.py --runs 3
-```
-
-Bộ eval có **63 case tiếng Việt và tiếng Anh**. Chạy `--runs 3` tạo 189 lượt chấm; lệnh in ra tỷ lệ pass và các case lúc pass, lúc fail. Ngưỡng mặc định là 90%; đây là ngưỡng mục tiêu, không phải kết quả đã đạt.
-
-### Evaluation đối chiếu những gì?
-
-| Lớp kiểm tra | Đối tượng đối chiếu | Phạm vi |
-|---|---|---|
-| Compiler tests | **Kết quả thực thi** của SQL compiler sinh với SQL tham chiếu viết tay, trên cùng warehouse | Kiểm tra các case tính toán đã viết test; input đã là QuerySpec, không cần model thật |
-| Golden eval với model thật | **Status và một số trường của QuerySpec cuối** với kỳ vọng viết tay trong `backend/eval/golden.yaml` | Chỉ chấm các trường `expect` được khai báo và được hàm `score()` hỗ trợ; không so toàn bộ JSON |
-| Unit / scripted flow tests | Output và hành vi của module/pipeline với assertions viết sẵn | Kiểm tra validator, facts, placeholder, hỏi lại, từ chối…; không dùng để đo độ chính xác của model thật |
-
-Golden hiện **không so chuỗi SQL**, **không đối chiếu bảng số liệu với đáp án chuẩn**, và **không chấm toàn bộ lời nhận xét**. QuerySpec được chấm là kết quả sau khi Python làm rõ/chuẩn hóa/validate cách hiểu của model, không phải chỉ JSON thô model trả về.
-
-Ví dụ minh họa: nếu `expect` chỉ ghi `status: answered`, `recipe: revenue`, `selection: [event_month]`, thì case chỉ yêu cầu trả lời thành công, dùng metric doanh thu và chia theo tháng. Chọn sai nguồn hoặc sai năm vẫn có thể pass vì nguồn/thời gian chưa được khai báo để chấm. Thêm `source_ids`, `start`, `end` vào `expect` sẽ kiểm tra thêm những phần đó. Bộ chấm hiện chưa kiểm tra trực tiếp `shape`, `limit`, `contract_version`, `time_range.field`, operator của filter hay cấm mọi filter dư. Các kiểm tra hợp lệ của validator là một lớp khác, không thay thế việc đối chiếu với ý định đúng.
-
-Mỗi case được tính pass/fail theo các phép kiểm tra đang triển khai, không cộng điểm lẻ cho từng trường. **Ví dụ giả định** chạy một lượt: 60 case pass, 3 case fail → `60/63 = 95,2%`. Ba case fail là các case bị phát hiện vi phạm ít nhất một điều kiện; log nêu khác biệt cụ thể. Con số này có nghĩa **95,2% case đạt kỳ vọng được kiểm tra trong lần chạy**, không có nghĩa 95,2% mọi số liệu/lời trả lời đều đúng. Xem thêm các giới hạn scoring trong tài liệu chi tiết.
-
-**Câu trả lời ngắn khi thuyết trình/phỏng vấn:** “Texa đánh giá theo lớp: compiler được kiểm tra bằng đối chiếu kết quả thực thi với SQL viết tay; model thật được đánh giá bằng golden cases, so trạng thái và các trường QuerySpec được khai báo trước. Golden chưa so toàn bộ QuerySpec hay kết quả SQL. Điểm là tỷ lệ case đạt các kỳ vọng được kiểm tra.”
-
-Chi tiết: [Evaluation methods](presentation/EVALUATION_METHODS.md), gồm ví dụ chấm từng trường, cách tính điểm, giới hạn và câu hỏi phỏng vấn thường gặp.
-
-## Bố cục
-
-| Đường dẫn | Nội dung |
-|---|---|
-| `pipeline/texa_etl/run.py` | Các bước ETL: download → raw → staging → mart → metadata → quality |
-| `pipeline/sql/` | SQL khởi tạo, staging cho từng nguồn, mart thống nhất, quality checks |
-| `pipeline/dags/texa_ingest.py` | Mỗi nguồn một DAG |
-| `catalog/ecommerce.yaml` | Semantic catalog: event roles, dimensions, metrics, variant groups, glossary… |
-| `backend/texa/` | `catalog`, `spec` (validator), `sanity`, `compile`, `execute`, `facts`, `interpret`, `clarify`, `insight`, `llm`, `answer`, `main` |
-| `backend/eval/` | Golden questions và runner |
-| `web/src/` | UI chat full-screen |
+`pipeline/` chứa adapter ETL hai nguồn; `catalog/` chứa định nghĩa nghiệp vụ; `backend/texa/` chứa memory, resolver, validator/compiler, facts, API; `backend/eval/` chứa evaluator; `data/benchmark/` chứa dữ liệu đánh giá synthetic; `web/` là React UI. `catalog/ecommerce.yaml` và `run_golden.py` là công cụ regression cũ, không phải scope hay metric đánh giá chính.

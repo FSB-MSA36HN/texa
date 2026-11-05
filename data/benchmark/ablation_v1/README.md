@@ -1,5 +1,7 @@
 # Ablation study suite v1
 
+See the [canonical evaluation status](../../../docs/EVALUATION.md) and [ablation run instructions](../../../backend/eval/ABLATION_README.md). This fixture is synthetic, not Olist data or Olist accuracy. Product scope remains Cosmetics + Olist, one source, eight metrics, nested scalar paths up to two keys. Exploratory dev model checks exist; the controlled full F/M6/M0/C0 test matrix with repeats remains pending.
+
 This suite supports controlled tests of Texa's memory and clarification components. It has 24 dialogue scenarios (12 dev / 12 test) covering short follow-ups, corrections, irrelevant social turns, topic switches and returns, long references (8, 10 and 12 turns), ambiguous references, and a new independent query that must not inherit old filters. It also has 20 ambiguous one-turn requests paired with 20 explicit controls. Sixteen ambiguous requests omit the period; four use a deliberately broad customer-count phrase whose intended distinction is users versus buyers.
 
 The suite uses a deterministic 96-event synthetic fixture spread over 50 days. The wider date range makes the system-supported `last_7` and `all` period choices distinguishable. Every answer-bearing turn and interaction includes gold SQL plus literal expected columns/rows, computed from source records using the independent Python reference aggregator. This is a diagnostic synthetic dataset; memory phenomenon labels overlap dev/test, and human product-owner review is pending.
