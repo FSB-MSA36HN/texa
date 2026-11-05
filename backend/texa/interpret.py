@@ -172,11 +172,27 @@ def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[s
             instruction + catalog_text + "\n\n".join(dynamic)) - 1024))
         mentions = set(mentioned_sources(cat, sources, question))
         confirmed = scope if scope and (not mentions or mentions == set(scope)) else ()
-        bank = examples.load_bank(cat)
+        try:
+            bank = examples.load_bank(cat)
+        except examples.ExampleBankError as exc:
+            raise llm.LLMError("EXAMPLE_BANK_INVALID", "The example bank does not match the active catalog.") from exc
+        # Evaluation may freeze a shared SQL-verified demonstration subset so
+        # the direct-SQL control and Texa receive the same eligible examples.
+        policy = os.getenv("TEXA_EXAMPLE_POLICY", "approved")
+        if policy == "sql_verified":
+            from dataclasses import replace
+            bank = replace(bank, examples=tuple(x for x in bank.examples if
+                x.get("reference", {}).get("verification_status") == "verified" and
+                x.get("reference", {}).get("reference_sql")))
+        elif policy != "approved":
+            raise llm.LLMError("EXAMPLE_BANK_INVALID", "Unknown example eligibility policy.")
+        retrieval_trace["eligibility_policy"] = policy
         retrieved = examples.retrieve_examples(bank, question, confirmed_sources=confirmed, token_budget=budget)
-        example_text = examples.render_examples(retrieved)
+        example_text = examples.render_examples(retrieved, structured=structured)
         retrieval_trace.update(bank_version=bank.version, bank_hash=bank.content_hash, ids=list(retrieved.ids),
-                               scores=list(retrieved.scores), estimated_tokens=retrieved.estimated_tokens)
+                               scores=list(retrieved.scores), estimated_tokens=retrieved.estimated_tokens,
+                               token_estimate_method=getattr(retrieved, "token_estimate_method", "unknown"),
+                               packed_utf8_bytes=getattr(retrieved, "packed_utf8_bytes", None))
     prompt = "CATALOG\n" + catalog_text + "\n\n" + example_text + "\n\n" + "\n\n".join(dynamic)
     def sample():
         result = llm.generate_structured(model=model, system=instruction, name="interpret", turn_id=turn_id,
@@ -184,13 +200,20 @@ def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[s
         if structured:
             result["_registry_complete"] = registry_complete
         return result
+    primary_error = None
     with step("interpret") as s:
         # Static catalog first so the provider's implicit prompt cache can reuse it across questions.
-        candidate = sample()
+        try:
+            candidate = sample()
+        except llm.LLMError as exc:
+            if exc.code != "MODEL_OUTPUT_INVALID" or normalize is None or os.getenv("TEXA_CONSISTENCY", "0") != "1":
+                raise
+            primary_error = exc.code
+            candidate = {"outcome": "unresolved", "language": (context or {}).get("language", "en")}
         s.note(candidate["outcome"])
     trace = {"retrieval": retrieval_trace, "consistency": {"enabled": False}}
     if os.getenv("TEXA_CONSISTENCY", "0") == "1" and normalize is not None:
         with step("consistency_selection"):
-            candidate, trace["consistency"] = consistency.select(candidate, sample, normalize, cancelled=cancelled)
+            candidate, trace["consistency"] = consistency.select(candidate, sample, normalize, cancelled=cancelled, primary_error=primary_error)
     candidate["_accuracy"] = trace
     return candidate

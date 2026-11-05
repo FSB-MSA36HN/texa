@@ -229,6 +229,18 @@ def _render_warning(warning: dict, cat, sources, lang: str) -> str:
 
 
 def _continue(turn: dict, candidate: dict, answers: dict, progress: Progress, cat, sources) -> dict:
+    try:
+        return _continue_checked(turn, candidate, answers, progress, cat, sources)
+    except SpecError as exc:
+        # Keep interpretation provenance on deterministic refusals as well as
+        # successful answers; otherwise evaluation cannot locate the failing layer.
+        return {"status": "refused", "message": exc.message, "code": exc.code,
+                "reason_code": exc.code, "reason_params": exc.params, "candidate": candidate,
+                "answers": answers, "language": _lang(candidate),
+                "ablation": turn["state"].get("ablation") or ablation.initial_trace(ablation.variant())}
+
+
+def _continue_checked(turn: dict, candidate: dict, answers: dict, progress: Progress, cat, sources) -> dict:
     sources = catalog_mod.scoped_sources(cat, sources)
     if turn["state"].get("context", {}).get("catalog_version") not in (None, cat.contract_version):
         raise SpecError("stale_catalog", "The metric definitions changed while waiting for clarification. Ask again.")
@@ -477,6 +489,7 @@ def _question_work(turn_id: str, reference_id: str | None = None):
                                         scope=scope, step=progress, context=context, normalize=normalize,
                                         cancelled=progress.cancelled)
         if candidate.get("_consistency_unresolved"):
+            context.pop("registry", None)
             return {"status": "refused", "message": candidate["reason"], "candidate": candidate,
                     "language": _lang(candidate), "reason_code": "interpretation_disagreement"} | metadata
         if context.get("structured_memory"):

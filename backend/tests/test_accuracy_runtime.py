@@ -36,7 +36,7 @@ def test_examples_use_remaining_space_and_conflicting_scope_is_not_confirmed(mon
         seen.append(kw)
         return SimpleNamespace(ids=['demo'], scores=[1.0], estimated_tokens=100)
     monkeypatch.setattr(interpret.examples, 'retrieve_examples', retrieve)
-    monkeypatch.setattr(interpret.examples, 'render_examples', lambda result: 'DEMONSTRATION')
+    monkeypatch.setattr(interpret.examples, 'render_examples', lambda result, **kw: 'DEMONSTRATION')
     calls = []
     monkeypatch.setattr(interpret.llm, 'generate_structured', lambda **kw: calls.append(kw) or {'outcome': 'query'})
     cat, sources = setup()
@@ -63,3 +63,39 @@ def test_consistency_samples_identical_context_and_passes_registry_marker(monkey
                               context={'structured_memory': True, 'registry': []}, normalize=normalize)
     assert len(calls) == 3 and len({c['prompt'] for c in calls}) == 1
     assert got['_accuracy']['consistency']['vote_counts'] == [3]
+
+
+def test_schema_invalid_first_response_can_be_recovered_only_by_two_valid_samples(monkeypatch):
+    import threading
+    from texa import llm
+    monkeypatch.setenv('TEXA_EXAMPLE_RETRIEVAL', '0')
+    monkeypatch.setenv('TEXA_CONSISTENCY', '1')
+    lock = threading.Lock()
+    calls = []
+    def model(**kw):
+        with lock:
+            calls.append(kw)
+            count = len(calls)
+        if count == 1:
+            raise llm.LLMError('MODEL_OUTPUT_INVALID', 'invalid JSON shape')
+        return {'outcome': 'query', 'language': 'en'}
+    monkeypatch.setattr(interpret.llm, 'generate_structured', model)
+    cat, sources = setup()
+    got = interpret.interpret('Revenue at Olist', [], cat, sources, model='model',
+                              normalize=lambda c: {'kind': 'spec', 'spec': {'recipe': 'revenue'}})
+    assert got['outcome'] == 'query'
+    assert got['_accuracy']['consistency']['vote_counts'] == [2]
+    assert len(calls) == 3
+
+
+def test_deterministic_refusal_keeps_candidate_and_reason_code(monkeypatch):
+    from texa import answer
+    from texa.spec import SpecError
+    def reject(*a, **kw):
+        raise SpecError('field_not_tracked', 'This field is unavailable')
+    monkeypatch.setattr(answer, '_continue_checked', reject)
+    monkeypatch.setattr(answer.llm, 'get_connection', lambda **kw: None)
+    candidate = {'outcome': 'query', 'language': 'vi', 'recipe': 'revenue', '_accuracy': {'retrieval': {'ids': ['a']}}}
+    result = answer._continue({'state': {}}, candidate, {}, None, None, {})
+    assert result['status'] == 'refused' and result['reason_code'] == 'field_not_tracked'
+    assert result['candidate'] == candidate

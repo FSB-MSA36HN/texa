@@ -46,7 +46,7 @@ def trigger(candidate, bundle):
     return None
 
 
-def select(primary, sample, normalize, *, cancelled=lambda: False, timeout=DEADLINE_S):
+def select(primary, sample, normalize, *, cancelled=lambda: False, timeout=DEADLINE_S, primary_error=None):
     """Return (whole proposal, privacy-safe trace); normalize is a pure read-only callback.
 
     At most one request may expand at a time per process. Each child call still
@@ -55,11 +55,14 @@ def select(primary, sample, normalize, *, cancelled=lambda: False, timeout=DEADL
     trace = {"enabled": True, "scheduled": 1, "completed": 1, "errors": 0,
              "sampling": "independent_identical_prompt_provider_defaults", "selected": 0}
     try:
+        if primary_error:
+            raise llm.LLMError(primary_error, "The initial structured interpretation was invalid.")
         first = normalize(deepcopy(primary))
         reason = trigger(primary, first)
     except (llm.LLMError, SpecError) as exc:
         first, reason = None, "invalid_interpretation"
         trace["primary_error"] = exc.code
+        trace["errors"] = 1
     if not reason:
         return primary, trace | {"trigger": None, "fallback": "not_eligible"}
     trace["trigger"] = reason
@@ -81,6 +84,7 @@ def select(primary, sample, normalize, *, cancelled=lambda: False, timeout=DEADL
                 break
             _, pending = wait(pending, timeout=min(0.1, remaining))
         proposals, bundles = [primary], [first]
+        fatal = None
         for future in futures:
             if future in pending:
                 future.cancel()
@@ -94,10 +98,13 @@ def select(primary, sample, normalize, *, cancelled=lambda: False, timeout=DEADL
                 bundle = normalize(deepcopy(proposal))
                 proposals.append(proposal)
                 bundles.append(bundle)
-            except (llm.LLMError, SpecError):
+            except Exception as exc:
                 proposals.append(None)
                 bundles.append(None)
                 trace["errors"] += 1
+                if not isinstance(exc, (llm.LLMError, SpecError)) or getattr(exc, "code", "") in {
+                    "BUDGET_EXHAUSTED", "AUTH", "NO_KEY", "BAD_MODEL"}:
+                    fatal = exc
         # In-flight calls may settle usage after timeout, but never mutate a turn.
         if pending:
             outstanding = set(pending)
@@ -112,6 +119,8 @@ def select(primary, sample, normalize, *, cancelled=lambda: False, timeout=DEADL
             futures = None  # callbacks own expansion lease until every request exits
         if cancelled():
             raise Cancelled()
+        if fatal is not None:
+            raise fatal
         keys = [fingerprint(b) if b is not None and b.get("kind") == "spec" else None for b in bundles]
         counts = Counter(k for k in keys if k is not None)
         trace.update(fingerprints=keys, vote_counts=sorted(counts.values(), reverse=True),

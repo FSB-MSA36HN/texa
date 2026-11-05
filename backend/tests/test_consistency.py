@@ -97,3 +97,18 @@ def test_timeout_keeps_sampling_lease_until_late_calls_exit_and_does_not_select(
         time.sleep(0.001)
     else:
         pytest.fail('Sampling lease leaked after late requests settled')
+
+
+def test_budget_failure_is_propagated_and_not_disguised_as_disagreement():
+    def exhausted():
+        raise llm.LLMError('BUDGET_EXHAUSTED', 'Budget exhausted')
+    with pytest.raises(llm.LLMError, match='Budget exhausted'):
+        consistency.select(proposal(), exhausted, normalize)
+    assert consistency._EXPANSION.acquire(blocking=False)
+    consistency._EXPANSION.release()
+
+
+def test_invalid_primary_still_requires_two_valid_agreeing_replacements():
+    selected, trace = consistency.select({'language': 'en'}, lambda: proposal(2), normalize,
+                                         primary_error='MODEL_OUTPUT_INVALID')
+    assert selected == proposal(2) and trace['vote_counts'] == [2] and trace['errors'] == 1
