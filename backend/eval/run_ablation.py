@@ -19,7 +19,9 @@ from typing import Any
 
 import yaml
 
-from benchmark import ROOT, execute_readonly, load_cases, results_equal, score_expected_result, server_metadata
+from benchmark import (ROOT, dialogue_outcome_score, execute_readonly, load_cases, results_equal, score_business_result,
+                       score_expected_result, server_metadata)
+from gateway_budget import configure_gateway_from_environment
 from run_benchmark import SYSTEM, SQL_SCHEMA, _call_usage, _project_path, _turn_usage, _wait_turn, prompt_for
 
 SUITES = {'memory': ('F', 'M6', 'M0'), 'clarification': ('F', 'C0'), 'single': ('F', 'B0')}
@@ -163,14 +165,18 @@ class IncompleteRun(RuntimeError):
 
 
 def score_answer(item: dict, turn: dict, session) -> dict:
-    result = {'result_correct': False, 'slot_checks': slot_checks(item.get('state') or {}, turn)}
+    result = {'result_correct': False, 'strict_result_correct': False, 'business_result_correct': False,
+              'output_contract_compliant': False, 'slot_checks': slot_checks(item.get('state') or {}, turn)}
     if action(turn) != 'answer':
         return result
     try:
         columns, rows = session.output(turn)
         expected = item['expected_result']
-        result['result_correct'] = results_equal(columns, rows, expected['columns'], expected['rows'],
-                                                  ordered=bool(item.get('ordered')))
+        scores = score_business_result(columns, rows, expected['columns'], expected['rows'],
+                                       ordered=bool(item.get('ordered')),
+                                       contract=item.get('business_contract'))
+        strict = results_equal(columns, rows, expected['columns'], expected['rows'], ordered=bool(item.get('ordered')))
+        result.update(scores, result_correct=strict, strict_result_correct=strict)
         result.update(columns=columns, row_count=len(rows))
     except Exception as exc:
         result['result_error'] = type(exc).__name__
@@ -209,6 +215,16 @@ def run_memory(item: dict, session) -> dict:
             if 'referenced_turn' in expected:
                 row['reference_diagnostic'] = labels.get(expected['referenced_turn']) in (current.get('context') or {}).get('references', [])
             pending = current if action(current) == 'clarify' else None
+            context_refs = (current.get('context') or {}).get('references') or []
+            row.update(dialogue_outcome_score(
+                expected_action=wanted, actual_action=row['actual_action'],
+                result_correct=row.get('business_result_correct'),
+                expected_fields=expected.get('ask_fields') or [], actual_fields=form_fields(current),
+                # Structured reference metadata is diagnostic: an M6/raw-history
+                # system may resolve the same ordinal reference without exposing
+                # Texa's internal reference list. The public result is scored.
+                reference_expected=None,
+                context_contamination=not expected.get('referenced_turn') and bool(context_refs)))
         except IncompleteRun:
             raise
         except Exception as exc:
@@ -216,14 +232,22 @@ def run_memory(item: dict, session) -> dict:
                        clarification_counts=clarification_counts(expected.get('ask_fields', []), []))
             if expected.get('gold_sql'):
                 row['result_correct'] = False
+                row['strict_result_correct'] = False
+                row['business_result_correct'] = False
+                row['output_contract_compliant'] = False
             pending = None
         rows.append(row)
     answers = [row for row in rows if 'result_correct' in row]
     # Slot fidelity is reported, but cannot override a correct final SQL result
     # simply because a strategy's internal representation differs.
-    return {'turns': rows, 'success': all(row['action_correct'] and row.get('result_correct', True) for row in rows),
-            'result_correct': all(row['result_correct'] for row in answers) if answers else None,
-            'answer_count': len(answers), 'answer_correct': sum(row['result_correct'] for row in answers),
+    aggregate_correct = all(row['result_correct'] for row in answers) if answers else None
+    business_answers = [row for row in answers if row.get('business_result_correct') is not None]
+    business_correct = (all(row['business_result_correct'] for row in business_answers)
+                        if business_answers else None)
+    return {'turns': rows, 'success': all(row.get('observable_success', False) for row in rows),
+            'result_correct': aggregate_correct, 'strict_result_correct': aggregate_correct,
+            'business_result_correct': business_correct,
+            'answer_count': len(business_answers), 'answer_correct': sum(row['business_result_correct'] for row in business_answers),
             'clarification_rounds': sum(row.get('actual_action') == 'clarify' for row in rows),
             'clarification_counts': {key: sum(row['clarification_counts'][key] for row in rows) for key in ('tp', 'fp', 'fn')}}
 
@@ -254,8 +278,10 @@ def run_interaction(item: dict, session, max_rounds: int = 2) -> dict:
     result = score_answer(item, current, session)
     # C0 is not failed merely for skipping an expected question; final SQL is
     # judged against exactly the same hidden user intent as F.
-    return {**result, 'success': bool(result['result_correct']) and oracle_error is None,
-            'answer_count': 1, 'answer_correct': int(result['result_correct']),
+    business_correct = bool(result.get('business_result_correct', result['result_correct']))
+    return {**result, 'success': business_correct and oracle_error is None,
+            'strict_result_correct': result.get('result_correct'),
+            'answer_count': 1, 'answer_correct': int(business_correct),
             'clarification_counts': counts, 'clarification_rounds': rounds,
             'oracle_error': oracle_error, 'turns': rows,
             'trigger_observed': bool(seen_fields) or any((row['trace'].get('ablation') or {}).get('clarification_invoked') for row in rows)}
@@ -297,30 +323,36 @@ def owner_digest(dsn: str, source: str) -> str:
 
 
 def preflight(args, directory: Path, rows: list[dict]) -> dict:
+    os.environ['TEXA_SOURCE_PROFILE'] = 'evaluation'
     from texa import catalog, db, llm
     dsn = os.environ.get('TEXA_BENCHMARK_DSN')
     if not dsn:
         raise ValueError('Set TEXA_BENCHMARK_DSN to the isolated read-only benchmark role')
     manifest = yaml.safe_load((directory / 'manifest.yaml').read_text())
-    source = manifest.get('source_id', 'event_benchmark')
-    observed = source_digest(dsn, source)
-    expected = manifest.get('source_digest')
-    if expected and observed != expected:
-        raise ValueError('Loaded database differs from the frozen fixture; reload the selected dataset')
-    for candidate in (db.READER_DSN,):
-        if source_digest(candidate, source) != observed:
-            raise ValueError('Texa reader and evaluator must see identical data')
-    if owner_digest(db.DB_DSN, source) != observed:
-        raise ValueError('Texa app and evaluator must see identical data')
+    selected_sources = manifest.get('sources') or [manifest.get('source_id', 'event_benchmark')]
+    observed_sources = {source: source_digest(dsn, source) for source in selected_sources}
+    expected_sources = manifest.get('source_digests') or {}
+    if len(selected_sources) == 1 and manifest.get('source_digest'):
+        expected_sources = {selected_sources[0]: manifest['source_digest']}
+    for source, observed in observed_sources.items():
+        if expected_sources.get(source) and observed != expected_sources[source]:
+            raise ValueError(f'Loaded database differs from frozen fixture for {source}; reload the selected dataset')
+        if source_digest(db.READER_DSN, source) != observed:
+            raise ValueError(f'Texa reader and evaluator differ for {source}')
+        if owner_digest(db.DB_DSN, source) != observed:
+            raise ValueError(f'Texa app and evaluator differ for {source}')
     cat = catalog.published()
     sources = catalog.scoped_sources(cat, catalog.load_sources(max_age=0))
-    if source not in sources:
-        raise ValueError('Selected source metadata is missing')
-    src = sources[source]
-    _, stats = execute_readonly(dsn, "SELECT min(event_date)::text,max(event_date)::text,count(*),count(DISTINCT user_id) FROM analytics.event_activity WHERE source_id='" + source.replace("'", "''") + "'")
-    if tuple(stats[0]) != (src.min_date, src.max_date, src.row_count, src.user_count):
-        raise ValueError('Source registry metadata is stale relative to the fixture')
-    if source not in cat.allowed_sources or cat.policy.max_sources != 1:
+    if set(selected_sources) - set(sources):
+        raise ValueError(f'Selected source metadata is missing: {sorted(set(selected_sources)-set(sources))}')
+    metadata = {}
+    for source in selected_sources:
+        src = sources[source]
+        _, stats = execute_readonly(dsn, "SELECT min(event_date)::text,max(event_date)::text,count(*),count(DISTINCT user_id) FROM analytics.event_activity WHERE source_id='" + source.replace("'", "''") + "'")
+        if tuple(stats[0]) != (src.min_date, src.max_date, src.row_count, src.user_count):
+            raise ValueError(f'Source registry metadata is stale relative to fixture: {source}')
+        metadata[source] = src
+    if set(selected_sources) - set(cat.sources_for_profile('evaluation')) or cat.policy.max_sources != 1:
         raise ValueError('Publish the bounded product catalog before running the study')
     effective = llm.get_connection(with_key=False)
     if not effective:
@@ -328,22 +360,45 @@ def preflight(args, directory: Path, rows: list[dict]) -> dict:
     config = {key: effective.get(key) for key in ('provider', 'max_output_tokens', 'answer_language')}
     config.update(model=args.model, context_budget=db.CONTEXT_BUDGET_TOKENS,
                   seed='not set; provider dependent', temperature='0 for Gemini; provider default for OpenAI/Anthropic',
-                  http_timeout_s=llm.TIMEOUT_S, stage_output_caps={'B0': 1200, 'C0_guess': 120, 'Texa_other_stages': 'code/default'}, retry_policy='provider SDK default; no application-level structured-output retry',
+                  http_timeout_s=llm.TIMEOUT_S, stage_output_caps={'B0': 1200, 'C0_guess': 120, 'Texa_other_stages': 'code/default'},
+                  retry_policy={'max_provider_attempts': llm.MAX_PROVIDER_ATTEMPTS,
+                                'sdk_max_retries': 0,
+                                'retryable_failures_only': True,
+                                'backoff_s': 'min(0.25 * 2^attempt + uniform(0,0.1), 1.0)'},
+                  admission={'max_inflight': llm.ADMISSION.max_inflight,
+                             'max_waiters': llm.ADMISSION.max_waiters,
+                             'wait_timeout_s': llm.ADMISSION.wait_timeout_s},
                   max_clarification_rounds=args.max_clarification_rounds, max_model_calls=args.max_model_calls,
                   turn_timeout_s=args.turn_timeout, max_rounds_protocol='exact fields; no unsolicited oracle')
     # Keep credentials/DSNs/keys out of output; hash provider route if customized.
     config['endpoint_hash'] = digest(effective.get('base_url') or 'provider default')
     inputs = [p for p in directory.iterdir() if p.is_file() and p.suffix in {'.yaml', '.sql', '.json', '.py'}]
-    prompt_files = [ROOT / 'backend/texa/prompts.py', ROOT / 'backend/texa/interpret.py', ROOT / 'backend/texa/ablation.py', Path(__file__).resolve()]
+    prompt_files = [ROOT / f for f in (
+        'backend/texa/prompts.py', 'backend/texa/interpret.py', 'backend/texa/ablation.py',
+        'backend/texa/memory.py', 'backend/texa/catalog.py', 'backend/texa/spec.py',
+        'backend/texa/compile.py', 'backend/texa/profiler.py', 'backend/texa/clarify.py',
+        'backend/texa/answer.py', 'backend/texa/llm.py',
+        'backend/texa/runtime_guard.py', 'backend/texa/schema.sql',
+        'backend/texa/main.py', 'backend/texa/pipeline.py', 'backend/texa/sanity.py',
+        'backend/texa/suggestions.py', 'backend/texa/locale.py', 'backend/texa/execute.py',
+        'backend/texa/db.py', 'backend/texa/insight.py', 'backend/texa/facts.py',
+        'backend/texa/gateway_budget.py',
+        'backend/eval/gateway_budget.py', 'backend/eval/validate_dataset.py',
+        'backend/eval/benchmark.py', 'backend/eval/run_benchmark.py',
+        'backend/eval/run_ablation.py', 'backend/eval/report_ablation.py',
+    )]
     hashes = lambda paths: {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest() for path in paths}
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     dirty = subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip()
     if dirty:
         raise ValueError('Commit tracked implementation changes before collecting live experiment results')
-    source_metadata = src.model_dump(mode='json')
-    source_metadata.pop('snapshot_version', None)
-    for key in ('events', 'ep_keys', 'up_keys', 'columns'):
-        source_metadata[key] = sorted(source_metadata[key])
+    source_metadata = {}
+    for source, src in metadata.items():
+        value = src.model_dump(mode='json')
+        value.pop('snapshot_version', None)
+        for key in ('events', 'ep_keys', 'up_keys', 'columns'):
+            value[key] = sorted(value[key])
+        source_metadata[source] = value
     # Full gold validation before a paid run prevents accidental scoring against
     # a fixture that merely happens to share the source name.
     for row in rows:
@@ -354,14 +409,18 @@ def preflight(args, directory: Path, rows: list[dict]) -> dict:
                 if not result['result_correct']:
                     raise ValueError(f"Gold validation failed for {row['id']}")
     return {'dataset_hashes': hashes(inputs), 'catalog_hash': digest(cat.model_dump(mode='json')),
-            'prompt_hashes': hashes(prompt_files), 'source_digest': observed, 'effective_model_config': config,
+            'prompt_hashes': hashes(prompt_files), 'implementation_hashes': hashes(prompt_files),
+            'source_profile': 'evaluation', 'source_digests': observed_sources,
+            'source_digest': digest(observed_sources), 'effective_model_config': config,
             'commit': commit, 'postgresql': server_metadata(dsn),
             'source_metadata_hash': digest(source_metadata)}
 
 
 def scenario_base(item: dict) -> dict:
     return {'type': 'scenario', 'id': item['id'], 'cluster_id': item.get('cluster_id', item.get('family', item['id'])),
-            'group': item.get('phenomenon', item.get('family', 'unlabeled')), 'tags': item.get('tags', [])}
+            'group': item.get('phenomenon', item.get('family', 'unlabeled')), 'tags': item.get('tags', []),
+            'source_id': item.get('source_id'), 'language': item.get('language'),
+            'intent': item.get('family')}
 
 
 def gold_run(args, directory: Path, scenarios: list[dict]) -> int:
@@ -399,6 +458,7 @@ def check_protocol(args, provenance: dict) -> None:
 
 
 def execute(args, directory: Path, scenarios: list[dict]) -> int:
+    os.environ['TEXA_SOURCE_PROFILE'] = 'evaluation'
     from texa import ablation, llm
     os.environ.pop('TEXA_MEMORY_MODE', None)
     os.environ['TEXA_ABLATION_VARIANT'] = 'F' if args.variant == 'B0' else args.variant
@@ -444,12 +504,18 @@ def execute(args, directory: Path, scenarios: list[dict]) -> int:
                         response = llm.generate_structured(model=args.model, system=SYSTEM, prompt=prompt_for(item, manifest),
                                                            schema=SQL_SCHEMA, name=call_name, max_output_tokens=1200)
                         measured = score_expected_result(os.environ['TEXA_BENCHMARK_DSN'], response['sql'],
-                                                        item['expected_result'] | {'ordered': item.get('ordered', False)})
-                        record = {'success': measured['result_correct'], 'result_correct': measured['result_correct'],
-                                  'answer_count': 1, 'answer_correct': int(measured['result_correct']),
+                                                        item['expected_result'] | {'ordered': item.get('ordered', False)},
+                                                        contract=item.get('business_contract'))
+                        business_ok = bool(measured.get('business_result_correct', measured['result_correct']))
+                        record = {'success': business_ok, 'result_correct': measured['result_correct'],
+                                  'strict_result_correct': measured.get('strict_result_correct', measured['result_correct']),
+                                  'business_result_correct': business_ok,
+                                  'output_contract_compliant': measured.get('output_contract_compliant'),
+                                  'answer_count': 1, 'answer_correct': int(business_ok),
                                   'sql': response['sql'], 'usage': _call_usage(call_name)}
                     else:
-                        session = TexaSession(args.model, manifest.get('source_id', 'event_benchmark'), args.turn_timeout)
+                        session = TexaSession(args.model, item.get('source_id', manifest.get('source_id', 'event_benchmark')),
+                                              args.turn_timeout)
                         if args.suite == 'memory':
                             record = run_memory(item, session)
                         elif args.suite == 'clarification':
@@ -457,14 +523,16 @@ def execute(args, directory: Path, scenarios: list[dict]) -> int:
                         else:
                             current = session.ask(item['question'])
                             record = score_answer(item, current, session)
-                            record.update(success=record['result_correct'], answer_count=1,
-                                          answer_correct=int(record['result_correct']), turns=[{'trace': trace(current)}])
+                            business_ok = bool(record.get('business_result_correct', record['result_correct']))
+                            record.update(success=business_ok, answer_count=1,
+                                          answer_correct=int(business_ok), turns=[{'trace': trace(current)}])
                         record['usage'] = session.usage()
                 except IncompleteRun:
                     raise
                 except Exception as exc:
                     count = sum('gold_sql' in t for t in item.get('turns', [item]))
-                    record = {'success': False, 'result_correct': False, 'answer_count': count, 'answer_correct': 0,
+                    record = {'success': False, 'result_correct': False, 'business_result_correct': False,
+                              'output_contract_compliant': False, 'answer_count': count, 'answer_correct': 0,
                               'error': type(exc).__name__, 'usage': session.usage() if session else (_call_usage(call_name) if call_name else {k: 0 for k in USAGE_KEYS})}
                 finally:
                     if session and not any(not run.done for key, run in session.api.RUNS.items() if key in session.turn_ids):
@@ -531,10 +599,15 @@ def main(argv=None) -> int:
     parser.add_argument('--output', default=str(ROOT / 'backend/eval/results' / f'ablation-{uuid.uuid4().hex}.jsonl'))
     parser.add_argument('--output-dir', default=str(ROOT / 'backend/eval/results' / f'study-{uuid.uuid4().hex[:12]}'))
     args = parser.parse_args(argv)
+    os.environ['TEXA_SOURCE_PROFILE'] = 'evaluation'
+    configure_gateway_from_environment(ROOT / '.runtime')
     directory = _project_path(args.dataset_dir)
-    from validate_dataset import validate_ablation_dataset, validate_dataset
+    from validate_dataset import validate_ablation_dataset, validate_dataset, validate_remediation_ablation
     if (directory / 'interactions.yaml').exists():
-        validate_ablation_dataset(directory)
+        if yaml.safe_load((directory / 'manifest.yaml').read_text()).get('status') == 'candidate_not_sealed':
+            validate_remediation_ablation(directory)
+        else:
+            validate_ablation_dataset(directory)
     else:
         annotated = validate_dataset(directory)
         lock = directory / 'validation.json'

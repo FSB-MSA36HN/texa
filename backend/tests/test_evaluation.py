@@ -6,7 +6,8 @@ import sys
 import pytest
 
 from eval.benchmark import (CASES_PATH, dialogue_scores, load_cases, results_equal,
-                            paired_delta_bootstrap, validate_split_is_family_disjoint)
+                            paired_delta_bootstrap, score_business_result, dialogue_outcome_score,
+                            validate_split_is_family_disjoint)
 
 
 def test_pilot_size_and_family_disjoint_splits():
@@ -16,6 +17,24 @@ def test_pilot_size_and_family_disjoint_splits():
     assert sum(case["split"] == "test" for case in cases) == 12
     validate_split_is_family_disjoint(cases)
     assert all("expected_result" in case for case in cases)
+
+
+def test_remediation_v2_is_dev_only_and_has_explicit_semantic_contracts():
+    import yaml
+    directory = CASES_PATH.parent / "remediation_v2"
+    cases = load_cases(directory / "cases.yaml")
+    validate_split_is_family_disjoint(cases)
+    assert len(cases) == 24
+    assert sum(case["split"] == "dev" for case in cases) == 8
+    assert sum(case["split"] == "test" for case in cases) == 16
+    assert len({case["family"] for case in cases}) == 24
+    assert all(case.get("business_contract", {}).get("columns") for case in cases)
+    assert all(case.get("business_contract", {}).get("columns") for case in cases)
+    manifest = yaml.safe_load((directory / "manifest.yaml").read_text())
+    assert manifest["status"] == "development_plus_candidate_holdout"
+    assert "not a sealed confirmatory holdout" in manifest["split_policy"]
+    assert set(manifest["sources"]) == {"cosmetics_shop", "olist_marketplace"}
+    assert set(manifest["languages"]) == {"vi", "en", "pt"}
 
 
 def test_paired_delta_bootstrap_is_reproducible_and_paired_by_case():
@@ -47,6 +66,30 @@ def test_cli_compares_paired_result_files_with_family_bootstrap():
     assert summary["n"] == 3
     assert summary["strata"] == 2
     assert summary["delta"] == pytest.approx(1 / 3)
+
+
+def test_comparator_prefers_protocol_v2_business_metric():
+    # Import the runner from its script directory just as the CLI does.
+    backend = CASES_PATH.parents[2] / "backend"
+    import sys
+    sys.path.insert(0, str(backend / "eval"))
+    try:
+        import run_benchmark
+        runtime = backend / ".runtime"
+        runtime.mkdir(exist_ok=True)
+        left, right = runtime / "test-v2-left.jsonl", runtime / "test-v2-right.jsonl"
+        records = [{"case_id": "a", "family": "f", "result_correct": False,
+                    "business_result_correct": True}]
+        left.write_text("\n".join(json.dumps(r) for r in records))
+        records[0]["business_result_correct"] = False
+        right.write_text("\n".join(json.dumps(r) for r in records))
+        comparison = run_benchmark.compare_results_files(str(left), str(right))
+        assert comparison["score_field"] == "business_result_correct"
+        assert comparison["left_accuracy"] == 1 and comparison["right_accuracy"] == 0
+        left.unlink(missing_ok=True)
+        right.unlink(missing_ok=True)
+    finally:
+        sys.path.remove(str(backend / "eval"))
 
 
 def test_dialogue_rollout_modes_smoke_with_mocked_model_no_provider_calls(monkeypatch):
@@ -87,6 +130,64 @@ def test_result_comparator_keeps_duplicates_and_nulls_but_ignores_row_order():
 def test_ordered_results_check_requested_rank_order():
     assert results_equal(["k"], [("a",), ("b",)], ["k"], [("a",), ("b",)], ordered=True)
     assert not results_equal(["k"], [("b",), ("a",)], ["k"], [("a",), ("b",)], ordered=True)
+
+
+def test_v2_business_metric_keeps_full_result_and_reports_contract_separately():
+    exact = score_business_result(["day", "count"], [("Mon", 2)], ["day", "count"], [("Mon", 2)])
+    assert exact["business_result_correct"] and exact["output_contract_compliant"]
+    extra_column = score_business_result(["day", "count", "debug"], [("Mon", 2, "x")],
+                                         ["day", "count"], [("Mon", 2)])
+    assert not extra_column["business_result_correct"]
+    assert not extra_column["output_contract_compliant"]
+    assert extra_column["metric_protocol"] == "v2_full_result_contract"
+    mapped = score_business_result(
+        ["debug", "daily_count", "event_date"], [("trace", 2, "Mon")],
+        ["event_date", "count"], [("Mon", 2)],
+        contract={"columns": [
+            {"id": "date_dimension", "actual_alias": "event_date", "gold_alias": "event_date"},
+            {"id": "event_count", "actual_alias": "daily_count", "gold_alias": "count"},
+        ]},
+    )
+    assert mapped["business_result_correct"]
+    assert not mapped["output_contract_compliant"]
+    required_dimension_missing = score_business_result(
+        ["daily_count"], [(2,)], ["event_date", "count"], [("Mon", 2)],
+        contract={"columns": [
+            {"id": "date_dimension", "actual_alias": "event_date", "gold_alias": "event_date"},
+            {"id": "event_count", "actual_alias": "daily_count", "gold_alias": "count"},
+        ]},
+    )
+    assert not required_dimension_missing["business_result_correct"]
+    incomplete_mapping = score_business_result(
+        ["daily_count"], [(2,)], ["event_date", "count"], [("Mon", 2)],
+        contract={"columns": [{"id": "event_count", "actual_alias": "daily_count", "gold_alias": "count"}]},
+    )
+    assert not incomplete_mapping["business_result_correct"]
+
+
+def test_score_result_retains_historical_strict_field_and_adds_business_metric(monkeypatch):
+    from eval import benchmark as module
+    monkeypatch.setattr(module, "execute_readonly", lambda *_args, **_kwargs: (("event_date", "count"), (("Mon", 2),)))
+    case = {"gold_sql": "SELECT 1", "business_contract": {"columns": [
+        {"id": "date", "actual_alias": "day", "gold_alias": "event_date"},
+        {"id": "events", "actual_alias": "n", "gold_alias": "count"},
+    ]}}
+    scored = module.score_result("unused", ["n", "day"], [(2, "Mon")], case)
+    assert scored["result_correct"] is False
+    assert scored["strict_result_correct"] is False
+    assert scored["business_result_correct"] is True
+    assert scored["output_contract_compliant"] is False
+
+
+def test_dialogue_observable_rubric_is_system_agnostic():
+    shared = dict(expected_action="answer", actual_action="answer", result_correct=True,
+                  expected_fields=[], actual_fields=[], reference_expected=True)
+    texa_observation = dialogue_outcome_score(**shared)
+    baseline_observation = dialogue_outcome_score(**shared)
+    assert texa_observation == baseline_observation
+    assert texa_observation["observable_success"]
+    assert not dialogue_outcome_score(**{**shared, "result_correct": False})["observable_success"]
+    assert not dialogue_outcome_score(**{**shared, "result_correct": None})["observable_success"]
 
 
 def test_datetime_values_and_column_order_are_checked():

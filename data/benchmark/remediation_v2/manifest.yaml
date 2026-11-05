@@ -1,0 +1,56 @@
+name: remediation-v2-development
+version: 2
+status: development_plus_candidate_holdout
+engine: PostgreSQL
+fixture: ../multisource_v1/fixture.sql
+sources: [cosmetics_shop, olist_marketplace]
+languages: [vi, en, pt]
+metric_protocol: v2_full_result_contract
+cases_file: cases.yaml
+split_policy: >-
+  Dev contains 8 families; candidate test contains 16 disjoint families,
+  independently authored at the intent-family level rather than paraphrases.
+  Test is not a sealed confirmatory holdout: it is visible in this repository
+  and requires second-human review and a committed implementation freeze before
+  paid evaluation.
+dataset_policy: >-
+  Questions and gold SQL are authored independently for this remediation set.
+  Fixtures are synthetic and reused from multisource_v1, so this set is not an
+  independent data-source sample. Families, not paraphrases, are the unit for
+  any future split. A new sealed holdout must be authored after implementation
+  freeze and reviewed by a second human before confirmatory model calls.
+business_column_contract:
+  columns: >-
+    Each case lists every requested measure and grouping dimension by stable
+    ID, with actual_alias and gold_alias specified before scoring. All listed
+    dimensions and measures are required; extra columns fail output-contract
+    compliance but do not invalidate a correctly projected business answer.
+    No column is selected by matching observed values.
+output_contract:
+  aliases: Exact gold aliases and column order.
+  row_grain: Exactly the requested grain; duplicate rows and NULLs preserved.
+  ordering: Row order is ignored unless ordered=true.
+  numeric_tolerance: {absolute: 1.0e-6, relative: 1.0e-6}
+scores:
+  primary: business_result_correct
+  secondary: output_contract_compliant
+  historical: result_correct remains strict and comparable only with its own protocol version.
+limitations:
+  - Small diagnostic set; no statistical efficacy claim.
+  - Synthetic cosmetics and Olist-like fixture rows; not production datasets.
+  - Gold SQL has not received independent second-human adjudication.
+  - Candidate test labels are visible and not yet eligible for confirmatory claims.
+schema: >-
+  analytics.event_activity(source_id text,event_id text,event_date date,event_name text,
+  user_id text,session_id text,item_id text,item_category text,revenue numeric,
+  ep jsonb). One source per query. Olist order_id is nested at ep.order_id.
+metric_definitions: >-
+  Count event rows for event count; count distinct user_id for users; sum revenue
+  only over purchase-role rows (purchase for cosmetics_shop and order_purchased
+  for olist_marketplace). payment_made rows are not purchased-item revenue.
+  Order IDs are nested and require distinct ep->>'order_id'. Currency remains
+  source-native; do not combine USD and BRL.
+output_aliases:
+  metrics: {events: events, users: users, purchases: purchases, revenue: revenue,
+            buyers: buyers, viewers: viewers, buyer_conversion_rate: buyer_conversion_rate}
+  dimensions: {event_date: event_date, event_name: event_name, item_category: item_category}

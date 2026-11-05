@@ -1,0 +1,25 @@
+{
+  "status": "candidate_not_sealed",
+  "dialogues": 4,
+  "dialogue_families": 4,
+  "interactions": 4,
+  "interaction_families": 4,
+  "answer_turns": 8,
+  "splits": {
+    "dev": {
+      "dialogues": 2,
+      "interactions": 2
+    },
+    "test": {
+      "dialogues": 2,
+      "interactions": 2
+    }
+  },
+  "sha256": {
+    "manifest.yaml": "b3456707c9b48174b2ea7f9149abe0a15e7afd6352345d5dcd2724b04b63ce88",
+    "cases.yaml": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "dialogues.yaml": "714abd5dabd1d8cacf7895d82cdf5dfcbdcfc45b582c6d9cd30c796dcefb5425",
+    "interactions.yaml": "23d45282599afa5aa646c53154a4ddcb01e6a137a61ab78bdc0e99923ab6af7c",
+    "fixture.sql": "58ab1217845be4dea25978b58a0a1ce810d7c89ba8f850c4c280324724949aa3"
+  }
+}

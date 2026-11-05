@@ -1,0 +1,26 @@
+name: remediation-v2-ablation-candidate
+version: 2
+status: candidate_not_sealed
+engine: PostgreSQL
+fixture: ../multisource_v1/fixture.sql
+metrics_reference: ../remediation_v2/manifest.yaml
+single_turn_suite: ../remediation_v2/cases.yaml
+sources: [cosmetics_shop, olist_marketplace]
+languages: [vi, en, pt]
+memory_split_policy: >-
+  Four independently authored dialogue intent families, two dev and two visible
+  candidate test. Not a sealed or human-adjudicated confirmatory holdout.
+clarification_split_policy: >-
+  Four distinct interaction families covering ambiguous sales, an explicit
+  control, a missing period, and a source-selector conflict. Not human reviewed.
+schema: >-
+  analytics.event_activity(source_id text,event_date date,event_name text,user_id text,
+  session_id text,item_category text,revenue numeric,ep jsonb). Filter exactly one source.
+metric_definitions: >-
+  events counts event rows; users counts distinct user_id; purchases counts
+  purchase-role rows; revenue sums item revenue on purchase-role rows; buyers
+  counts distinct users on purchase-role rows. Purchases are purchase for
+  cosmetics_shop and order_purchased for Olist; payment_made is not revenue.
+output_aliases:
+  metrics: {events: events, users: users, purchases: purchases, revenue: revenue, buyers: buyers}
+  dimensions: {event_date: event_date, event_name: event_name, item_category: item_category}

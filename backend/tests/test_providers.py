@@ -148,6 +148,33 @@ def test_full_admission_queue_fails_closed_without_provider_call(fake, monkeypat
     assert events == [{'event': 'llm_queue_wait', 'duration_ms': 5, 'call_name': 'insight', 'outcome': 'rejected'}]
 
 
+def test_gemini_client_disables_sdk_retries(monkeypatch):
+    import types as pytypes
+    captured = {}
+    google = pytypes.ModuleType('google')
+    google.__path__ = []
+    genai = pytypes.ModuleType('google.genai')
+    genai.__path__ = []
+    sdk_types = pytypes.ModuleType('google.genai.types')
+    sdk_types.HttpOptions = lambda **kwargs: NS(**kwargs)
+    sdk_types.HttpRetryOptions = lambda **kwargs: NS(**kwargs)
+    genai.types = sdk_types
+    def client(**kwargs):
+        captured.update(kwargs)
+        return object()
+    genai.Client = client
+    google.genai = genai
+    monkeypatch.setitem(sys.modules, 'google', google)
+    monkeypatch.setitem(sys.modules, 'google.genai', genai)
+    monkeypatch.setitem(sys.modules, 'google.genai.types', sdk_types)
+
+    llm._gemini_client('fake-only', 'https://example.invalid')
+    options = captured['http_options']
+    assert options.timeout == llm.TIMEOUT_S * 1000
+    assert options.base_url == 'https://example.invalid'
+    assert options.retry_options.attempts == 1
+
+
 def test_provider_error_does_not_expose_raw_credentials_or_payload():
     error = llm._map_error(RuntimeError('Authorization: Bearer private-key; user payload'))
     assert error.code == 'PROVIDER_ERROR'

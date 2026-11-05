@@ -95,6 +95,74 @@ def results_equal(
     return not unmatched
 
 
+def score_business_result(actual_columns: Iterable[str], actual_rows: Iterable[Iterable[Any]],
+                          expected_columns: Iterable[str], expected_rows: Iterable[Iterable[Any]], *,
+                          ordered: bool = False,
+                          contract: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Protocol-v2 business result and output-contract scores.
+
+    An optional preregistered case contract maps every required semantic column
+    to its result aliases. Business correctness compares that full projection;
+    output-contract compliance still requires the exact complete output schema.
+    No mapping is inferred from observed values or adjusted after scoring.
+    """
+    actual_columns, expected_columns = tuple(actual_columns), tuple(expected_columns)
+    actual_rows, expected_rows = [tuple(r) for r in actual_rows], [tuple(r) for r in expected_rows]
+    contract_ok = actual_columns == expected_columns and len(set(actual_columns)) == len(actual_columns)
+    if contract is not None:
+        specs = contract.get("columns") if isinstance(contract, dict) else None
+        if not isinstance(specs, list):
+            specs = []
+        actual_names = [spec.get("actual_alias") for spec in specs if isinstance(spec, dict)]
+        expected_names = [spec.get("gold_alias") for spec in specs if isinstance(spec, dict)]
+        # The mapping is authored in the case contract, never inferred from values.
+        unique = (len(specs) == len(actual_names) == len(expected_names)
+                  and all(isinstance(spec.get("id"), str) and spec.get("id") for spec in specs)
+                  and len({spec.get("id") for spec in specs}) == len(specs)
+                  and len(set(actual_names)) == len(actual_names)
+                  and len(set(expected_names)) == len(expected_names)
+                  and bool(specs) and set(expected_names) == set(expected_columns)
+                  and len(expected_names) == len(expected_columns)
+                  and len(set(actual_columns)) == len(actual_columns)
+                  and len(set(expected_columns)) == len(expected_columns))
+        contract_ok = contract_ok and unique
+        actual_indices = [actual_columns.index(name) for name in actual_names
+                          if name in actual_columns] if unique else []
+        expected_indices = [expected_columns.index(name) for name in expected_names
+                            if name in expected_columns] if unique else []
+        business_correct = (unique and len(actual_indices) == len(specs)
+                            and len(expected_indices) == len(specs)
+                            and results_equal([spec["id"] for spec in specs],
+                                              [tuple(row[i] for i in actual_indices) for row in actual_rows],
+                                              [spec["id"] for spec in specs],
+                                              [tuple(row[i] for i in expected_indices) for row in expected_rows],
+                                              ordered=ordered))
+    else:
+        business_correct = results_equal(actual_columns, actual_rows, expected_columns, expected_rows,
+                                          ordered=ordered)
+    return {
+        "business_result_correct": business_correct,
+        "output_contract_compliant": contract_ok,
+        "metric_protocol": "v2_full_result_contract",
+    }
+
+
+def dialogue_outcome_score(*, expected_action: str, actual_action: str,
+                           result_correct: bool | None = None,
+                           expected_fields: Iterable[str] = (), actual_fields: Iterable[str] = (),
+                           reference_expected: bool | None = None,
+                           oracle_answer_valid: bool = True,
+                           context_contamination: bool = False) -> dict[str, Any]:
+    """Shared observable dialogue rubric; accepts no system-private state."""
+    expected_fields, actual_fields = set(expected_fields), set(actual_fields)
+    clarification_ok = actual_fields == expected_fields
+    answer_ok = result_correct is True if expected_action == "answer" else True
+    success = (expected_action == actual_action and answer_ok and clarification_ok
+               and reference_expected is not False and oracle_answer_valid and not context_contamination)
+    return {"observable_success": success, "clarification_fields_exact": clarification_ok,
+            "answer_result_ok": answer_ok}
+
+
 def execute_readonly(dsn: str, sql: str, *, timeout_ms: int = 5000, max_rows: int = 10000):
     """Execute one SELECT in a read-only transaction and reject truncated results.
 
@@ -136,10 +204,16 @@ def score_sql(dsn: str, sql: str, case: dict[str, Any], *, timeout_ms: int = 500
     try:
         actual = execute_readonly(dsn, sql, timeout_ms=timeout_ms, max_rows=max_rows)
         expected = execute_readonly(dsn, case["gold_sql"], timeout_ms=timeout_ms, max_rows=max_rows)
-        return {"status": "ok", "result_correct": results_equal(*actual, *expected, ordered=bool(case.get("ordered"))),
+        scores = score_business_result(*actual, *expected, ordered=bool(case.get("ordered")),
+                                       contract=case.get("business_contract"))
+        strict = results_equal(*actual, *expected, ordered=bool(case.get("ordered")))
+        return {"status": "ok", "result_correct": strict, "strict_result_correct": strict, **scores,
                 "columns": list(actual[0]), "row_count": len(actual[1])}
     except Exception as exc:
-        return {"status": "error", "result_correct": False, "error": f"{type(exc).__name__}: {str(exc)[:300]}"}
+        return {"status": "error", "result_correct": False, "strict_result_correct": False,
+                "business_result_correct": False, "output_contract_compliant": False,
+                "metric_protocol": "v2_full_result_contract",
+                "error": f"{type(exc).__name__}: {str(exc)[:300]}"}
 
 
 def score_result(dsn: str, columns: Iterable[str], rows: Iterable[Iterable[Any]], case: dict[str, Any], *,
@@ -150,21 +224,36 @@ def score_result(dsn: str, columns: Iterable[str], rows: Iterable[Iterable[Any]]
         if len(actual_rows) > max_rows:
             raise ValueError(f"result exceeds evaluator limit of {max_rows} rows")
         expected_columns, expected_rows = execute_readonly(dsn, case["gold_sql"], timeout_ms=timeout_ms, max_rows=max_rows)
-        correct = results_equal(actual_columns, actual_rows, expected_columns, expected_rows, ordered=bool(case.get("ordered")))
-        return {"status": "ok", "result_correct": correct, "columns": list(actual_columns), "row_count": len(actual_rows)}
+        scores = score_business_result(actual_columns, actual_rows, expected_columns, expected_rows,
+                                       ordered=bool(case.get("ordered")),
+                                       contract=case.get("business_contract"))
+        strict = results_equal(actual_columns, actual_rows, expected_columns, expected_rows,
+                               ordered=bool(case.get("ordered")))
+        return {"status": "ok", "result_correct": strict, "strict_result_correct": strict, **scores,
+                "columns": list(actual_columns), "row_count": len(actual_rows)}
     except Exception as exc:
-        return {"status": "error", "result_correct": False, "error": f"{type(exc).__name__}: {str(exc)[:300]}"}
+        return {"status": "error", "result_correct": False, "strict_result_correct": False,
+                "business_result_correct": False, "output_contract_compliant": False,
+                "metric_protocol": "v2_full_result_contract",
+                "error": f"{type(exc).__name__}: {str(exc)[:300]}"}
 
 
-def score_expected_result(dsn: str, sql: str, expected: dict[str, Any]) -> dict[str, Any]:
+def score_expected_result(dsn: str, sql: str, expected: dict[str, Any], *,
+                          contract: dict[str, Any] | None = None) -> dict[str, Any]:
     """Check a frozen gold query against independently annotated pilot rows."""
     try:
         columns, rows = execute_readonly(dsn, sql)
-        correct = results_equal(columns, rows, expected["columns"], expected["rows"],
-                                ordered=bool(expected.get("ordered")))
-        return {"status": "ok", "result_correct": correct, "columns": list(columns), "row_count": len(rows)}
+        scores = score_business_result(columns, rows, expected["columns"], expected["rows"],
+                                       ordered=bool(expected.get("ordered")), contract=contract)
+        strict = results_equal(columns, rows, expected["columns"], expected["rows"],
+                               ordered=bool(expected.get("ordered")))
+        return {"status": "ok", "result_correct": strict, "strict_result_correct": strict, **scores,
+                "columns": list(columns), "row_count": len(rows)}
     except Exception as exc:
-        return {"status": "error", "result_correct": False, "error": f"{type(exc).__name__}: {str(exc)[:300]}"}
+        return {"status": "error", "result_correct": False, "strict_result_correct": False,
+                "business_result_correct": False, "output_contract_compliant": False,
+                "metric_protocol": "v2_full_result_contract",
+                "error": f"{type(exc).__name__}: {str(exc)[:300]}"}
 
 
 def paired_delta_bootstrap(left: dict[str, bool], right: dict[str, bool], *, iterations: int = 5000,

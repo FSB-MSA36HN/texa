@@ -1,0 +1,55 @@
+- main:
+  - button "Hiện thanh bên":
+  - button "Cuộc hỏi mới":
+  - generic: Nguồn dữ liệu
+  - combobox "Nguồn dữ liệu":
+    - option "Mọi nguồn"
+    - option "Cosmetics shop"
+    - option "Olist marketplace" [selected]
+  - paragraph: Tổng doanh thu Olist tháng 1/2018
+  - button "Chép câu hỏi":
+  - button "Sửa câu hỏi":
+  - complementary "Cách hiểu câu hỏi":
+    - paragraph: Phạm vi tính
+    - generic: Doanh thu
+    - generic: 2018-01-01 → 2018-01-31
+    - generic: Olist marketplace
+    - paragraph: "Doanh thu: Tổng giá trị sản phẩm trên sự kiện mua hàng, theo tiền tệ của nguồn; không gồm thuế, vận chuyển hoặc hoàn tiền nếu không được ghi nhận. Không phải doanh thu kế toán."
+    - paragraph: "Phiên bản dữ liệu: 5d931a142670d81dc24d"
+  - paragraph:
+    - text: Tổng doanh thu của Olist marketplace trong tháng 1/2018 là
+    - mark: 950.030,36 BRL
+    - text: .
+  - list:
+    - listitem: Doanh thu tính bằng BRL và không cộng sự kiện thanh toán hoặc phí vận chuyển.
+  - paragraph:
+    - generic: lấy thẳng từ SQL
+    - generic: Không con số nào do AI tự viết.
+  - list:
+    - listitem: Olist ghi nhận vòng đời đơn hàng, thanh toán và đánh giá; không ghi nhận phiên truy cập hay lượt xem sản phẩm. Sản phẩm đã mua được đếm theo dòng sản phẩm; doanh thu bằng BRL, không cộng sự kiện thanh toán hoặc phí vận chuyển.
+  - table:
+    - rowgroup:
+      - row "Doanh thu":
+        - columnheader "Doanh thu"
+    - rowgroup:
+      - row "950.030,36 BRL":
+        - cell "950.030,36 BRL"
+  - generic: 1 dòng
+  - button "Tải CSV":
+    - text: Tải CSV
+  - list:
+    - button "Người dùng của Olist marketplace, toàn bộ dữ liệu":
+      - text: Người dùng của Olist marketplace, toàn bộ dữ liệu
+    - button "Lượt sự kiện của Olist marketplace, toàn bộ dữ liệu":
+      - text: Lượt sự kiện của Olist marketplace, toàn bộ dữ liệu
+    - button "Sản phẩm đã mua của Olist marketplace, toàn bộ dữ liệu":
+      - text: Sản phẩm đã mua của Olist marketplace, toàn bộ dữ liệu
+  - button "Chép câu trả lời":
+  - button "Hỏi lại":
+  - button "Đúng ý":
+  - button "Chưa đúng":
+  - button "Chi tiết · 11.3 giây":
+    - text: Chi tiết · 11.3 giây
+  - textbox "Câu hỏi":
+    - /placeholder: Hỏi tiếp…
+  - button "Gửi câu hỏi" [disabled]:

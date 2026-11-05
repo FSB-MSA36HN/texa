@@ -99,3 +99,10 @@ def test_dialogue_comparison_resamples_individual_dialogues(runner):
     finally:
         for path in paths:
             path.unlink(missing_ok=True)
+
+
+def test_benchmark_cli_pins_evaluation_source_profile_before_work(runner, monkeypatch):
+    monkeypatch.delenv('TEXA_SOURCE_PROFILE', raising=False)
+    with pytest.raises(SystemExit, match='TEXA_BENCHMARK_DSN'):
+        runner.run(SimpleNamespace(compare_results=None))
+    assert __import__('os').environ['TEXA_SOURCE_PROFILE'] == 'evaluation'

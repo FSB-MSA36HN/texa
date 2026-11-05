@@ -1,0 +1,52 @@
+- id: rv2clar_dev_ambiguous_sales
+  split: dev
+  family: ambiguous_sales_metric
+  cluster_id: ambiguous_sales_dev
+  phenomenon: ambiguous_metric
+  source_id: cosmetics_shop
+  language: en
+  question: How much sales did the cosmetics shop make?
+  ask_fields: [recipe]
+  oracle_answers: {recipe: [revenue]}
+  state: {metric: revenue, time_range: all, filters: [], breakdown: null}
+  gold_sql: SELECT sum(revenue)::numeric AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase'
+  expected_result: {columns: [revenue], rows: [[60]]}
+- id: rv2clar_dev_sales_control
+  split: dev
+  family: explicit_metric_control
+  cluster_id: explicit_control_dev
+  phenomenon: explicit_control
+  source_id: cosmetics_shop
+  language: en
+  question: What was purchase revenue for the full cosmetics-shop dataset?
+  ask_fields: []
+  oracle_answers: {}
+  state: {metric: revenue, time_range: all, filters: [], breakdown: null}
+  gold_sql: SELECT sum(revenue)::numeric AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase'
+  expected_result: {columns: [revenue], rows: [[60]]}
+- id: rv2clar_test_missing_period
+  split: test
+  family: clarify_missing_period
+  cluster_id: missing_period_test
+  phenomenon: missing_period
+  source_id: cosmetics_shop
+  language: vi
+  question: Cho biết doanh thu mua hàng.
+  ask_fields: [time_range]
+  oracle_answers: {time_range: [all]}
+  state: {metric: revenue, time_range: all, filters: [], breakdown: null}
+  gold_sql: SELECT sum(revenue)::numeric AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase'
+  expected_result: {columns: [revenue], rows: [[60]]}
+- id: rv2clar_test_source_conflict
+  split: test
+  family: source_selector_conflict
+  cluster_id: source_conflict_test
+  phenomenon: source_conflict
+  source_id: olist_marketplace
+  language: en
+  question: How many distinct users are in the cosmetics shop?
+  ask_fields: [context:source]
+  oracle_answers: {context:source: [cosmetics_shop]}
+  state: {metric: users, time_range: all, filters: [], breakdown: null}
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: {columns: [users], rows: [[5]]}

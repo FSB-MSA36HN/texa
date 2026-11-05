@@ -156,7 +156,8 @@ def _api_schema(schema):
 def _gemini_client(api_key: str, base_url: str | None):
     from google import genai
     from google.genai import types
-    return genai.Client(api_key=api_key, http_options=types.HttpOptions(timeout=TIMEOUT_S * 1000, base_url=base_url))
+    return genai.Client(api_key=api_key, http_options=types.HttpOptions(
+        timeout=TIMEOUT_S * 1000, base_url=base_url, retry_options=types.HttpRetryOptions(attempts=1)))
 
 
 def _gemini_models(api_key, base_url):

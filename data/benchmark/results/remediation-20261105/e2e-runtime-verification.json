@@ -1,0 +1,48 @@
+{
+  "run_date": "2026-11-05",
+  "scope": "offline scripted-provider E2E and runtime fault/load checks",
+  "database": {
+    "name": "texa_benchmark",
+    "port": 15433,
+    "profile": "evaluation",
+    "event_benchmark_rows": 12,
+    "event_benchmark_revenue": 135,
+    "fixture_setup_and_restore": "Playwright global setup/teardown; prior source rows and catalog versions restored"
+  },
+  "provider": {
+    "mode": "scripted fake provider; all outbound model calls blocked",
+    "paid_calls": 0
+  },
+  "playwright": {
+    "passed": 15,
+    "failed": 0,
+    "duration_seconds": 20.5,
+    "scenarios": [
+      "query result and inspectable SQL",
+      "clarification and completion",
+      "follow-up memory across social noise",
+      "provider failure and retry",
+      "cancel running turn",
+      "model settings credential privacy",
+      "browser-session conversation isolation",
+      "participant cannot change shared model connection",
+      "conversation reload",
+      "slow answer remains in original conversation",
+      "8 simultaneous independent browser sessions without history mixing",
+      "selected/text source conflict asks for resolution",
+      "manual title persists across turns",
+      "validated follow-up suggestions",
+      "explicit reference to result 1 after 6 newer answers and social noise"
+    ]
+  },
+  "backend_tests": {
+    "full_suite_passed": 221,
+    "full_suite_skipped": 12,
+    "full_suite_failed": 0,
+    "full_suite_duration_seconds": 43.83,
+    "runtime_fault_load_passed": 23,
+    "runtime_fault_load_failed": 0,
+    "runtime_fault_load_duration_seconds": 0.26
+  },
+  "load_interpretation": "The 8-session browser scenario passed on the current single-worker local app with scripted responses. This verifies isolation and basic concurrency, not production capacity or real-provider latency."
+}

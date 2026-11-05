@@ -56,6 +56,8 @@ def _read_run(path: Path) -> dict[str, Any]:
     for key in ("dataset_hashes", "catalog_hash", "prompt_hashes", "source_digest", "effective_model_config", "commit"):
         if key not in provenance:
             raise ValueError(f"{path}: provenance missing {key}")
+    if "implementation_hashes" in provenance and provenance.get("source_profile") != "evaluation":
+        raise ValueError(f"{path}: implementation hash lock requires the evaluation source profile")
     scenarios = records[1:-1]
     if not scenarios or any(row.get("type") != "scenario" for row in scenarios):
         raise ValueError(f"{path}: only scenario rows are allowed between manifest and completion")
@@ -87,8 +89,8 @@ def _read_run(path: Path) -> dict[str, Any]:
 def _provenance_key(run: dict[str, Any]) -> tuple:
     m = run["manifest"]
     p = m["provenance"]
-    # prompt_hashes identify shared prompt-source assets, not rendered per-call
-    # prompts; intentional prompt differences belong in each scenario's trace.
+    # implementation_hashes cover prompts plus semantic/runtime/scoring code;
+    # rendered prompts remain separately hashed in each scenario's trace.
     # Variant/repeat and output file deliberately excluded; shared experimental
     # inputs that could explain a quality difference must be held fixed.
     return (m["suite"], m["split"], m["model"], json.dumps(p, sort_keys=True, separators=(",", ":")),
@@ -202,7 +204,11 @@ def _cluster_bootstrap(left_runs: list[dict], right_runs: list[dict], repeats: l
 
 def _summarize(runs: list[dict], repeats: list[int], ids: list[str]) -> dict[str, Any]:
     by_repeat = {r["manifest"]["repeat"]: r["scenarios"] for r in runs}
-    successes, correctness, latency = [], [], []
+    successes, correctness, strict_correctness, contract_correctness, latency = [], [], [], [], []
+    slice_counts: dict[str, dict[str, dict[str, int]]] = {
+        "source_id": defaultdict(lambda: {"correct": 0, "answers": 0}),
+        "language": defaultdict(lambda: {"correct": 0, "answers": 0}),
+    }
     usage_totals: dict[str, list[float]] = defaultdict(list)
     group_vals: dict[str, list[bool]] = defaultdict(list)
     tp = fp = fn = rounds = 0
@@ -216,10 +222,22 @@ def _summarize(runs: list[dict], repeats: list[int], ids: list[str]) -> dict[str
             row = scenarios[sid]
             successes.append(float(row["success"]))
             group_vals[str(row["group"])].append(row["success"])
+            if row.get("output_contract_compliant") is not None:
+                contract_correctness.append(bool(row["output_contract_compliant"]))
+            strict_value = row.get("strict_result_correct", row.get("result_correct"))
+            if strict_value is not None:
+                strict_correctness.append(bool(strict_value))
             n = row.get("answer_count", 0)
             if n:
                 correctness.extend([True] * row.get("answer_correct", 0))
                 correctness.extend([False] * (n-row.get("answer_correct", 0)))
+                for key in slice_counts:
+                    label = row.get(key)
+                    if label:
+                        slice_counts[key][str(label)]["correct"] += int(row.get("answer_correct", 0))
+                        slice_counts[key][str(label)]["answers"] += int(n)
+            elif row.get("business_result_correct") is not None:
+                correctness.append(bool(row["business_result_correct"]))
             elif row.get("result_correct") is not None:
                 correctness.append(bool(row["result_correct"]))
             if row.get("latency_ms") is not None:
@@ -260,6 +278,18 @@ def _summarize(runs: list[dict], repeats: list[int], ids: list[str]) -> dict[str
             "per_repeat_scenario_success": per_repeat_success,
             "repeat_success_sd": statistics.stdev(repeat_means) if len(repeat_means) > 1 else 0.0 if repeat_means else None,
             "result_accuracy": accuracy, "result_count": len(correctness),
+            "strict_result_accuracy": (sum(strict_correctness) / len(strict_correctness)
+                                       if strict_correctness else None),
+            "strict_result_count": len(strict_correctness),
+            "output_contract_compliance": (sum(contract_correctness) / len(contract_correctness)
+                                           if contract_correctness else None),
+            "output_contract_count": len(contract_correctness),
+            "business_accuracy_by_source": {label: {**counts, "accuracy": counts["correct"] / counts["answers"]}
+                                            for label, counts in sorted(slice_counts["source_id"].items())
+                                            if counts["answers"]},
+            "business_accuracy_by_language": {label: {**counts, "accuracy": counts["correct"] / counts["answers"]}
+                                               for label, counts in sorted(slice_counts["language"].items())
+                                               if counts["answers"]},
             "per_group_success": {k: {"n_run_scenarios": len(v), "mean": statistics.mean(v)} for k, v in sorted(group_vals.items())},
             "per_group_result_accuracy": {
                 group: {"answer_count": sum(by_repeat[rep][sid].get("answer_count", 0) for rep in repeats for sid in ids

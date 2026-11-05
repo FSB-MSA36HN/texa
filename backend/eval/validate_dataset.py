@@ -9,7 +9,7 @@ from pathlib import Path
 
 import yaml
 
-from benchmark import load_cases, validate_split_is_family_disjoint
+from benchmark import ROOT, load_cases, validate_split_is_family_disjoint
 
 
 def validate_dataset(directory: Path) -> dict:
@@ -78,11 +78,110 @@ def validate_dataset(directory: Path) -> dict:
                     raise ValueError(f'{label}/{number}: clarification answer without prior clarify')
                 if set(turn.get('oracle_answers', {})) != set(turns[number - 2]['ask_fields']):
                     raise ValueError(f'{label}/{number}: oracle fields mismatch')
-    files = ['fixture.sql', 'cases.yaml', 'dialogues.yaml', 'manifest.yaml']
+    manifest = yaml.safe_load((directory / 'manifest.yaml').read_text())
+    fixture = (directory / manifest.get('fixture', 'fixture.sql')).resolve()
+    if not fixture.is_relative_to(ROOT):
+        raise ValueError('fixture path must remain inside the project')
+    files = {'fixture.sql': fixture, 'cases.yaml': directory / 'cases.yaml',
+             'dialogues.yaml': directory / 'dialogues.yaml', 'manifest.yaml': directory / 'manifest.yaml'}
     return {'cases': len(cases), 'splits': {split: sum(c['split'] == split for c in cases) for split in ('dev', 'test')},
             'families': len({c['family'] for c in cases}), 'dialogues': len(dialogues),
             'answer_turns': answer_turns, 'actions': actions,
-            'sha256': {name: hashlib.sha256((directory / name).read_bytes()).hexdigest() for name in files}}
+            'sha256': {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}}
+
+
+def validate_remediation_ablation(directory: Path, *, check_lock: bool = True) -> dict:
+    """Validate the small cross-source candidate dialogue/clarification suite."""
+    manifest = yaml.safe_load((directory / 'manifest.yaml').read_text())
+    dialogues = yaml.safe_load((directory / 'dialogues.yaml').read_text())
+    interactions = yaml.safe_load((directory / 'interactions.yaml').read_text())
+    cases = yaml.safe_load((directory / 'cases.yaml').read_text())
+    if manifest.get('status') != 'candidate_not_sealed' or cases != []:
+        raise ValueError('remediation ablation manifest must be candidate_not_sealed with empty cases.yaml')
+    if not isinstance(dialogues, list) or not isinstance(interactions, list):
+        raise ValueError('dialogues.yaml and interactions.yaml must be lists')
+    sources, languages = set(manifest.get('sources', [])), set(manifest.get('languages', []))
+    ids: set[str] = set()
+    dialogue_families: dict[str, str] = {}
+    interaction_families: dict[str, str] = {}
+    answer_turns = 0
+
+    def check_item(item, label):
+        if not item.get('gold_sql'):
+            raise ValueError(f'{label}: missing gold SQL')
+        result = item.get('expected_result')
+        if (not isinstance(result, dict) or not isinstance(result.get('columns'), list)
+                or not result['columns'] or len(set(result['columns'])) != len(result['columns'])
+                or not isinstance(result.get('rows'), list)
+                or any(not isinstance(row, list) or len(row) != len(result['columns']) for row in result['rows'])):
+            raise ValueError(f'{label}: invalid expected result')
+
+    for dialogue in dialogues:
+        did = dialogue.get('id')
+        if not did or did in ids or dialogue.get('split') not in {'dev', 'test'}:
+            raise ValueError(f'{did}: duplicate ID or invalid split')
+        ids.add(did)
+        family = dialogue.get('family')
+        if not family or family in dialogue_families and dialogue_families[family] != dialogue['split']:
+            raise ValueError(f'{did}: missing family or family crosses split')
+        dialogue_families[family] = dialogue['split']
+        if dialogue.get('source_id') not in sources or dialogue.get('language') not in languages:
+            raise ValueError(f'{did}: source/language is outside declared dataset')
+        turns = dialogue.get('turns')
+        if not isinstance(turns, list) or not turns:
+            raise ValueError(f'{did}: missing turns')
+        for number, turn in enumerate(turns, 1):
+            if turn.get('action') not in {'answer', 'clarification_answer', 'clarify', 'refuse', 'conversation'}:
+                raise ValueError(f'{did}/{number}: invalid action')
+            if turn['action'] in {'answer', 'clarification_answer'}:
+                check_item(turn, f'{did}/{number}')
+                answer_turns += 1
+            ref = turn.get('referenced_turn')
+            if ref is not None and (not isinstance(ref, int) or not 1 <= ref < number):
+                raise ValueError(f'{did}/{number}: reference must point to an earlier turn')
+    interaction_ids: dict[str, dict] = {}
+    for item in interactions:
+        iid = item.get('id')
+        if not iid or iid in ids or item.get('split') not in {'dev', 'test'}:
+            raise ValueError(f'{iid}: duplicate ID or invalid split')
+        ids.add(iid)
+        family = item.get('family')
+        if not family or family in interaction_families and interaction_families[family] != item['split']:
+            raise ValueError(f'{iid}: missing family or family crosses split')
+        interaction_families[family] = item['split']
+        if item.get('source_id') not in sources or item.get('language') not in languages:
+            raise ValueError(f'{iid}: source/language is outside declared dataset')
+        if not isinstance(item.get('ask_fields'), list):
+            raise ValueError(f'{iid}: ask_fields annotation required')
+        if item['ask_fields'] and set(item.get('oracle_answers', {})) != set(item['ask_fields']):
+            raise ValueError(f'{iid}: oracle keys must exactly match ask_fields')
+        check_item(item, iid)
+        interaction_ids[iid] = item
+    for item in interactions:
+        control = item.get('control_of')
+        if control:
+            target = interaction_ids.get(control)
+            if (target is None or item['ask_fields'] or not target['ask_fields']
+                    or item['family'] != target['family'] or item['split'] != target['split']
+                    or item['expected_result'] != target['expected_result']):
+                raise ValueError(f"{item['id']}: control does not pair with the same intended ambiguous case")
+    fixture = (directory / manifest.get('fixture', 'fixture.sql')).resolve()
+    if not fixture.is_relative_to(ROOT):
+        raise ValueError('fixture path must remain inside project')
+    files = {'manifest.yaml': directory / 'manifest.yaml', 'cases.yaml': directory / 'cases.yaml',
+             'dialogues.yaml': directory / 'dialogues.yaml', 'interactions.yaml': directory / 'interactions.yaml',
+             'fixture.sql': fixture}
+    report = {'status': 'candidate_not_sealed', 'dialogues': len(dialogues), 'dialogue_families': len(dialogue_families),
+              'interactions': len(interactions), 'interaction_families': len(interaction_families),
+              'answer_turns': answer_turns,
+              'splits': {name: {'dialogues': sum(d['split'] == name for d in dialogues),
+                                'interactions': sum(i['split'] == name for i in interactions)}
+                         for name in ('dev', 'test')},
+              'sha256': {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in files.items()}}
+    lock = directory / 'validation.json'
+    if check_lock and lock.exists() and json.loads(lock.read_text()) != report:
+        raise ValueError('remediation ablation lock does not match files or annotations')
+    return report
 
 
 def validate_ablation_dataset(directory: Path, *, check_lock: bool = True) -> dict:
@@ -287,7 +386,12 @@ if __name__ == '__main__':
     parser.add_argument('--write-lock', action='store_true', help='Freeze reviewed file hashes and annotation counts')
     parser.add_argument('--ablation', action='store_true', help='Validate the versioned ablation study suite')
     args = parser.parse_args()
-    report = validate_ablation_dataset(args.directory, check_lock=not args.write_lock) if args.ablation else validate_dataset(args.directory)
+    if args.ablation:
+        manifest = yaml.safe_load((args.directory / 'manifest.yaml').read_text())
+        validator = validate_remediation_ablation if manifest.get('status') == 'candidate_not_sealed' else validate_ablation_dataset
+        report = validator(args.directory, check_lock=not args.write_lock)
+    else:
+        report = validate_dataset(args.directory)
     if args.write_lock:
         (args.directory / 'validation.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))

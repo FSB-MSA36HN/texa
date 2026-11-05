@@ -15,7 +15,7 @@ import uuid
 from pathlib import Path
 
 from benchmark import (CASES_PATH, MANIFEST_PATH, ROOT, execute_readonly, load_cases, paired_delta_bootstrap,
-                       score_expected_result, score_result, score_sql, server_metadata,
+                       dialogue_outcome_score, score_expected_result, score_result, score_sql, server_metadata,
                        validate_split_is_family_disjoint, write_result)
 from texa import llm
 import yaml
@@ -37,10 +37,13 @@ DIALOGUE_SCHEMA = {"type": "object", "properties": {
 
 
 def prompt_for(case: dict, manifest: dict) -> str:
+    contract = ("\nBusiness result columns (pre-registered; include every listed ID):\n" +
+                yaml.safe_dump(case["business_contract"], sort_keys=True, allow_unicode=True)
+                if case.get("business_contract") else "")
     return ("Schema and grain:\n" + manifest["schema"] + "\n\nMetric definitions:\n" +
             manifest["metric_definitions"] + "\n\nOutput aliases (required):\n" +
             yaml.safe_dump(manifest["output_aliases"], sort_keys=True, allow_unicode=True) +
-            "\nQuestion:\n" + case["question"])
+            contract + "\nQuestion:\n" + case["question"])
 
 
 def dataset_path(args, name: str) -> Path:
@@ -74,6 +77,8 @@ def run(args) -> int:
     if args.compare_results:
         compare_results_files(*args.compare_results)
         return 0
+    # Pin the evaluation catalog before any Texa request; do not inherit demo scope.
+    os.environ["TEXA_SOURCE_PROFILE"] = "evaluation"
     dsn = os.environ.get("TEXA_BENCHMARK_DSN")
     if not dsn:
         raise SystemExit("Set TEXA_BENCHMARK_DSN to the isolated texa_benchmark database (read-only role).")
@@ -83,10 +88,13 @@ def run(args) -> int:
         os.environ["TEXA_MEMORY_MODE"] = "structured"
     args.engine = server_metadata(dsn)
     manifest = yaml.safe_load(dataset_path(args, "manifest.yaml").read_text(encoding="utf-8"))
+    fixture_path = _project_path(str(dataset_path(args, manifest.get("fixture", "fixture.sql"))))
     args.engine["benchmark"] = {
         "name": manifest.get("name"), "version": manifest.get("version"),
-        "sha256": {name: hashlib.sha256(dataset_path(args, name).read_bytes()).hexdigest()
-                   for name in ("manifest.yaml", "fixture.sql", "cases.yaml", "dialogues.yaml")}}
+        "sha256": {"manifest.yaml": hashlib.sha256(dataset_path(args, "manifest.yaml").read_bytes()).hexdigest(),
+                   "fixture.sql": hashlib.sha256(fixture_path.read_bytes()).hexdigest(),
+                   **{name: hashlib.sha256(dataset_path(args, name).read_bytes()).hexdigest()
+                      for name in ("cases.yaml", "dialogues.yaml")}}}
     if args.memory_mode:
         os.environ["TEXA_MEMORY_MODE"] = args.memory_mode
     if args.dialogues:
@@ -105,7 +113,8 @@ def run(args) -> int:
             call_name = f"bench_{uuid.uuid4().hex[:20]}"
             if args.method == "gold":
                 result = score_expected_result(dsn, case["gold_sql"],
-                                               case["expected_result"] | {"ordered": case.get("ordered", False)})
+                                               case["expected_result"] | {"ordered": case.get("ordered", False)},
+                                               contract=case.get("business_contract"))
             elif args.method == "direct":
                 response = llm.generate_structured(model=args.model, system=SYSTEM, prompt=prompt_for(case, manifest),
                                                    schema=SQL_SCHEMA, name=call_name, max_output_tokens=1200)
@@ -124,6 +133,7 @@ def run(args) -> int:
                     result.update(system_status=turn["status"], sql=turn.get("compiled_sql"))
                 else:
                     result = {"status": "not_answered", "result_correct": False,
+                              "business_result_correct": False, "output_contract_compliant": False,
                               "system_status": turn.get("status"), "error": turn.get("message") or turn.get("error")}
             result.update(case_id=case["id"], split=case["split"], family=case["family"], engine=args.engine)
             result["latency_ms"] = round((time.monotonic() - started) * 1000)
@@ -133,18 +143,35 @@ def run(args) -> int:
                 result["usage"] = _turn_usage(str(turn["id"]))
         except Exception as exc:
             result = {"case_id": case["id"], "split": case["split"], "family": case["family"],
-                      "status": "error", "result_correct": False, "error": f"{type(exc).__name__}: {str(exc)[:300]}"}
-        passed += bool(result.get("result_correct"))
-        result.update(method=args.method, model=args.model, in_scope=case.get("in_scope", True))
+                      "status": "error", "result_correct": False, "business_result_correct": False,
+                      "output_contract_compliant": False, "error": f"{type(exc).__name__}: {str(exc)[:300]}"}
+        result["primary_correct"] = bool(result.get("business_result_correct", result.get("result_correct")))
+        passed += result["primary_correct"]
+        result.update(method=args.method, model=args.model, in_scope=case.get("in_scope", True),
+                      source_id=case.get("source_id"), language=case.get("language"), intent=case.get("family"))
         results.append(result)
         write_result(output, result)
-        print(f"{'PASS' if result.get('result_correct') else 'FAIL'} {case['id']} ({result['status']})")
-    print(f"result accuracy: {passed}/{len(cases)} = {passed / len(cases):.1%}; raw: {output}")
+        print(f"{'PASS' if result['primary_correct'] else 'FAIL'} {case['id']} ({result['status']})")
+    print(f"business result accuracy: {passed}/{len(cases)} = {passed / len(cases):.1%}; raw: {output}")
     scoped = [r for r in results if r["in_scope"]]
+    def slice_accuracy(key):
+        sliced = {}
+        for result in results:
+            label = result.get(key)
+            if label:
+                acc = sliced.setdefault(label, {"correct": 0, "cases": 0})
+                acc["correct"] += int(bool(result.get("primary_correct")))
+                acc["cases"] += 1
+        return {label: {**counts, "accuracy": counts["correct"] / counts["cases"]}
+                for label, counts in sorted(sliced.items())}
     latencies = sorted(r["latency_ms"] for r in results if "latency_ms" in r)
     write_result(output, {"type": "single_turn_summary", "method": args.method, "model": args.model,
                           "engine": args.engine, "cases": len(results), "correct": passed,
-                          "in_scope_cases": len(scoped), "in_scope_correct": sum(bool(r.get("result_correct")) for r in scoped),
+                          "in_scope_cases": len(scoped), "in_scope_correct": sum(bool(r.get("primary_correct")) for r in scoped),
+                          "strict_correct": sum(bool(r.get("result_correct")) for r in results),
+                          "strict_accuracy": sum(bool(r.get("result_correct")) for r in results) / len(results),
+                          "business_accuracy_by_source": slice_accuracy("source_id"),
+                          "business_accuracy_by_language": slice_accuracy("language"),
                           "executable": sum(r.get("status") == "ok" for r in results),
                           "p50_ms": latencies[len(latencies)//2] if latencies else None,
                           "p95_ms": latencies[min(len(latencies)-1, int(len(latencies)*0.95))] if latencies else None})
@@ -173,11 +200,12 @@ def _project_path(value: str) -> Path:
 def compare_results_files(left_path: str, right_path: str) -> dict:
     import json
 
-    def read(path: str) -> tuple[dict[str, bool], dict[str, str]]:
+    def read(path: str) -> tuple[dict[str, bool], dict[str, str], str]:
         resolved = _project_path(path)
         rows = [json.loads(line) for line in resolved.read_text(encoding="utf-8").splitlines() if line.strip()]
         entries: dict[str, bool] = {}
         strata: dict[str, str] = {}
+        score_field = "dialogue_success"
         for row in rows:
             if row.get("type") == "dialogue":
                 key, value = row.get("id"), row.get("dialogue_success")
@@ -185,22 +213,30 @@ def compare_results_files(left_path: str, right_path: str) -> dict:
             elif row.get("type") == "single_turn_summary":
                 continue
             else:
-                key, value = row.get("case_id"), row.get("result_correct")
+                key = row.get("case_id")
+                field = "business_result_correct" if "business_result_correct" in row else "result_correct"
+                if score_field not in {"dialogue_success", field} and entries:
+                    raise ValueError(f"{resolved}: mixed score fields in result file")
+                score_field = field
+                value = row.get(field)
                 family = row.get("family", "unlabeled")
             if key is not None:
                 if str(key) in entries:
                     raise ValueError(f"{resolved}: duplicate case/scenario ID {key}; use one run per file")
                 entries[str(key)] = bool(value)
                 strata[str(key)] = str(family)
-        return entries, strata
+        return entries, strata, score_field
 
-    left, left_strata = read(left_path)
-    right, right_strata = read(right_path)
+    left, left_strata, left_field = read(left_path)
+    right, right_strata, right_field = read(right_path)
+    if left_field != right_field:
+        raise ValueError("paired result files must use the same scoring protocol/field")
     if left_strata != right_strata:
         raise ValueError("paired result files must use the same family/dialogue labels")
     result = paired_delta_bootstrap(left, right, strata=left_strata)
     result["left_accuracy"] = sum(left.values()) / len(left)
     result["right_accuracy"] = sum(right.values()) / len(right)
+    result["score_field"] = left_field
     result["left_file"] = str(_project_path(left_path).relative_to(ROOT))
     result["right_file"] = str(_project_path(right_path).relative_to(ROOT))
     print(json.dumps(result, ensure_ascii=False, indent=2))
@@ -284,7 +320,9 @@ def _score_dialogue_turn(expected: dict, turn: dict, expected_action: str, dsn: 
             if full.get("partial"):
                 raise ValueError("full_result is partial; cannot score truncated rows")
             rows = [tuple(row.get(c) for c in cols) for row in full.get("rows", [])]
-            out["result_correct"] = score_result(dsn, cols, rows, {"gold_sql": gold_sql, "ordered": expected.get("ordered", False)})["result_correct"]
+            scored = score_result(dsn, cols, rows, {"gold_sql": gold_sql, "ordered": expected.get("ordered", False)})
+            out.update({key: scored[key] for key in ("result_correct", "business_result_correct",
+                                                      "output_contract_compliant", "metric_protocol") if key in scored})
         except Exception as exc:
             out["result_correct"] = False
             out["result_error"] = f"{type(exc).__name__}: {str(exc)[:200]}"
@@ -302,6 +340,7 @@ def _score_dialogue_turn(expected: dict, turn: dict, expected_action: str, dsn: 
 
 
 def run_dialogues(args, dsn: str) -> int:
+    os.environ["TEXA_SOURCE_PROFILE"] = "evaluation"
     import yaml
     from texa import answer, db
 
@@ -402,10 +441,17 @@ def run_dialogues(args, dsn: str) -> int:
             action_confusion.setdefault(check["expected_action"], {})[check["actual_action"]] = \
                 action_confusion.setdefault(check["expected_action"], {}).get(check["actual_action"], 0) + 1
             check["memory_context"] = actual.get("context")
+            check.update(dialogue_outcome_score(
+                expected_action=check["expected_action"], actual_action=check["actual_action"],
+                result_correct=check.get("result_correct"), expected_fields=expected_asked,
+                actual_fields=asked, reference_expected=check.get("reference_correct"),
+                oracle_answer_valid=check.get("oracle_answer_valid", True),
+                context_contamination=check.get("context_contamination", False)))
             rows.append(check)
-            print(f"{'PASS' if check['action_correct'] and check['slots_exact'] is not False and check.get('result_correct', True) else 'FAIL'} {dialogue['id']} turn {turn_index}")
+            print(f"{'PASS' if check['observable_success'] else 'FAIL'} {dialogue['id']} turn {turn_index}")
         required = rows
-        dialogue_ok = all(r["action_correct"] and r["slots_exact"] is not False and r.get("result_correct", True) for r in required)
+        # Internal QuerySpec/slot scores are diagnostics, not part of cross-system parity.
+        dialogue_ok = all(r.get("observable_success", False) for r in required)
         successes += int(dialogue_ok)
         payload = {"type": "dialogue", "id": dialogue["id"], "split": dialogue["split"],
                    "dependency_distance": dialogue.get("dependency_distance"), "memory_mode": args.memory_mode or "structured",
@@ -492,19 +538,24 @@ def run_direct_dialogues(args, dsn: str, dialogues: list[dict], output: Path) ->
             row["reference_correct"] = (actual_refs == [expected_ref]) if expected_ref is not None else not actual_refs
             if expected_ref is None:
                 row["context_contamination"] = bool(actual_refs)
-            rows.append(row)
-            answer_text = f"Assistant: {actual_action}; asked={response['ask_fields']}; {response['message']}"
-            if row.get("result_preview"):
-                answer_text += f"; result={row['result_preview']}"
-            history.extend([f"Turn {turn_index} User: {question}", f"Turn {turn_index} {answer_text}"])
             oracle = item.get("oracle_answers") or {}
             if item["action"] == "clarification_answer" and (
                     not oracle or set(oracle) != set(pending_fields)):
                 row["oracle_answer_valid"] = False
             else:
                 row["oracle_answer_valid"] = True
-        dialogue_ok = all(r["action_correct"] and r.get("result_correct", True) and r.get("oracle_answer_valid", True)
-                          and not r.get("context_contamination", False) for r in rows)
+            row.update(dialogue_outcome_score(
+                expected_action=expected_action, actual_action=actual_action,
+                result_correct=row.get("result_correct"), expected_fields=item.get("ask_fields") or [],
+                actual_fields=response.get("ask_fields") or [], reference_expected=row.get("reference_correct"),
+                oracle_answer_valid=row.get("oracle_answer_valid", True),
+                context_contamination=row.get("context_contamination", False)))
+            rows.append(row)
+            answer_text = f"Assistant: {actual_action}; asked={response['ask_fields']}; {response['message']}"
+            if row.get("result_preview"):
+                answer_text += f"; result={row['result_preview']}"
+            history.extend([f"Turn {turn_index} User: {question}", f"Turn {turn_index} {answer_text}"])
+        dialogue_ok = all(r.get("observable_success", False) for r in rows)
         passed += int(dialogue_ok)
         usage_by_dialogue.append(_call_usage(call_name))
         write_result(output, {"type": "dialogue", "id": dialogue["id"], "split": dialogue["split"],
