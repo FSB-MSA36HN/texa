@@ -1,0 +1,622 @@
+{
+  "suite": "conversation",
+  "split": "test",
+  "variants": {
+    "B1": {
+      "runs": 2,
+      "answer_count": 616,
+      "business_accuracy": 0.14772727272727273,
+      "latency_ms_p50": 67518.5,
+      "latency_ms_p95": 110303.0,
+      "tokens": 1488242.0,
+      "cost_estimated_usd": 0.20823740000000002,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 2,
+      "retrieval_activated_scenarios": 0,
+      "retrieval_activated_decisions": 0,
+      "component_decision_count": 0,
+      "consistency_scheduled_decisions": 0,
+      "consistency_completed_decisions": 0,
+      "consistency_scheduled_samples": 0,
+      "consistency_completed_samples": 0,
+      "consistency_scheduled_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 92
+    },
+    "T00": {
+      "runs": 2,
+      "answer_count": 616,
+      "business_accuracy": 0.913961038961039,
+      "latency_ms_p50": 125916.0,
+      "latency_ms_p95": 193160.0,
+      "tokens": 4916740.0,
+      "cost_estimated_usd": 0.6004516000000001,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 0,
+      "retrieval_activated_decisions": 0,
+      "component_decision_count": 707,
+      "consistency_scheduled_decisions": 0,
+      "consistency_completed_decisions": 0,
+      "consistency_scheduled_samples": 0,
+      "consistency_completed_samples": 0,
+      "consistency_scheduled_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 0
+    },
+    "T01": {
+      "runs": 2,
+      "answer_count": 616,
+      "business_accuracy": 0.9204545454545454,
+      "latency_ms_p50": 132549.5,
+      "latency_ms_p95": 200096.0,
+      "tokens": 5269802.0,
+      "cost_estimated_usd": 0.6455982,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 0,
+      "retrieval_activated_decisions": 0,
+      "component_decision_count": 709,
+      "consistency_scheduled_decisions": 29,
+      "consistency_completed_decisions": 29,
+      "consistency_scheduled_samples": 767,
+      "consistency_completed_samples": 767,
+      "consistency_scheduled_scenarios": 26,
+      "consistency_completed_scenarios": 26,
+      "unsupported_diagnostics": 0
+    },
+    "T10": {
+      "runs": 2,
+      "answer_count": 616,
+      "business_accuracy": 0.961038961038961,
+      "latency_ms_p50": 124711.0,
+      "latency_ms_p95": 199668.0,
+      "tokens": 5114706.0,
+      "cost_estimated_usd": 0.6216698,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 80,
+      "retrieval_activated_decisions": 616,
+      "component_decision_count": 710,
+      "consistency_scheduled_decisions": 0,
+      "consistency_completed_decisions": 0,
+      "consistency_scheduled_samples": 0,
+      "consistency_completed_samples": 0,
+      "consistency_scheduled_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 0
+    },
+    "T11": {
+      "runs": 2,
+      "answer_count": 616,
+      "business_accuracy": 0.948051948051948,
+      "latency_ms_p50": 130554.0,
+      "latency_ms_p95": 200139.0,
+      "tokens": 5367030.0,
+      "cost_estimated_usd": 0.6513294000000001,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 80,
+      "retrieval_activated_decisions": 616,
+      "component_decision_count": 710,
+      "consistency_scheduled_decisions": 23,
+      "consistency_completed_decisions": 23,
+      "consistency_scheduled_samples": 756,
+      "consistency_completed_samples": 756,
+      "consistency_scheduled_scenarios": 21,
+      "consistency_completed_scenarios": 21,
+      "unsupported_diagnostics": 0
+    }
+  },
+  "paired_comparisons": {
+    "B1_vs_T00": {
+      "paired_accuracy_delta_right_minus_left": 0.7679410173160173,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 2.384185791015625e-07,
+      "cluster_bootstrap_ci95": [
+        0.7083098845598845,
+        0.8194182900432901
+      ],
+      "clusters": 40,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 23
+    },
+    "B1_vs_T01": {
+      "paired_accuracy_delta_right_minus_left": 0.7805348124098124,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 1.4901161193847656e-08,
+      "cluster_bootstrap_ci95": [
+        0.7249598665223665,
+        0.8379225288600288
+      ],
+      "clusters": 40,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 27
+    },
+    "B1_vs_T10": {
+      "paired_accuracy_delta_right_minus_left": 0.8165643037518038,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 7.275957614183426e-12,
+      "cluster_bootstrap_ci95": [
+        0.7612400793650794,
+        0.8708797799422798
+      ],
+      "clusters": 40,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 38
+    },
+    "B1_vs_T11": {
+      "paired_accuracy_delta_right_minus_left": 0.8031024531024531,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 1.4551915228366852e-11,
+      "cluster_bootstrap_ci95": [
+        0.7530388708513709,
+        0.8518177308802309
+      ],
+      "clusters": 40,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 37
+    },
+    "T00_vs_T01": {
+      "paired_accuracy_delta_right_minus_left": 0.012593795093795096,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 0.5412561893463135,
+      "cluster_bootstrap_ci95": [
+        -0.018820797258297255,
+        0.04815611471861472
+      ],
+      "clusters": 40,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 10,
+      "mcnemar_discordant_right_only": 14
+    },
+    "T00_vs_T10": {
+      "paired_accuracy_delta_right_minus_left": 0.048623286435786436,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 0.005924612283706665,
+      "cluster_bootstrap_ci95": [
+        0.02116838023088023,
+        0.07496753246753247
+      ],
+      "clusters": 40,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 6,
+      "mcnemar_discordant_right_only": 21
+    },
+    "T00_vs_T11": {
+      "paired_accuracy_delta_right_minus_left": 0.03516143578643579,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 0.020061607006937265,
+      "cluster_bootstrap_ci95": [
+        0.005447781385281386,
+        0.06531069624819626
+      ],
+      "clusters": 40,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 9,
+      "mcnemar_discordant_right_only": 23
+    },
+    "T01_vs_T10": {
+      "paired_accuracy_delta_right_minus_left": 0.03602949134199134,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 0.043285250663757324,
+      "cluster_bootstrap_ci95": [
+        0.01548430735930736,
+        0.0589200036075036
+      ],
+      "clusters": 40,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 7,
+      "mcnemar_discordant_right_only": 18
+    },
+    "T01_vs_T11": {
+      "paired_accuracy_delta_right_minus_left": 0.022567640692640695,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 0.07551869750022888,
+      "cluster_bootstrap_ci95": [
+        0.0024328102453102436,
+        0.04392721861471861
+      ],
+      "clusters": 40,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 8,
+      "mcnemar_discordant_right_only": 18
+    },
+    "T10_vs_T11": {
+      "paired_accuracy_delta_right_minus_left": -0.013461850649350649,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 1.0,
+      "cluster_bootstrap_ci95": [
+        -0.0341468253968254,
+        0.0068610209235209245
+      ],
+      "clusters": 40,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 14,
+      "mcnemar_discordant_right_only": 13
+    }
+  },
+  "factorial_effects": {
+    "retrieval_main_effect": 0.03733766233766245,
+    "consistency_main_effect": -0.0032467532467532756,
+    "interaction": -0.01948051948051943
+  },
+  "interpretation": "diagnostic exploratory candidate results; not confirmatory human-reviewed holdout evidence",
+  "commit_metadata_overlay": {
+    "original_commits": [
+      "37adb620f6aa0c9a7166d6512e5c99f6da1812dc",
+      "8fbdcefc33779712f3a62dea1f0185fb7cb48c7a"
+    ],
+    "reason": "Unrelated append-only clarification dataset commit changed HEAD; all runtime/evaluator/catalog/bank/active-dataset hashes verified identical. Raw records unchanged."
+  },
+  "detail_by_variant": {
+    "B1": {
+      "completed_repeats": [
+        1,
+        2
+      ],
+      "counts": {
+        "scenarios": 80,
+        "legacy_scenario_success": 0,
+        "all_answer_tables_correct": 0,
+        "observable_table_and_action_success": 0,
+        "answer_slots": 616,
+        "answers_correct": 91,
+        "policy_scorable": 0,
+        "policy_correct": 0,
+        "clarification_tp": 0,
+        "clarification_fp": 0,
+        "clarification_fn": 0
+      },
+      "by_stratum": {},
+      "by_source": {},
+      "failed_scenario_ids": [
+        "dialogue_01",
+        "dialogue_02",
+        "dialogue_03",
+        "dialogue_04",
+        "dialogue_05",
+        "dialogue_06",
+        "dialogue_07",
+        "dialogue_08",
+        "dialogue_09",
+        "dialogue_10",
+        "dialogue_11",
+        "dialogue_12",
+        "dialogue_13",
+        "dialogue_14",
+        "dialogue_15",
+        "dialogue_16",
+        "dialogue_17",
+        "dialogue_18",
+        "dialogue_19",
+        "dialogue_20",
+        "dialogue_21",
+        "dialogue_22",
+        "dialogue_23",
+        "dialogue_24",
+        "dialogue_25",
+        "dialogue_26",
+        "dialogue_27",
+        "dialogue_28",
+        "dialogue_29",
+        "dialogue_30",
+        "dialogue_31",
+        "dialogue_32",
+        "dialogue_33",
+        "dialogue_34",
+        "dialogue_35",
+        "dialogue_36",
+        "dialogue_37",
+        "dialogue_38",
+        "dialogue_39",
+        "dialogue_40"
+      ]
+    },
+    "T00": {
+      "completed_repeats": [
+        1,
+        2
+      ],
+      "counts": {
+        "scenarios": 80,
+        "legacy_scenario_success": 23,
+        "all_answer_tables_correct": 39,
+        "observable_table_and_action_success": 39,
+        "answer_slots": 616,
+        "answers_correct": 563,
+        "policy_scorable": 0,
+        "policy_correct": 0,
+        "clarification_tp": 0,
+        "clarification_fp": 0,
+        "clarification_fn": 0
+      },
+      "by_stratum": {},
+      "by_source": {},
+      "failed_scenario_ids": [
+        "dialogue_02",
+        "dialogue_03",
+        "dialogue_04",
+        "dialogue_06",
+        "dialogue_07",
+        "dialogue_10",
+        "dialogue_12",
+        "dialogue_13",
+        "dialogue_14",
+        "dialogue_16",
+        "dialogue_17",
+        "dialogue_18",
+        "dialogue_19",
+        "dialogue_20",
+        "dialogue_21",
+        "dialogue_22",
+        "dialogue_23",
+        "dialogue_24",
+        "dialogue_25",
+        "dialogue_26",
+        "dialogue_27",
+        "dialogue_28",
+        "dialogue_29",
+        "dialogue_30",
+        "dialogue_31",
+        "dialogue_32",
+        "dialogue_33",
+        "dialogue_34",
+        "dialogue_35",
+        "dialogue_36",
+        "dialogue_37",
+        "dialogue_39",
+        "dialogue_40"
+      ]
+    },
+    "T01": {
+      "completed_repeats": [
+        1,
+        2
+      ],
+      "counts": {
+        "scenarios": 80,
+        "legacy_scenario_success": 27,
+        "all_answer_tables_correct": 45,
+        "observable_table_and_action_success": 45,
+        "answer_slots": 616,
+        "answers_correct": 567,
+        "policy_scorable": 0,
+        "policy_correct": 0,
+        "clarification_tp": 0,
+        "clarification_fp": 0,
+        "clarification_fn": 0
+      },
+      "by_stratum": {},
+      "by_source": {},
+      "failed_scenario_ids": [
+        "dialogue_01",
+        "dialogue_02",
+        "dialogue_03",
+        "dialogue_06",
+        "dialogue_07",
+        "dialogue_08",
+        "dialogue_09",
+        "dialogue_10",
+        "dialogue_11",
+        "dialogue_12",
+        "dialogue_13",
+        "dialogue_14",
+        "dialogue_16",
+        "dialogue_18",
+        "dialogue_19",
+        "dialogue_20",
+        "dialogue_21",
+        "dialogue_22",
+        "dialogue_23",
+        "dialogue_24",
+        "dialogue_26",
+        "dialogue_27",
+        "dialogue_28",
+        "dialogue_29",
+        "dialogue_30",
+        "dialogue_31",
+        "dialogue_32",
+        "dialogue_33",
+        "dialogue_34",
+        "dialogue_35",
+        "dialogue_38",
+        "dialogue_39",
+        "dialogue_40"
+      ]
+    },
+    "T10": {
+      "completed_repeats": [
+        1,
+        2
+      ],
+      "counts": {
+        "scenarios": 80,
+        "legacy_scenario_success": 38,
+        "all_answer_tables_correct": 62,
+        "observable_table_and_action_success": 62,
+        "answer_slots": 616,
+        "answers_correct": 592,
+        "policy_scorable": 0,
+        "policy_correct": 0,
+        "clarification_tp": 0,
+        "clarification_fp": 0,
+        "clarification_fn": 0
+      },
+      "by_stratum": {},
+      "by_source": {},
+      "failed_scenario_ids": [
+        "dialogue_01",
+        "dialogue_02",
+        "dialogue_03",
+        "dialogue_04",
+        "dialogue_06",
+        "dialogue_11",
+        "dialogue_12",
+        "dialogue_13",
+        "dialogue_14",
+        "dialogue_16",
+        "dialogue_18",
+        "dialogue_19",
+        "dialogue_20",
+        "dialogue_21",
+        "dialogue_22",
+        "dialogue_23",
+        "dialogue_26",
+        "dialogue_28",
+        "dialogue_30",
+        "dialogue_31",
+        "dialogue_32",
+        "dialogue_33",
+        "dialogue_34",
+        "dialogue_38",
+        "dialogue_40"
+      ]
+    },
+    "T11": {
+      "completed_repeats": [
+        1,
+        2
+      ],
+      "counts": {
+        "scenarios": 80,
+        "legacy_scenario_success": 37,
+        "all_answer_tables_correct": 56,
+        "observable_table_and_action_success": 56,
+        "answer_slots": 616,
+        "answers_correct": 584,
+        "policy_scorable": 0,
+        "policy_correct": 0,
+        "clarification_tp": 0,
+        "clarification_fp": 0,
+        "clarification_fn": 0
+      },
+      "by_stratum": {},
+      "by_source": {},
+      "failed_scenario_ids": [
+        "dialogue_01",
+        "dialogue_02",
+        "dialogue_03",
+        "dialogue_05",
+        "dialogue_06",
+        "dialogue_07",
+        "dialogue_08",
+        "dialogue_10",
+        "dialogue_11",
+        "dialogue_12",
+        "dialogue_13",
+        "dialogue_14",
+        "dialogue_16",
+        "dialogue_18",
+        "dialogue_20",
+        "dialogue_22",
+        "dialogue_23",
+        "dialogue_26",
+        "dialogue_29",
+        "dialogue_30",
+        "dialogue_31",
+        "dialogue_32",
+        "dialogue_33",
+        "dialogue_34",
+        "dialogue_37",
+        "dialogue_38",
+        "dialogue_39",
+        "dialogue_40"
+      ]
+    }
+  }
+}

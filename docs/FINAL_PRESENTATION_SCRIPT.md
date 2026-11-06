@@ -1,6 +1,6 @@
 # Kịch bản thuyết trình cuối — Texa
 
-> Phạm vi và kiến trúc hiện tại. Benchmark v6 là một lần chạy trên candidate do nhóm xây dựng; test split chưa được thẩm định độc lập và khóa kín, nên chưa phải holdout xác nhận hay bằng chứng production.
+> Benchmark research-v3: hai lần chạy cùng model và fixture. Bộ test do nhóm xây dựng, còn family overlap, chưa human-review/sealed; kết quả exploratory, chưa phải holdout độc lập hay bằng chứng production.
 
 ## Slide 1 — Texa: hỏi dữ liệu thương mại điện tử bằng ngôn ngữ tự nhiên (0:40)
 
@@ -49,7 +49,7 @@
 - Catalog quản lý metric, event role, field, mapping và coverage
 - Một semantic contract dùng chung cho xử lý, kiểm tra khả năng và giải thích kết quả
 
-**Lời nói:** Mỗi nguồn có adapter ETL riêng để đưa dữ liệu về dạng event rows. Catalog mô tả metric, trường, event tương ứng, mapping và độ bao phủ. Bộ đánh giá hiện có 60 câu đơn, 24 record clarification, 9 hội thoại và 12 diagnostic cases; fixture có ba worlds, gồm 120 dòng base và phần mở rộng synthetic nested cho Olist. Đây là bộ candidate được tách dev/test đã thấy, chưa phải holdout độc lập; 60 câu đơn/9 hội thoại còn dưới mục tiêu thiết kế 180/24. Khi một nguồn không có trường hoặc event cần thiết, hệ thống phải báo không hỗ trợ thay vì trả số 0 gây hiểu nhầm.
+**Lời nói:** Mỗi nguồn có adapter ETL riêng để đưa dữ liệu về dạng event rows. Catalog mô tả metric, trường, event tương ứng, mapping và độ bao phủ. Bộ đánh giá gồm 300 câu đơn (100 dev/200 test), 60 tình huống clarification, 40 hội thoại dài 6–12 lượt (355 lượt; 308 answer slots) và 40 câu ngoài phạm vi. Cosmetics/Olist và nested extensions là synthetic. Gold SQL qua 2.004 kiểm tra trên ba fixture worlds; model chỉ chạy trên world base, không phải ba lần benchmark. Khi một nguồn không có trường hoặc event cần thiết, hệ thống phải báo không hỗ trợ thay vì trả số 0 gây hiểu nhầm.
 
 ## Slide 7 — Từ câu hỏi đến kết quả có thể kiểm tra (1:20)
 
@@ -86,55 +86,53 @@ Câu hỏi + nguồn
 
 Metric chính là tỷ lệ khớp **toàn bộ bảng kết quả**; khác alias được chấp nhận, nhưng không được thiếu/thừa cột, hàng hay giá trị. Strict contract được theo dõi riêng.
 
-| Cấu hình | Dev / 30 | Test / 30 |
+| Cấu hình | Single test, 200 câu × 2 lần |
 |---|---:|---:|
-| LLM chỉ nhận schema | 3 (10,0%) | 1 (3,3%) |
-| LLM thêm ví dụ SQL | 11 (36,7%) | 16 (53,3%) |
-| LLM có lịch sử chat | 2 (6,7%) | 1 (3,3%) |
-| Texa without retrieval and consistency | 29 (96,7%) | 28 (93,3%) |
-| Texa with only retrieval | 29 (96,7%) | 27 (90,0%) |
-| Texa with only consistency | 29 (96,7%) | 27 (90,0%) |
-| **Texa (mặc định)** | 29 (96,7%) | 30 (100%) |
+| LLM chỉ nhận schema | 90/400 (22,5%) |
+| Texa without retrieval and consistency | 350/400 (87,5%) |
+| Texa with only consistency | 348/400 (87,0%) |
+| Texa with only retrieval | 361/400 (90,25%) |
+| **Texa** | 365/400 (91,25%) |
 
-**Lời nói:** Texa mặc định là hệ thống đầy đủ gồm truy hồi ví dụ và adaptive consistency. Trên 30 câu single test, baseline LLM chỉ nhận schema đúng một câu, Texa đúng cả 30; bỏ cả hai thành phần (Texa without retrieval and consistency) còn 28 câu. Đây là một lần chạy trên bộ candidate tổng hợp, không phải accuracy cho mọi tình huống thực tế. LLM chỉ nhận schema chỉ có schema vật lý nên phần chênh lệch cũng phản ánh việc Texa có catalog và ánh xạ business value; không thể quy toàn bộ cho compiler hay workflow. Ở đối chứng cung cấp cùng nguồn đã chọn trên 30 câu dev, LLM chỉ nhận schema đạt 13/30 (43,3%) và ablation Texa without retrieval and consistency 28/30 (93,3%); vẫn còn khác biệt tri thức catalog. LLM thêm ví dụ SQL là đối chứng riêng có ví dụ SQL đã kiểm chứng, không gọi là baseline thuần.
+**Lời nói:** Mỗi cấu hình được đánh giá trên 200 câu test độc lập hai lần, tức 400 answer executions. Baseline schema-only đạt 22,5%; Texa đạt 91,25%. Ablation cho thấy Texa with only retrieval đạt 90,25%, Texa with only consistency 87%, và Texa without retrieval and consistency 87,5%. Vì baseline không có catalog hay mapping nghiệp vụ mà Texa có, khoảng cách đo cả tri thức semantic lẫn workflow; không thể kết luận toàn bộ mức tăng đến từ kiến trúc xử lý.
 
 ## Slide 11 — Ablation, clarification và hội thoại (1:10)
 
-| Suite test | LLM có lịch sử chat | Texa without retrieval and consistency | Texa with only retrieval | Texa with only consistency | **Texa** |
+| Suite | LLM có lịch sử chat | Texa without retrieval and consistency | Texa with only retrieval | Texa with only consistency | **Texa** |
 |---|---:|---:|---:|---:|---:|
-| Clarification / 12 | 1 (8,3%) | 12 (100%) | 11 (91,7%) | 11 (91,7%) | 11 (91,7%) |
-| Conversation / 24 lượt | 1 (4,2%) | 22 (91,7%) | 19 (79,2%) | 20 (83,3%) | 22 (91,7%) |
+| Clarification cuối, 60 case × 2 | 27,5% | 99,2% | 99,2% | 100% | 100% |
+| Hội thoại, 308 answer slots × 2 | 91/616 (14,8%) | 563/616 (91,4%) | 592/616 (96,1%) | 567/616 (92,0%) | 584/616 (94,8%) |
+| Ngoài phạm vi, action accuracy (40 × 2) | 5,0% | 83,75% | 86,25% | 93,75% | 95,0% |
 
-- Texa (mặc định) bật cả truy hồi ví dụ và kiểm tra nhất quán; ba bản rút gọn dùng để kiểm chứng đóng góp của từng thành phần
-- Texa đạt 30/30 single test trong một repeat; không phải overall accuracy
-- Kiểm tra nhất quán chỉ kích hoạt ở 1/30 câu test của Texa, không gọi thêm model cho mọi câu
+- Bộ clarification thay thế: final-table accuracy baseline 27,5%; Texa 100%; ablations 99,2–100%. Hỏi lại đúng: baseline 67,5%; Texa without retrieval and consistency và Texa with only consistency 100%; Texa with only retrieval 99,2%; Texa 100%.
+- Hội thoại chấm theo bảng chuẩn từng answer slot, không dùng legacy scenario-success.
 
-**Lời nói:** Ablation kiểm tra từng thành phần nhưng chưa đủ để tuyên bố retrieval hay consistency luôn làm hệ thống tốt hơn. Texa without retrieval and consistency tốt hơn một số toggle ở clarification hoặc hội thoại; Texa cao nhất ở single test. Adaptive consistency chỉ được kích hoạt một lần trong 30 câu Texa, nên đây là chính sách gọi có điều kiện, không phải ba lần gọi cho mọi câu. Nhóm chọn Texa làm cấu hình sản phẩm mặc định; các cấu hình bỏ một hoặc cả hai thành phần chỉ dùng cho ablation. Cần nhiều lần chạy và holdout độc lập để kết luận hiệu quả ổn định.
+**Lời nói:** Kết quả hội thoại khác câu hỏi đơn: Texa with only retrieval đạt 96,1%, cao nhất suite này, còn Texa đạt 94,8%. Clarification mới có final-table accuracy 100% cho Texa; baseline đạt 27,5%. Tỷ lệ hỏi lại đúng là 100% với Texa và hai cấu hình Texa without retrieval and consistency, Texa with only consistency; Texa with only retrieval đạt 99,2%, baseline 67,5%. Các thành phần không cải thiện mọi loại yêu cầu đồng đều. Ngoài phạm vi, Texa đạt 95% action accuracy. Kết quả còn exploratory vì test chưa được rà soát độc lập và còn family overlap.
 
 ## Slide 12 — Chi phí, độ trễ và kiểm thử sản phẩm (1:15)
 
-- Median latency single test: LLM chỉ nhận schema **8,1 giây**; Texa **13,3 giây**
-- Chi phí ước tính/30 câu: LLM chỉ nhận schema **$0,0062**; Texa **$0,0280**
+- Median latency trên 400 lần chạy: LLM chỉ nhận schema **7,7 giây**; Texa **13,8 giây**
+- Chi phí ước tính/400 lần chạy: LLM chỉ nhận schema **$0,074**; Texa **$0,401**
 - Backend **384 passed, 36 skipped**; DB integration **30 passed**; Playwright **15 passed** với provider giả lập
-- Browser model thật đã đo với cấu hình ablation Texa without retrieval and consistency: 5/6 câu khớp; view count trả 12 thay vì 24
-- Browser regression benchmark riêng: Texa without retrieval and consistency 15/15 single, 18/19 lượt hội thoại; không phải holdout/UI E2E
+- Browser observations trước đây: 5/6 câu khớp; view count khi đó trả 12 thay vì 24. Đây là kết quả lịch sử, không thuộc benchmark mới.
+- Browser regression benchmark cũ: Texa without retrieval and consistency 15/15 single, 18/19 lượt hội thoại; chỉ là replay trên câu đã biết.
 
-**Lời nói:** Texa cho kết quả đúng hơn trong bộ single test này, nhưng median chậm hơn khoảng năm giây và chi phí ước tính cao hơn. Kiểm thử backend, database và Playwright xác nhận luồng phần mềm bằng provider giả lập; chúng không đo chất lượng model thật. Trong lần đo giao diện thật với Texa without retrieval and consistency (chưa phải Texa mặc định mới), chuỗi filter cho ra 62, sau khi bỏ mobile vẫn giữ paid là 204, rồi đổi sang desktop và vẫn giữ paid là 61; unique viewers là 12 và Olist revenue là 432 BRL, khớp CSV. Một truy vấn đếm views vẫn sai 12 so với chuẩn 24. Các bài browser là kịch bản hồi quy nhỏ, không đại diện cho tải lớp học.
+**Lời nói:** Texa cho kết quả đúng hơn trong bộ câu đơn, với median 13,8 giây so với 7,7 giây của baseline; tổng chi phí ước tính cho 400 lượt là 0,401 USD so với 0,074 USD. Các quan sát browser trên slide là từ phiên kiểm thử cũ: khi đó một câu đếm views trả 12 thay vì 24. Chúng không phải E2E mới hay kết quả benchmark research-v3.
 
 ## Slide 13 — Kết luận và giới hạn (0:45)
 
 - Texa tập trung vào PM/PO hỏi dữ liệu event e-commerce đã định nghĩa trên PostgreSQL
-- Benchmark v6 cho tín hiệu mạnh trên candidate, nhưng chưa tách riêng giá trị workflow khỏi semantic knowledge
+- Research-v3 có hai lần chạy và bộ câu hỏi đa dạng hơn, nhưng chưa tách riêng giá trị workflow khỏi semantic knowledge
 - Cần review đáp án độc lập, khóa holdout mới, lặp lại benchmark và kiểm tải trước khi mở rộng
 
-**Lời nói:** Kết quả v6 cho thấy Texa vượt baseline schema-only rõ rệt trên bộ câu hỏi hiện tại. Tuy nhiên baseline không được cung cấp enum hay business mapping, nên chênh lệch gồm cả lợi ích tri thức catalog; ta chưa thể khẳng định riêng kiến trúc workflow tạo ra toàn bộ phần tăng. Bộ test còn nhỏ, test split chưa được thẩm định độc lập và chưa khóa, và giao diện thật còn một lỗi đếm views. Bước tiếp theo là review gold độc lập, tạo holdout mới, lặp lại phép đo và thử tải nhiều người dùng trước khi kết luận khả năng triển khai rộng.
+**Lời nói:** Trên 200 câu hỏi đơn chạy hai lần, Texa đạt 91,25% so với 22,5% của baseline chỉ có schema. Đây là chênh lệch lớn trong candidate benchmark, nhưng baseline thiếu catalog và mapping nghiệp vụ; vì vậy chưa thể quy mức tăng riêng cho workflow Texa. Hội thoại và câu ngoài phạm vi được chấm riêng. Dữ liệu synthetic, có template overlap và chưa được human-review hay khóa kín. Cần review gold độc lập và holdout mới trước khi khẳng định khả năng tổng quát hóa.
 
 ### Ghi chú cho người trình bày
 
 - LLM chỉ nhận schema/LLM có lịch sử chat/Texa đều dùng cùng model và fixtures; baseline không có catalog, định nghĩa business hay source-value mapping. Đây là so sánh hệ thống với thông tin đầu vào khác nhau, không phải model ranking.
-- Candidate gồm 60 câu đơn (30 dev/30 test), 24 clarification records (12 cặp query/control), 9 hội thoại (8 lượt dev/24 lượt test), 12 diagnostic; tổng hợp và chưa có holdout sealed/human-reviewed.
+- Research-v3 gồm 300 câu đơn (100 dev/200 test), 60 clarification cases, 40 hội thoại (355 lượt; 308 answer slots) và 40 câu ngoài phạm vi; dữ liệu synthetic, còn family overlap, chưa human-reviewed/sealed.
 - Browser parity (Texa without retrieval and consistency 15/15 câu đơn; 18/19 lượt hội thoại) là replay trên câu đã biết. Browser UI đã đo với Texa without retrieval and consistency có một lỗi thực: event views trả 12 thay vì 24.
-- Texa đạt 30/30 test single ở một repeat; không gộp suite thành overall accuracy. Texa là cấu hình mặc định; Texa without retrieval and consistency/Texa with only retrieval/Texa with only consistency là ablation.
-- Source-selected control: LLM chỉ nhận schema 13/30 (43,3%), Texa without retrieval and consistency 28/30 (93,3%); khoảng cách còn chịu ảnh hưởng của catalog/business mappings.
-- Frozen SQL replay trên ba fixture worlds không phải ba repeat độc lập; số đúng mỗi cấu hình lần lượt LLM chỉ nhận schema 1/30, LLM thêm ví dụ SQL 16/30, LLM có lịch sử chat 1/30, Texa without retrieval and consistency 28/30, Texa with only retrieval/Texa with only consistency 27/30, Texa 30/30.
+- Single-question business accuracy: baseline schema-only 22,5%; Texa 91,25%; Texa without retrieval and consistency 87,5%; Texa with only consistency 87%; Texa with only retrieval 90,25% (400 executions mỗi cấu hình).
+- Hai lần gọi model benchmark chạy trên fixture base; ba worlds chỉ dùng để kiểm tra 2.004 gold SQL/world checks.
+- Quan sát browser trước đây chỉ là lịch sử, không khẳng định có E2E mới trong research-v3.
 - Persona PM/PO chưa được xác nhận qua user study; không suy rộng hai nguồn hiện tại sang mọi doanh nghiệp.

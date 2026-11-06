@@ -1,0 +1,16 @@
+{
+  "sql_string_templates_after_literal_masking": {
+    "dev": 59,
+    "test": 94,
+    "shared": 59
+  },
+  "test_sources": {
+    "cosmetics_shop": 100,
+    "olist_marketplace": 100
+  },
+  "test_languages": {
+    "en": 60,
+    "vi": 140
+  },
+  "note": "Literal-masked SQL string count is a descriptive template proxy, not an independence guarantee."
+}

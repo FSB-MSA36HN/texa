@@ -1,0 +1,270 @@
+{
+  "suite": "diagnostic",
+  "split": "test",
+  "variants": {
+    "B1": {
+      "runs": 2,
+      "answer_count": 0,
+      "business_accuracy": null,
+      "latency_ms_p50": 7229.5,
+      "latency_ms_p95": 10317.0,
+      "tokens": 52845.0,
+      "cost_estimated_usd": 0.0127057,
+      "diagnostic_action_accuracy": 0.05,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 0,
+      "retrieval_activated_decisions": 0,
+      "component_decision_count": 0,
+      "consistency_scheduled_decisions": 0,
+      "consistency_completed_decisions": 0,
+      "consistency_scheduled_samples": 0,
+      "consistency_completed_samples": 0,
+      "consistency_scheduled_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 80
+    },
+    "T00": {
+      "runs": 2,
+      "answer_count": 0,
+      "business_accuracy": null,
+      "latency_ms_p50": 8834.5,
+      "latency_ms_p95": 12477.0,
+      "tokens": 430271.0,
+      "cost_estimated_usd": 0.0535107,
+      "diagnostic_action_accuracy": 0.8375,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 0,
+      "retrieval_activated_decisions": 0,
+      "component_decision_count": 79,
+      "consistency_scheduled_decisions": 0,
+      "consistency_completed_decisions": 0,
+      "consistency_scheduled_samples": 0,
+      "consistency_completed_samples": 0,
+      "consistency_scheduled_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 80
+    },
+    "T01": {
+      "runs": 2,
+      "answer_count": 0,
+      "business_accuracy": null,
+      "latency_ms_p50": 8665.0,
+      "latency_ms_p95": 17988.0,
+      "tokens": 505361.0,
+      "cost_estimated_usd": 0.0627789,
+      "diagnostic_action_accuracy": 0.9375,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 0,
+      "retrieval_activated_decisions": 0,
+      "component_decision_count": 79,
+      "consistency_scheduled_decisions": 7,
+      "consistency_completed_decisions": 7,
+      "consistency_scheduled_samples": 93,
+      "consistency_completed_samples": 93,
+      "consistency_scheduled_scenarios": 7,
+      "consistency_completed_scenarios": 7,
+      "unsupported_diagnostics": 80
+    },
+    "T10": {
+      "runs": 2,
+      "answer_count": 0,
+      "business_accuracy": null,
+      "latency_ms_p50": 9004.5,
+      "latency_ms_p95": 12558.0,
+      "tokens": 448132.0,
+      "cost_estimated_usd": 0.05507,
+      "diagnostic_action_accuracy": 0.8625,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 78,
+      "retrieval_activated_decisions": 78,
+      "component_decision_count": 78,
+      "consistency_scheduled_decisions": 0,
+      "consistency_completed_decisions": 0,
+      "consistency_scheduled_samples": 0,
+      "consistency_completed_samples": 0,
+      "consistency_scheduled_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 80
+    },
+    "T11": {
+      "runs": 2,
+      "answer_count": 0,
+      "business_accuracy": null,
+      "latency_ms_p50": 9155.5,
+      "latency_ms_p95": 17904.0,
+      "tokens": 526993.0,
+      "cost_estimated_usd": 0.06495010000000001,
+      "diagnostic_action_accuracy": 0.95,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 80,
+      "retrieval_activated_decisions": 80,
+      "component_decision_count": 80,
+      "consistency_scheduled_decisions": 7,
+      "consistency_completed_decisions": 7,
+      "consistency_scheduled_samples": 94,
+      "consistency_completed_samples": 94,
+      "consistency_scheduled_scenarios": 7,
+      "consistency_completed_scenarios": 7,
+      "unsupported_diagnostics": 80
+    }
+  },
+  "paired_comparisons": {},
+  "factorial_effects": null,
+  "interpretation": "Observable action diagnostics only; injection and explanation rubrics require manual review. Not SQL result accuracy.",
+  "commit_metadata_overlay": {
+    "original_commits": [
+      "37adb620f6aa0c9a7166d6512e5c99f6da1812dc",
+      "8fbdcefc33779712f3a62dea1f0185fb7cb48c7a"
+    ],
+    "reason": "Unrelated append-only clarification dataset commit changed HEAD; all runtime/evaluator/catalog/bank/active-dataset hashes verified identical. Raw records unchanged."
+  },
+  "detail_by_variant": {
+    "B1": {
+      "completed_repeats": [
+        1,
+        2
+      ],
+      "counts": {
+        "scenarios": 80,
+        "legacy_scenario_success": 4,
+        "answer_slots": 0,
+        "answers_correct": 0,
+        "policy_scorable": 0,
+        "policy_correct": 0
+      },
+      "by_stratum": {},
+      "by_source": {},
+      "failed_scenario_ids": [
+        "unsupported_01",
+        "unsupported_02",
+        "unsupported_03",
+        "unsupported_04",
+        "unsupported_06",
+        "unsupported_07",
+        "unsupported_08",
+        "unsupported_09",
+        "unsupported_10",
+        "unsupported_11",
+        "unsupported_12",
+        "unsupported_13",
+        "unsupported_14",
+        "unsupported_15",
+        "unsupported_16",
+        "unsupported_17",
+        "unsupported_19",
+        "unsupported_20",
+        "unsupported_21",
+        "unsupported_22",
+        "unsupported_23",
+        "unsupported_24",
+        "unsupported_25",
+        "unsupported_26",
+        "unsupported_27",
+        "unsupported_28",
+        "unsupported_29",
+        "unsupported_30",
+        "unsupported_31",
+        "unsupported_32",
+        "unsupported_33",
+        "unsupported_34",
+        "unsupported_35",
+        "unsupported_36",
+        "unsupported_37",
+        "unsupported_38",
+        "unsupported_39",
+        "unsupported_40"
+      ]
+    },
+    "T00": {
+      "completed_repeats": [
+        1,
+        2
+      ],
+      "counts": {
+        "scenarios": 80,
+        "legacy_scenario_success": 67,
+        "answer_slots": 0,
+        "answers_correct": 0,
+        "policy_scorable": 0,
+        "policy_correct": 0
+      },
+      "by_stratum": {},
+      "by_source": {},
+      "failed_scenario_ids": [
+        "unsupported_09",
+        "unsupported_10",
+        "unsupported_17",
+        "unsupported_19",
+        "unsupported_27",
+        "unsupported_34",
+        "unsupported_35",
+        "unsupported_36"
+      ]
+    },
+    "T01": {
+      "completed_repeats": [
+        1,
+        2
+      ],
+      "counts": {
+        "scenarios": 80,
+        "legacy_scenario_success": 75,
+        "answer_slots": 0,
+        "answers_correct": 0,
+        "policy_scorable": 0,
+        "policy_correct": 0
+      },
+      "by_stratum": {},
+      "by_source": {},
+      "failed_scenario_ids": [
+        "unsupported_09",
+        "unsupported_27",
+        "unsupported_35"
+      ]
+    },
+    "T10": {
+      "completed_repeats": [
+        1,
+        2
+      ],
+      "counts": {
+        "scenarios": 80,
+        "legacy_scenario_success": 69,
+        "answer_slots": 0,
+        "answers_correct": 0,
+        "policy_scorable": 0,
+        "policy_correct": 0
+      },
+      "by_stratum": {},
+      "by_source": {},
+      "failed_scenario_ids": [
+        "unsupported_09",
+        "unsupported_10",
+        "unsupported_19",
+        "unsupported_27",
+        "unsupported_35",
+        "unsupported_36"
+      ]
+    },
+    "T11": {
+      "completed_repeats": [
+        1,
+        2
+      ],
+      "counts": {
+        "scenarios": 80,
+        "legacy_scenario_success": 76,
+        "answer_slots": 0,
+        "answers_correct": 0,
+        "policy_scorable": 0,
+        "policy_correct": 0
+      },
+      "by_stratum": {},
+      "by_source": {},
+      "failed_scenario_ids": [
+        "unsupported_09",
+        "unsupported_35"
+      ]
+    }
+  }
+}

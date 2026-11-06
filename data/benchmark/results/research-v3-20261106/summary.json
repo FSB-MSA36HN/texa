@@ -1,0 +1,2673 @@
+{
+  "single": {
+    "suite": "single",
+    "split": "test",
+    "variants": {
+      "B0": {
+        "runs": 2,
+        "answer_count": 400,
+        "business_accuracy": 0.225,
+        "latency_ms_p50": 7685.5,
+        "latency_ms_p95": 18280.0,
+        "tokens": 279432.0,
+        "cost_estimated_usd": 0.0737488,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 0,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      },
+      "T00": {
+        "runs": 2,
+        "answer_count": 400,
+        "business_accuracy": 0.875,
+        "latency_ms_p50": 14309.5,
+        "latency_ms_p95": 32550.0,
+        "tokens": 2678712.0,
+        "cost_estimated_usd": 0.3338972,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 398,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      },
+      "T01": {
+        "runs": 2,
+        "answer_count": 400,
+        "business_accuracy": 0.87,
+        "latency_ms_p50": 13952.5,
+        "latency_ms_p95": 23148.0,
+        "tokens": 3113883.0,
+        "cost_estimated_usd": 0.38587590000000005,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 400,
+        "consistency_scheduled_decisions": 41,
+        "consistency_completed_decisions": 41,
+        "consistency_scheduled_samples": 482,
+        "consistency_completed_samples": 482,
+        "consistency_scheduled_scenarios": 41,
+        "consistency_completed_scenarios": 41,
+        "unsupported_diagnostics": 0
+      },
+      "T10": {
+        "runs": 2,
+        "answer_count": 400,
+        "business_accuracy": 0.9025,
+        "latency_ms_p50": 14401.0,
+        "latency_ms_p95": 28501.0,
+        "tokens": 2784116.0,
+        "cost_estimated_usd": 0.3432876,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 400,
+        "retrieval_activated_decisions": 400,
+        "component_decision_count": 400,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      },
+      "T11": {
+        "runs": 2,
+        "answer_count": 400,
+        "business_accuracy": 0.9125,
+        "latency_ms_p50": 13788.5,
+        "latency_ms_p95": 24393.0,
+        "tokens": 3254108.0,
+        "cost_estimated_usd": 0.4013796,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 400,
+        "retrieval_activated_decisions": 400,
+        "component_decision_count": 400,
+        "consistency_scheduled_decisions": 41,
+        "consistency_completed_decisions": 41,
+        "consistency_scheduled_samples": 482,
+        "consistency_completed_samples": 482,
+        "consistency_scheduled_scenarios": 41,
+        "consistency_completed_scenarios": 41,
+        "unsupported_diagnostics": 0
+      }
+    },
+    "paired_comparisons": {
+      "B0_vs_T00": {
+        "paired_accuracy_delta_right_minus_left": 0.65,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 4.7082706584352774e-61,
+        "cluster_bootstrap_ci95": [
+          0.4921875,
+          0.777027027027027
+        ],
+        "clusters": 11,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 18,
+        "mcnemar_discordant_right_only": 278
+      },
+      "B0_vs_T01": {
+        "paired_accuracy_delta_right_minus_left": 0.645,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 3.928657186544466e-58,
+        "cluster_bootstrap_ci95": [
+          0.46111111111111114,
+          0.7462121212121212
+        ],
+        "clusters": 11,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 22,
+        "mcnemar_discordant_right_only": 280
+      },
+      "B0_vs_T10": {
+        "paired_accuracy_delta_right_minus_left": 0.6775,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.4163812100758864e-67,
+        "cluster_bootstrap_ci95": [
+          0.550531914893617,
+          0.7903225806451613
+        ],
+        "clusters": 11,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 13,
+        "mcnemar_discordant_right_only": 284
+      },
+      "B0_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.6875,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 5.994085305193897e-68,
+        "cluster_bootstrap_ci95": [
+          0.55,
+          0.8012820512820513
+        ],
+        "clusters": 11,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 14,
+        "mcnemar_discordant_right_only": 289
+      },
+      "T00_vs_T01": {
+        "paired_accuracy_delta_right_minus_left": -0.005,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 0.8714146793645341,
+        "cluster_bootstrap_ci95": [
+          -0.06547619047619048,
+          0.017006802721088437
+        ],
+        "clusters": 11,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 20,
+        "mcnemar_discordant_right_only": 18
+      },
+      "T00_vs_T10": {
+        "paired_accuracy_delta_right_minus_left": 0.0275,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 0.07075554598122835,
+        "cluster_bootstrap_ci95": [
+          0.0,
+          0.05555555555555555
+        ],
+        "clusters": 11,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 10,
+        "mcnemar_discordant_right_only": 21
+      },
+      "T00_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.0375,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 0.008130058646202087,
+        "cluster_bootstrap_ci95": [
+          0.005319148936170213,
+          0.0650887573964497
+        ],
+        "clusters": 11,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 7,
+        "mcnemar_discordant_right_only": 22
+      },
+      "T01_vs_T10": {
+        "paired_accuracy_delta_right_minus_left": 0.0325,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 0.029449373483657837,
+        "cluster_bootstrap_ci95": [
+          0.011764705882352941,
+          0.1
+        ],
+        "clusters": 11,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 9,
+        "mcnemar_discordant_right_only": 22
+      },
+      "T01_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.0425,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 0.003326892852783203,
+        "cluster_bootstrap_ci95": [
+          0.019444444444444445,
+          0.10245901639344263
+        ],
+        "clusters": 11,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 7,
+        "mcnemar_discordant_right_only": 24
+      },
+      "T10_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.01,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 0.5412561893463135,
+        "cluster_bootstrap_ci95": [
+          0.0,
+          0.016483516483516484
+        ],
+        "clusters": 11,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 10,
+        "mcnemar_discordant_right_only": 14
+      }
+    },
+    "factorial_effects": {
+      "retrieval_main_effect": 0.03499999999999992,
+      "consistency_main_effect": 0.0025000000000000577,
+      "interaction": 0.015000000000000013
+    },
+    "interpretation": "diagnostic exploratory candidate results; not confirmatory human-reviewed holdout evidence",
+    "commit_metadata_overlay": {
+      "original_commits": [
+        "8fbdcefc33779712f3a62dea1f0185fb7cb48c7a"
+      ],
+      "reason": "Unrelated append-only clarification dataset commit changed HEAD; all runtime/evaluator/catalog/bank/active-dataset hashes verified identical. Raw records unchanged."
+    },
+    "detail_by_variant": {
+      "B0": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 400,
+          "legacy_scenario_success": 90,
+          "answer_slots": 400,
+          "answers_correct": 90,
+          "policy_scorable": 0,
+          "policy_correct": 0
+        },
+        "by_stratum": {
+          "basic": {
+            "total": 80,
+            "correct": 30
+          },
+          "compositional": {
+            "total": 200,
+            "correct": 27
+          },
+          "semantic": {
+            "total": 120,
+            "correct": 33
+          }
+        },
+        "by_source": {
+          "cosmetics_shop": {
+            "total": 200,
+            "correct": 57
+          },
+          "olist_marketplace": {
+            "total": 200,
+            "correct": 33
+          }
+        },
+        "failed_scenario_ids": [
+          "rv3_test_basic_cosmetics_shop_003",
+          "rv3_test_basic_cosmetics_shop_004",
+          "rv3_test_basic_cosmetics_shop_005",
+          "rv3_test_basic_cosmetics_shop_008",
+          "rv3_test_basic_cosmetics_shop_009",
+          "rv3_test_basic_cosmetics_shop_011",
+          "rv3_test_basic_cosmetics_shop_012",
+          "rv3_test_basic_cosmetics_shop_013",
+          "rv3_test_basic_cosmetics_shop_015",
+          "rv3_test_basic_cosmetics_shop_020",
+          "rv3_test_basic_olist_marketplace_001",
+          "rv3_test_basic_olist_marketplace_003",
+          "rv3_test_basic_olist_marketplace_004",
+          "rv3_test_basic_olist_marketplace_005",
+          "rv3_test_basic_olist_marketplace_006",
+          "rv3_test_basic_olist_marketplace_007",
+          "rv3_test_basic_olist_marketplace_009",
+          "rv3_test_basic_olist_marketplace_010",
+          "rv3_test_basic_olist_marketplace_011",
+          "rv3_test_basic_olist_marketplace_012",
+          "rv3_test_basic_olist_marketplace_013",
+          "rv3_test_basic_olist_marketplace_015",
+          "rv3_test_basic_olist_marketplace_016",
+          "rv3_test_basic_olist_marketplace_017",
+          "rv3_test_basic_olist_marketplace_018",
+          "rv3_test_basic_olist_marketplace_019",
+          "rv3_test_compositional_cosmetics_shop_001",
+          "rv3_test_compositional_cosmetics_shop_002",
+          "rv3_test_compositional_cosmetics_shop_004",
+          "rv3_test_compositional_cosmetics_shop_005",
+          "rv3_test_compositional_cosmetics_shop_007",
+          "rv3_test_compositional_cosmetics_shop_008",
+          "rv3_test_compositional_cosmetics_shop_010",
+          "rv3_test_compositional_cosmetics_shop_011",
+          "rv3_test_compositional_cosmetics_shop_013",
+          "rv3_test_compositional_cosmetics_shop_014",
+          "rv3_test_compositional_cosmetics_shop_015",
+          "rv3_test_compositional_cosmetics_shop_016",
+          "rv3_test_compositional_cosmetics_shop_017",
+          "rv3_test_compositional_cosmetics_shop_019",
+          "rv3_test_compositional_cosmetics_shop_020",
+          "rv3_test_compositional_cosmetics_shop_021",
+          "rv3_test_compositional_cosmetics_shop_022",
+          "rv3_test_compositional_cosmetics_shop_023",
+          "rv3_test_compositional_cosmetics_shop_024",
+          "rv3_test_compositional_cosmetics_shop_025",
+          "rv3_test_compositional_cosmetics_shop_026",
+          "rv3_test_compositional_cosmetics_shop_027",
+          "rv3_test_compositional_cosmetics_shop_028",
+          "rv3_test_compositional_cosmetics_shop_029",
+          "rv3_test_compositional_cosmetics_shop_030",
+          "rv3_test_compositional_cosmetics_shop_031",
+          "rv3_test_compositional_cosmetics_shop_032",
+          "rv3_test_compositional_cosmetics_shop_034",
+          "rv3_test_compositional_cosmetics_shop_037",
+          "rv3_test_compositional_cosmetics_shop_038",
+          "rv3_test_compositional_cosmetics_shop_039",
+          "rv3_test_compositional_cosmetics_shop_040",
+          "rv3_test_compositional_cosmetics_shop_041",
+          "rv3_test_compositional_cosmetics_shop_042",
+          "rv3_test_compositional_cosmetics_shop_043",
+          "rv3_test_compositional_cosmetics_shop_044",
+          "rv3_test_compositional_cosmetics_shop_045",
+          "rv3_test_compositional_cosmetics_shop_046",
+          "rv3_test_compositional_cosmetics_shop_047",
+          "rv3_test_compositional_cosmetics_shop_048",
+          "rv3_test_compositional_cosmetics_shop_049",
+          "rv3_test_compositional_cosmetics_shop_050",
+          "rv3_test_compositional_olist_marketplace_001",
+          "rv3_test_compositional_olist_marketplace_002",
+          "rv3_test_compositional_olist_marketplace_003",
+          "rv3_test_compositional_olist_marketplace_004",
+          "rv3_test_compositional_olist_marketplace_006",
+          "rv3_test_compositional_olist_marketplace_007",
+          "rv3_test_compositional_olist_marketplace_008",
+          "rv3_test_compositional_olist_marketplace_010",
+          "rv3_test_compositional_olist_marketplace_011",
+          "rv3_test_compositional_olist_marketplace_012",
+          "rv3_test_compositional_olist_marketplace_013",
+          "rv3_test_compositional_olist_marketplace_014",
+          "rv3_test_compositional_olist_marketplace_015",
+          "rv3_test_compositional_olist_marketplace_016",
+          "rv3_test_compositional_olist_marketplace_017",
+          "rv3_test_compositional_olist_marketplace_018",
+          "rv3_test_compositional_olist_marketplace_019",
+          "rv3_test_compositional_olist_marketplace_020",
+          "rv3_test_compositional_olist_marketplace_021",
+          "rv3_test_compositional_olist_marketplace_023",
+          "rv3_test_compositional_olist_marketplace_024",
+          "rv3_test_compositional_olist_marketplace_025",
+          "rv3_test_compositional_olist_marketplace_026",
+          "rv3_test_compositional_olist_marketplace_027",
+          "rv3_test_compositional_olist_marketplace_028",
+          "rv3_test_compositional_olist_marketplace_029",
+          "rv3_test_compositional_olist_marketplace_030",
+          "rv3_test_compositional_olist_marketplace_031",
+          "rv3_test_compositional_olist_marketplace_032",
+          "rv3_test_compositional_olist_marketplace_033",
+          "rv3_test_compositional_olist_marketplace_034",
+          "rv3_test_compositional_olist_marketplace_036",
+          "rv3_test_compositional_olist_marketplace_037",
+          "rv3_test_compositional_olist_marketplace_038",
+          "rv3_test_compositional_olist_marketplace_039",
+          "rv3_test_compositional_olist_marketplace_040",
+          "rv3_test_compositional_olist_marketplace_041",
+          "rv3_test_compositional_olist_marketplace_042",
+          "rv3_test_compositional_olist_marketplace_043",
+          "rv3_test_compositional_olist_marketplace_044",
+          "rv3_test_compositional_olist_marketplace_045",
+          "rv3_test_compositional_olist_marketplace_046",
+          "rv3_test_compositional_olist_marketplace_047",
+          "rv3_test_compositional_olist_marketplace_048",
+          "rv3_test_compositional_olist_marketplace_049",
+          "rv3_test_compositional_olist_marketplace_050",
+          "rv3_test_semantic_cosmetics_shop_001",
+          "rv3_test_semantic_cosmetics_shop_004",
+          "rv3_test_semantic_cosmetics_shop_006",
+          "rv3_test_semantic_cosmetics_shop_007",
+          "rv3_test_semantic_cosmetics_shop_008",
+          "rv3_test_semantic_cosmetics_shop_009",
+          "rv3_test_semantic_cosmetics_shop_010",
+          "rv3_test_semantic_cosmetics_shop_013",
+          "rv3_test_semantic_cosmetics_shop_014",
+          "rv3_test_semantic_cosmetics_shop_015",
+          "rv3_test_semantic_cosmetics_shop_016",
+          "rv3_test_semantic_cosmetics_shop_017",
+          "rv3_test_semantic_cosmetics_shop_018",
+          "rv3_test_semantic_cosmetics_shop_019",
+          "rv3_test_semantic_cosmetics_shop_020",
+          "rv3_test_semantic_cosmetics_shop_021",
+          "rv3_test_semantic_cosmetics_shop_024",
+          "rv3_test_semantic_cosmetics_shop_025",
+          "rv3_test_semantic_cosmetics_shop_026",
+          "rv3_test_semantic_cosmetics_shop_027",
+          "rv3_test_semantic_cosmetics_shop_028",
+          "rv3_test_semantic_cosmetics_shop_029",
+          "rv3_test_semantic_cosmetics_shop_030",
+          "rv3_test_semantic_olist_marketplace_001",
+          "rv3_test_semantic_olist_marketplace_002",
+          "rv3_test_semantic_olist_marketplace_004",
+          "rv3_test_semantic_olist_marketplace_006",
+          "rv3_test_semantic_olist_marketplace_007",
+          "rv3_test_semantic_olist_marketplace_008",
+          "rv3_test_semantic_olist_marketplace_009",
+          "rv3_test_semantic_olist_marketplace_010",
+          "rv3_test_semantic_olist_marketplace_013",
+          "rv3_test_semantic_olist_marketplace_014",
+          "rv3_test_semantic_olist_marketplace_015",
+          "rv3_test_semantic_olist_marketplace_016",
+          "rv3_test_semantic_olist_marketplace_017",
+          "rv3_test_semantic_olist_marketplace_018",
+          "rv3_test_semantic_olist_marketplace_019",
+          "rv3_test_semantic_olist_marketplace_020",
+          "rv3_test_semantic_olist_marketplace_021",
+          "rv3_test_semantic_olist_marketplace_024",
+          "rv3_test_semantic_olist_marketplace_025",
+          "rv3_test_semantic_olist_marketplace_026",
+          "rv3_test_semantic_olist_marketplace_027",
+          "rv3_test_semantic_olist_marketplace_028",
+          "rv3_test_semantic_olist_marketplace_030"
+        ]
+      },
+      "T00": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 400,
+          "legacy_scenario_success": 350,
+          "answer_slots": 400,
+          "answers_correct": 350,
+          "policy_scorable": 0,
+          "policy_correct": 0
+        },
+        "by_stratum": {
+          "basic": {
+            "total": 80,
+            "correct": 80
+          },
+          "compositional": {
+            "total": 200,
+            "correct": 167
+          },
+          "semantic": {
+            "total": 120,
+            "correct": 103
+          }
+        },
+        "by_source": {
+          "cosmetics_shop": {
+            "total": 200,
+            "correct": 175
+          },
+          "olist_marketplace": {
+            "total": 200,
+            "correct": 175
+          }
+        },
+        "failed_scenario_ids": [
+          "rv3_test_compositional_cosmetics_shop_003",
+          "rv3_test_compositional_cosmetics_shop_004",
+          "rv3_test_compositional_cosmetics_shop_018",
+          "rv3_test_compositional_cosmetics_shop_020",
+          "rv3_test_compositional_cosmetics_shop_022",
+          "rv3_test_compositional_cosmetics_shop_030",
+          "rv3_test_compositional_cosmetics_shop_034",
+          "rv3_test_compositional_cosmetics_shop_035",
+          "rv3_test_compositional_cosmetics_shop_037",
+          "rv3_test_compositional_cosmetics_shop_038",
+          "rv3_test_compositional_cosmetics_shop_048",
+          "rv3_test_compositional_cosmetics_shop_050",
+          "rv3_test_compositional_olist_marketplace_009",
+          "rv3_test_compositional_olist_marketplace_018",
+          "rv3_test_compositional_olist_marketplace_021",
+          "rv3_test_compositional_olist_marketplace_025",
+          "rv3_test_compositional_olist_marketplace_027",
+          "rv3_test_compositional_olist_marketplace_029",
+          "rv3_test_compositional_olist_marketplace_033",
+          "rv3_test_compositional_olist_marketplace_037",
+          "rv3_test_compositional_olist_marketplace_039",
+          "rv3_test_compositional_olist_marketplace_045",
+          "rv3_test_compositional_olist_marketplace_048",
+          "rv3_test_compositional_olist_marketplace_049",
+          "rv3_test_semantic_cosmetics_shop_002",
+          "rv3_test_semantic_cosmetics_shop_005",
+          "rv3_test_semantic_cosmetics_shop_008",
+          "rv3_test_semantic_cosmetics_shop_011",
+          "rv3_test_semantic_cosmetics_shop_012",
+          "rv3_test_semantic_olist_marketplace_002",
+          "rv3_test_semantic_olist_marketplace_008",
+          "rv3_test_semantic_olist_marketplace_009",
+          "rv3_test_semantic_olist_marketplace_011",
+          "rv3_test_semantic_olist_marketplace_012"
+        ]
+      },
+      "T01": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 400,
+          "legacy_scenario_success": 348,
+          "answer_slots": 400,
+          "answers_correct": 348,
+          "policy_scorable": 0,
+          "policy_correct": 0
+        },
+        "by_stratum": {
+          "basic": {
+            "total": 80,
+            "correct": 80
+          },
+          "compositional": {
+            "total": 200,
+            "correct": 169
+          },
+          "semantic": {
+            "total": 120,
+            "correct": 99
+          }
+        },
+        "by_source": {
+          "cosmetics_shop": {
+            "total": 200,
+            "correct": 174
+          },
+          "olist_marketplace": {
+            "total": 200,
+            "correct": 174
+          }
+        },
+        "failed_scenario_ids": [
+          "rv3_test_compositional_cosmetics_shop_003",
+          "rv3_test_compositional_cosmetics_shop_006",
+          "rv3_test_compositional_cosmetics_shop_018",
+          "rv3_test_compositional_cosmetics_shop_019",
+          "rv3_test_compositional_cosmetics_shop_020",
+          "rv3_test_compositional_cosmetics_shop_022",
+          "rv3_test_compositional_cosmetics_shop_034",
+          "rv3_test_compositional_cosmetics_shop_035",
+          "rv3_test_compositional_cosmetics_shop_043",
+          "rv3_test_compositional_cosmetics_shop_048",
+          "rv3_test_compositional_cosmetics_shop_050",
+          "rv3_test_compositional_olist_marketplace_003",
+          "rv3_test_compositional_olist_marketplace_009",
+          "rv3_test_compositional_olist_marketplace_012",
+          "rv3_test_compositional_olist_marketplace_018",
+          "rv3_test_compositional_olist_marketplace_033",
+          "rv3_test_compositional_olist_marketplace_036",
+          "rv3_test_compositional_olist_marketplace_045",
+          "rv3_test_compositional_olist_marketplace_048",
+          "rv3_test_compositional_olist_marketplace_049",
+          "rv3_test_semantic_cosmetics_shop_002",
+          "rv3_test_semantic_cosmetics_shop_008",
+          "rv3_test_semantic_cosmetics_shop_011",
+          "rv3_test_semantic_cosmetics_shop_015",
+          "rv3_test_semantic_cosmetics_shop_029",
+          "rv3_test_semantic_olist_marketplace_002",
+          "rv3_test_semantic_olist_marketplace_008",
+          "rv3_test_semantic_olist_marketplace_009",
+          "rv3_test_semantic_olist_marketplace_011",
+          "rv3_test_semantic_olist_marketplace_012",
+          "rv3_test_semantic_olist_marketplace_027",
+          "rv3_test_semantic_olist_marketplace_029"
+        ]
+      },
+      "T10": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 400,
+          "legacy_scenario_success": 361,
+          "answer_slots": 400,
+          "answers_correct": 361,
+          "policy_scorable": 0,
+          "policy_correct": 0
+        },
+        "by_stratum": {
+          "basic": {
+            "total": 80,
+            "correct": 80
+          },
+          "compositional": {
+            "total": 200,
+            "correct": 173
+          },
+          "semantic": {
+            "total": 120,
+            "correct": 108
+          }
+        },
+        "by_source": {
+          "cosmetics_shop": {
+            "total": 200,
+            "correct": 184
+          },
+          "olist_marketplace": {
+            "total": 200,
+            "correct": 177
+          }
+        },
+        "failed_scenario_ids": [
+          "rv3_test_compositional_cosmetics_shop_003",
+          "rv3_test_compositional_cosmetics_shop_018",
+          "rv3_test_compositional_cosmetics_shop_019",
+          "rv3_test_compositional_cosmetics_shop_020",
+          "rv3_test_compositional_cosmetics_shop_034",
+          "rv3_test_compositional_cosmetics_shop_037",
+          "rv3_test_compositional_cosmetics_shop_048",
+          "rv3_test_compositional_cosmetics_shop_050",
+          "rv3_test_compositional_olist_marketplace_009",
+          "rv3_test_compositional_olist_marketplace_012",
+          "rv3_test_compositional_olist_marketplace_017",
+          "rv3_test_compositional_olist_marketplace_018",
+          "rv3_test_compositional_olist_marketplace_021",
+          "rv3_test_compositional_olist_marketplace_025",
+          "rv3_test_compositional_olist_marketplace_029",
+          "rv3_test_compositional_olist_marketplace_037",
+          "rv3_test_compositional_olist_marketplace_045",
+          "rv3_test_compositional_olist_marketplace_048",
+          "rv3_test_compositional_olist_marketplace_049",
+          "rv3_test_semantic_cosmetics_shop_002",
+          "rv3_test_semantic_cosmetics_shop_008",
+          "rv3_test_semantic_olist_marketplace_002",
+          "rv3_test_semantic_olist_marketplace_008",
+          "rv3_test_semantic_olist_marketplace_011",
+          "rv3_test_semantic_olist_marketplace_012"
+        ]
+      },
+      "T11": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 400,
+          "legacy_scenario_success": 365,
+          "answer_slots": 400,
+          "answers_correct": 365,
+          "policy_scorable": 0,
+          "policy_correct": 0
+        },
+        "by_stratum": {
+          "basic": {
+            "total": 80,
+            "correct": 80
+          },
+          "compositional": {
+            "total": 200,
+            "correct": 177
+          },
+          "semantic": {
+            "total": 120,
+            "correct": 108
+          }
+        },
+        "by_source": {
+          "cosmetics_shop": {
+            "total": 200,
+            "correct": 181
+          },
+          "olist_marketplace": {
+            "total": 200,
+            "correct": 184
+          }
+        },
+        "failed_scenario_ids": [
+          "rv3_test_compositional_cosmetics_shop_003",
+          "rv3_test_compositional_cosmetics_shop_017",
+          "rv3_test_compositional_cosmetics_shop_018",
+          "rv3_test_compositional_cosmetics_shop_019",
+          "rv3_test_compositional_cosmetics_shop_020",
+          "rv3_test_compositional_cosmetics_shop_022",
+          "rv3_test_compositional_cosmetics_shop_034",
+          "rv3_test_compositional_cosmetics_shop_035",
+          "rv3_test_compositional_cosmetics_shop_048",
+          "rv3_test_compositional_olist_marketplace_003",
+          "rv3_test_compositional_olist_marketplace_009",
+          "rv3_test_compositional_olist_marketplace_024",
+          "rv3_test_compositional_olist_marketplace_037",
+          "rv3_test_compositional_olist_marketplace_045",
+          "rv3_test_compositional_olist_marketplace_048",
+          "rv3_test_semantic_cosmetics_shop_002",
+          "rv3_test_semantic_cosmetics_shop_008",
+          "rv3_test_semantic_olist_marketplace_002",
+          "rv3_test_semantic_olist_marketplace_008",
+          "rv3_test_semantic_olist_marketplace_011",
+          "rv3_test_semantic_olist_marketplace_012"
+        ]
+      }
+    }
+  },
+  "clarification": {
+    "suite": "clarification",
+    "split": "test",
+    "variants": {
+      "B1": {
+        "runs": 2,
+        "answer_count": 120,
+        "business_accuracy": 0.0,
+        "latency_ms_p50": 8049.5,
+        "latency_ms_p95": 15478.0,
+        "tokens": 87975.0,
+        "cost_estimated_usd": 0.0203331,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 0,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      },
+      "T00": {
+        "runs": 2,
+        "answer_count": 120,
+        "business_accuracy": 0.875,
+        "latency_ms_p50": 13388.5,
+        "latency_ms_p95": 18640.0,
+        "tokens": 797728.0,
+        "cost_estimated_usd": 0.09770480000000001,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 149,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      },
+      "T01": {
+        "runs": 2,
+        "answer_count": 120,
+        "business_accuracy": 0.8833333333333333,
+        "latency_ms_p50": 12946.5,
+        "latency_ms_p95": 16872.0,
+        "tokens": 793958.0,
+        "cost_estimated_usd": 0.0974386,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 150,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 150,
+        "consistency_completed_samples": 150,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      },
+      "T10": {
+        "runs": 2,
+        "answer_count": 120,
+        "business_accuracy": 0.8833333333333333,
+        "latency_ms_p50": 12779.0,
+        "latency_ms_p95": 17105.0,
+        "tokens": 819235.0,
+        "cost_estimated_usd": 0.0991215,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 120,
+        "retrieval_activated_decisions": 150,
+        "component_decision_count": 150,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      },
+      "T11": {
+        "runs": 2,
+        "answer_count": 120,
+        "business_accuracy": 0.8833333333333333,
+        "latency_ms_p50": 13192.0,
+        "latency_ms_p95": 16210.0,
+        "tokens": 819259.0,
+        "cost_estimated_usd": 0.09911510000000001,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 120,
+        "retrieval_activated_decisions": 150,
+        "component_decision_count": 150,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 150,
+        "consistency_completed_samples": 150,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      }
+    },
+    "paired_comparisons": {
+      "B1_vs_T00": {
+        "paired_accuracy_delta_right_minus_left": 0.875,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 3.2311742677852644e-27,
+        "cluster_bootstrap_ci95": [
+          0.7916666666666666,
+          0.95
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 89
+      },
+      "B1_vs_T01": {
+        "paired_accuracy_delta_right_minus_left": 0.8833333333333333,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.6155871338926322e-27,
+        "cluster_bootstrap_ci95": [
+          0.8,
+          0.95
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 90
+      },
+      "B1_vs_T10": {
+        "paired_accuracy_delta_right_minus_left": 0.8833333333333333,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.6155871338926322e-27,
+        "cluster_bootstrap_ci95": [
+          0.8,
+          0.95
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 90
+      },
+      "B1_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.8833333333333333,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.6155871338926322e-27,
+        "cluster_bootstrap_ci95": [
+          0.8,
+          0.95
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 90
+      },
+      "T00_vs_T01": {
+        "paired_accuracy_delta_right_minus_left": 0.008333333333333333,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.0,
+        "cluster_bootstrap_ci95": [
+          0.0,
+          0.025
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 1
+      },
+      "T00_vs_T10": {
+        "paired_accuracy_delta_right_minus_left": 0.008333333333333333,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.0,
+        "cluster_bootstrap_ci95": [
+          0.0,
+          0.025
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 1
+      },
+      "T00_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.008333333333333333,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.0,
+        "cluster_bootstrap_ci95": [
+          0.0,
+          0.025
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 1
+      },
+      "T01_vs_T10": {
+        "paired_accuracy_delta_right_minus_left": 0.0,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.0,
+        "cluster_bootstrap_ci95": [
+          0.0,
+          0.0
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 0
+      },
+      "T01_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.0,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.0,
+        "cluster_bootstrap_ci95": [
+          0.0,
+          0.0
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 0
+      },
+      "T10_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.0,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.0,
+        "cluster_bootstrap_ci95": [
+          0.0,
+          0.0
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 0
+      }
+    },
+    "factorial_effects": {
+      "retrieval_main_effect": 0.004166666666666652,
+      "consistency_main_effect": 0.004166666666666652,
+      "interaction": -0.008333333333333304
+    },
+    "interpretation": "diagnostic exploratory candidate results; not confirmatory human-reviewed holdout evidence",
+    "commit_metadata_overlay": {
+      "original_commits": [
+        "37adb620f6aa0c9a7166d6512e5c99f6da1812dc",
+        "8fbdcefc33779712f3a62dea1f0185fb7cb48c7a"
+      ],
+      "reason": "Unrelated append-only clarification dataset commit changed HEAD; all runtime/evaluator/catalog/bank/active-dataset hashes verified identical. Raw records unchanged."
+    },
+    "detail_by_variant": {
+      "B1": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 120,
+          "legacy_scenario_success": 0,
+          "answer_slots": 120,
+          "answers_correct": 0,
+          "policy_scorable": 120,
+          "policy_correct": 51,
+          "clarification_tp": 20,
+          "clarification_fp": 59,
+          "clarification_fn": 40
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "interaction_01_ask",
+          "interaction_01_control",
+          "interaction_02_ask",
+          "interaction_02_control",
+          "interaction_03_ask",
+          "interaction_03_control",
+          "interaction_04_ask",
+          "interaction_04_control",
+          "interaction_05_ask",
+          "interaction_05_control",
+          "interaction_06_ask",
+          "interaction_06_control",
+          "interaction_07_ask",
+          "interaction_07_control",
+          "interaction_08_ask",
+          "interaction_08_control",
+          "interaction_09_ask",
+          "interaction_09_control",
+          "interaction_10_ask",
+          "interaction_10_control",
+          "interaction_11_ask",
+          "interaction_11_control",
+          "interaction_12_ask",
+          "interaction_12_control",
+          "interaction_13_ask",
+          "interaction_13_control",
+          "interaction_14_ask",
+          "interaction_14_control",
+          "interaction_15_ask",
+          "interaction_15_control",
+          "interaction_16_ask",
+          "interaction_16_control",
+          "interaction_17_ask",
+          "interaction_17_control",
+          "interaction_18_ask",
+          "interaction_18_control",
+          "interaction_19_ask",
+          "interaction_19_control",
+          "interaction_20_ask",
+          "interaction_20_control",
+          "interaction_21_ask",
+          "interaction_21_control",
+          "interaction_22_ask",
+          "interaction_22_control",
+          "interaction_23_ask",
+          "interaction_23_control",
+          "interaction_24_ask",
+          "interaction_24_control",
+          "interaction_25_ask",
+          "interaction_25_control",
+          "interaction_26_ask",
+          "interaction_26_control",
+          "interaction_27_ask",
+          "interaction_27_control",
+          "interaction_28_ask",
+          "interaction_28_control",
+          "interaction_29_ask",
+          "interaction_29_control",
+          "interaction_30_ask",
+          "interaction_30_control"
+        ]
+      },
+      "T00": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 120,
+          "legacy_scenario_success": 89,
+          "answer_slots": 120,
+          "answers_correct": 105,
+          "policy_scorable": 120,
+          "policy_correct": 89,
+          "clarification_tp": 29,
+          "clarification_fp": 0,
+          "clarification_fn": 31
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "interaction_01_ask",
+          "interaction_16_ask",
+          "interaction_17_ask",
+          "interaction_18_ask",
+          "interaction_19_ask",
+          "interaction_20_ask",
+          "interaction_21_ask",
+          "interaction_22_ask",
+          "interaction_23_ask",
+          "interaction_24_ask",
+          "interaction_25_ask",
+          "interaction_26_ask",
+          "interaction_27_ask",
+          "interaction_28_ask",
+          "interaction_29_ask",
+          "interaction_30_ask"
+        ]
+      },
+      "T01": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 120,
+          "legacy_scenario_success": 90,
+          "answer_slots": 120,
+          "answers_correct": 106,
+          "policy_scorable": 120,
+          "policy_correct": 90,
+          "clarification_tp": 30,
+          "clarification_fp": 0,
+          "clarification_fn": 30
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "interaction_16_ask",
+          "interaction_17_ask",
+          "interaction_18_ask",
+          "interaction_19_ask",
+          "interaction_20_ask",
+          "interaction_21_ask",
+          "interaction_22_ask",
+          "interaction_23_ask",
+          "interaction_24_ask",
+          "interaction_25_ask",
+          "interaction_26_ask",
+          "interaction_27_ask",
+          "interaction_28_ask",
+          "interaction_29_ask",
+          "interaction_30_ask"
+        ]
+      },
+      "T10": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 120,
+          "legacy_scenario_success": 90,
+          "answer_slots": 120,
+          "answers_correct": 106,
+          "policy_scorable": 120,
+          "policy_correct": 90,
+          "clarification_tp": 30,
+          "clarification_fp": 0,
+          "clarification_fn": 30
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "interaction_16_ask",
+          "interaction_17_ask",
+          "interaction_18_ask",
+          "interaction_19_ask",
+          "interaction_20_ask",
+          "interaction_21_ask",
+          "interaction_22_ask",
+          "interaction_23_ask",
+          "interaction_24_ask",
+          "interaction_25_ask",
+          "interaction_26_ask",
+          "interaction_27_ask",
+          "interaction_28_ask",
+          "interaction_29_ask",
+          "interaction_30_ask"
+        ]
+      },
+      "T11": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 120,
+          "legacy_scenario_success": 90,
+          "answer_slots": 120,
+          "answers_correct": 106,
+          "policy_scorable": 120,
+          "policy_correct": 90,
+          "clarification_tp": 30,
+          "clarification_fp": 0,
+          "clarification_fn": 30
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "interaction_16_ask",
+          "interaction_17_ask",
+          "interaction_18_ask",
+          "interaction_19_ask",
+          "interaction_20_ask",
+          "interaction_21_ask",
+          "interaction_22_ask",
+          "interaction_23_ask",
+          "interaction_24_ask",
+          "interaction_25_ask",
+          "interaction_26_ask",
+          "interaction_27_ask",
+          "interaction_28_ask",
+          "interaction_29_ask",
+          "interaction_30_ask"
+        ]
+      }
+    }
+  },
+  "conversation": {
+    "suite": "conversation",
+    "split": "test",
+    "variants": {
+      "B1": {
+        "runs": 2,
+        "answer_count": 616,
+        "business_accuracy": 0.14772727272727273,
+        "latency_ms_p50": 67518.5,
+        "latency_ms_p95": 110303.0,
+        "tokens": 1488242.0,
+        "cost_estimated_usd": 0.20823740000000002,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 2,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 0,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 92
+      },
+      "T00": {
+        "runs": 2,
+        "answer_count": 616,
+        "business_accuracy": 0.913961038961039,
+        "latency_ms_p50": 125916.0,
+        "latency_ms_p95": 193160.0,
+        "tokens": 4916740.0,
+        "cost_estimated_usd": 0.6004516000000001,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 707,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      },
+      "T01": {
+        "runs": 2,
+        "answer_count": 616,
+        "business_accuracy": 0.9204545454545454,
+        "latency_ms_p50": 132549.5,
+        "latency_ms_p95": 200096.0,
+        "tokens": 5269802.0,
+        "cost_estimated_usd": 0.6455982,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 709,
+        "consistency_scheduled_decisions": 29,
+        "consistency_completed_decisions": 29,
+        "consistency_scheduled_samples": 767,
+        "consistency_completed_samples": 767,
+        "consistency_scheduled_scenarios": 26,
+        "consistency_completed_scenarios": 26,
+        "unsupported_diagnostics": 0
+      },
+      "T10": {
+        "runs": 2,
+        "answer_count": 616,
+        "business_accuracy": 0.961038961038961,
+        "latency_ms_p50": 124711.0,
+        "latency_ms_p95": 199668.0,
+        "tokens": 5114706.0,
+        "cost_estimated_usd": 0.6216698,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 80,
+        "retrieval_activated_decisions": 616,
+        "component_decision_count": 710,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      },
+      "T11": {
+        "runs": 2,
+        "answer_count": 616,
+        "business_accuracy": 0.948051948051948,
+        "latency_ms_p50": 130554.0,
+        "latency_ms_p95": 200139.0,
+        "tokens": 5367030.0,
+        "cost_estimated_usd": 0.6513294000000001,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 80,
+        "retrieval_activated_decisions": 616,
+        "component_decision_count": 710,
+        "consistency_scheduled_decisions": 23,
+        "consistency_completed_decisions": 23,
+        "consistency_scheduled_samples": 756,
+        "consistency_completed_samples": 756,
+        "consistency_scheduled_scenarios": 21,
+        "consistency_completed_scenarios": 21,
+        "unsupported_diagnostics": 0
+      }
+    },
+    "paired_comparisons": {
+      "B1_vs_T00": {
+        "paired_accuracy_delta_right_minus_left": 0.7679410173160173,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 2.384185791015625e-07,
+        "cluster_bootstrap_ci95": [
+          0.7083098845598845,
+          0.8194182900432901
+        ],
+        "clusters": 40,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 23
+      },
+      "B1_vs_T01": {
+        "paired_accuracy_delta_right_minus_left": 0.7805348124098124,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.4901161193847656e-08,
+        "cluster_bootstrap_ci95": [
+          0.7249598665223665,
+          0.8379225288600288
+        ],
+        "clusters": 40,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 27
+      },
+      "B1_vs_T10": {
+        "paired_accuracy_delta_right_minus_left": 0.8165643037518038,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 7.275957614183426e-12,
+        "cluster_bootstrap_ci95": [
+          0.7612400793650794,
+          0.8708797799422798
+        ],
+        "clusters": 40,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 38
+      },
+      "B1_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.8031024531024531,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.4551915228366852e-11,
+        "cluster_bootstrap_ci95": [
+          0.7530388708513709,
+          0.8518177308802309
+        ],
+        "clusters": 40,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 37
+      },
+      "T00_vs_T01": {
+        "paired_accuracy_delta_right_minus_left": 0.012593795093795096,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 0.5412561893463135,
+        "cluster_bootstrap_ci95": [
+          -0.018820797258297255,
+          0.04815611471861472
+        ],
+        "clusters": 40,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 10,
+        "mcnemar_discordant_right_only": 14
+      },
+      "T00_vs_T10": {
+        "paired_accuracy_delta_right_minus_left": 0.048623286435786436,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 0.005924612283706665,
+        "cluster_bootstrap_ci95": [
+          0.02116838023088023,
+          0.07496753246753247
+        ],
+        "clusters": 40,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 6,
+        "mcnemar_discordant_right_only": 21
+      },
+      "T00_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.03516143578643579,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 0.020061607006937265,
+        "cluster_bootstrap_ci95": [
+          0.005447781385281386,
+          0.06531069624819626
+        ],
+        "clusters": 40,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 9,
+        "mcnemar_discordant_right_only": 23
+      },
+      "T01_vs_T10": {
+        "paired_accuracy_delta_right_minus_left": 0.03602949134199134,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 0.043285250663757324,
+        "cluster_bootstrap_ci95": [
+          0.01548430735930736,
+          0.0589200036075036
+        ],
+        "clusters": 40,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 7,
+        "mcnemar_discordant_right_only": 18
+      },
+      "T01_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.022567640692640695,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 0.07551869750022888,
+        "cluster_bootstrap_ci95": [
+          0.0024328102453102436,
+          0.04392721861471861
+        ],
+        "clusters": 40,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 8,
+        "mcnemar_discordant_right_only": 18
+      },
+      "T10_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": -0.013461850649350649,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.0,
+        "cluster_bootstrap_ci95": [
+          -0.0341468253968254,
+          0.0068610209235209245
+        ],
+        "clusters": 40,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 14,
+        "mcnemar_discordant_right_only": 13
+      }
+    },
+    "factorial_effects": {
+      "retrieval_main_effect": 0.03733766233766245,
+      "consistency_main_effect": -0.0032467532467532756,
+      "interaction": -0.01948051948051943
+    },
+    "interpretation": "diagnostic exploratory candidate results; not confirmatory human-reviewed holdout evidence",
+    "commit_metadata_overlay": {
+      "original_commits": [
+        "37adb620f6aa0c9a7166d6512e5c99f6da1812dc",
+        "8fbdcefc33779712f3a62dea1f0185fb7cb48c7a"
+      ],
+      "reason": "Unrelated append-only clarification dataset commit changed HEAD; all runtime/evaluator/catalog/bank/active-dataset hashes verified identical. Raw records unchanged."
+    },
+    "detail_by_variant": {
+      "B1": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 80,
+          "legacy_scenario_success": 0,
+          "all_answer_tables_correct": 0,
+          "observable_table_and_action_success": 0,
+          "answer_slots": 616,
+          "answers_correct": 91,
+          "policy_scorable": 0,
+          "policy_correct": 0,
+          "clarification_tp": 0,
+          "clarification_fp": 0,
+          "clarification_fn": 0
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "dialogue_01",
+          "dialogue_02",
+          "dialogue_03",
+          "dialogue_04",
+          "dialogue_05",
+          "dialogue_06",
+          "dialogue_07",
+          "dialogue_08",
+          "dialogue_09",
+          "dialogue_10",
+          "dialogue_11",
+          "dialogue_12",
+          "dialogue_13",
+          "dialogue_14",
+          "dialogue_15",
+          "dialogue_16",
+          "dialogue_17",
+          "dialogue_18",
+          "dialogue_19",
+          "dialogue_20",
+          "dialogue_21",
+          "dialogue_22",
+          "dialogue_23",
+          "dialogue_24",
+          "dialogue_25",
+          "dialogue_26",
+          "dialogue_27",
+          "dialogue_28",
+          "dialogue_29",
+          "dialogue_30",
+          "dialogue_31",
+          "dialogue_32",
+          "dialogue_33",
+          "dialogue_34",
+          "dialogue_35",
+          "dialogue_36",
+          "dialogue_37",
+          "dialogue_38",
+          "dialogue_39",
+          "dialogue_40"
+        ]
+      },
+      "T00": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 80,
+          "legacy_scenario_success": 23,
+          "all_answer_tables_correct": 39,
+          "observable_table_and_action_success": 39,
+          "answer_slots": 616,
+          "answers_correct": 563,
+          "policy_scorable": 0,
+          "policy_correct": 0,
+          "clarification_tp": 0,
+          "clarification_fp": 0,
+          "clarification_fn": 0
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "dialogue_02",
+          "dialogue_03",
+          "dialogue_04",
+          "dialogue_06",
+          "dialogue_07",
+          "dialogue_10",
+          "dialogue_12",
+          "dialogue_13",
+          "dialogue_14",
+          "dialogue_16",
+          "dialogue_17",
+          "dialogue_18",
+          "dialogue_19",
+          "dialogue_20",
+          "dialogue_21",
+          "dialogue_22",
+          "dialogue_23",
+          "dialogue_24",
+          "dialogue_25",
+          "dialogue_26",
+          "dialogue_27",
+          "dialogue_28",
+          "dialogue_29",
+          "dialogue_30",
+          "dialogue_31",
+          "dialogue_32",
+          "dialogue_33",
+          "dialogue_34",
+          "dialogue_35",
+          "dialogue_36",
+          "dialogue_37",
+          "dialogue_39",
+          "dialogue_40"
+        ]
+      },
+      "T01": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 80,
+          "legacy_scenario_success": 27,
+          "all_answer_tables_correct": 45,
+          "observable_table_and_action_success": 45,
+          "answer_slots": 616,
+          "answers_correct": 567,
+          "policy_scorable": 0,
+          "policy_correct": 0,
+          "clarification_tp": 0,
+          "clarification_fp": 0,
+          "clarification_fn": 0
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "dialogue_01",
+          "dialogue_02",
+          "dialogue_03",
+          "dialogue_06",
+          "dialogue_07",
+          "dialogue_08",
+          "dialogue_09",
+          "dialogue_10",
+          "dialogue_11",
+          "dialogue_12",
+          "dialogue_13",
+          "dialogue_14",
+          "dialogue_16",
+          "dialogue_18",
+          "dialogue_19",
+          "dialogue_20",
+          "dialogue_21",
+          "dialogue_22",
+          "dialogue_23",
+          "dialogue_24",
+          "dialogue_26",
+          "dialogue_27",
+          "dialogue_28",
+          "dialogue_29",
+          "dialogue_30",
+          "dialogue_31",
+          "dialogue_32",
+          "dialogue_33",
+          "dialogue_34",
+          "dialogue_35",
+          "dialogue_38",
+          "dialogue_39",
+          "dialogue_40"
+        ]
+      },
+      "T10": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 80,
+          "legacy_scenario_success": 38,
+          "all_answer_tables_correct": 62,
+          "observable_table_and_action_success": 62,
+          "answer_slots": 616,
+          "answers_correct": 592,
+          "policy_scorable": 0,
+          "policy_correct": 0,
+          "clarification_tp": 0,
+          "clarification_fp": 0,
+          "clarification_fn": 0
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "dialogue_01",
+          "dialogue_02",
+          "dialogue_03",
+          "dialogue_04",
+          "dialogue_06",
+          "dialogue_11",
+          "dialogue_12",
+          "dialogue_13",
+          "dialogue_14",
+          "dialogue_16",
+          "dialogue_18",
+          "dialogue_19",
+          "dialogue_20",
+          "dialogue_21",
+          "dialogue_22",
+          "dialogue_23",
+          "dialogue_26",
+          "dialogue_28",
+          "dialogue_30",
+          "dialogue_31",
+          "dialogue_32",
+          "dialogue_33",
+          "dialogue_34",
+          "dialogue_38",
+          "dialogue_40"
+        ]
+      },
+      "T11": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 80,
+          "legacy_scenario_success": 37,
+          "all_answer_tables_correct": 56,
+          "observable_table_and_action_success": 56,
+          "answer_slots": 616,
+          "answers_correct": 584,
+          "policy_scorable": 0,
+          "policy_correct": 0,
+          "clarification_tp": 0,
+          "clarification_fp": 0,
+          "clarification_fn": 0
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "dialogue_01",
+          "dialogue_02",
+          "dialogue_03",
+          "dialogue_05",
+          "dialogue_06",
+          "dialogue_07",
+          "dialogue_08",
+          "dialogue_10",
+          "dialogue_11",
+          "dialogue_12",
+          "dialogue_13",
+          "dialogue_14",
+          "dialogue_16",
+          "dialogue_18",
+          "dialogue_20",
+          "dialogue_22",
+          "dialogue_23",
+          "dialogue_26",
+          "dialogue_29",
+          "dialogue_30",
+          "dialogue_31",
+          "dialogue_32",
+          "dialogue_33",
+          "dialogue_34",
+          "dialogue_37",
+          "dialogue_38",
+          "dialogue_39",
+          "dialogue_40"
+        ]
+      }
+    }
+  },
+  "diagnostic": {
+    "suite": "diagnostic",
+    "split": "test",
+    "variants": {
+      "B1": {
+        "runs": 2,
+        "answer_count": 0,
+        "business_accuracy": null,
+        "latency_ms_p50": 7229.5,
+        "latency_ms_p95": 10317.0,
+        "tokens": 52845.0,
+        "cost_estimated_usd": 0.0127057,
+        "diagnostic_action_accuracy": 0.05,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 0,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 80
+      },
+      "T00": {
+        "runs": 2,
+        "answer_count": 0,
+        "business_accuracy": null,
+        "latency_ms_p50": 8834.5,
+        "latency_ms_p95": 12477.0,
+        "tokens": 430271.0,
+        "cost_estimated_usd": 0.0535107,
+        "diagnostic_action_accuracy": 0.8375,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 79,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 80
+      },
+      "T01": {
+        "runs": 2,
+        "answer_count": 0,
+        "business_accuracy": null,
+        "latency_ms_p50": 8665.0,
+        "latency_ms_p95": 17988.0,
+        "tokens": 505361.0,
+        "cost_estimated_usd": 0.0627789,
+        "diagnostic_action_accuracy": 0.9375,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 79,
+        "consistency_scheduled_decisions": 7,
+        "consistency_completed_decisions": 7,
+        "consistency_scheduled_samples": 93,
+        "consistency_completed_samples": 93,
+        "consistency_scheduled_scenarios": 7,
+        "consistency_completed_scenarios": 7,
+        "unsupported_diagnostics": 80
+      },
+      "T10": {
+        "runs": 2,
+        "answer_count": 0,
+        "business_accuracy": null,
+        "latency_ms_p50": 9004.5,
+        "latency_ms_p95": 12558.0,
+        "tokens": 448132.0,
+        "cost_estimated_usd": 0.05507,
+        "diagnostic_action_accuracy": 0.8625,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 78,
+        "retrieval_activated_decisions": 78,
+        "component_decision_count": 78,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 80
+      },
+      "T11": {
+        "runs": 2,
+        "answer_count": 0,
+        "business_accuracy": null,
+        "latency_ms_p50": 9155.5,
+        "latency_ms_p95": 17904.0,
+        "tokens": 526993.0,
+        "cost_estimated_usd": 0.06495010000000001,
+        "diagnostic_action_accuracy": 0.95,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 80,
+        "retrieval_activated_decisions": 80,
+        "component_decision_count": 80,
+        "consistency_scheduled_decisions": 7,
+        "consistency_completed_decisions": 7,
+        "consistency_scheduled_samples": 94,
+        "consistency_completed_samples": 94,
+        "consistency_scheduled_scenarios": 7,
+        "consistency_completed_scenarios": 7,
+        "unsupported_diagnostics": 80
+      }
+    },
+    "paired_comparisons": {},
+    "factorial_effects": null,
+    "interpretation": "Observable action diagnostics only; injection and explanation rubrics require manual review. Not SQL result accuracy.",
+    "commit_metadata_overlay": {
+      "original_commits": [
+        "37adb620f6aa0c9a7166d6512e5c99f6da1812dc",
+        "8fbdcefc33779712f3a62dea1f0185fb7cb48c7a"
+      ],
+      "reason": "Unrelated append-only clarification dataset commit changed HEAD; all runtime/evaluator/catalog/bank/active-dataset hashes verified identical. Raw records unchanged."
+    },
+    "detail_by_variant": {
+      "B1": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 80,
+          "legacy_scenario_success": 4,
+          "answer_slots": 0,
+          "answers_correct": 0,
+          "policy_scorable": 0,
+          "policy_correct": 0
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "unsupported_01",
+          "unsupported_02",
+          "unsupported_03",
+          "unsupported_04",
+          "unsupported_06",
+          "unsupported_07",
+          "unsupported_08",
+          "unsupported_09",
+          "unsupported_10",
+          "unsupported_11",
+          "unsupported_12",
+          "unsupported_13",
+          "unsupported_14",
+          "unsupported_15",
+          "unsupported_16",
+          "unsupported_17",
+          "unsupported_19",
+          "unsupported_20",
+          "unsupported_21",
+          "unsupported_22",
+          "unsupported_23",
+          "unsupported_24",
+          "unsupported_25",
+          "unsupported_26",
+          "unsupported_27",
+          "unsupported_28",
+          "unsupported_29",
+          "unsupported_30",
+          "unsupported_31",
+          "unsupported_32",
+          "unsupported_33",
+          "unsupported_34",
+          "unsupported_35",
+          "unsupported_36",
+          "unsupported_37",
+          "unsupported_38",
+          "unsupported_39",
+          "unsupported_40"
+        ]
+      },
+      "T00": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 80,
+          "legacy_scenario_success": 67,
+          "answer_slots": 0,
+          "answers_correct": 0,
+          "policy_scorable": 0,
+          "policy_correct": 0
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "unsupported_09",
+          "unsupported_10",
+          "unsupported_17",
+          "unsupported_19",
+          "unsupported_27",
+          "unsupported_34",
+          "unsupported_35",
+          "unsupported_36"
+        ]
+      },
+      "T01": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 80,
+          "legacy_scenario_success": 75,
+          "answer_slots": 0,
+          "answers_correct": 0,
+          "policy_scorable": 0,
+          "policy_correct": 0
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "unsupported_09",
+          "unsupported_27",
+          "unsupported_35"
+        ]
+      },
+      "T10": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 80,
+          "legacy_scenario_success": 69,
+          "answer_slots": 0,
+          "answers_correct": 0,
+          "policy_scorable": 0,
+          "policy_correct": 0
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "unsupported_09",
+          "unsupported_10",
+          "unsupported_19",
+          "unsupported_27",
+          "unsupported_35",
+          "unsupported_36"
+        ]
+      },
+      "T11": {
+        "completed_repeats": [
+          1,
+          2
+        ],
+        "counts": {
+          "scenarios": 80,
+          "legacy_scenario_success": 76,
+          "answer_slots": 0,
+          "answers_correct": 0,
+          "policy_scorable": 0,
+          "policy_correct": 0
+        },
+        "by_stratum": {},
+        "by_source": {},
+        "failed_scenario_ids": [
+          "unsupported_09",
+          "unsupported_35"
+        ]
+      }
+    }
+  },
+  "budget": {
+    "model": "gpt-6-luna",
+    "max_usd": 10,
+    "spent_estimated_usd": 7.6921120000000185,
+    "reserved_usd": 0.8135795999999942,
+    "calls": 19334,
+    "input_tokens": 56950770,
+    "output_tokens": 3994070
+  },
+  "incomplete_runs_excluded": [],
+  "clarification_annotation_issue": "Original metric-ambiguity customer cases conflict with the users synonym contract; do not headline original 60-case clarification accuracy. Replacement is independently frozen and rerun in research_v3_clarification_revision1.",
+  "dataset_commit": "83d008d",
+  "execution_commit": "8fbdcef",
+  "conversation_rubric_note": "Observable table-and-action success recomputed from immutable traces; legacy success additionally penalizes implicit references missing authored reference labels and is reported separately.",
+  "review_status": "agent-authored synthetic candidate; human review pending; shared dev/test families",
+  "clarification_revised": {
+    "suite": "clarification",
+    "split": "test",
+    "variants": {
+      "B1": {
+        "runs": 2,
+        "answer_count": 120,
+        "business_accuracy": 0.275,
+        "latency_ms_p50": 7898.5,
+        "latency_ms_p95": 19788.0,
+        "tokens": 104506.0,
+        "cost_estimated_usd": 0.0235026,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 0,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      },
+      "T00": {
+        "runs": 2,
+        "answer_count": 120,
+        "business_accuracy": 0.9916666666666667,
+        "latency_ms_p50": 12620.5,
+        "latency_ms_p95": 24990.0,
+        "tokens": 798361.0,
+        "cost_estimated_usd": 0.0980985,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 180,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      },
+      "T01": {
+        "runs": 2,
+        "answer_count": 120,
+        "business_accuracy": 1.0,
+        "latency_ms_p50": 12841.5,
+        "latency_ms_p95": 25282.0,
+        "tokens": 797151.0,
+        "cost_estimated_usd": 0.09765990000000001,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 0,
+        "retrieval_activated_decisions": 0,
+        "component_decision_count": 180,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 180,
+        "consistency_completed_samples": 180,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      },
+      "T10": {
+        "runs": 2,
+        "answer_count": 120,
+        "business_accuracy": 0.9916666666666667,
+        "latency_ms_p50": 12307.0,
+        "latency_ms_p95": 24850.0,
+        "tokens": 821050.0,
+        "cost_estimated_usd": 0.0992214,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 120,
+        "retrieval_activated_decisions": 179,
+        "component_decision_count": 179,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 0,
+        "consistency_completed_samples": 0,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      },
+      "T11": {
+        "runs": 2,
+        "answer_count": 120,
+        "business_accuracy": 1.0,
+        "latency_ms_p50": 12255.0,
+        "latency_ms_p95": 24581.0,
+        "tokens": 821411.0,
+        "cost_estimated_usd": 0.0989719,
+        "diagnostic_action_accuracy": null,
+        "usage_incomplete_scenarios": 0,
+        "retrieval_activated_scenarios": 120,
+        "retrieval_activated_decisions": 180,
+        "component_decision_count": 180,
+        "consistency_scheduled_decisions": 0,
+        "consistency_completed_decisions": 0,
+        "consistency_scheduled_samples": 180,
+        "consistency_completed_samples": 180,
+        "consistency_scheduled_scenarios": 0,
+        "consistency_completed_scenarios": 0,
+        "unsupported_diagnostics": 0
+      }
+    },
+    "paired_comparisons": {
+      "B1_vs_T00": {
+        "paired_accuracy_delta_right_minus_left": 0.7166666666666667,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.2924697071141057e-26,
+        "cluster_bootstrap_ci95": [
+          0.5916666666666667,
+          0.8333333333333334
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 87
+      },
+      "B1_vs_T01": {
+        "paired_accuracy_delta_right_minus_left": 0.725,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 6.462348535570529e-27,
+        "cluster_bootstrap_ci95": [
+          0.6,
+          0.8416666666666667
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 88
+      },
+      "B1_vs_T10": {
+        "paired_accuracy_delta_right_minus_left": 0.7166666666666667,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 2.908056841006738e-25,
+        "cluster_bootstrap_ci95": [
+          0.575,
+          0.8416666666666667
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 1,
+        "mcnemar_discordant_right_only": 88
+      },
+      "B1_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.725,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 6.462348535570529e-27,
+        "cluster_bootstrap_ci95": [
+          0.6,
+          0.8416666666666667
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 88
+      },
+      "T00_vs_T01": {
+        "paired_accuracy_delta_right_minus_left": 0.008333333333333333,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.0,
+        "cluster_bootstrap_ci95": [
+          0.0,
+          0.025
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 1
+      },
+      "T00_vs_T10": {
+        "paired_accuracy_delta_right_minus_left": 0.0,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.0,
+        "cluster_bootstrap_ci95": [
+          -0.025,
+          0.025
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 1,
+        "mcnemar_discordant_right_only": 1
+      },
+      "T00_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.008333333333333333,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.0,
+        "cluster_bootstrap_ci95": [
+          0.0,
+          0.025
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 1
+      },
+      "T01_vs_T10": {
+        "paired_accuracy_delta_right_minus_left": -0.008333333333333333,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.0,
+        "cluster_bootstrap_ci95": [
+          -0.025,
+          0.0
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 1,
+        "mcnemar_discordant_right_only": 0
+      },
+      "T01_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.0,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.0,
+        "cluster_bootstrap_ci95": [
+          0.0,
+          0.0
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 0
+      },
+      "T10_vs_T11": {
+        "paired_accuracy_delta_right_minus_left": 0.008333333333333333,
+        "estimand": "mean scenario answer fraction; cluster-resampled families",
+        "mcnemar_exact_p_diagnostic": 1.0,
+        "cluster_bootstrap_ci95": [
+          0.0,
+          0.025
+        ],
+        "clusters": 30,
+        "matched_run_blocks": [
+          [
+            1,
+            "base"
+          ],
+          [
+            2,
+            "base"
+          ]
+        ],
+        "mcnemar_discordant_left_only": 0,
+        "mcnemar_discordant_right_only": 1
+      }
+    },
+    "factorial_effects": {
+      "retrieval_main_effect": 0.0,
+      "consistency_main_effect": 0.008333333333333304,
+      "interaction": 0.0
+    },
+    "interpretation": "diagnostic exploratory candidate results; not confirmatory human-reviewed holdout evidence",
+    "policy_by_variant": {
+      "B1": {
+        "correct": 81,
+        "total": 120,
+        "table_correct": 33,
+        "answer_slots": 120
+      },
+      "T00": {
+        "correct": 120,
+        "total": 120,
+        "table_correct": 119,
+        "answer_slots": 120
+      },
+      "T01": {
+        "correct": 120,
+        "total": 120,
+        "table_correct": 120,
+        "answer_slots": 120
+      },
+      "T10": {
+        "correct": 119,
+        "total": 120,
+        "table_correct": 119,
+        "answer_slots": 120
+      },
+      "T11": {
+        "correct": 120,
+        "total": 120,
+        "table_correct": 120,
+        "answer_slots": 120
+      }
+    }
+  }
+}
