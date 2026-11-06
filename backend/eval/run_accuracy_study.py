@@ -467,7 +467,7 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
         "backend/eval/accuracy_study.py", "backend/eval/run_accuracy_study.py",
         "backend/eval/report_accuracy_study.py", "backend/eval/benchmark.py",
         "backend/texa/interpret.py", "backend/texa/answer.py", "backend/texa/catalog.py",
-        "backend/texa/intent.py", "backend/texa/prompts.py",
+        "backend/texa/intent.py", "backend/texa/prompts.py", "backend/texa/clarify.py", "backend/texa/memory.py",
         "backend/texa/compile.py", "backend/texa/examples.py", "backend/texa/consistency.py",
         "backend/texa/runtime_guard.py", "catalog/product_events.yaml", "catalog/verified_examples.yaml")
         if (ROOT / p).exists()]

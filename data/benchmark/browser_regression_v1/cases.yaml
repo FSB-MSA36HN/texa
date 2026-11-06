@@ -87,7 +87,7 @@
   language: vi
   question: Tỷ lệ người mua trên người dùng quan sát của Cosmetics Shop trên toàn bộ dữ liệu?
   gold_sql: SELECT count(DISTINCT user_id) FILTER(WHERE event_name='purchase')::numeric / NULLIF(count(DISTINCT user_id),0) AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id='cosmetics_shop'
-  expected_result: {columns: [buyer_conversion_rate], rows: [['0.42857142857142857143']]}
+  expected_result: {columns: [buyer_conversion_rate], rows: [[0.42857142857142857143]]}
 - id: browser_single_cosmetics_monthly_revenue
   split: dev
   fixture_world: base

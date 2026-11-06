@@ -9,6 +9,13 @@ provenance:
   labels: Copied only from independent reference_sql and expected_columns/expected_rows in the immutable browser artifact.
   holdout: false
   note: These questions and labels were exposed during prior development; regression data only, not a fair sealed comparison set.
+annotation_erratum:
+  issue: Browser preflight failed because the copied JSON artifact encoded a Decimal conversion result as a string, while PostgreSQL returns this result as a numeric value.
+  affected_files: [cases.yaml, dialogues.yaml]
+  field: buyer_conversion_rate for browser_single_cosmetics_conversion and dialogue turn 10
+  correction: Annotate 0.42857142857142857143 as a YAML numeric scalar so result comparison uses the declared numeric tolerance.
+  semantic_change: none; the annotated value is within the benchmark results_equal tolerance of the independent PostgreSQL reference result.
+  raw_source_artifact: unchanged; source_sha256 above continues to identify the original artifact.
 engine: PostgreSQL 16+
 timezone: UTC
 sources: [cosmetics_shop, olist_marketplace]

@@ -6,6 +6,7 @@ from pathlib import Path
 import yaml
 
 from eval.accuracy_study import gold_targets
+from eval.benchmark import results_equal
 from eval.run_accuracy_study import load_suite
 
 
@@ -14,9 +15,9 @@ DATASET = ROOT / "data/benchmark/browser_regression_v1"
 ARTIFACT = ROOT / "data/benchmark/results/accuracy-browser-20261106/browser-check.json"
 
 
-def _result(columns, rows):
+def _numeric_normalized(rows):
     def value(cell):
-        if isinstance(cell, (int, float)):
+        if isinstance(cell, (int, float, Decimal)) and not isinstance(cell, bool):
             return Decimal(str(cell))
         if isinstance(cell, str):
             try:
@@ -24,14 +25,16 @@ def _result(columns, rows):
             except Exception:
                 return cell
         return cell
-    return {"columns": columns, "rows": [[value(cell) for cell in row] for row in rows]}
+    return [[value(cell) for cell in row] for row in rows]
 
 
 def _assert_copied(target, source):
     assert target["question"] == source["question"]
     assert target["gold_sql"].strip() == source["reference_sql"].strip()
-    assert _result(target["expected_result"]["columns"], target["expected_result"]["rows"]) == _result(
-        source["expected_columns"], source["expected_rows"])
+    target_rows = _numeric_normalized(target["expected_result"]["rows"])
+    source_rows = _numeric_normalized(source["expected_rows"])
+    assert results_equal(target["expected_result"]["columns"], target_rows,
+                         source["expected_columns"], source_rows)
     for private_key in ("spec", "context", "source_resolution", "state", "query_spec"):
         assert private_key not in target
 
@@ -46,12 +49,17 @@ def test_browser_regression_provenance_and_exact_question_coverage():
 
     answer_cases = cases[:15]
     assert len(answer_cases) == 15
+    ratio_case = answer_cases[9]
+    ratio_value = ratio_case["expected_result"]["rows"][0][0]
+    assert isinstance(ratio_value, (int, float, Decimal)) and not isinstance(ratio_value, bool)
     for index, case in enumerate(answer_cases):
         _assert_copied(case, artifact["records"][index])
 
     long_dialogue, filter_dialogue = dialogues
     assert len(long_dialogue["turns"]) == 17
     assert long_dialogue["provenance_records"] == list(range(17))
+    dialogue_ratio = long_dialogue["turns"][9]["expected_result"]["rows"][0][0]
+    assert isinstance(dialogue_ratio, (int, float, Decimal)) and not isinstance(dialogue_ratio, bool)
     for turn_index, turn in enumerate(long_dialogue["turns"]):
         source = artifact["records"][turn_index]
         if source["status"] == "conversation":

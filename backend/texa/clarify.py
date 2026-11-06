@@ -45,6 +45,8 @@ class Outcome:
     suggestions: list[str] = field(default_factory=list)
     variants: list[dict] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    code: str = ""
+    params: dict = field(default_factory=dict)
 
 
 def _choice(id_, label, description=""):
@@ -205,7 +207,9 @@ def advance(candidate: dict, answers: dict[str, list[str]], cat: Catalog, source
             else:
                 known = sorted({v for s in target_sources for v in s.values.get(cat.mapped_field(dim.field, s.id), {}).values()})
                 return Outcome("refuse", message=t(lang, "no_value", value=value, field=display_label(dim, lang),
-                                                   examples=", ".join(known[:8]) or "—"), suggestions=examples)
+                                                   examples=", ".join(known[:8]) or "—"), suggestions=examples,
+                               code="unknown_filter_value", params={"field": dim.id, "value": value,
+                                   "known_values": known[:8], "source_ids": [s.id for s in target_sources]})
         if unresolved:
             continue
         op = f["operator"]

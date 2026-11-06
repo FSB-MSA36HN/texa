@@ -323,7 +323,8 @@ def _continue_checked(turn: dict, candidate: dict, answers: dict, progress: Prog
         return {"status": "needs_clarification", "form": out.form, "candidate": candidate, "answers": answers,
                 "language": lang, "notes": out.notes, "variants": out.variants, "ablation": trace}
     if out.kind == "refuse":
-        return {"status": "refused", "message": out.message, "suggestions": suggestions.questions(cat, sources, scope, lang), "candidate": candidate,
+        return {"status": "refused", "message": out.message, "reason_code": out.code or None,
+                "validation_details": out.params, "suggestions": suggestions.questions(cat, sources, scope, lang), "candidate": candidate,
                 "answers": answers, "language": lang, "ablation": trace}
     contract_error = intent.mismatch(candidate, cat, spec=out.spec,
                                      inherited_spec=turn.get("state", {}).get("context", {}).get("inherited_slots"),
@@ -425,7 +426,7 @@ def _reference_form(previous: list[dict], context: dict, cat=None, sources=None)
                     "required": True, "allow_other": False, "default": [], "choices": choices}]}}
 
 
-def _question_work(turn_id: str, reference_id: str | None = None):
+def _question_work(turn_id: str, reference_id: str | None = None, *, semantic_feedback: dict | None = None):
     def work(progress: Progress) -> dict:
         turn = load_turn(turn_id)
         question, conversation_id, model = turn["question"], turn["conversation_id"], turn["model"]
@@ -529,8 +530,11 @@ def _question_work(turn_id: str, reference_id: str | None = None):
                       "dialogue": proposal.get("dialogue"), "references": resolved.get("references", []),
                       "dataset_version": dataset_version}
             return bundle
+        if semantic_feedback:
+            context["validation_feedback"] = semantic_feedback
         candidate = interpret.interpret(question, selected, cat, sources, model=model, turn_id=turn_id,
-                                        scope=scope, step=progress, context=context, normalize=normalize,
+                                        scope=scope, step=progress, context=context,
+                                        normalize=None if semantic_feedback else normalize,
                                         cancelled=progress.cancelled)
         if context.get("structured_memory"):
             candidate = intent.reconcile_dimension_roles(candidate, cat)
@@ -578,6 +582,17 @@ def _question_work(turn_id: str, reference_id: str | None = None):
                     "language": _lang(candidate), "reason_code": "interpretation_disagreement"} | metadata
         lang = _lang(candidate)
         _persist_language(turn_id, lang)
+        if candidate.get("outcome") == "query" and candidate.get("filters") and not semantic_feedback:
+            # Validate the untrusted model's value bindings before asking about
+            # slots it may have misclassified. This is read-only, never executes
+            # a query and cannot bypass the mandatory source/intent gates above.
+            probe = clarify.advance(candidate, {}, cat, sources, scope=scope, lang=lang, question=question)
+            if probe.code == "unknown_filter_value":
+                feedback = {"code": probe.code, "params": probe.params}
+                with progress("repair_semantic_interpretation"):
+                    repaired = _question_work(turn_id, reference_id, semantic_feedback=feedback)(progress)
+                return repaired | {"semantic_repair": {"attempts": 1, "initial_failure": feedback,
+                                                       "final_status": repaired.get("status")}}
         if candidate["outcome"] == "conversation":
             return {"status": "conversation", "message": candidate["reply"], "suggestions": suggestions.questions(cat, sources, scope, lang),
                     "candidate": candidate, "language": lang} | metadata

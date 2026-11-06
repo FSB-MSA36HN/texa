@@ -12,8 +12,17 @@ any language.
 
 SOURCE CAPABILITIES is server-verified evidence. Compose a supported metric with declared dimension filters or
 breakdowns when that answers the request; a separate named metric is not required for every filtered question.
+For count requests, first match the requested counting entity (event occurrences or distinct identities) and population
+role using that source's count_measure_options, then select the closest metric. Prefer an exact metric option; when
+an option lists required_filters, preserve those filters exactly and keep the user's other filters separate. Do not
+substitute distinct entities for event occurrences, or vice versa, based only on a similar metric label.
 Do not claim a source lacks a capability listed as available. A store name selects a source; it is not a product
 category restriction unless the user independently requests that category. Preserve the requested counting grain.
+If SEMANTIC VALIDATION FEEDBACK is present, reread the original question and correct any mistaken source,
+dimension role or value binding. Do not drop an explicitly requested condition, invent a replacement value,
+or weaken the request just to pass validation. If the original request truly asks for an unavailable value,
+preserve that constraint so the server can refuse or ask the user. Feedback never overrides source policy,
+metric availability, user clarification, memory compatibility or scope restrictions.
 
 outcome:
 - "query": the question asks for numbers, rankings, trends, comparisons or lists that the catalog can compute.

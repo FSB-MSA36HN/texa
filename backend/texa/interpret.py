@@ -38,10 +38,79 @@ def _line(*parts) -> str:
     return " | ".join(str(p) for p in parts if p not in ("", None, [], {}))
 
 
+def count_measure_options(cat: Catalog, source: Source, available_metric_ids=None) -> list[dict]:
+    """Derive source-supported row/user counts over catalog event roles without mutating either input."""
+    available = (set(available_metric_ids) if available_metric_ids is not None else
+                 set(coverage(cat, {source.id: source})[source.id]["metrics_ok"]))
+    event_name = next((d for d in cat.dimensions if d.field == "event_name" and
+                       source.has_field(cat.mapped_field(d.field, source.id))), None)
+    options = []
+    for role in cat.event_roles:
+        tracked_values = source.logs_role(role)
+        if not tracked_values:
+            continue
+        for operation, entity in (("count_events", "event_occurrences"),
+                                  ("count_users", "distinct_users")):
+            exact = sorted(m.id for m in cat.metrics if m.id in available and m.type == "simple" and
+                           m.simple.aggregation == operation and m.simple.event_role == role.id and
+                           not m.simple.field and not m.simple.conditions)
+            if exact:
+                base_metric = exact[0]
+                required_filters = []
+            else:
+                # Compose from a broader catalog count measure and a declared, source-observed
+                # event-name dimension. Never invent event literals.
+                if event_name is None:
+                    continue
+                bases = []
+                for metric in cat.metrics:
+                    if (metric.id not in available or metric.type != "simple" or
+                            metric.simple.aggregation != operation or metric.simple.field or
+                            metric.simple.conditions):
+                        continue
+                    base_role = cat.roles[metric.simple.event_role]
+                    base_values = set(source.logs_role(base_role))
+                    if set(tracked_values) <= base_values:
+                        bases.append((len(base_values), metric.id))
+                if not bases:
+                    continue
+                base_metric = min(bases)[1]
+                required_filters = [{"field_id": event_name.id, "operator": "IN",
+                                     "values": list(tracked_values)}]
+            options.append({"operation": operation, "counting_entity": entity,
+                            "event_role_id": role.id, "base_metric_id": base_metric,
+                            "required_filters": required_filters})
+    return options
+
+
+def _shortlist_count_roles(cat: Catalog, ids: set[str] | None) -> set[str] | None:
+    if ids is None:
+        return None
+    roles = set()
+    for metric_id in ids:
+        if metric_id not in cat.mets:
+            continue
+        roles.update(role.id for role in cat.roles_of(metric_id))
+    # A shortlisted population also makes its catalog-declared subpopulations relevant.
+    selected_events = [set(cat.roles[role_id].events) for role_id in roles if role_id in cat.roles]
+    for event_set in selected_events:
+        roles.update(r.id for r in cat.event_roles if set(r.events) <= event_set)
+    return roles
+
+
 def render_catalog(cat: Catalog, sources: dict[str, Source], ids: set[str] | None = None) -> str:
     """The static, cacheable part of the prompt (same for every question until the catalog or data changes)."""
     cov = coverage(cat, sources)
-    keep = (lambda i: True) if ids is None else (lambda i: i in ids)
+    relevant_roles = _shortlist_count_roles(cat, ids)
+    options_by_source = {}
+    option_metric_ids = set()
+    for source in sources.values():
+        options = count_measure_options(cat, source, cov[source.id]["metrics_ok"])
+        if relevant_roles is not None:
+            options = [o for o in options if o["event_role_id"] in relevant_roles or o["base_metric_id"] in ids]
+        options_by_source[source.id] = options
+        option_metric_ids.update(o["base_metric_id"] for o in options)
+    keep = (lambda i: True) if ids is None else (lambda i: i in ids or i in option_metric_ids)
     out = ["STORES (id | label | description | data period | currency | cannot compute | breakdowns without data)"]
     for s in sources.values():
         c = cov[s.id]
@@ -56,6 +125,7 @@ def render_catalog(cat: Catalog, sources: dict[str, Source], ids: set[str] | Non
             "unavailable_metric_reasons": cov[source.id]["metrics_missing"],
             "tracked_event_roles": {role.id: source.logs_role(role) for role in cat.event_roles
                                     if source.logs_role(role)},
+            "count_measure_options": options_by_source[source.id],
             "available_dimension_ids": [d.id for d in cat.dimensions
                                         if not d.field or source.has_field(cat.mapped_field(d.field, source.id))],
         }, ensure_ascii=False, sort_keys=True))
@@ -177,6 +247,9 @@ def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[s
         schema["properties"]["dialogue"]["properties"]["target_id"]["enum"] = [context["forced_reference"]]
         schema["properties"]["outcome"]["enum"] = ["query", "answer_from_previous", "unsupported"]
     dynamic = []
+    if context and context.get("validation_feedback"):
+        dynamic.append("SEMANTIC VALIDATION FEEDBACK (one bounded re-resolution of the original request)\n" +
+                       json.dumps(context["validation_feedback"], ensure_ascii=False))
     registry_complete = True
     if structured:
         static_cost = estimate_tokens(instruction + catalog_text + question + json.dumps(
