@@ -277,7 +277,7 @@ def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[s
     if scope:
         dynamic.append(f"STORE SCOPE chosen in the app: {', '.join(scope)} (constraint; conflicting text must be resolved before querying)")
     dynamic.append(f"QUESTION\n{question}")
-    retrieval_trace = {"enabled": os.getenv("TEXA_EXAMPLE_RETRIEVAL", "0") == "1"}
+    retrieval_trace = {"enabled": os.getenv("TEXA_EXAMPLE_RETRIEVAL", "1") == "1"}
     example_text = ""
     if retrieval_trace["enabled"]:
         # Registry and prior-turn evidence are packed first. Demonstrations only
@@ -292,7 +292,7 @@ def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[s
             raise llm.LLMError("EXAMPLE_BANK_INVALID", "The example bank does not match the active catalog.") from exc
         # Evaluation may freeze a shared SQL-verified demonstration subset so
         # the direct-SQL control and Texa receive the same eligible examples.
-        policy = os.getenv("TEXA_EXAMPLE_POLICY", "approved")
+        policy = os.getenv("TEXA_EXAMPLE_POLICY", "sql_verified")
         if policy == "sql_verified":
             from dataclasses import replace
             bank = replace(bank, examples=tuple(x for x in bank.examples if
@@ -321,13 +321,13 @@ def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[s
         try:
             candidate = sample()
         except llm.LLMError as exc:
-            if exc.code != "MODEL_OUTPUT_INVALID" or normalize is None or os.getenv("TEXA_CONSISTENCY", "0") != "1":
+            if exc.code != "MODEL_OUTPUT_INVALID" or normalize is None or os.getenv("TEXA_CONSISTENCY", "1") != "1":
                 raise
             primary_error = exc.code
             candidate = {"outcome": "unresolved", "language": (context or {}).get("language", "en")}
         s.note(candidate["outcome"])
     trace = {"retrieval": retrieval_trace, "consistency": {"enabled": False}}
-    if os.getenv("TEXA_CONSISTENCY", "0") == "1" and normalize is not None:
+    if os.getenv("TEXA_CONSISTENCY", "1") == "1" and normalize is not None:
         with step("consistency_selection"):
             candidate, trace["consistency"] = consistency.select(candidate, sample, normalize, cancelled=cancelled, primary_error=primary_error)
     candidate["_accuracy"] = trace

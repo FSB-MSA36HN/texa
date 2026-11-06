@@ -15,9 +15,9 @@ def setup():
     return cat, {src.id: src}
 
 
-def test_default_path_makes_one_model_call_and_no_bank_read(monkeypatch):
-    monkeypatch.delenv('TEXA_EXAMPLE_RETRIEVAL', raising=False)
-    monkeypatch.delenv('TEXA_CONSISTENCY', raising=False)
+def test_both_disabled_ablation_makes_one_model_call_and_no_bank_read(monkeypatch):
+    monkeypatch.setenv('TEXA_EXAMPLE_RETRIEVAL', '0')
+    monkeypatch.setenv('TEXA_CONSISTENCY', '0')
     calls = []
     monkeypatch.setattr(interpret.llm, 'generate_structured', lambda **kw: calls.append(kw) or {'outcome': 'query'})
     monkeypatch.setattr(interpret.examples, 'load_bank', lambda *a: (_ for _ in ()).throw(AssertionError('off')))
@@ -29,6 +29,7 @@ def test_default_path_makes_one_model_call_and_no_bank_read(monkeypatch):
 def test_examples_use_remaining_space_and_conflicting_scope_is_not_confirmed(monkeypatch):
     monkeypatch.setenv('TEXA_EXAMPLE_RETRIEVAL', '1')
     monkeypatch.setenv('TEXA_CONSISTENCY', '0')
+    monkeypatch.setenv('TEXA_EXAMPLE_POLICY', 'approved')
     bank = SimpleNamespace(version='v1', content_hash='hash')
     seen = []
     monkeypatch.setattr(interpret.examples, 'load_bank', lambda cat: bank)
@@ -99,3 +100,21 @@ def test_deterministic_refusal_keeps_candidate_and_reason_code(monkeypatch):
     result = answer._continue({'state': {}}, candidate, {}, None, None, {})
     assert result['status'] == 'refused' and result['reason_code'] == 'field_not_tracked'
     assert result['candidate'] == candidate
+
+
+def test_full_texa_defaults_enable_verified_retrieval_and_adaptive_consistency(monkeypatch):
+    for key in ('TEXA_EXAMPLE_RETRIEVAL', 'TEXA_CONSISTENCY', 'TEXA_EXAMPLE_POLICY'):
+        monkeypatch.delenv(key, raising=False)
+    cat, sources = setup()
+    seen = []
+    monkeypatch.setattr(interpret.llm, 'generate_structured', lambda **kw: {'outcome': 'query'})
+    def select(candidate, sample, normalize, **kwargs):
+        seen.append(normalize(candidate))
+        return candidate, {'enabled': True}
+    monkeypatch.setattr(interpret.consistency, 'select', select)
+    got = interpret.interpret('Revenue at Olist', [], cat, sources, model='model',
+                              normalize=lambda candidate: {'kind': 'spec'})
+    assert got['_accuracy']['retrieval']['enabled']
+    assert got['_accuracy']['retrieval']['eligibility_policy'] == 'sql_verified'
+    assert got['_accuracy']['consistency']['enabled']
+    assert seen == [{'kind': 'spec'}]

@@ -279,3 +279,8 @@ Code đo: `abb55a8`; cùng gpt-6-luna, một repeat; candidate test đã đượ
 | Đánh giá độc lập | Candidate mới có 60 singles/24 clarification records/9 dialogues, dưới mục tiêu thiết kế 180 singles/24 clarification dialogues/24 conversations. Có ba synthetic worlds, chưa phải dữ liệu doanh nghiệp đại diện. | Human review gold, khóa holdout mới, mở rộng theo nhóm lỗi chứ không nhắm vào hạ baseline; lặp lại phép đo và báo CI, latency/cost. Không thêm ví dụ test vào retrieval bank. |
 
 Đã xác nhận bản sửa: typed filter edits giữ điều kiện không liên quan; browser mobile+paid 62 → bỏ device còn paid 204 → desktop+paid 61 đều đúng. Backend 383 passed/36 skipped; PostgreSQL integration 30 passed; Playwright 15 passed với model mô phỏng. Browser model thật cuối 5/6 câu đúng, CSV Olist 432 BRL đúng. **Chưa đóng các lỗi semantic ở bảng trên; chưa đủ bằng chứng cho demo tự phục vụ không giám sát.** Nguyên tắc semantic layer được tham khảo ở mục 5; independent grounding là hướng thiết kế Texa cần thực nghiệm, không khẳng định vendor làm giống hệt.
+
+
+## 8. Cấu hình sản phẩm sau v6
+
+Theo quyết định sản phẩm, **T11 (retrieval + adaptive self-consistency)** là Texa mặc định; T00/T10/T01 là ablation bỏ cả hai/bỏ consistency/bỏ retrieval. Runtime và `.env.example` dùng `1/1`, policy `sql_verified` để khớp cấu hình đã đo. Đây là lựa chọn triển khai, không thay score lịch sử, không chứng minh T11 luôn tốt hơn và không đóng các issue ở mục 7. UI 5/6 là lượt đo T00; chưa có lượt UI thật T11 mới.

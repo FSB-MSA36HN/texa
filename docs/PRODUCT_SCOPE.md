@@ -31,7 +31,8 @@ Texa hỗ trợ PM/PO và người quản lý không chuyên SQL tự xem số l
 
 ```text
 Câu hỏi + nguồn đã chọn
-  → LLM đề xuất ý định và tham chiếu hội thoại có cấu trúc
+  → Truy hồi ví dụ SQL đã xác minh theo câu hỏi và nguồn
+  → LLM đề xuất ý định/tham chiếu + adaptive consistency khi cần
   → binder/clarification giải nghĩa metric, filter, nguồn và kỳ
   → QuerySpec + kiểm tra capability/semantic values
   → compiler Python sinh SQL tham số hóa
@@ -48,23 +49,25 @@ Memory giữ tham chiếu kết quả theo ID và các slot QuerySpec; slot ch�
 
 Metric chính là tỷ lệ khớp toàn bộ bảng kết quả chuẩn, bỏ qua alias nhưng giữ số cột, thứ tự/vai trò cột, hàng và giá trị. Từ chối sai hoặc không có kết quả tính sai. Strict contract/alias là metric phụ. Hội thoại tính theo lượt đã định trước; latency và chi phí báo riêng. Bộ candidate có 60 câu đơn (30 dev/30 test), 24 record clarification (12 cặp query/control), 9 hội thoại (8 lượt dev, 24 lượt test) và 12 diagnostic; fixture gồm ba worlds, nền 120 event tổng hợp. Candidate 60 câu đơn/9 hội thoại còn dưới mục tiêu thiết kế 180 câu đơn/24 hội thoại. Bộ do nhóm xây dựng, test split chưa được thẩm định độc lập và khóa kín, nên kết quả còn exploratory, không phải holdout độc lập hay production guarantee.
 
-| Suite | B0 | B1 | T00 | T10 | T01 | T11 |
+| Suite | B0 | B1 | Ablation bỏ cả hai · T00 | Bỏ consistency · T10 | Bỏ retrieval · T01 | **Texa mặc định · T11** |
 |---|---:|---:|---:|---:|---:|---:|
 | Single dev (30) | 3/30 (10,0%) | 2/30 (6,7%) | 29/30 (96,7%) | 29/30 (96,7%) | 29/30 (96,7%) | 29/30 (96,7%) |
 | Single test (30) | 1/30 (3,3%) | 1/30 (3,3%) | 28/30 (93,3%) | 27/30 (90,0%) | 27/30 (90,0%) | 30/30 (100%) |
 | Clarification test (12) | — | 1/12 (8,3%) | 12/12 (100%) | 11/12 (91,7%) | 11/12 (91,7%) | 11/12 (91,7%) |
 | Conversation test (24 turns) | — | 1/24 (4,2%) | 22/24 (91,7%) | 19/24 (79,2%) | 20/24 (83,3%) | 22/24 (91,7%) |
 
-**T00** tắt retrieval và self-consistency; **T10** bật retrieval; **T01** bật adaptive consistency; **T11** bật cả hai. T11 đạt 30/30 single test trong một lần chạy trên 30 câu candidate; đây không phải accuracy tổng thể hay cam kết production. Retrieval và consistency vẫn tắt mặc định: T01 chỉ gọi consistency ở 1/30 câu single test, và chênh lệch trong một lần chạy chưa chứng minh lợi ích chung. Single dev: các biến thể Texa đều 29/30, so với B0 3/30. B0R thêm ví dụ SQL đã kiểm chứng đạt 11/30 dev và 16/30 test; đây là đối chứng few-shot riêng, không phải baseline thuần. Đối chứng trên cùng 30 câu dev, cùng chọn sẵn nguồn, đạt B0 13/30 (43,3%) và T00 28/30 (93,3%); baseline thấp hơn trong phép thử này, nhưng vẫn chưa tách riêng tác động workflow khỏi tri thức catalog. Replay các SQL đã đóng băng trên ba fixture worlds cho cùng số câu đúng (B0 1/30, B0R 16/30, B1 1/30, T00 28/30, T10/T01 27/30, T11 30/30); đây là kiểm tra độ bền của cùng SQL, không phải ba lần chạy độc lập hay thêm mẫu. Artifacts: `accuracy-schema-only-20261106-v6-dev/`, `accuracy-schema-only-20261106-v6-test/`, `accuracy-source-control-20261106-v6/`.
+**Texa đầy đủ (T11)** bật retrieval ví dụ SQL đã xác minh và adaptive self-consistency. Ablation **T00** bỏ cả hai; **T10** bỏ consistency; **T01** bỏ retrieval. T11 đạt 30/30 single test trong một lần chạy trên 30 câu candidate; đây không phải accuracy tổng thể hay cam kết production. Texa mặc định là **T11**, bật retrieval + adaptive consistency; T00/T10/T01 chỉ dùng cho ablation. Đây là lựa chọn hướng sản phẩm, không phải kết luận T11 tốt nhất ở mọi suite: T11 chỉ kích hoạt thêm mẫu consistency ở 1/30 câu single test, và chênh lệch trong một lần chạy chưa chứng minh lợi ích chung. Single dev: các biến thể Texa đều 29/30, so với B0 3/30. B0R thêm ví dụ SQL đã kiểm chứng đạt 11/30 dev và 16/30 test; đây là đối chứng few-shot riêng, không phải baseline thuần. Đối chứng trên cùng 30 câu dev, cùng chọn sẵn nguồn, đạt B0 13/30 (43,3%) và T00 28/30 (93,3%); baseline thấp hơn trong phép thử này, nhưng vẫn chưa tách riêng tác động workflow khỏi tri thức catalog. Replay các SQL đã đóng băng trên ba fixture worlds cho cùng số câu đúng (B0 1/30, B0R 16/30, B1 1/30, T00 28/30, T10/T01 27/30, T11 30/30); đây là kiểm tra độ bền của cùng SQL, không phải ba lần chạy độc lập hay thêm mẫu. Artifacts: `accuracy-schema-only-20261106-v6-dev/`, `accuracy-schema-only-20261106-v6-test/`, `accuracy-source-control-20261106-v6/`.
 
 ## Kiểm thử runtime và giới hạn
 
-- Backend **383 passed, 36 skipped**; DB integration **30 passed**; Playwright **15 passed** với provider mô phỏng và 8 session. Các test xác nhận chức năng, không đo accuracy LLM.
-- Browser thật: các luồng chính được thử trực tiếp; 5/6 câu có đáp án khớp, câu đếm view trả 12 thay vì 24. Chuỗi filter mobile+paid trả 62, bỏ mobile vẫn giữ paid trả 204, đổi sang desktop vẫn giữ paid trả 61; unique viewers 12 và Olist revenue 432 BRL/CSV đã đối chiếu. Đây là smoke/regression test nhỏ, không phải holdout.
+- Backend **384 passed, 36 skipped**; DB integration **30 passed**; Playwright **15 passed** với provider mô phỏng và 8 session. Các test xác nhận chức năng, không đo accuracy LLM.
+- Browser model thật đã đo với cấu hình ablation T00: các luồng chính được thử trực tiếp; 5/6 câu có đáp án khớp, câu đếm view trả 12 thay vì 24. Chuỗi filter mobile+paid trả 62, bỏ mobile vẫn giữ paid trả 204, đổi sang desktop vẫn giữ paid trả 61; unique viewers 12 và Olist revenue 432 BRL/CSV đã đối chiếu. Đây là smoke/regression test nhỏ, không phải holdout.
 - Diagnostic: T00 khớp hành động kỳ vọng 7/10, các toggle 8/10; lỗi là hỏi lại thay vì từ chối, không có Texa trả metric khác cho yêu cầu ngoài scope trong lượt này. Hai ca rubric chưa hỗ trợ được giữ riêng; không gộp với SQL accuracy.
 - Browser parity benchmark riêng: Texa T00 15/15 câu đơn và 18/19 lượt hội thoại; đó là replay hồi quy trên các câu đã biết, không phải kiểm thử UI hay holdout.
-- Với 30 câu single test, median latency B0/T00 là **8,1/12,8 giây**; chi phí ước tính cho mỗi lượt 30 câu là **$0,0062/$0,0263**. Texa chính xác hơn trong bộ này nhưng chậm và tốn hơn; không tuyên bố SLO hoặc sức chứa lớp học.
+- Với 30 câu single test, median latency B0/T11 là **8,1/13,3 giây**; chi phí ước tính cho mỗi lượt 30 câu là **$0,0062/$0,0280**. Texa chính xác hơn trong bộ này nhưng chậm và tốn hơn; không tuyên bố SLO hoặc sức chứa lớp học.
 - Còn giới hạn: ít case và một repeat; test split chưa được human-review/sealed; persona chưa xác thực bằng nghiên cứu người dùng; cold-start schema-only không biết các raw enum/source mappings; diagnostic không phải SQL accuracy; còn trường hợp sai ở browser thật. Cần review gold độc lập, holdout mới, nhiều lần lặp và load test trước khi khẳng định khả năng triển khai rộng.
+
+Cấu hình mặc định: `TEXA_EXAMPLE_RETRIEVAL=1`, `TEXA_CONSISTENCY=1`, `TEXA_EXAMPLE_POLICY=sql_verified`. Các ID benchmark được giữ nguyên để truy vết. Số T11 đã đo trên pipeline bật cả hai; đổi mặc định không tạo ra một lần đo mới. Browser thật 5/6 nêu trên là bằng chứng của T00, chưa phải xác nhận UI T11.
 
 ## Memory hội thoại
 
