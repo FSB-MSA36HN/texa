@@ -5,6 +5,7 @@ import time
 import pytest
 
 from texa import ablation, answer, db, llm
+from texa.memory import SLOT_KEYS
 from tests.test_flow import candidate
 
 
@@ -60,9 +61,11 @@ def _candidate_for(question):
     period = ({"kind": "all", "days": 0, "start": "", "end": ""} if all_time else
               {"kind": "none", "days": 0, "start": "", "end": ""})
     selection = [] if all_time else ["event_date"]
-    return candidate(source_ids=["event_benchmark"], recipe="revenue", selection=selection,
-                     time_range=period,
-                     language="vi")
+    proposal = candidate(source_ids=["event_benchmark"], recipe="revenue", selection=selection,
+                         time_range=period, language="vi")
+    proposal["dialogue"] = {"relation": "new_topic", "target_id":"",
+                            "slots": {key: "set" for key in SLOT_KEYS}, "filter_edits": []}
+    return proposal
 
 
 def test_f_asks_then_runs_real_resolver_compiler_and_full_result(monkeypatch):
@@ -177,7 +180,10 @@ def test_m6_conversation_rollout_is_bounded_to_six_prior_turns(monkeypatch):
         if name != "interpret":
             pytest.fail(f"unexpected LLM call: {name}")
         seen["prompt"] = prompt
-        return candidate(outcome="conversation", reply="Đã rõ", suggestions=[], language="vi")
+        proposal = candidate(outcome="conversation", reply="Đã rõ", suggestions=[], language="vi")
+        proposal["dialogue"] = {"relation": "social", "target_id":"",
+                                "slots": {key: "keep" for key in SLOT_KEYS}, "filter_edits": []}
+        return proposal
 
     monkeypatch.setattr(llm, "generate_structured", capture)
     last = _ask("Cảm ơn", conversation_id)

@@ -582,13 +582,20 @@ def _question_work(turn_id: str, reference_id: str | None = None, *, semantic_fe
                     "language": _lang(candidate), "reason_code": "interpretation_disagreement"} | metadata
         lang = _lang(candidate)
         _persist_language(turn_id, lang)
+        if (semantic_feedback and candidate.get("outcome") == "query" and
+                not intent.repair_preserves_constraints(candidate, semantic_feedback["preserve"])):
+            return {"status": "refused", "reason_code": "semantic_repair_constraint_mismatch",
+                    "message": "The interpretation repair changed another constraint. Please clarify the request."
+                    if lang != "vi" else "Lượt sửa cách hiểu đã làm thay đổi điều kiện khác. Vui lòng làm rõ yêu cầu.",
+                    "candidate": candidate, "language": lang} | metadata
         if candidate.get("outcome") == "query" and candidate.get("filters") and not semantic_feedback:
             # Validate the untrusted model's value bindings before asking about
             # slots it may have misclassified. This is read-only, never executes
             # a query and cannot bypass the mandatory source/intent gates above.
             probe = clarify.advance(candidate, {}, cat, sources, scope=scope, lang=lang, question=question)
             if probe.code == "unknown_filter_value":
-                feedback = {"code": probe.code, "params": probe.params}
+                feedback = {"code": probe.code, "params": probe.params,
+                            "preserve": intent.repair_constraints(candidate, probe.params["field"])}
                 with progress("repair_semantic_interpretation"):
                     repaired = _question_work(turn_id, reference_id, semantic_feedback=feedback)(progress)
                 return repaired | {"semantic_repair": {"attempts": 1, "initial_failure": feedback,

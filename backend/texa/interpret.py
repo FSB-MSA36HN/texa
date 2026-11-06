@@ -27,6 +27,10 @@ def candidate_schema(cat: Catalog, *, structured: bool) -> dict:
                                          {m.intent_grain for m in cat.metrics if m.intent_grain})
     contract["operation"]["enum"] = sorted({"", "multiple", "uncatalogued", "presentation_arithmetic"} |
                                              {intent.metric_operation(cat, [m.id]) for m in cat.metrics})
+    # Reporting periods have their own typed time_range slot, never filter IDs.
+    contract["filter_ids"]["items"]["enum"] = sorted(d.id for d in cat.dimensions if not d.is_time)
+    if structured:
+        schema["properties"]["dialogue"]["properties"]["filter_edits"]["items"]["properties"]["field"]["enum"] = sorted(cat.dims)
     return schema
 
 
@@ -78,6 +82,7 @@ def count_measure_options(cat: Catalog, source: Source, available_metric_ids=Non
                 required_filters = [{"field_id": event_name.id, "operator": "IN",
                                      "values": list(tracked_values)}]
             options.append({"operation": operation, "counting_entity": entity,
+                            "intent_grain": cat.mets[base_metric].intent_grain or "unspecified",
                             "event_role_id": role.id, "base_metric_id": base_metric,
                             "required_filters": required_filters})
     return options
@@ -308,6 +313,7 @@ def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[s
                                          prompt=prompt, schema=schema)
         if structured:
             result["_registry_complete"] = registry_complete
+            result["_filter_edits_required"] = True
         return result
     primary_error = None
     with step("interpret") as s:

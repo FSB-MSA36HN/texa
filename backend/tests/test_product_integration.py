@@ -13,6 +13,25 @@ from texa.pipeline import run_spec
 from texa.sanity import check_availability
 from texa.spec import validate_spec
 from tests.test_flow import candidate
+from texa.memory import SLOT_KEYS
+
+
+def structured_candidate(question, context, **updates):
+    result = candidate(**updates)
+    if result["outcome"] == "conversation":
+        relation, target_id = "social", ""
+        operations = {key: "keep" for key in SLOT_KEYS}
+    elif question == "Chia theo thiết bị":
+        registry = context.get("registry", [])
+        assert registry[-1]["reading"]["recipe"] == "revenue"
+        relation, target_id = "followup", registry[-1]["id"] if registry else ""
+        operations = {key: "keep" for key in SLOT_KEYS}
+        operations.update(selection="set", shape="set", top_k="clear")
+    else:
+        relation, target_id = "new_topic", ""
+        operations = {key: "set" for key in SLOT_KEYS}
+    result["dialogue"] = {"relation": relation, "target_id": target_id, "slots": operations, "filter_edits": []}
+    return result
 
 pytestmark = pytest.mark.skipif(not os.environ.get("TEXA_PRODUCT_TEST_DSN"), reason="isolated product fixture DB not configured")
 
@@ -75,12 +94,13 @@ def test_persisted_memory_long_noise_reference_and_reload(product, monkeypatch):
 
     def interpret_question(question, previous, *a, context=None, **kw):
         if question == "Cảm ơn":
-            return candidate(outcome="conversation", reply="Đã rõ", language="vi")
+            return structured_candidate(question, context or {}, outcome="conversation", reply="Đã rõ", language="vi")
         if question == "Chia theo thiết bị":
-            assert context["inherited_slots"]["recipe"] == "revenue"
-            return candidate(recipe="revenue", source_ids=["event_benchmark"], selection=["device_type"],
-                             time_range={"kind": "all"}, language="vi")
-        return candidate(recipe="revenue", source_ids=["event_benchmark"], time_range={"kind": "all"}, language="vi")
+            return structured_candidate(question, context or {}, recipe="revenue", source_ids=["event_benchmark"],
+                                        selection=["device_type"], shape="breakdown",
+                                        time_range={"kind": "all"}, language="vi")
+        return structured_candidate(question, context or {}, recipe="revenue", source_ids=["event_benchmark"],
+                                    time_range={"kind": "all"}, language="vi")
 
     monkeypatch.setattr(answer.interpret, "interpret", interpret_question)
 

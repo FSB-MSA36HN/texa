@@ -16,7 +16,7 @@ import yaml
 
 
 DEFAULT_BANK_PATH = Path(__file__).resolve().parents[2] / "catalog" / "verified_examples.yaml"
-CONTRACT_VERSION = 3
+CONTRACT_VERSION = 4
 MAX_EXAMPLES = 3
 DEFAULT_TOKEN_BUDGET = 600
 HARD_UTF8_BYTE_CAP = 1200
@@ -122,7 +122,7 @@ def _complete_candidate(item: dict, cat) -> dict:
         for key in SLOT_KEYS:
             value = base.get(key)
             slots[key] = "set" if value not in (None, "", [], 0) else "clear"
-        base["dialogue"] = {"relation": "new_topic", "target_id": "", "slots": slots}
+        base["dialogue"] = {"relation": "new_topic", "target_id": "", "slots": slots, "filter_edits": []}
     return base
 
 

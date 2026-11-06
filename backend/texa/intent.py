@@ -35,6 +35,44 @@ def candidate_filter_ids(candidate: dict) -> list[str]:
     return list(dict.fromkeys(f.get("field") for f in candidate.get("filters", []) if f.get("field")))
 
 
+def repair_constraints(candidate: dict, field: str) -> dict:
+    """Freeze unaffected proposal constraints before a bounded binding repair.
+
+    An unresolved source may be resolved, but an already selected source may
+    not change. The ordinary explicit-source and UI-scope gates still apply.
+    """
+    from copy import deepcopy
+    return deepcopy({"editable_field": field, "metric_ids": candidate_metric_ids(candidate),
+                     "source_ids": candidate.get("source_ids") or [],
+                     "selection": candidate.get("selection") or [], "top_k": candidate.get("top_k", 0),
+                     "time_range": candidate.get("time_range") or {},
+                     "filters": [f for f in candidate.get("filters", []) if f.get("field") != field]})
+
+
+def repair_preserves_constraints(candidate: dict, protected: dict) -> bool:
+    if set(candidate_metric_ids(candidate)) != set(protected["metric_ids"]):
+        return False
+    if protected["source_ids"] and set(candidate.get("source_ids") or []) != set(protected["source_ids"]):
+        return False
+    editable = {protected["editable_field"]}
+    if (set(candidate.get("selection") or []) - editable != set(protected["selection"]) - editable or
+            candidate.get("top_k", 0) != protected["top_k"]):
+        return False
+    def period(value):
+        kind = value.get("kind")
+        keys = {"between": ("kind", "start", "end"), "last_n_days": ("kind", "days")}.get(kind, ("kind",))
+        return {key: value.get(key) for key in keys}
+    if period(candidate.get("time_range") or {}) != period(protected["time_range"]):
+        return False
+    def condition(f):
+        op = {"=": "IN", "!=": "NOT IN"}.get(f["operator"], f["operator"])
+        return f["field"], op, tuple(sorted(set(f.get("values_mentioned", []))))
+    actual = {condition(f) for f in candidate.get("filters", []) if f["field"] not in editable}
+    allowed_fields = {f["field"] for f in protected["filters"]} | editable
+    return (all(f["field"] in allowed_fields for f in candidate.get("filters", [])) and
+            actual == {condition(f) for f in protected["filters"]})
+
+
 def reconcile_dimension_roles(candidate: dict, cat=None) -> dict:
     """Use the separate intent contract to repair a filter/grouping role swap.
 
@@ -128,14 +166,22 @@ def mismatch(candidate: dict, cat, *, spec: dict | None = None, allow_continuati
 
         actual_source = (spec or {}).get("source_ids") if spec else candidate.get("source_ids", [])
         actual_breakdowns = (spec or {}).get("selection", []) if spec else candidate.get("selection", [])
-        actual_filters = (set(f.get("field") for f in (spec or {}).get("filters", []) if f.get("field"))
-                          if spec else set(candidate_filter_ids(candidate)))
+        actual_filters = [f.get("field") for f in (spec if spec is not None else candidate).get("filters", [])
+                          if f.get("field")]
         asserted = (
             ("source_ids", "source_ids", actual_source or []),
             ("breakdown_ids", "selection", actual_breakdowns or []),
             ("filter_ids", "filters", actual_filters),
         )
         for contract_key, slot_key, actual in asserted:
+            if contract_key == "filter_ids" and "_reduced_filter_ids" in candidate:
+                # Continuation carries edit intent, not a duplicate full-state
+                # assertion. The server reducer owns the effective conditions;
+                # binding must preserve every resulting field.
+                from collections import Counter
+                if Counter(actual) != Counter(candidate["_reduced_filter_ids"]):
+                    return "continuation_reduced_filters_mismatch"
+                continue
             requested = contract.get(contract_key) or []
             operation = slots.get(slot_key)
             # On keep, an empty assertion means the slot is inherited and the

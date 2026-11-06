@@ -252,3 +252,15 @@ Mỗi bước lớn commit trên `main` theo yêu cầu hiện hành. Chỉ cậ
 | [S7 — Snowflake Verified Query Repository](https://docs.snowflake.com/en/user-guide/views-semantic/verified-query-repository) | Cặp câu hỏi–query đã kiểm chứng là ví dụ liên quan cho quá trình sinh truy vấn. Với Texa, dùng ví dụ semantic đã review để hướng dẫn/kiểm thử và onboarding; không fuzzy-match rồi trả đáp án cố định, không đưa holdout vào kho ví dụ. |
 
 **Tiêu chí “sửa chuẩn”:** có bằng chứng nguyên nhân → sửa tại đúng ranh giới contract/state → giữ invariant khi dữ liệu/ngôn ngữ thay đổi → regression trên biến thể độc lập → đánh giá holdout mới. Một ví dụ từng sai nay đúng chưa đủ để đóng issue.
+
+
+## 6. Cập nhật triển khai 06/11 — sửa tại ranh giới semantic/state
+
+- **Baseline:** B0 chỉ nhận câu hỏi và schema vật lý; B1 nhận thêm lịch sử thực tế và cơ chế hỏi lại/thử lại SQL. Không cấp catalog, định nghĩa nghiệp vụ hoặc alias từ gold. Giao thức chấm chính so toàn bộ giá trị bảng, không yêu cầu alias giống nhau; báo tuân thủ contract riêng. Điểm giao thức cũ không so trực tiếp với điểm mới.
+- **Sai grain/population:** catalog định nghĩa operation và grain; tùy chọn đếm được suy ra từ metric/event-role có trên từng nguồn. LLM không được thay đếm event bằng đếm user hay item-line bằng order. Intent assertion cùng LLM chỉ là kiểm tra nhất quán, không phải oracle độc lập.
+- **Memory bỏ nhầm điều kiện:** follow-up phát ra `filter_edits` theo field; reducer server giữ các điều kiện không được sửa, hỗ trợ nhiều bounds cùng field. Kiểm tra sau binding ngăn mất điều kiện; không dùng một mô tả full-state thứ hai của LLM để ghi đè trạng thái đã giảm.
+- **Sửa lỗi làm rơi yêu cầu:** unknown closed-vocabulary value chỉ được re-resolve một lần. Metric, kỳ, top-k, source đã chọn và mọi filter không liên quan bị đóng băng. Source chưa xác định được phép resolve qua cùng scope/source-conflict gates. Không xóa filter để truy vấn chạy được, không nhân thêm consistency khi retry.
+- **Type/schema:** reporting period có slot riêng; không coi `event_date` là filter business trong intent contract. Ví dụ retrieval dùng cùng candidate contract phiên bản 4.
+- **Phương pháp:** giữ semantic catalog/compiler tập trung theo nguyên tắc dbt/Snowflake ở mục 5; thiết kế edit/reducer và repair invariants là của Texa. Không cam kết ngăn được mọi lỗi hiểu ngôn ngữ.
+
+**Còn phải thẩm định:** câu “Doanh thu purchase theo danh mục Cosmetics...” có thể hiểu Cosmetics là nguồn hoặc giá trị danh mục. Giữ nguyên gold và tính lỗi trong lượt đo; cần người thẩm định độc lập, không sửa annotation sau khi thấy điểm. Browser regression đã được dùng phát hiện lỗi, không phải holdout. Kết quả cuối và giới hạn đo được cập nhật trong PRODUCT_SCOPE và FINAL_PRESENTATION_SCRIPT sau vòng benchmark cố định phiên bản.

@@ -178,7 +178,7 @@ test('asks before applying a text source that conflicts with the selected source
   await page.getByLabel('Nguồn dữ liệu').selectOption('event_benchmark')
   await page.getByRole('textbox', { name: 'Câu hỏi' }).fill('Xung đột nguồn')
   await page.getByRole('button', { name: 'Gửi câu hỏi' }).click()
-  await expect(page.getByText(/Nguồn đã chọn khác nguồn trong câu hỏi/)).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText(/Câu hỏi nhắc đến các nguồn dữ liệu khác nhau/)).toBeVisible({ timeout: 15_000 })
   await expect(page.getByRole('button', { name: /Synthetic product events pilot/ })).toBeVisible()
   await page.getByRole('button', { name: /Synthetic product events pilot/ }).click()
   await page.getByRole('button', { name: 'Tính với lựa chọn này' }).click()

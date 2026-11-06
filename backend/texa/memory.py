@@ -306,6 +306,38 @@ def result_registry(history: list[dict], catalog_version: int, ordinal_history: 
             for i, t in enumerate(usable)]
 
 
+def _candidate_filters(filters: list[dict]) -> list[dict]:
+    return [{'field': f['field'], 'operator': f['operator'],
+             'values_mentioned': deepcopy(f.get('values', f.get('values_mentioned', [])))} for f in filters]
+
+
+def apply_filter_edits(inherited: list[dict], proposed: list[dict], edits: list[dict]) -> list[dict]:
+    """Apply declared field-level edits; omission never removes another condition."""
+    from . import llm
+    def grouped(conditions):
+        result = {}
+        for condition in _candidate_filters(conditions):
+            result.setdefault(condition['field'], []).append(condition)
+        return result
+    before, payload = grouped(inherited), grouped(proposed)
+    fields = [edit.get('field') for edit in edits]
+    if len(set(fields)) != len(fields):
+        raise llm.LLMError('MODEL_OUTPUT_INVALID', 'Each filter field may be edited once.')
+    result = deepcopy(before)
+    for edit in edits:
+        field, operation = edit.get('field'), edit.get('operation')
+        if operation == 'remove' and field in before:
+            result.pop(field)
+        elif operation == 'set' and field in payload and all(f['values_mentioned'] for f in payload[field]):
+            result[field] = deepcopy(payload[field])
+        else:
+            raise llm.LLMError('MODEL_OUTPUT_INVALID', 'Filter edit has no valid target or condition.')
+    for field, condition in payload.items():
+        if field not in fields and before.get(field) != condition:
+            raise llm.LLMError('MODEL_OUTPUT_INVALID', 'Undeclared filter change in edit payload.')
+    return [condition for conditions in result.values() for condition in conditions]
+
+
 def reduce_candidate(candidate: dict, history: list[dict], catalog_version: int,
                      forced_reference: str | None = None) -> tuple[dict, dict]:
     """Validate the semantic resolver's pointer, then apply keep/set/clear on the server.
@@ -364,6 +396,20 @@ def reduce_candidate(candidate: dict, history: list[dict], catalog_version: int,
             out[key] = value if value is not None else deepcopy(defaults[key])
         elif operation == 'clear':
             out[key] = deepcopy(defaults[key])
+    edits = decision.get('filter_edits') or []
+    if edits and (not inherited or operations.get('filters') != 'set'):
+        raise llm.LLMError('MODEL_OUTPUT_INVALID', 'Filter edits require a referenced filter set operation.')
+    if inherited and operations.get('filters') == 'set':
+        if edits:
+            out['filters'] = apply_filter_edits(inherited.get('filters', []), candidate.get('filters', []), edits)
+        elif (candidate.get('_filter_edits_required') and
+              _candidate_filters(candidate.get('filters', [])) != _candidate_filters(inherited.get('filters', []))):
+            raise llm.LLMError('MODEL_OUTPUT_INVALID', 'A followup filter change requires explicit field edits.')
+    if inherited:
+        # Private server evidence; not a model-output field. Used again after
+        # binding so a condition cannot disappear between reduction and SQL.
+        out['_reduced_filter_ids'] = [f['field'] for f in out.get('filters', [])]
+        context['filter_edits'] = deepcopy(edits)
     # Alternatives are an interpretation of the current request, not an old metric.
     if inherited and operations.get('recipe') == 'keep' and operations.get('metrics') == 'keep':
         out['recipe_alternatives'] = []

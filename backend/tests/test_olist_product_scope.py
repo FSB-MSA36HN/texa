@@ -96,11 +96,14 @@ def test_olist_item_revenue_and_counts_on_postgresql(product):
     with db.app_conn() as conn:
         with conn.transaction(force_rollback=True):
             assert conn.execute("SELECT current_database() AS name").fetchone()["name"] == "texa_benchmark"
-            assert conn.execute("SELECT 1 FROM analytics.event_activity WHERE source_id='olist_marketplace' LIMIT 1").fetchone() is None
+            # The isolated benchmark may already contain its synthetic Olist fixture.
+            # Remove it only inside this forced-rollback transaction so the calculation
+            # below always exercises exactly the four rows created by this test.
+            conn.execute("DELETE FROM analytics.event_activity WHERE source_id='olist_marketplace'")
+            conn.execute("DELETE FROM analytics.source_registry WHERE source_id='olist_marketplace'")
             conn.execute("""INSERT INTO analytics.source_registry
                 (source_id,label,description,currency,min_date,max_date,row_count,user_count)
-                VALUES ('olist_marketplace','Olist test','','BRL','2025-01-01','2025-01-03',4,2)
-                ON CONFLICT (source_id) DO NOTHING""")
+                VALUES ('olist_marketplace','Olist test','','BRL','2025-01-01','2025-01-03',4,2)""")
             for event_id, event, user, revenue in (
                 ('test-item1','order_purchased','buyer',40), ('test-item2','order_purchased','buyer',60),
                 ('test-payment','payment_made','buyer',150), ('test-review','review_submitted','reviewer',None)):

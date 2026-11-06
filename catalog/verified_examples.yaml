@@ -1,6 +1,6 @@
-version: "2026-11-06.3"
+version: "2026-11-06.4"
 catalog_version: 3
-contract_version: 3
+contract_version: 4
 catalog_fingerprint: 91372efa2e2d35d3
 # 42 examples passed independent semantic review; 7 of these also have SQL
 # independently executed against the private review fixture. Agent review is

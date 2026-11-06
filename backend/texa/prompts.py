@@ -218,8 +218,15 @@ For EVERY slot emit keep/set/clear. keep copies the referenced slot on the SERVE
 set uses the current candidate value; clear removes an old restriction. New topics
 use set/clear only. When replacing a single metric clear metrics; when setting multiple
 metrics clear recipe. Keep period, source and filters unless the user changes them.
-A new breakdown sets selection and shape; a new top-k sets top_k. To add/remove only
-some filters, set filters to the complete desired list. Removing all filters uses clear.
+For a followup that changes selected filter fields, use filters=set and filter_edits:
+one {field, operation:set|remove} per changed field. Candidate filters supply only complete new
+conditions for set fields (all bounds if a field has several); remove deletes that field's
+conditions and has no payload. The server preserves all other
+inherited conditions. Use filters=clear only when the user removes ALL conditions.
+Use an empty filter_edits list for other slots, new topics and filters=keep/clear.
+For continuation, intent_contract asserts the inherited measure; filter state is owned by
+the validated per-field edits and server reducer, not a second full-state filter assertion.
+A new breakdown sets selection and shape; a new top-k sets top_k.
 Use answer_from_previous only to discuss existing numbers, never for a new breakdown.
 The app source is a constraint. Record explicit textual sources in source_ids. The
 server resolves conflicts through a form rather than silently overriding the dropdown.
@@ -233,10 +240,14 @@ def structured_candidate_schema():
     schema['required'].append('dialogue')
     schema['properties']['dialogue'] = {
         'type': 'object', 'additionalProperties': False,
-        'required': ['relation', 'target_id', 'slots'],
+        'required': ['relation', 'target_id', 'slots', 'filter_edits'],
         'properties': {
             'relation': {'type': 'string', 'enum': ['new_topic', 'followup', 'ambiguous', 'social']},
             'target_id': {'type': 'string'},
+            'filter_edits': {'type': 'array', 'maxItems': 8, 'items': {
+                'type': 'object', 'additionalProperties': False, 'required': ['field', 'operation'],
+                'properties': {'field': {'type': 'string'},
+                               'operation': {'type': 'string', 'enum': ['set', 'remove']}}}},
             'slots': {'type': 'object', 'additionalProperties': False, 'required': list(SLOT_KEYS),
                       'properties': {k: {'type': 'string', 'enum': ['keep', 'set', 'clear']} for k in SLOT_KEYS}},
         },
