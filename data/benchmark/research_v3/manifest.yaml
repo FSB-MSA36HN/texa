@@ -1,0 +1,94 @@
+name: Texa Research Benchmark v3 candidate
+dataset_type: challenge_candidate
+version: 3
+status: candidate_agent_reviewed_not_sealed
+engine: PostgreSQL 16+
+sources:
+- cosmetics_shop
+- olist_marketplace
+metrics:
+- events
+- users
+- sessions
+- viewers
+- purchases
+- buyers
+- revenue
+- buyer_conversion_rate
+nested_scalar_paths:
+- ep.device.type
+- ep.campaign.channel
+fixture: worlds/base.sql
+fixture_worlds:
+  base:
+    file: worlds/base.sql
+    rows: 120
+    cosmetics_rows: 60
+    olist_rows: 60
+  grain_counterexample:
+    file: worlds/grain_counterexample.sql
+    rows: 121
+    cosmetics_rows: 60
+    olist_rows: 61
+  coverage_edge:
+    file: worlds/coverage_edge.sql
+    rows: 118
+    cosmetics_rows: 59
+    olist_rows: 59
+single_turn_suite: cases.yaml
+dialogue_suite: dialogues.yaml
+interaction_suite: interactions.yaml
+split_policy: '300 answerable singles: 100 dev, 200 test. Test strata are 40 basic,
+  100 compositional, 60 semantic; dev 20/50/30. Each stratum is evenly allocated across
+  Cosmetics Shop and Olist. Query families are labeled by phenomenon, not split prefix;
+  template overlap is intentional and the split is not claimed to be family-disjoint.
+  The three fixture worlds expose controlled grain/coverage changes, and every gold
+  result is authored for each world.'
+test_strata:
+  basic: 40
+  compositional: 100
+  semantic: 60
+dev_strata:
+  basic: 20
+  compositional: 50
+  semantic: 30
+source_capability_notes:
+  cosmetics_shop: challenge-only synthetic events include sessions, views, device
+    and campaign scalar paths.
+  olist_marketplace: challenge-only order item/payment/approval events; no synthetic
+    sessions or viewers. Nested device/campaign fields are declared fixture extensions,
+    not claims about the production source.
+metric_semantics: Olist users are distinct customers observed in order-lifecycle events,
+  not all website visitors. Olist buyer_conversion_rate is buyers divided by observed
+  event-customers; it must not be described as visitor-to-buyer conversion. Purchase
+  revenue is item-line revenue, excluding payment_made event values.
+family_counts:
+  basic_metric_period: 60
+  time_plus_dimension_filter: 30
+  grouped_or_ranked_composition: 120
+  row_vs_user_and_purchase_grain: 18
+  purchase_role_vs_event_literal: 18
+  nested_scalar_presence: 24
+  eligible_group_domain_topk: 18
+  ratio_denominator: 4
+  null_grouping: 4
+  ratio_denominator_grouped: 2
+  zero_denominator: 2
+provenance: Fixture records reused from challenge_v1; this generator independently
+  authors new query specs/SQL and computes expected results in Python for every controlled
+  world. No Texa compiler or LLM generates the gold.
+human_review: pending two independent reviewers
+sealed: false
+test_labels_exposed_to_author: true
+limitations: Synthetic controlled worlds do not estimate accuracy on live Cosmetics
+  Shop or Olist data. Test labels are visible to the author and the candidate must
+  be externally reviewed and sealed before confirmatory claims.
+counts:
+  single_total: 300
+  single_dev: 100
+  single_test: 200
+  clarification_total: 60
+  clarification_ambiguous: 30
+  clarification_clear_controls: 30
+  conversation_total: 40
+  unsupported_total: 40

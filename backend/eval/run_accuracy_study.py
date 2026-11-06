@@ -17,10 +17,10 @@ from typing import Any
 import yaml
 
 try:
-    from .accuracy_study import SUITE_VARIANTS, confirmatory_eligibility, validate_coverage, sql_error_diagnostic, expected_answer_count, gold_targets
+    from .accuracy_study import SUITE_VARIANTS, confirmatory_eligibility, validate_coverage, sql_error_diagnostic, expected_answer_count, gold_targets, clarification_policy_score, clarification_policy_from_counts
     from .benchmark import execute_readonly, results_equal, score_business_result, score_expected_result, server_metadata, validate_business_contract
 except ImportError:
-    from accuracy_study import SUITE_VARIANTS, confirmatory_eligibility, validate_coverage, sql_error_diagnostic, expected_answer_count, gold_targets
+    from accuracy_study import SUITE_VARIANTS, confirmatory_eligibility, validate_coverage, sql_error_diagnostic, expected_answer_count, gold_targets, clarification_policy_score, clarification_policy_from_counts
     from benchmark import execute_readonly, results_equal, score_business_result, score_expected_result, server_metadata, validate_business_contract
 
 SQL_SCHEMA = {"type": "object", "properties": {"sql": {"type": "string"}},
@@ -86,9 +86,12 @@ SUITE_FILES = {"single": "cases.yaml", "clarification": "interactions.yaml", "co
 
 def load_suite(directory: Path, suite: str, split: str, world: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     manifest = yaml.safe_load((directory / "manifest.yaml").read_text(encoding="utf-8"))
-    if manifest.get("dataset_type") != "challenge_candidate" or manifest.get("status") != "candidate_agent_reviewed_not_sealed":
-        raise ValueError("challenge runner requires the explicitly diagnostic candidate manifest")
-    rows = yaml.safe_load((directory / SUITE_FILES[suite]).read_text(encoding="utf-8"))
+    candidate_states = {("challenge_candidate", "candidate_agent_reviewed_not_sealed"),
+                        ("research_candidate", "agent_authored_unsealed_pending_human_review")}
+    if (manifest.get("dataset_type"), manifest.get("status")) not in candidate_states:
+        raise ValueError("runner requires an explicitly unsealed challenge/research candidate manifest")
+    suite_file = "unsupported.yaml" if suite == "diagnostic" and (directory / "unsupported.yaml").is_file() else SUITE_FILES[suite]
+    rows = yaml.safe_load((directory / suite_file).read_text(encoding="utf-8"))
     selected = [row for row in rows if row.get("split") == split and row.get("fixture_world", "base") == world]
     if not selected:
         raise ValueError(f"no {suite}/{split} scenarios")
@@ -117,6 +120,19 @@ def world_pools(directory: Path, suite: str, split: str) -> dict[str, list[str]]
 
 def _hash(value: Any) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest()
+
+
+def _assert_study_inputs_frozen(dataset_dir: Path) -> None:
+    """Refuse live runs when code/catalog/active dataset has tracked or untracked edits."""
+    try:
+        active_dataset = dataset_dir.resolve().relative_to(ROOT).as_posix()
+    except ValueError as exc:
+        raise ValueError("active evaluation dataset must be inside the project root") from exc
+    source_paths = ["backend/texa", "backend/eval", "catalog", active_dataset]
+    status = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all", "--", *source_paths],
+                            cwd=ROOT, capture_output=True, text=True, check=True).stdout
+    if status.strip():
+        raise ValueError("Freeze and commit tracked/untracked study inputs before live execution")
 
 
 def _schema_only_question(item: dict) -> str:
@@ -349,8 +365,10 @@ def _rescore_texa_table_scores(record: dict, item: dict, session, suite: str) ->
 
 def diagnostic_score(item, actual):
     expected = item.get("expected_action")
-    allowed = {"unsupported": {"refuse"}, "clarify_source_conflict": {"clarify"},
+    allowed = {"unsupported": {"refuse"}, "refuse": {"refuse"}, "clarify_source_conflict": {"clarify"},
                "clarify_or_explain_unsupported": {"clarify", "refuse"}}.get(expected)
+    if allowed is None and isinstance(item.get("expected_actions"), list):
+        allowed = set(item["expected_actions"])
     correct = actual in allowed if allowed is not None else None
     return {"answer_count": 0, "answer_correct": 0, "expected_action": expected,
             "actual_action": actual, "action_correct": correct, "action_scorable": allowed is not None,
@@ -381,7 +399,16 @@ def _run_raw_scenario(item: dict, suite: str, manifest: dict, session: RawHistor
             continue
         got = session.ask(target["question"], ui_scope=item.get("ui_scope"))
         rounds = 0
+        requested_fields = []
+        if suite == "diagnostic":
+            scored_action = diagnostic_score(target, got.get("action"))
+            out.append({**scored_action, "expected_action": target.get("expected_action"),
+                        "actual_action": got.get("action"), "refusal_reason": got.get("reason"),
+                        "error_class": got.get("error_class"), "sql": got.get("sql"),
+                        "scorable": False})
+            continue
         while got.get("action") == "clarify" and rounds < 2:
+            requested_fields.extend(got.get("ask_fields", []))
             # Form choices are protocol-derived, never copied from gold result data.
             options = {"context:source": manifest["sources"], "recipe": manifest["metrics"],
                        "time_range": ["all", "last_7", "last_30", "custom"]}
@@ -405,23 +432,40 @@ def _run_raw_scenario(item: dict, suite: str, manifest: dict, session: RawHistor
                 got["error_class"] = "oracle_mismatch"
                 break
         scoring = _score_rows(got, target) if "expected_result" in target else {}
+        policy = clarification_policy_score(target.get("ask_fields", []), requested_fields) if suite == "clarification" else {}
+        if policy and scoring:
+            scoring["success"] = bool(scoring.get("business_result_correct", False) and policy["clarification_policy_correct"])
         out.append({"expected_action": target.get("action", "sql"), "actual_action": got.get("action"),
                     "refusal_reason": got.get("reason") if got.get("action") == "refuse" else None,
                     "error_class": got.get("error_class"), "scorable": "expected_result" in target,
                     "sql": got.get("sql"), "clarification_rounds": rounds,
-                    "requested_clarification_fields": got.get("ask_fields", []),
-                    **scoring})
+                    "requested_clarification_fields": requested_fields,
+                    **policy, **scoring})
     scored = [r for r in out if r.get("scorable")]
+    if suite == "diagnostic":
+        action_rows = [r for r in out if r.get("action_scorable")]
+        correct = sum(bool(r.get("action_correct")) for r in action_rows)
+        return {"turns": out, "answer_count": 0, "answer_correct": 0,
+                "expected_action": targets[0].get("expected_action") if len(targets) == 1 else None,
+                "actual_action": out[0].get("actual_action") if len(out) == 1 else None,
+                "action_correct": (correct == len(action_rows)) if action_rows else None,
+                "action_scorable": bool(action_rows), "success": bool(action_rows) and correct == len(action_rows),
+                "manual_review_required": any(r.get("manual_review_required") for r in out),
+                "unsupported_turn_count": len(out)}
+    policy_rows = [r for r in out if "clarification_policy_correct" in r]
+    policy_counts = {key: sum(r["clarification_counts"][key] for r in policy_rows)
+                     for key in ("tp", "fp", "fn")}
     return {"turns": out, "answer_count": sum(r.get("answer_count", 0) for r in scored),
             "answer_correct": sum(r.get("answer_correct", 0) for r in scored),
             "unsupported_turn_count": sum(not r.get("scorable") for r in out),
-            "success": bool(scored) and all(r.get("business_result_correct") for r in scored)}
+            "clarification_counts": policy_counts,
+            "clarification_policy_correct": all(r["clarification_policy_correct"] for r in policy_rows) if policy_rows else None,
+            "success": bool(scored) and all(r.get("success", r.get("business_result_correct")) for r in scored)}
 
 
 def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
     from texa import llm
-    if subprocess.run(["git", "diff", "--quiet", "HEAD", "--", "backend/texa", "backend/eval", "catalog", "data/benchmark/challenge_v1"], cwd=ROOT).returncode:
-        raise ValueError("Freeze and commit study inputs before live execution")
+    _assert_study_inputs_frozen(directory)
     try:
         from .run_benchmark import _call_usage
     except ImportError:
@@ -562,10 +606,7 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                 elif args.variant == "B1":
                     raw_session = RawHistorySession(args.model, dsn)
                     if args.suite == "diagnostic":
-                        current = raw_session.ask(item["question"], ui_scope=item.get("ui_scope"))
-                        row = diagnostic_score(item, current.get("action"))
-                        row["refusal_reason"] = current.get("reason")
-                        row["sql"] = current.get("sql")
+                        row = _run_raw_scenario(item, args.suite, manifest, raw_session)
                     else:
                         row = _run_raw_scenario(item, args.suite, manifest, raw_session)
                 else:
@@ -612,6 +653,17 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                         raise ValueError("unsupported suite")
                     if args.suite != "single":
                         row = _rescore_texa_table_scores(row, item, session, args.suite)
+                    if args.suite == "clarification":
+                        counts = row.get("clarification_counts")
+                        if isinstance(counts, dict):
+                            row.update(clarification_policy_from_counts(counts))
+                        else:
+                            actual_fields = []
+                            for turn in row.get("turns", []):
+                                actual_fields.extend(turn.get("asked", turn.get("requested_clarification_fields", [])))
+                            row.update(clarification_policy_score(item.get("ask_fields", []), actual_fields))
+                        row["success"] = bool(row.get("business_result_correct", row.get("result_correct"))
+                                              and row["clarification_policy_correct"] and not row.get("oracle_error"))
                     if args.suite != "single":
                         trace_rows = [turn.get("trace", {}) for turn in row.get("turns", [])]
                         row["texa_accuracy_trace"] = next((t.get("candidate", {}).get("_accuracy")
@@ -638,7 +690,7 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
             finally:
                 if session is not None and all(session.api.RUNS.get(t) is None or session.api.RUNS[t].done for t in session.turn_ids):
                     session.close()
-            row.update(type="scenario", id=item["id"], cluster_id=item.get("family", item["id"]),
+            row.update(type="scenario", id=item["id"], cluster_id=item.get("cluster_id", item.get("family", item["id"])),
                        group=item.get("stratum", item.get("family", args.suite)), latency_ms=round((time.monotonic()-started)*1000),
                        usage={k: sum(x[k] for x in (_call_usage(name) for name in call_names[calls_before:calls]))
                               for k in ("calls", "input_tokens", "output_tokens", "model_ms")},
@@ -674,8 +726,8 @@ def main(argv=None) -> int:
     try:
         if args.repeat < 1:
             raise ValueError("--repeat must be a positive run index")
-        if (args.suite == "diagnostic") != (args.split == "diagnostic"):
-            raise ValueError("diagnostic suite requires --split diagnostic; answer suites require dev/test")
+        if (args.suite == "diagnostic" and args.split not in {"diagnostic", "test"}) or (args.suite != "diagnostic" and args.split not in {"dev", "test"}):
+            raise ValueError("diagnostic suite requires --split diagnostic or test; answer suites require dev/test")
         manifest, rows = load_suite(args.dataset_dir.resolve(), args.suite, args.split, args.world)
         validate_coverage([{"id": row["id"]} for row in rows], [row["id"] for row in rows],
                           variant=args.variant, suite=args.suite)

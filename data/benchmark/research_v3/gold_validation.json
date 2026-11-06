@@ -1,0 +1,12 @@
+{
+  "gold_sql_world_checks": 2004,
+  "errors": [],
+  "single_count": 300,
+  "clarification_count": 60,
+  "conversation_count": 40,
+  "conversation_turns": 355,
+  "conversation_answer_slots": 308,
+  "unsupported_count": 40,
+  "human_review": "pending",
+  "sealed": false
+}

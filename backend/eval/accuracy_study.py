@@ -72,6 +72,26 @@ def score_scenario(record: dict[str, Any], suite: str) -> dict[str, Any]:
             "unsupported_turn_count": unsupported}
 
 
+def clarification_policy_score(expected_fields: list[str], actual_fields: list[str]) -> dict[str, Any]:
+    """Score whether the system asked for every required field and no extras.
+
+    SQL result correctness is reported separately; a lucky correct result does not
+    excuse skipping a required clarification, and clear controls penalize asks.
+    """
+    expected, actual = set(expected_fields), set(actual_fields)
+    counts = {"tp": len(expected & actual), "fp": len(actual - expected),
+              "fn": len(expected - actual)}
+    return {"clarification_counts": counts,
+            "clarification_policy_correct": counts["fp"] == 0 and counts["fn"] == 0}
+
+
+def clarification_policy_from_counts(counts: dict[str, Any]) -> dict[str, Any]:
+    """Preserve already-aggregated counts from multi-round oracle continuations."""
+    normalized = {key: int(counts.get(key, 0)) for key in ("tp", "fp", "fn")}
+    return {"clarification_counts": normalized,
+            "clarification_policy_correct": normalized["fp"] == 0 and normalized["fn"] == 0}
+
+
 def sql_error_diagnostic(error: Any) -> str:
     """Keep only safe structural SQL error categories, never SQL/text/parameters."""
     text = str(error).lower()

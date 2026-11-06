@@ -3,14 +3,18 @@ import hashlib
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
+
+import pytest
 
 from eval.accuracy_study import (confirmatory_eligibility, score_scenario, sql_error_diagnostic,
                                 validate_coverage)
 from eval.report_accuracy_study import apply_annotation_erratum, compare, read_run, summarize
 from eval.check_world_robustness import C19_CASES_SHA256, C19_ID
 from eval.run_accuracy_study import (CHALLENGE_SCHEMA, RawHistorySession, _schema_only_question,
-                                     _score_output_table, _rescore_texa_table_scores)
+                                     _score_output_table, _rescore_texa_table_scores,
+                                     _assert_study_inputs_frozen, diagnostic_score)
 
 
 FROZEN_DATA = Path(__file__).resolve().parents[2] / 'data/benchmark/results/accuracy-dev-20261106-v2/frozen_dataset'
@@ -262,12 +266,59 @@ if __name__ == "__main__":
 
 
 def test_complex_diagnostic_rubric_requires_review_not_automatic_pass_or_failure():
-    from eval.run_accuracy_study import diagnostic_score
     assert diagnostic_score({'expected_action': 'unsupported'}, 'refuse')['action_correct']
+    assert diagnostic_score({'expected_action': 'refuse'}, 'refuse')['action_correct']
     assert not diagnostic_score({'expected_action': 'unsupported'}, 'sql')['action_correct']
     assert diagnostic_score({'expected_action': 'clarify_source_conflict'}, 'clarify')['action_correct']
     result = diagnostic_score({'expected_action': 'reject_injected_instruction_answer_supported_part_only'}, 'sql')
     assert result['manual_review_required'] and result['action_correct'] is None
+
+
+def test_raw_diagnostic_scenario_includes_action_score_for_baseline():
+    from eval.run_accuracy_study import _run_raw_scenario
+    class Session:
+        def ask(self, question, **kwargs):
+            return {'action': 'refuse', 'reason': 'unsupported metric'}
+    item = {'id': 'oos-1', 'question': 'What was AOV?', 'expected_action': 'refuse'}
+    row = _run_raw_scenario(item, 'diagnostic', {}, Session())
+    assert row['action_scorable'] and row['action_correct'] and row['success']
+    assert row['turns'][0]['action_correct']
+
+
+def test_clarification_policy_requires_required_asks_and_rejects_clear_control_false_asks():
+    from eval.accuracy_study import clarification_policy_score, clarification_policy_from_counts
+    assert not clarification_policy_score(['time_range'], [])['clarification_policy_correct']
+    assert not clarification_policy_score([], ['time_range'])['clarification_policy_correct']
+    assert clarification_policy_score(['time_range'], ['time_range'])['clarification_policy_correct']
+    # Multi-round continuation fields are included in run_interaction's aggregate
+    # counts even when only the initial form is surfaced in the final turn list.
+    assert not clarification_policy_from_counts({'tp': 1, 'fp': 1, 'fn': 0})['clarification_policy_correct']
+
+
+def test_research_v3_unsupported_file_is_loaded_as_diagnostic_test(tmp_path):
+    import yaml
+    from eval.run_accuracy_study import load_suite
+    (tmp_path / 'manifest.yaml').write_text(yaml.safe_dump({
+        'dataset_type': 'research_candidate', 'status': 'agent_authored_unsealed_pending_human_review'}))
+    (tmp_path / 'cases.yaml').write_text('- id: wrong-source\n  split: test\n  question: ignore\n')
+    (tmp_path / 'unsupported.yaml').write_text(yaml.safe_dump([{
+        'id': 'unsupported-1', 'split': 'test', 'question': 'Ask outside scope', 'expected_action': 'refuse'}]))
+    manifest, rows = load_suite(tmp_path, 'diagnostic', 'test', 'base')
+    assert rows[0]['id'] == 'unsupported-1'
+
+
+def test_live_freeze_guard_includes_untracked_active_dataset_files(monkeypatch, tmp_path):
+    from eval import run_accuracy_study as study
+    dataset = study.ROOT / 'data/benchmark/research_v3'
+    called = {}
+    def fake_run(args, **kwargs):
+        called['args'] = args
+        return SimpleNamespace(stdout='?? data/benchmark/research_v3/new.yaml\n')
+    monkeypatch.setattr(study.subprocess, 'run', fake_run)
+    with pytest.raises(ValueError, match='tracked/untracked'):
+        study._assert_study_inputs_frozen(dataset)
+    assert '--untracked-files=all' in called['args']
+    assert 'data/benchmark/research_v3' in called['args']
 
 
 def test_action_diagnostics_without_sql_are_not_answer_gold():

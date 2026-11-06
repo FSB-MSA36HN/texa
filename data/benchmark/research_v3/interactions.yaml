@@ -1,0 +1,2002 @@
+- id: interaction_01_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_01
+  state: &id001
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id002
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range: all
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: &id003
+    columns:
+    - revenue
+    rows:
+    - - 420
+  expected_results_by_world: &id004
+    base:
+      columns:
+      - revenue
+      rows:
+      - - 420
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 420
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 402
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: What was the revenue for Cosmetics?
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+- id: interaction_01_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_01
+  state: *id001
+  oracle_intent: *id002
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: *id003
+  expected_results_by_world: *id004
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_01_ask
+  question: What was the revenue for Cosmetics over all available dates.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_02_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_02
+  state: &id005
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id006
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: last_7
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id007
+    columns:
+    - buyers
+    rows:
+    - - 1
+  expected_results_by_world: &id008
+    base:
+      columns:
+      - buyers
+      rows:
+      - - 1
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 1
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 1
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: Cho tôi xem người mua duy nhất của Olist.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+- id: interaction_02_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_02
+  state: *id005
+  oracle_intent: *id006
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id007
+  expected_results_by_world: *id008
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_02_ask
+  question: Cho tôi xem người mua duy nhất của Olist trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_03_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_03
+  state: &id009
+    source_id: cosmetics_shop
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id010
+    source_id: cosmetics_shop
+    metric: users
+    time_range: all
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: &id011
+    columns:
+    - users
+    rows:
+    - - 21
+  expected_results_by_world: &id012
+    base:
+      columns:
+      - users
+      rows:
+      - - 21
+    grain_counterexample:
+      columns:
+      - users
+      rows:
+      - - 21
+    coverage_edge:
+      columns:
+      - users
+      rows:
+      - - 21
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: Cho tôi xem người dùng duy nhất của Cosmetics Shop.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+- id: interaction_03_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_03
+  state: *id009
+  oracle_intent: *id010
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: *id011
+  expected_results_by_world: *id012
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_03_ask
+  question: Cho tôi xem người dùng duy nhất của Cosmetics Shop trong toàn bộ khoảng dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_04_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_04
+  state: &id013
+    source_id: olist_marketplace
+    metric: purchases
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id014
+    source_id: olist_marketplace
+    metric: purchases
+    time_range: last_7
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='order_purchased')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id015
+    columns:
+    - purchases
+    rows:
+    - - 2
+  expected_results_by_world: &id016
+    base:
+      columns:
+      - purchases
+      rows:
+      - - 2
+    grain_counterexample:
+      columns:
+      - purchases
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - purchases
+      rows:
+      - - 1
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: How much purchase events did Olist have?
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+- id: interaction_04_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_04
+  state: *id013
+  oracle_intent: *id014
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='order_purchased')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id015
+  expected_results_by_world: *id016
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_04_ask
+  question: How much purchase events did Olist have over the most recent 7 days.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_05_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_05
+  state: &id017
+    source_id: cosmetics_shop
+    metric: events
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id018
+    source_id: cosmetics_shop
+    metric: events
+    time_range: all
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: &id019
+    columns:
+    - events
+    rows:
+    - - 60
+  expected_results_by_world: &id020
+    base:
+      columns:
+      - events
+      rows:
+      - - 60
+    grain_counterexample:
+      columns:
+      - events
+      rows:
+      - - 60
+    coverage_edge:
+      columns:
+      - events
+      rows:
+      - - 59
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: Can you summarize events for Cosmetics?
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+- id: interaction_05_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_05
+  state: *id017
+  oracle_intent: *id018
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: *id019
+  expected_results_by_world: *id020
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_05_ask
+  question: Can you summarize events for Cosmetics over all available dates.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_06_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_06
+  state: &id021
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id022
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: last_7
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id023
+    columns:
+    - revenue
+    rows:
+    - - 35
+  expected_results_by_world: &id024
+    base:
+      columns:
+      - revenue
+      rows:
+      - - 35
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 35
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 35
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: Cho tôi xem doanh thu của Olist.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+- id: interaction_06_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_06
+  state: *id021
+  oracle_intent: *id022
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id023
+  expected_results_by_world: *id024
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_06_ask
+  question: Cho tôi xem doanh thu của Olist trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_07_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_07
+  state: &id025
+    source_id: cosmetics_shop
+    metric: buyers
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id026
+    source_id: cosmetics_shop
+    metric: buyers
+    time_range: all
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: &id027
+    columns:
+    - buyers
+    rows:
+    - - 9
+  expected_results_by_world: &id028
+    base:
+      columns:
+      - buyers
+      rows:
+      - - 9
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 9
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 9
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: Cho tôi xem người mua duy nhất của Cosmetics Shop.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+- id: interaction_07_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_07
+  state: *id025
+  oracle_intent: *id026
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: *id027
+  expected_results_by_world: *id028
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_07_ask
+  question: Cho tôi xem người mua duy nhất của Cosmetics Shop trong toàn bộ khoảng dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_08_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_08
+  state: &id029
+    source_id: olist_marketplace
+    metric: users
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id030
+    source_id: olist_marketplace
+    metric: users
+    time_range: last_7
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id031
+    columns:
+    - users
+    rows:
+    - - 2
+  expected_results_by_world: &id032
+    base:
+      columns:
+      - users
+      rows:
+      - - 2
+    grain_counterexample:
+      columns:
+      - users
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - users
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: I need a distinct users report for Olist.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+- id: interaction_08_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_08
+  state: *id029
+  oracle_intent: *id030
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id031
+  expected_results_by_world: *id032
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_08_ask
+  question: I need a distinct users report for Olist over the most recent 7 days.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_09_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_09
+  state: &id033
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id034
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: all
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: &id035
+    columns:
+    - purchases
+    rows:
+    - - 24
+  expected_results_by_world: &id036
+    base:
+      columns:
+      - purchases
+      rows:
+      - - 24
+    grain_counterexample:
+      columns:
+      - purchases
+      rows:
+      - - 24
+    coverage_edge:
+      columns:
+      - purchases
+      rows:
+      - - 23
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: How much purchase events did Cosmetics have?
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+- id: interaction_09_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_09
+  state: *id033
+  oracle_intent: *id034
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: *id035
+  expected_results_by_world: *id036
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_09_ask
+  question: How much purchase events did Cosmetics have over all available dates.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_10_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_10
+  state: &id037
+    source_id: olist_marketplace
+    metric: events
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id038
+    source_id: olist_marketplace
+    metric: events
+    time_range: last_7
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id039
+    columns:
+    - events
+    rows:
+    - - 4
+  expected_results_by_world: &id040
+    base:
+      columns:
+      - events
+      rows:
+      - - 4
+    grain_counterexample:
+      columns:
+      - events
+      rows:
+      - - 4
+    coverage_edge:
+      columns:
+      - events
+      rows:
+      - - 3
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: Cho tôi xem lượt sự kiện của Olist.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+- id: interaction_10_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_10
+  state: *id037
+  oracle_intent: *id038
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id039
+  expected_results_by_world: *id040
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_10_ask
+  question: Cho tôi xem lượt sự kiện của Olist trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_11_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_11
+  state: &id041
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id042
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range: all
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: &id043
+    columns:
+    - revenue
+    rows:
+    - - 420
+  expected_results_by_world: &id044
+    base:
+      columns:
+      - revenue
+      rows:
+      - - 420
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 420
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 402
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: Cho tôi xem doanh thu của Cosmetics Shop.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+- id: interaction_11_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_11
+  state: *id041
+  oracle_intent: *id042
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: *id043
+  expected_results_by_world: *id044
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_11_ask
+  question: Cho tôi xem doanh thu của Cosmetics Shop trong toàn bộ khoảng dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_12_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_12
+  state: &id045
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id046
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: last_7
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id047
+    columns:
+    - buyers
+    rows:
+    - - 1
+  expected_results_by_world: &id048
+    base:
+      columns:
+      - buyers
+      rows:
+      - - 1
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 1
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 1
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: Please show buyers for Olist.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+- id: interaction_12_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_12
+  state: *id045
+  oracle_intent: *id046
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id047
+  expected_results_by_world: *id048
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_12_ask
+  question: Please show buyers for Olist over the most recent 7 days.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_13_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_13
+  state: &id049
+    source_id: cosmetics_shop
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id050
+    source_id: cosmetics_shop
+    metric: users
+    time_range: all
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: &id051
+    columns:
+    - users
+    rows:
+    - - 21
+  expected_results_by_world: &id052
+    base:
+      columns:
+      - users
+      rows:
+      - - 21
+    grain_counterexample:
+      columns:
+      - users
+      rows:
+      - - 21
+    coverage_edge:
+      columns:
+      - users
+      rows:
+      - - 21
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: I need a distinct users report for Cosmetics.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+- id: interaction_13_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_13
+  state: *id049
+  oracle_intent: *id050
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: *id051
+  expected_results_by_world: *id052
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_13_ask
+  question: I need a distinct users report for Cosmetics over all available dates.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_14_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_14
+  state: &id053
+    source_id: olist_marketplace
+    metric: purchases
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id054
+    source_id: olist_marketplace
+    metric: purchases
+    time_range: last_7
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='order_purchased')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id055
+    columns:
+    - purchases
+    rows:
+    - - 2
+  expected_results_by_world: &id056
+    base:
+      columns:
+      - purchases
+      rows:
+      - - 2
+    grain_counterexample:
+      columns:
+      - purchases
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - purchases
+      rows:
+      - - 1
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: Cho tôi xem lượt mua của Olist.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+- id: interaction_14_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_14
+  state: *id053
+  oracle_intent: *id054
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='order_purchased')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id055
+  expected_results_by_world: *id056
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_14_ask
+  question: Cho tôi xem lượt mua của Olist trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_15_ask
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_15
+  state: &id057
+    source_id: cosmetics_shop
+    metric: events
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id058
+    source_id: cosmetics_shop
+    metric: events
+    time_range: all
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: &id059
+    columns:
+    - events
+    rows:
+    - - 60
+  expected_results_by_world: &id060
+    base:
+      columns:
+      - events
+      rows:
+      - - 60
+    grain_counterexample:
+      columns:
+      - events
+      rows:
+      - - 60
+    coverage_edge:
+      columns:
+      - events
+      rows:
+      - - 59
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: Cho tôi xem lượt sự kiện của Cosmetics Shop.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+- id: interaction_15_control
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_15
+  state: *id057
+  oracle_intent: *id058
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: *id059
+  expected_results_by_world: *id060
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_15_ask
+  question: Cho tôi xem lượt sự kiện của Cosmetics Shop trong toàn bộ khoảng dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_16_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_16
+  state: &id062
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: &id061
+    - '2018-02-15'
+    - '2018-02-19'
+    filters: []
+    breakdown: null
+  oracle_intent: &id063
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: *id061
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-15' AND '2018-02-19'
+  expected_result: &id064
+    columns:
+    - buyers
+    rows:
+    - - 2
+  expected_results_by_world: &id065
+    base:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - ambiguous_metric
+  - olist_marketplace
+  phenomenon: ambiguous_metric
+  question: How many customers did Olist have from 2018-02-15 through 2018-02-19?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - buyers
+- id: interaction_16_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_16
+  state: *id062
+  oracle_intent: *id063
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-15' AND '2018-02-19'
+  expected_result: *id064
+  expected_results_by_world: *id065
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_16_ask
+  question: How many distinct purchasing customers did Olist have from 2018-02-15 through 2018-02-19?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_17_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_17
+  state: &id067
+    source_id: cosmetics_shop
+    metric: users
+    time_range: &id066
+    - '2025-02-18'
+    - '2025-02-23'
+    filters: []
+    breakdown: null
+  oracle_intent: &id068
+    source_id: cosmetics_shop
+    metric: users
+    time_range: *id066
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-02-18' AND '2025-02-23'
+  expected_result: &id069
+    columns:
+    - users
+    rows:
+    - - 4
+  expected_results_by_world: &id070
+    base:
+      columns:
+      - users
+      rows:
+      - - 4
+    grain_counterexample:
+      columns:
+      - users
+      rows:
+      - - 4
+    coverage_edge:
+      columns:
+      - users
+      rows:
+      - - 4
+  tags:
+  - clarification
+  - ambiguous_metric
+  - cosmetics_shop
+  phenomenon: ambiguous_metric
+  question: How many customers did Cosmetics have from 2025-02-18 through 2025-02-23?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - users
+- id: interaction_17_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_17
+  state: *id067
+  oracle_intent: *id068
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-02-18' AND '2025-02-23'
+  expected_result: *id069
+  expected_results_by_world: *id070
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_17_ask
+  question: How many distinct active users did Cosmetics have from 2025-02-18 through 2025-02-23?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_18_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_18
+  state: &id072
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: &id071
+    - '2018-02-21'
+    - '2018-02-27'
+    filters: []
+    breakdown: null
+  oracle_intent: &id073
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: *id071
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-21' AND '2018-02-27'
+  expected_result: &id074
+    columns:
+    - buyers
+    rows:
+    - - 2
+  expected_results_by_world: &id075
+    base:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - ambiguous_metric
+  - olist_marketplace
+  phenomenon: ambiguous_metric
+  question: Có bao nhiêu khách hàng của Olist từ ngày 2018-02-21 đến ngày 2018-02-27?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - buyers
+- id: interaction_18_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_18
+  state: *id072
+  oracle_intent: *id073
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-21' AND '2018-02-27'
+  expected_result: *id074
+  expected_results_by_world: *id075
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_18_ask
+  question: Có bao nhiêu người mua duy nhất của Olist từ ngày 2018-02-21 đến ngày 2018-02-27?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_19_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_19
+  state: &id077
+    source_id: cosmetics_shop
+    metric: users
+    time_range: &id076
+    - '2025-02-24'
+    - '2025-02-28'
+    filters: []
+    breakdown: null
+  oracle_intent: &id078
+    source_id: cosmetics_shop
+    metric: users
+    time_range: *id076
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-02-24' AND '2025-02-28'
+  expected_result: &id079
+    columns:
+    - users
+    rows:
+    - - 3
+  expected_results_by_world: &id080
+    base:
+      columns:
+      - users
+      rows:
+      - - 3
+    grain_counterexample:
+      columns:
+      - users
+      rows:
+      - - 3
+    coverage_edge:
+      columns:
+      - users
+      rows:
+      - - 3
+  tags:
+  - clarification
+  - ambiguous_metric
+  - cosmetics_shop
+  phenomenon: ambiguous_metric
+  question: Có bao nhiêu khách hàng của Cosmetics Shop từ ngày 2025-02-24 đến ngày 2025-02-28?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - users
+- id: interaction_19_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_19
+  state: *id077
+  oracle_intent: *id078
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-02-24' AND '2025-02-28'
+  expected_result: *id079
+  expected_results_by_world: *id080
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_19_ask
+  question: Có bao nhiêu người dùng duy nhất của Cosmetics Shop từ ngày 2025-02-24 đến ngày 2025-02-28?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_20_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_20
+  state: &id082
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: &id081
+    - '2018-01-02'
+    - '2018-01-07'
+    filters: []
+    breakdown: null
+  oracle_intent: &id083
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: *id081
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-02' AND '2018-01-07'
+  expected_result: &id084
+    columns:
+    - buyers
+    rows:
+    - - 2
+  expected_results_by_world: &id085
+    base:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - ambiguous_metric
+  - olist_marketplace
+  phenomenon: ambiguous_metric
+  question: How many customers did Olist have from 2018-01-02 through 2018-01-07?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - buyers
+- id: interaction_20_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_20
+  state: *id082
+  oracle_intent: *id083
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-02' AND '2018-01-07'
+  expected_result: *id084
+  expected_results_by_world: *id085
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_20_ask
+  question: How many distinct purchasing customers did Olist have from 2018-01-02 through 2018-01-07?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_21_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_21
+  state: &id087
+    source_id: cosmetics_shop
+    metric: users
+    time_range: &id086
+    - '2025-03-02'
+    - '2025-03-08'
+    filters: []
+    breakdown: null
+  oracle_intent: &id088
+    source_id: cosmetics_shop
+    metric: users
+    time_range: *id086
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-03-02' AND '2025-03-08'
+  expected_result: &id089
+    columns:
+    - users
+    rows:
+    - - 5
+  expected_results_by_world: &id090
+    base:
+      columns:
+      - users
+      rows:
+      - - 5
+    grain_counterexample:
+      columns:
+      - users
+      rows:
+      - - 5
+    coverage_edge:
+      columns:
+      - users
+      rows:
+      - - 5
+  tags:
+  - clarification
+  - ambiguous_metric
+  - cosmetics_shop
+  phenomenon: ambiguous_metric
+  question: How many customers did Cosmetics have from 2025-03-02 through 2025-03-08?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - users
+- id: interaction_21_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_21
+  state: *id087
+  oracle_intent: *id088
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-03-02' AND '2025-03-08'
+  expected_result: *id089
+  expected_results_by_world: *id090
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_21_ask
+  question: How many distinct active users did Cosmetics have from 2025-03-02 through 2025-03-08?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_22_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_22
+  state: &id092
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: &id091
+    - '2018-01-08'
+    - '2018-01-12'
+    filters: []
+    breakdown: null
+  oracle_intent: &id093
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: *id091
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-08' AND '2018-01-12'
+  expected_result: &id094
+    columns:
+    - buyers
+    rows:
+    - - 1
+  expected_results_by_world: &id095
+    base:
+      columns:
+      - buyers
+      rows:
+      - - 1
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 1
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 1
+  tags:
+  - clarification
+  - ambiguous_metric
+  - olist_marketplace
+  phenomenon: ambiguous_metric
+  question: Có bao nhiêu khách hàng của Olist từ ngày 2018-01-08 đến ngày 2018-01-12?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - buyers
+- id: interaction_22_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_22
+  state: *id092
+  oracle_intent: *id093
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-08' AND '2018-01-12'
+  expected_result: *id094
+  expected_results_by_world: *id095
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_22_ask
+  question: Có bao nhiêu người mua duy nhất của Olist từ ngày 2018-01-08 đến ngày 2018-01-12?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_23_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_23
+  state: &id097
+    source_id: cosmetics_shop
+    metric: users
+    time_range: &id096
+    - '2025-01-04'
+    - '2025-01-09'
+    filters: []
+    breakdown: null
+  oracle_intent: &id098
+    source_id: cosmetics_shop
+    metric: users
+    time_range: *id096
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-01-04' AND '2025-01-09'
+  expected_result: &id099
+    columns:
+    - users
+    rows:
+    - - 6
+  expected_results_by_world: &id100
+    base:
+      columns:
+      - users
+      rows:
+      - - 6
+    grain_counterexample:
+      columns:
+      - users
+      rows:
+      - - 6
+    coverage_edge:
+      columns:
+      - users
+      rows:
+      - - 6
+  tags:
+  - clarification
+  - ambiguous_metric
+  - cosmetics_shop
+  phenomenon: ambiguous_metric
+  question: Có bao nhiêu khách hàng của Cosmetics Shop từ ngày 2025-01-04 đến ngày 2025-01-09?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - users
+- id: interaction_23_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_23
+  state: *id097
+  oracle_intent: *id098
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-01-04' AND '2025-01-09'
+  expected_result: *id099
+  expected_results_by_world: *id100
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_23_ask
+  question: Có bao nhiêu người dùng duy nhất của Cosmetics Shop từ ngày 2025-01-04 đến ngày 2025-01-09?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_24_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_24
+  state: &id102
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: &id101
+    - '2018-01-14'
+    - '2018-01-20'
+    filters: []
+    breakdown: null
+  oracle_intent: &id103
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: *id101
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-14' AND '2018-01-20'
+  expected_result: &id104
+    columns:
+    - buyers
+    rows:
+    - - 2
+  expected_results_by_world: &id105
+    base:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - ambiguous_metric
+  - olist_marketplace
+  phenomenon: ambiguous_metric
+  question: How many customers did Olist have from 2018-01-14 through 2018-01-20?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - buyers
+- id: interaction_24_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_24
+  state: *id102
+  oracle_intent: *id103
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-14' AND '2018-01-20'
+  expected_result: *id104
+  expected_results_by_world: *id105
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_24_ask
+  question: How many distinct purchasing customers did Olist have from 2018-01-14 through 2018-01-20?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_25_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_25
+  state: &id107
+    source_id: cosmetics_shop
+    metric: users
+    time_range: &id106
+    - '2025-01-10'
+    - '2025-01-14'
+    filters: []
+    breakdown: null
+  oracle_intent: &id108
+    source_id: cosmetics_shop
+    metric: users
+    time_range: *id106
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-01-10' AND '2025-01-14'
+  expected_result: &id109
+    columns:
+    - users
+    rows:
+    - - 5
+  expected_results_by_world: &id110
+    base:
+      columns:
+      - users
+      rows:
+      - - 5
+    grain_counterexample:
+      columns:
+      - users
+      rows:
+      - - 5
+    coverage_edge:
+      columns:
+      - users
+      rows:
+      - - 5
+  tags:
+  - clarification
+  - ambiguous_metric
+  - cosmetics_shop
+  phenomenon: ambiguous_metric
+  question: How many customers did Cosmetics have from 2025-01-10 through 2025-01-14?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - users
+- id: interaction_25_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_25
+  state: *id107
+  oracle_intent: *id108
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-01-10' AND '2025-01-14'
+  expected_result: *id109
+  expected_results_by_world: *id110
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_25_ask
+  question: How many distinct active users did Cosmetics have from 2025-01-10 through 2025-01-14?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_26_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_26
+  state: &id112
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: &id111
+    - '2018-01-20'
+    - '2018-01-25'
+    filters: []
+    breakdown: null
+  oracle_intent: &id113
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: *id111
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-20' AND '2018-01-25'
+  expected_result: &id114
+    columns:
+    - buyers
+    rows:
+    - - 2
+  expected_results_by_world: &id115
+    base:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - ambiguous_metric
+  - olist_marketplace
+  phenomenon: ambiguous_metric
+  question: Có bao nhiêu khách hàng của Olist từ ngày 2018-01-20 đến ngày 2018-01-25?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - buyers
+- id: interaction_26_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_26
+  state: *id112
+  oracle_intent: *id113
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-20' AND '2018-01-25'
+  expected_result: *id114
+  expected_results_by_world: *id115
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_26_ask
+  question: Có bao nhiêu người mua duy nhất của Olist từ ngày 2018-01-20 đến ngày 2018-01-25?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_27_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_27
+  state: &id117
+    source_id: cosmetics_shop
+    metric: users
+    time_range: &id116
+    - '2025-01-16'
+    - '2025-01-22'
+    filters: []
+    breakdown: null
+  oracle_intent: &id118
+    source_id: cosmetics_shop
+    metric: users
+    time_range: *id116
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-01-16' AND '2025-01-22'
+  expected_result: &id119
+    columns:
+    - users
+    rows:
+    - - 6
+  expected_results_by_world: &id120
+    base:
+      columns:
+      - users
+      rows:
+      - - 6
+    grain_counterexample:
+      columns:
+      - users
+      rows:
+      - - 6
+    coverage_edge:
+      columns:
+      - users
+      rows:
+      - - 6
+  tags:
+  - clarification
+  - ambiguous_metric
+  - cosmetics_shop
+  phenomenon: ambiguous_metric
+  question: Có bao nhiêu khách hàng của Cosmetics Shop từ ngày 2025-01-16 đến ngày 2025-01-22?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - users
+- id: interaction_27_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_27
+  state: *id117
+  oracle_intent: *id118
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-01-16' AND '2025-01-22'
+  expected_result: *id119
+  expected_results_by_world: *id120
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_27_ask
+  question: Có bao nhiêu người dùng duy nhất của Cosmetics Shop từ ngày 2025-01-16 đến ngày 2025-01-22?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_28_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_28
+  state: &id122
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: &id121
+    - '2018-01-26'
+    - '2018-01-30'
+    filters: []
+    breakdown: null
+  oracle_intent: &id123
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: *id121
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-26' AND '2018-01-30'
+  expected_result: &id124
+    columns:
+    - buyers
+    rows:
+    - - 2
+  expected_results_by_world: &id125
+    base:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - ambiguous_metric
+  - olist_marketplace
+  phenomenon: ambiguous_metric
+  question: How many customers did Olist have from 2018-01-26 through 2018-01-30?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - buyers
+- id: interaction_28_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_28
+  state: *id122
+  oracle_intent: *id123
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-26' AND '2018-01-30'
+  expected_result: *id124
+  expected_results_by_world: *id125
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_28_ask
+  question: How many distinct purchasing customers did Olist have from 2018-01-26 through 2018-01-30?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_29_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_29
+  state: &id127
+    source_id: cosmetics_shop
+    metric: users
+    time_range: &id126
+    - '2025-01-22'
+    - '2025-01-27'
+    filters: []
+    breakdown: null
+  oracle_intent: &id128
+    source_id: cosmetics_shop
+    metric: users
+    time_range: *id126
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-01-22' AND '2025-01-27'
+  expected_result: &id129
+    columns:
+    - users
+    rows:
+    - - 6
+  expected_results_by_world: &id130
+    base:
+      columns:
+      - users
+      rows:
+      - - 6
+    grain_counterexample:
+      columns:
+      - users
+      rows:
+      - - 6
+    coverage_edge:
+      columns:
+      - users
+      rows:
+      - - 6
+  tags:
+  - clarification
+  - ambiguous_metric
+  - cosmetics_shop
+  phenomenon: ambiguous_metric
+  question: How many customers did Cosmetics have from 2025-01-22 through 2025-01-27?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - users
+- id: interaction_29_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_29
+  state: *id127
+  oracle_intent: *id128
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+    AND event_date BETWEEN '2025-01-22' AND '2025-01-27'
+  expected_result: *id129
+  expected_results_by_world: *id130
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_29_ask
+  question: How many distinct active users did Cosmetics have from 2025-01-22 through 2025-01-27?
+  ask_fields: []
+  oracle_answers: {}
+- id: interaction_30_ask
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_30
+  state: &id132
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: &id131
+    - '2018-02-01'
+    - '2018-02-07'
+    filters: []
+    breakdown: null
+  oracle_intent: &id133
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: *id131
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-01' AND '2018-02-07'
+  expected_result: &id134
+    columns:
+    - buyers
+    rows:
+    - - 2
+  expected_results_by_world: &id135
+    base:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - ambiguous_metric
+  - olist_marketplace
+  phenomenon: ambiguous_metric
+  question: Có bao nhiêu khách hàng của Olist từ ngày 2018-02-01 đến ngày 2018-02-07?
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - buyers
+- id: interaction_30_control
+  split: test
+  family: test_ambiguous_metric
+  cluster_id: interaction_30
+  state: *id132
+  oracle_intent: *id133
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-01' AND '2018-02-07'
+  expected_result: *id134
+  expected_results_by_world: *id135
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_30_ask
+  question: Có bao nhiêu người mua duy nhất của Olist từ ngày 2018-02-01 đến ngày 2018-02-07?
+  ask_fields: []
+  oracle_answers: {}

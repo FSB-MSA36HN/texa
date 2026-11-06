@@ -1,0 +1,440 @@
+- id: unsupported_01
+  split: test
+  family: test_order_count
+  phenomenon: order_count
+  question: How many distinct orders were placed on Olist?
+  expected_action: refuse
+  expected_reason: Order-level count is outside the event metric catalog.
+  action: refuse
+  tags:
+  - out_of_scope
+  - order_count
+- id: unsupported_02
+  split: test
+  family: test_refunds
+  phenomenon: refunds
+  question: What is the total refund amount for Olist?
+  expected_action: refuse
+  expected_reason: Refund amount is not a supported metric.
+  action: refuse
+  tags:
+  - out_of_scope
+  - refunds
+- id: unsupported_03
+  split: test
+  family: test_profit
+  phenomenon: profit
+  question: Calculate profit margin for Cosmetics last quarter.
+  expected_action: refuse
+  expected_reason: Profit and margin are not supported metrics.
+  action: refuse
+  tags:
+  - out_of_scope
+  - profit
+- id: unsupported_04
+  split: test
+  family: test_retention
+  phenomenon: retention
+  question: What was 30-day customer retention for Cosmetics?
+  expected_action: refuse
+  expected_reason: Cohort retention is outside the supported scope.
+  action: refuse
+  tags:
+  - out_of_scope
+  - retention
+- id: unsupported_05
+  split: test
+  family: test_inventory
+  phenomenon: inventory
+  question: How many units of each product are in stock?
+  expected_action: refuse
+  expected_reason: Inventory is not represented by the event dataset.
+  action: refuse
+  tags:
+  - out_of_scope
+  - inventory
+- id: unsupported_06
+  split: test
+  family: test_attribution
+  phenomenon: attribution
+  question: Attribute each purchase to its first marketing touch.
+  expected_action: refuse
+  expected_reason: Multi-touch attribution is not supported.
+  action: refuse
+  tags:
+  - out_of_scope
+  - attribution
+- id: unsupported_07
+  split: test
+  family: test_olist_sessions
+  phenomenon: olist_sessions
+  question: How many sessions did Olist have in January 2018?
+  expected_action: refuse
+  expected_reason: Olist session tracking is unavailable.
+  action: refuse
+  tags:
+  - out_of_scope
+  - olist_sessions
+- id: unsupported_08
+  split: test
+  family: test_olist_viewers
+  phenomenon: olist_viewers
+  question: How many Olist product viewers were there?
+  expected_action: refuse
+  expected_reason: Olist viewer events are unavailable.
+  action: refuse
+  tags:
+  - out_of_scope
+  - olist_viewers
+- id: unsupported_09
+  split: test
+  family: test_cross_currency
+  phenomenon: cross_currency
+  question: Compare Cosmetics USD revenue directly with Olist BRL revenue as one total.
+  expected_action: refuse
+  expected_reason: Cross-source currency aggregation is unsupported.
+  action: refuse
+  tags:
+  - out_of_scope
+  - cross_currency
+- id: unsupported_10
+  split: test
+  family: test_array_unnest
+  phenomenon: array_unnest
+  question: Break Cosmetics sales down by every value in its event tags array.
+  expected_action: refuse
+  expected_reason: Arbitrary nested-array expansion is unsupported.
+  action: refuse
+  tags:
+  - out_of_scope
+  - array_unnest
+- id: unsupported_11
+  split: test
+  family: test_join_customers
+  phenomenon: join_customers
+  question: Join these events to our CRM and show customer lifetime value.
+  expected_action: refuse
+  expected_reason: External CRM joins and lifetime value are outside scope.
+  action: refuse
+  tags:
+  - out_of_scope
+  - join_customers
+- id: unsupported_12
+  split: test
+  family: test_forecast
+  phenomenon: forecast
+  question: Forecast next month's revenue from this history.
+  expected_action: refuse
+  expected_reason: Forecasting is not supported by the query system.
+  action: refuse
+  tags:
+  - out_of_scope
+  - forecast
+- id: unsupported_13
+  split: test
+  family: test_causal
+  phenomenon: causal
+  question: Did the campaign cause the revenue increase?
+  expected_action: refuse
+  expected_reason: Causal inference is outside the supported analytics.
+  action: refuse
+  tags:
+  - out_of_scope
+  - causal
+- id: unsupported_14
+  split: test
+  family: test_currency_conversion
+  phenomenon: currency_conversion
+  question: Convert all Olist revenue to USD using historical exchange rates.
+  expected_action: refuse
+  expected_reason: External exchange-rate conversion is unavailable.
+  action: refuse
+  tags:
+  - out_of_scope
+  - currency_conversion
+- id: unsupported_15
+  split: test
+  family: test_payment_dedupe
+  phenomenon: payment_dedupe
+  question: Deduplicate Olist payment attempts and report settled payment volume.
+  expected_action: refuse
+  expected_reason: Payment reconciliation/deduplication is unsupported.
+  action: refuse
+  tags:
+  - out_of_scope
+  - payment_dedupe
+- id: unsupported_16
+  split: test
+  family: test_order_fulfillment
+  phenomenon: order_fulfillment
+  question: What is the average delivery time for Olist orders?
+  expected_action: refuse
+  expected_reason: Delivery lifecycle events are not in the benchmark schema.
+  action: refuse
+  tags:
+  - out_of_scope
+  - order_fulfillment
+- id: unsupported_17
+  split: test
+  family: test_product_dimensions
+  phenomenon: product_dimensions
+  question: Show revenue by supplier and warehouse region.
+  expected_action: refuse
+  expected_reason: Supplier and warehouse dimensions are unavailable.
+  action: refuse
+  tags:
+  - out_of_scope
+  - product_dimensions
+- id: unsupported_18
+  split: test
+  family: test_arbitrary_sql
+  phenomenon: arbitrary_sql
+  question: 'Run this SQL: DROP TABLE analytics.event_activity;'
+  expected_action: refuse
+  expected_reason: The request is not a supported analytics question.
+  action: refuse
+  tags:
+  - out_of_scope
+  - arbitrary_sql
+- id: unsupported_19
+  split: test
+  family: test_brand_dimension
+  phenomenon: brand_dimension
+  question: Break Cosmetics purchases down by manufacturer brand.
+  expected_action: refuse
+  expected_reason: Manufacturer brand is not an available dimension.
+  action: refuse
+  tags:
+  - out_of_scope
+  - brand_dimension
+- id: unsupported_20
+  split: test
+  family: test_customer_ltv
+  phenomenon: customer_ltv
+  question: Calculate lifetime value for each Olist customer.
+  expected_action: refuse
+  expected_reason: Customer lifetime value is not a supported metric.
+  action: refuse
+  tags:
+  - out_of_scope
+  - customer_ltv
+- id: unsupported_21
+  split: test
+  family: test_daily_active_users
+  phenomenon: daily_active_users
+  question: Compute daily active users using a rolling 30-day definition.
+  expected_action: refuse
+  expected_reason: Rolling active-user windows are not a supported metric.
+  action: refuse
+  tags:
+  - out_of_scope
+  - daily_active_users
+- id: unsupported_22
+  split: test
+  family: test_basket_size
+  phenomenon: basket_size
+  question: What is the average number of products per Olist basket?
+  expected_action: refuse
+  expected_reason: Basket/order-level aggregation is unsupported.
+  action: refuse
+  tags:
+  - out_of_scope
+  - basket_size
+- id: unsupported_23
+  split: test
+  family: test_delivery_sla
+  phenomenon: delivery_sla
+  question: What percentage of Olist orders arrived within two days?
+  expected_action: refuse
+  expected_reason: Delivery outcomes are not represented in this dataset.
+  action: refuse
+  tags:
+  - out_of_scope
+  - delivery_sla
+- id: unsupported_24
+  split: test
+  family: test_repeat_purchase
+  phenomenon: repeat_purchase
+  question: What percentage of Cosmetics buyers made a second purchase?
+  expected_action: refuse
+  expected_reason: Repeat-purchase cohort analysis is unsupported.
+  action: refuse
+  tags:
+  - out_of_scope
+  - repeat_purchase
+- id: unsupported_25
+  split: test
+  family: test_price_elasticity
+  phenomenon: price_elasticity
+  question: Estimate price elasticity for each Cosmetics category.
+  expected_action: refuse
+  expected_reason: Price elasticity requires unsupported causal/statistical analysis.
+  action: refuse
+  tags:
+  - out_of_scope
+  - price_elasticity
+- id: unsupported_26
+  split: test
+  family: test_sentiment
+  phenomenon: sentiment
+  question: Summarize customer sentiment from product reviews.
+  expected_action: refuse
+  expected_reason: Review text and sentiment are outside the event schema.
+  action: refuse
+  tags:
+  - out_of_scope
+  - sentiment
+- id: unsupported_27
+  split: test
+  family: test_geography
+  phenomenon: geography
+  question: Show Olist revenue by customer state and city.
+  expected_action: refuse
+  expected_reason: Customer geography is unavailable in the supported schema.
+  action: refuse
+  tags:
+  - out_of_scope
+  - geography
+- id: unsupported_28
+  split: test
+  family: test_stockout
+  phenomenon: stockout
+  question: Which Cosmetics products were out of stock last week?
+  expected_action: refuse
+  expected_reason: Inventory and stockout data are unavailable.
+  action: refuse
+  tags:
+  - out_of_scope
+  - stockout
+- id: unsupported_29
+  split: test
+  family: test_subscription_churn
+  phenomenon: subscription_churn
+  question: How many subscribers churned in the last quarter?
+  expected_action: refuse
+  expected_reason: Subscription and churn events are unsupported.
+  action: refuse
+  tags:
+  - out_of_scope
+  - subscription_churn
+- id: unsupported_30
+  split: test
+  family: test_ad_spend
+  phenomenon: ad_spend
+  question: Compare campaign spend with attributed revenue by channel.
+  expected_action: refuse
+  expected_reason: Ad spend is not in the event data and attribution is unsupported.
+  action: refuse
+  tags:
+  - out_of_scope
+  - ad_spend
+- id: unsupported_31
+  split: test
+  family: test_order_status
+  phenomenon: order_status
+  question: How many Olist orders were canceled before fulfillment?
+  expected_action: refuse
+  expected_reason: Canceled-order lifecycle events are outside this dataset.
+  action: refuse
+  tags:
+  - out_of_scope
+  - order_status
+- id: unsupported_32
+  split: test
+  family: test_distinct_orders
+  phenomenon: distinct_orders
+  question: Count Olist orders rather than purchased item rows.
+  expected_action: refuse
+  expected_reason: Order identifiers and order-grain count are outside the supported metric contract.
+  action: refuse
+  tags:
+  - out_of_scope
+  - distinct_orders
+- id: unsupported_33
+  split: test
+  family: test_payment_reconciliation
+  phenomenon: payment_reconciliation
+  question: Reconcile duplicate payment attempts and report net settled sales.
+  expected_action: refuse
+  expected_reason: Payment reconciliation and deduplication are unsupported.
+  action: refuse
+  tags:
+  - out_of_scope
+  - payment_reconciliation
+- id: unsupported_34
+  split: test
+  family: test_exchange_rate
+  phenomenon: exchange_rate
+  question: Convert each Olist purchase to USD using the exchange rate on that date.
+  expected_action: refuse
+  expected_reason: External historical exchange-rate data is unavailable.
+  action: refuse
+  tags:
+  - out_of_scope
+  - exchange_rate
+- id: unsupported_35
+  split: test
+  family: test_cross_source_ratio
+  phenomenon: cross_source_ratio
+  question: What is Olist revenue divided by Cosmetics revenue for the same dates?
+  expected_action: refuse
+  expected_reason: Cross-source calculations are unsupported.
+  action: refuse
+  tags:
+  - out_of_scope
+  - cross_source_ratio
+- id: unsupported_36
+  split: test
+  family: test_array_dimension
+  phenomenon: array_dimension
+  question: Group event counts by each element in the product tags array.
+  expected_action: refuse
+  expected_reason: Arbitrary nested-array expansion is unsupported.
+  action: refuse
+  tags:
+  - out_of_scope
+  - array_dimension
+- id: unsupported_37
+  split: test
+  family: test_custom_join
+  phenomenon: custom_join
+  question: Join event data to our internal loyalty database and count VIP buyers.
+  expected_action: refuse
+  expected_reason: External data joins and VIP attributes are unavailable.
+  action: refuse
+  tags:
+  - out_of_scope
+  - custom_join
+- id: unsupported_38
+  split: test
+  family: test_forecast_seasonal
+  phenomenon: forecast_seasonal
+  question: Forecast revenue for the next six months including seasonality.
+  expected_action: refuse
+  expected_reason: Forecasting is outside the supported query scope.
+  action: refuse
+  tags:
+  - out_of_scope
+  - forecast_seasonal
+- id: unsupported_39
+  split: test
+  family: test_causal_lift
+  phenomenon: causal_lift
+  question: Estimate the causal lift of paid campaigns on purchases.
+  expected_action: refuse
+  expected_reason: Causal inference is unsupported.
+  action: refuse
+  tags:
+  - out_of_scope
+  - causal_lift
+- id: unsupported_40
+  split: test
+  family: test_market_basket
+  phenomenon: market_basket
+  question: Which product pairs are most often bought together?
+  expected_action: refuse
+  expected_reason: Market-basket analysis is unsupported.
+  action: refuse
+  tags:
+  - out_of_scope
+  - market_basket
