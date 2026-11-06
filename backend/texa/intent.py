@@ -81,7 +81,8 @@ def has_source_conflict(scope: list[str] | None, requested: list[str], textual: 
     )
 
 
-def mismatch(candidate: dict, cat, *, spec: dict | None = None, allow_continuation: bool = False) -> str | None:
+def mismatch(candidate: dict, cat, *, spec: dict | None = None, allow_continuation: bool = False,
+             inherited_spec: dict | None = None) -> str | None:
     """Return a stable diagnostic code if requested intent and proposal disagree."""
     contract = candidate.get("intent_contract")
     # Direct unit callers and historical persisted candidates predate the contract.
@@ -100,6 +101,49 @@ def mismatch(candidate: dict, cat, *, spec: dict | None = None, allow_continuati
     if kind == "continuation":
         if not allow_continuation:
             return "unbound_continuation"
+        # Structured memory reduction owns inherited values. A continuation may
+        # change dimensions or filters, but changing the measure is a new metric
+        # assertion and must use catalog_metric (or an explicit unsupported kind).
+        # Historical M6 candidates have no structured slot operations; preserve
+        # their existing bounded-window behavior.
+        slots = ((candidate.get("dialogue") or {}).get("slots")
+                 if isinstance(candidate.get("dialogue"), dict) else None)
+        if not isinstance(slots, dict):
+            return None
+        actual_metrics = candidate_metric_ids(spec) if spec else candidate_metric_ids(candidate)
+        if inherited_spec:
+            # Compare effective meaning, not edit syntax: clearing an already
+            # empty metrics slot while keeping recipe is a valid no-op.
+            if set(actual_metrics) != set(candidate_metric_ids(inherited_spec)):
+                return "continuation_metric_not_inherited"
+        elif slots.get("recipe") != "keep" or slots.get("metrics") != "keep":
+            return "continuation_metric_not_inherited"
+        asserted_metrics = contract.get("metric_ids") or []
+        if asserted_metrics and set(asserted_metrics) != set(actual_metrics):
+            return "continuation_metric_ids_mismatch"
+        if contract.get("operation") and contract["operation"] != metric_operation(cat, actual_metrics):
+            return "continuation_operation_mismatch"
+        if contract.get("grain") and contract["grain"] != metric_grain(cat, actual_metrics):
+            return "continuation_grain_mismatch"
+
+        actual_source = (spec or {}).get("source_ids") if spec else candidate.get("source_ids", [])
+        actual_breakdowns = (spec or {}).get("selection", []) if spec else candidate.get("selection", [])
+        actual_filters = (set(f.get("field") for f in (spec or {}).get("filters", []) if f.get("field"))
+                          if spec else set(candidate_filter_ids(candidate)))
+        asserted = (
+            ("source_ids", "source_ids", actual_source or []),
+            ("breakdown_ids", "selection", actual_breakdowns or []),
+            ("filter_ids", "filters", actual_filters),
+        )
+        for contract_key, slot_key, actual in asserted:
+            requested = contract.get(contract_key) or []
+            operation = slots.get(slot_key)
+            # On keep, an empty assertion means the slot is inherited and the
+            # server reducer is authoritative. A nonempty assertion is checked.
+            # On set/clear, even an empty assertion must match the reduced slot.
+            if operation in {"set", "clear"} or requested:
+                if set(requested) != set(actual):
+                    return f"continuation_{contract_key}_mismatch"
         return None
     if kind == "dimension_query":
         if candidate.get("outcome") != "query" or candidate.get("shape") != "distinct_values":

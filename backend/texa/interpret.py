@@ -1,16 +1,33 @@
 """Context preparation (whole catalog or a shortlist) and the 'understand the question' model call."""
 import json
+from copy import deepcopy
 import os
 import re
 import unicodedata
 
-from . import db, llm, memory, examples, consistency
+from . import db, llm, memory, examples, consistency, intent
 from .catalog import Catalog, Source, coverage, mentioned_sources
 from .prompts import CANDIDATE_SCHEMA, INTERPRET_INSTRUCTION, SELECT_INSTRUCTION, SELECT_SCHEMA, DIALOGUE_INSTRUCTION, structured_candidate_schema
 from .progress import Progress
 
 ALWAYS_INCLUDED_DIMS = {"source", "event_name"}
 SHORTLIST_MAX = 80
+
+
+def candidate_schema(cat: Catalog, *, structured: bool) -> dict:
+    """Constrain semantic identifiers to the current governed catalog.
+
+    Grain is an identifier, not prose to be string-compared after generation.
+    Uncatalogued requested entities can still be described in the entity field.
+    Copy the schema so one catalog cannot mutate another request's constraints.
+    """
+    schema = structured_candidate_schema() if structured else deepcopy(CANDIDATE_SCHEMA)
+    contract = schema["properties"]["intent_contract"]["properties"]
+    contract["grain"]["enum"] = sorted({"", "multiple", "unspecified", "uncatalogued"} |
+                                         {m.intent_grain for m in cat.metrics if m.intent_grain})
+    contract["operation"]["enum"] = sorted({"", "multiple", "uncatalogued", "presentation_arithmetic"} |
+                                             {intent.metric_operation(cat, [m.id]) for m in cat.metrics})
+    return schema
 
 
 def estimate_tokens(text: str) -> int:
@@ -154,7 +171,7 @@ def interpret(question: str, previous: list[dict], cat: Catalog, sources: dict[s
         s.note(f"~{estimate_tokens(catalog_text):,} tokens of catalog")
     structured = bool(context and context.get("structured_memory"))
     instruction = INTERPRET_INSTRUCTION + (DIALOGUE_INSTRUCTION if structured else "")
-    schema = structured_candidate_schema() if structured else CANDIDATE_SCHEMA
+    schema = candidate_schema(cat, structured=structured)
     if structured and context.get("forced_reference"):
         schema["properties"]["dialogue"]["properties"]["relation"]["enum"] = ["followup"]
         schema["properties"]["dialogue"]["properties"]["target_id"]["enum"] = [context["forced_reference"]]

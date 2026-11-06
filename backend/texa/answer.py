@@ -326,6 +326,7 @@ def _continue_checked(turn: dict, candidate: dict, answers: dict, progress: Prog
         return {"status": "refused", "message": out.message, "suggestions": suggestions.questions(cat, sources, scope, lang), "candidate": candidate,
                 "answers": answers, "language": lang, "ablation": trace}
     contract_error = intent.mismatch(candidate, cat, spec=out.spec,
+                                     inherited_spec=turn.get("state", {}).get("context", {}).get("inherited_slots"),
                                      allow_continuation=bool(turn.get("state", {}).get("context", {}).get("references")) or
                                      (turn.get("state", {}).get("context", {}).get("relation") == "window6" and
                                       bool(turn.get("state", {}).get("context", {}).get("questions"))))
@@ -504,7 +505,8 @@ def _question_work(turn_id: str, reference_id: str | None = None):
                 return {"kind": outcome}
             has_memory_target = bool(resolved.get("references")) or (
                 context.get("relation") == "window6" and bool(context.get("questions")))
-            contract_error = intent.mismatch(proposal, cat, allow_continuation=has_memory_target)
+            contract_error = intent.mismatch(proposal, cat, allow_continuation=has_memory_target,
+                                             inherited_spec=resolved.get("inherited_slots"))
             if contract_error:
                 return {"kind": "intent_mismatch", "reason": contract_error}
             named = proposal.get("source_ids") or []
@@ -519,7 +521,8 @@ def _question_work(turn_id: str, reference_id: str | None = None):
             spec = validate_spec(out.spec | {"contract_version": cat.contract_version}, cat, sources)
             check_availability(spec, cat, sources)
             contract_error = intent.mismatch(proposal, cat, spec=spec.model_dump(mode="json"),
-                                             allow_continuation=bool(resolved.get("references")))
+                                             allow_continuation=bool(resolved.get("references")),
+                                             inherited_spec=resolved.get("inherited_slots"))
             if contract_error:
                 return {"kind": "intent_mismatch", "reason": contract_error}
             bundle = {"kind": "spec", "spec": spec.model_dump(mode="json"),

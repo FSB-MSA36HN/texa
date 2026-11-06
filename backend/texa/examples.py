@@ -16,7 +16,7 @@ import yaml
 
 
 DEFAULT_BANK_PATH = Path(__file__).resolve().parents[2] / "catalog" / "verified_examples.yaml"
-CONTRACT_VERSION = 2
+CONTRACT_VERSION = 3
 MAX_EXAMPLES = 3
 DEFAULT_TOKEN_BUDGET = 600
 HARD_UTF8_BYTE_CAP = 1200

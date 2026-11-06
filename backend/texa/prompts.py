@@ -40,7 +40,10 @@ means the requested measure or grain is not defined. `continuation` is an ellipt
 inherited. `ambiguous_metric` means one of the declared `recipe_alternatives` is needed; list exactly those ids and
 wait for the user to select before querying. `presentation_arithmetic` is arithmetic over already requested catalog metrics or a number supplied by
 the user; identify the underlying catalog metric ids and do not change their grain. It does not authorize a new
-data measure such as an average per order. `dimension_query` is a request to list values of a declared dimension
+data measure such as an average per order. Grain must be an exact catalog identifier allowed by the schema;
+it describes the measured entity, independently of the metric's numeric unit. For an undefined requested grain,
+use `uncatalogued` and describe the requested entity in `entity`. Operation also uses the exact catalog identifier;
+use `uncatalogued` for an undefined operation. `dimension_query` is a request to list values of a declared dimension
 without a metric. `non_metric` is conversation or explanation without a new measure. Record requested source, breakdown,
 and filter dimension ids independently. Never list component metrics as the requested measure when the user asks
 for a new measure such as an average or ratio. The server checks this assertion against the executable proposal and

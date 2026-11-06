@@ -1,5 +1,5 @@
 # Product analytics scope. Legacy catalog remains ecommerce.yaml.
-version: 2
+version: 3
 table: analytics.event_activity
 allowed_sources:
 - cosmetics_shop
@@ -250,7 +250,7 @@ metrics:
     numerator: buyers
     denominator: users
 - id: revenue
-  intent_grain: purchased_item_line_value
+  intent_grain: purchased_item_line
   label: Revenue
   labels: {vi: Doanh thu}
   description: Sum of revenue on purchase item events, in the selected dataset currency;

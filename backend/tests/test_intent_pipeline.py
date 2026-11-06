@@ -55,7 +55,7 @@ def candidate(**updates):
               "dialogue": {"relation": "new_topic", "target_id": "",
                            "slots": {key: "set" for key in memory.SLOT_KEYS}},
               "intent_contract": {"kind": "catalog_metric", "metric_ids": ["revenue"],
-                  "operation": "sum", "entity": "", "grain": "purchased_item_line_value",
+                  "operation": "sum", "entity": "", "grain": "purchased_item_line",
                   "source_ids": ["cosmetics_shop"], "breakdown_ids": [], "filter_ids": []}}
     return result | updates
 
