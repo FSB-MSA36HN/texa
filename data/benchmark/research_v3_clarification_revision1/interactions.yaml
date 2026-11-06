@@ -1,0 +1,2197 @@
+- id: interaction_01_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_01
+  state: &id002
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id003
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range: all
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: &id001
+    columns:
+    - revenue
+    rows:
+    - - 420
+  expected_results_by_world: &id004
+    base: *id001
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 420
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 402
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: What was the revenue for Cosmetics?
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  source_id: cosmetics_shop
+  language: en
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_01_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_01
+  state: *id002
+  oracle_intent: *id003
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: *id001
+  expected_results_by_world: *id004
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_01_ask__base
+  question: What was the revenue for Cosmetics over all available dates.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: cosmetics_shop
+  language: en
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_02_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_02
+  state: &id006
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id007
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: last_7
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id005
+    columns:
+    - buyers
+    rows:
+    - - 1
+  expected_results_by_world: &id008
+    base: *id005
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 1
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 1
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: Cho tôi xem người mua duy nhất của Olist.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  source_id: olist_marketplace
+  language: vi
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_02_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_02
+  state: *id006
+  oracle_intent: *id007
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id005
+  expected_results_by_world: *id008
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_02_ask__base
+  question: Cho tôi xem người mua duy nhất của Olist trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: olist_marketplace
+  language: vi
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_03_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_03
+  state: &id010
+    source_id: cosmetics_shop
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id011
+    source_id: cosmetics_shop
+    metric: users
+    time_range: all
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: &id009
+    columns:
+    - users
+    rows:
+    - - 21
+  expected_results_by_world: &id012
+    base: *id009
+    grain_counterexample:
+      columns:
+      - users
+      rows:
+      - - 21
+    coverage_edge:
+      columns:
+      - users
+      rows:
+      - - 21
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: Cho tôi xem người dùng duy nhất của Cosmetics Shop.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_03_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_03
+  state: *id010
+  oracle_intent: *id011
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: *id009
+  expected_results_by_world: *id012
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_03_ask__base
+  question: Cho tôi xem người dùng duy nhất của Cosmetics Shop trong toàn bộ khoảng dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_04_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_04
+  state: &id014
+    source_id: olist_marketplace
+    metric: purchases
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id015
+    source_id: olist_marketplace
+    metric: purchases
+    time_range: last_7
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='order_purchased')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id013
+    columns:
+    - purchases
+    rows:
+    - - 2
+  expected_results_by_world: &id016
+    base: *id013
+    grain_counterexample:
+      columns:
+      - purchases
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - purchases
+      rows:
+      - - 1
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: How much purchase events did Olist have?
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  source_id: olist_marketplace
+  language: en
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_04_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_04
+  state: *id014
+  oracle_intent: *id015
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='order_purchased')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id013
+  expected_results_by_world: *id016
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_04_ask__base
+  question: How much purchase events did Olist have over the most recent 7 days.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: olist_marketplace
+  language: en
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_05_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_05
+  state: &id018
+    source_id: cosmetics_shop
+    metric: events
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id019
+    source_id: cosmetics_shop
+    metric: events
+    time_range: all
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: &id017
+    columns:
+    - events
+    rows:
+    - - 60
+  expected_results_by_world: &id020
+    base: *id017
+    grain_counterexample:
+      columns:
+      - events
+      rows:
+      - - 60
+    coverage_edge:
+      columns:
+      - events
+      rows:
+      - - 59
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: Can you summarize events for Cosmetics?
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  source_id: cosmetics_shop
+  language: en
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_05_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_05
+  state: *id018
+  oracle_intent: *id019
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: *id017
+  expected_results_by_world: *id020
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_05_ask__base
+  question: Can you summarize events for Cosmetics over all available dates.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: cosmetics_shop
+  language: en
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_06_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_06
+  state: &id022
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id023
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: last_7
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id021
+    columns:
+    - revenue
+    rows:
+    - - 35
+  expected_results_by_world: &id024
+    base: *id021
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 35
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 35
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: Cho tôi xem doanh thu của Olist.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  source_id: olist_marketplace
+  language: vi
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_06_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_06
+  state: *id022
+  oracle_intent: *id023
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id021
+  expected_results_by_world: *id024
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_06_ask__base
+  question: Cho tôi xem doanh thu của Olist trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: olist_marketplace
+  language: vi
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_07_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_07
+  state: &id026
+    source_id: cosmetics_shop
+    metric: buyers
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id027
+    source_id: cosmetics_shop
+    metric: buyers
+    time_range: all
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: &id025
+    columns:
+    - buyers
+    rows:
+    - - 9
+  expected_results_by_world: &id028
+    base: *id025
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 9
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 9
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: Cho tôi xem người mua duy nhất của Cosmetics Shop.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_07_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_07
+  state: *id026
+  oracle_intent: *id027
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='purchase')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: *id025
+  expected_results_by_world: *id028
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_07_ask__base
+  question: Cho tôi xem người mua duy nhất của Cosmetics Shop trong toàn bộ khoảng dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_08_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_08
+  state: &id030
+    source_id: olist_marketplace
+    metric: users
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id031
+    source_id: olist_marketplace
+    metric: users
+    time_range: last_7
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id029
+    columns:
+    - users
+    rows:
+    - - 2
+  expected_results_by_world: &id032
+    base: *id029
+    grain_counterexample:
+      columns:
+      - users
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - users
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: I need a distinct users report for Olist.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  source_id: olist_marketplace
+  language: en
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_08_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_08
+  state: *id030
+  oracle_intent: *id031
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id029
+  expected_results_by_world: *id032
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_08_ask__base
+  question: I need a distinct users report for Olist over the most recent 7 days.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: olist_marketplace
+  language: en
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_09_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_09
+  state: &id034
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id035
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: all
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: &id033
+    columns:
+    - purchases
+    rows:
+    - - 24
+  expected_results_by_world: &id036
+    base: *id033
+    grain_counterexample:
+      columns:
+      - purchases
+      rows:
+      - - 24
+    coverage_edge:
+      columns:
+      - purchases
+      rows:
+      - - 23
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: How much purchase events did Cosmetics have?
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  source_id: cosmetics_shop
+  language: en
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_09_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_09
+  state: *id034
+  oracle_intent: *id035
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: *id033
+  expected_results_by_world: *id036
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_09_ask__base
+  question: How much purchase events did Cosmetics have over all available dates.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: cosmetics_shop
+  language: en
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_10_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_10
+  state: &id038
+    source_id: olist_marketplace
+    metric: events
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id039
+    source_id: olist_marketplace
+    metric: events
+    time_range: last_7
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id037
+    columns:
+    - events
+    rows:
+    - - 4
+  expected_results_by_world: &id040
+    base: *id037
+    grain_counterexample:
+      columns:
+      - events
+      rows:
+      - - 4
+    coverage_edge:
+      columns:
+      - events
+      rows:
+      - - 3
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: Cho tôi xem lượt sự kiện của Olist.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  source_id: olist_marketplace
+  language: vi
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_10_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_10
+  state: *id038
+  oracle_intent: *id039
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='olist_marketplace'
+    AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id037
+  expected_results_by_world: *id040
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_10_ask__base
+  question: Cho tôi xem lượt sự kiện của Olist trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: olist_marketplace
+  language: vi
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_11_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_11
+  state: &id042
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id043
+    source_id: cosmetics_shop
+    metric: revenue
+    time_range: all
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: &id041
+    columns:
+    - revenue
+    rows:
+    - - 420
+  expected_results_by_world: &id044
+    base: *id041
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 420
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 402
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: Cho tôi xem doanh thu của Cosmetics Shop.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_11_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_11
+  state: *id042
+  oracle_intent: *id043
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='purchase'),0)::numeric AS revenue FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop'
+  expected_result: *id041
+  expected_results_by_world: *id044
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_11_ask__base
+  question: Cho tôi xem doanh thu của Cosmetics Shop trong toàn bộ khoảng dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_12_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_12
+  state: &id046
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id047
+    source_id: olist_marketplace
+    metric: buyers
+    time_range: last_7
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id045
+    columns:
+    - buyers
+    rows:
+    - - 1
+  expected_results_by_world: &id048
+    base: *id045
+    grain_counterexample:
+      columns:
+      - buyers
+      rows:
+      - - 1
+    coverage_edge:
+      columns:
+      - buyers
+      rows:
+      - - 1
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: Please show buyers for Olist.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  source_id: olist_marketplace
+  language: en
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_12_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_12
+  state: *id046
+  oracle_intent: *id047
+  gold_sql: SELECT count(DISTINCT user_id) FILTER (WHERE event_name='order_purchased')::bigint AS buyers FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id045
+  expected_results_by_world: *id048
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_12_ask__base
+  question: Please show buyers for Olist over the most recent 7 days.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: olist_marketplace
+  language: en
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_13_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_13
+  state: &id050
+    source_id: cosmetics_shop
+    metric: users
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id051
+    source_id: cosmetics_shop
+    metric: users
+    time_range: all
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: &id049
+    columns:
+    - users
+    rows:
+    - - 21
+  expected_results_by_world: &id052
+    base: *id049
+    grain_counterexample:
+      columns:
+      - users
+      rows:
+      - - 21
+    coverage_edge:
+      columns:
+      - users
+      rows:
+      - - 21
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: I need a distinct users report for Cosmetics.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  source_id: cosmetics_shop
+  language: en
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_13_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_13
+  state: *id050
+  oracle_intent: *id051
+  gold_sql: SELECT count(DISTINCT user_id)::bigint AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: *id049
+  expected_results_by_world: *id052
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_13_ask__base
+  question: I need a distinct users report for Cosmetics over all available dates.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: cosmetics_shop
+  language: en
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_14_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_14
+  state: &id054
+    source_id: olist_marketplace
+    metric: purchases
+    time_range: last_7
+    filters: []
+    breakdown: null
+  oracle_intent: &id055
+    source_id: olist_marketplace
+    metric: purchases
+    time_range: last_7
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='order_purchased')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: &id053
+    columns:
+    - purchases
+    rows:
+    - - 2
+  expected_results_by_world: &id056
+    base: *id053
+    grain_counterexample:
+      columns:
+      - purchases
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - purchases
+      rows:
+      - - 1
+  tags:
+  - clarification
+  - missing_period
+  - olist_marketplace
+  phenomenon: missing_period
+  question: Cho tôi xem lượt mua của Olist.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - last_7
+  source_id: olist_marketplace
+  language: vi
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_14_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_14
+  state: *id054
+  oracle_intent: *id055
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='order_purchased')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-26' AND '2018-03-04'
+  expected_result: *id053
+  expected_results_by_world: *id056
+  tags:
+  - clarification_control
+  - olist_marketplace
+  phenomenon: explicit_control
+  control_of: interaction_14_ask__base
+  question: Cho tôi xem lượt mua của Olist trong 7 ngày gần nhất.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: olist_marketplace
+  language: vi
+  ui_scope:
+  - olist_marketplace
+  fixture_world: base
+- id: interaction_15_ask__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_15
+  state: &id058
+    source_id: cosmetics_shop
+    metric: events
+    time_range: all
+    filters: []
+    breakdown: null
+  oracle_intent: &id059
+    source_id: cosmetics_shop
+    metric: events
+    time_range: all
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: &id057
+    columns:
+    - events
+    rows:
+    - - 60
+  expected_results_by_world: &id060
+    base: *id057
+    grain_counterexample:
+      columns:
+      - events
+      rows:
+      - - 60
+    coverage_edge:
+      columns:
+      - events
+      rows:
+      - - 59
+  tags:
+  - clarification
+  - missing_period
+  - cosmetics_shop
+  phenomenon: missing_period
+  question: Cho tôi xem lượt sự kiện của Cosmetics Shop.
+  ask_fields:
+  - time_range
+  oracle_answers:
+    time_range:
+    - all
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- id: interaction_15_control__base
+  split: test
+  family: test_missing_period
+  cluster_id: interaction_15
+  state: *id058
+  oracle_intent: *id059
+  gold_sql: SELECT count(*)::bigint AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: *id057
+  expected_results_by_world: *id060
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  phenomenon: explicit_control
+  control_of: interaction_15_ask__base
+  question: Cho tôi xem lượt sự kiện của Cosmetics Shop trong toàn bộ khoảng dữ liệu.
+  ask_fields: []
+  oracle_answers: {}
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope:
+  - cosmetics_shop
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_16
+  source_id: olist_marketplace
+  language: en
+  ui_scope: &id063
+  - olist_marketplace
+  phenomenon: ambiguous_sales
+  state: &id064
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: &id061
+    - '2018-02-15'
+    - '2018-02-19'
+    filters: []
+    breakdown: null
+  oracle_intent: &id065
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: *id061
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-15' AND '2018-02-19'
+  expected_result: &id062
+    columns:
+    - revenue
+    rows:
+    - - 35
+  expected_results_by_world: &id066
+    base: *id062
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 35
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 35
+  tags:
+  - clarification
+  - ambiguous_sales
+  - olist_marketplace
+  - en
+  id: clarify_r1_16_ask__base
+  question: Report sales for Olist from 2018-02-15 through 2018-02-19.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - revenue
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_16
+  source_id: olist_marketplace
+  language: en
+  ui_scope: *id063
+  phenomenon: explicit_control
+  state: *id064
+  oracle_intent: *id065
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-15' AND '2018-02-19'
+  expected_result: *id062
+  expected_results_by_world: *id066
+  tags:
+  - clarification_control
+  - olist_marketplace
+  - en
+  id: clarify_r1_16_control__base
+  question: Report purchase revenue for Olist from 2018-02-15 through 2018-02-19.
+  control_of: clarify_r1_16_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_17
+  source_id: cosmetics_shop
+  language: en
+  ui_scope: &id069
+  - cosmetics_shop
+  phenomenon: ambiguous_sales
+  state: &id070
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: &id067
+    - '2025-02-18'
+    - '2025-02-23'
+    filters: []
+    breakdown: null
+  oracle_intent: &id071
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: *id067
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-02-18' AND '2025-02-23'
+  expected_result: &id068
+    columns:
+    - purchases
+    rows:
+    - - 2
+  expected_results_by_world: &id072
+    base: *id068
+    grain_counterexample:
+      columns:
+      - purchases
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - purchases
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - ambiguous_sales
+  - cosmetics_shop
+  - en
+  id: clarify_r1_17_ask__base
+  question: Report sales for Cosmetics Shop from 2025-02-18 through 2025-02-23.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - purchases
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_17
+  source_id: cosmetics_shop
+  language: en
+  ui_scope: *id069
+  phenomenon: explicit_control
+  state: *id070
+  oracle_intent: *id071
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-02-18' AND '2025-02-23'
+  expected_result: *id068
+  expected_results_by_world: *id072
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  - en
+  id: clarify_r1_17_control__base
+  question: Count purchase events for Cosmetics Shop from 2025-02-18 through 2025-02-23.
+  control_of: clarify_r1_17_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_18
+  source_id: olist_marketplace
+  language: vi
+  ui_scope: &id075
+  - olist_marketplace
+  phenomenon: ambiguous_sales
+  state: &id076
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: &id073
+    - '2018-02-21'
+    - '2018-02-27'
+    filters: []
+    breakdown: null
+  oracle_intent: &id077
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: *id073
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-21' AND '2018-02-27'
+  expected_result: &id074
+    columns:
+    - revenue
+    rows:
+    - - 72
+  expected_results_by_world: &id078
+    base: *id074
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 72
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 72
+  tags:
+  - clarification
+  - ambiguous_sales
+  - olist_marketplace
+  - vi
+  id: clarify_r1_18_ask__base
+  question: Báo cáo doanh số của Olist từ ngày 2018-02-21 đến ngày 2018-02-27.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - revenue
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_18
+  source_id: olist_marketplace
+  language: vi
+  ui_scope: *id075
+  phenomenon: explicit_control
+  state: *id076
+  oracle_intent: *id077
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-21' AND '2018-02-27'
+  expected_result: *id074
+  expected_results_by_world: *id078
+  tags:
+  - clarification_control
+  - olist_marketplace
+  - vi
+  id: clarify_r1_18_control__base
+  question: Cho biết tổng doanh thu từ sản phẩm đã mua của Olist từ ngày 2018-02-21 đến ngày 2018-02-27.
+  control_of: clarify_r1_18_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_19
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope: &id081
+  - cosmetics_shop
+  phenomenon: ambiguous_sales
+  state: &id082
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: &id079
+    - '2025-02-24'
+    - '2025-02-28'
+    filters: []
+    breakdown: null
+  oracle_intent: &id083
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: *id079
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-02-24' AND '2025-02-28'
+  expected_result: &id080
+    columns:
+    - purchases
+    rows:
+    - - 2
+  expected_results_by_world: &id084
+    base: *id080
+    grain_counterexample:
+      columns:
+      - purchases
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - purchases
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - ambiguous_sales
+  - cosmetics_shop
+  - vi
+  id: clarify_r1_19_ask__base
+  question: Báo cáo doanh số của Cosmetics Shop từ ngày 2025-02-24 đến ngày 2025-02-28.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - purchases
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_19
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope: *id081
+  phenomenon: explicit_control
+  state: *id082
+  oracle_intent: *id083
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-02-24' AND '2025-02-28'
+  expected_result: *id080
+  expected_results_by_world: *id084
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  - vi
+  id: clarify_r1_19_control__base
+  question: Đếm số lượt mua của Cosmetics Shop từ ngày 2025-02-24 đến ngày 2025-02-28.
+  control_of: clarify_r1_19_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_20
+  source_id: olist_marketplace
+  language: en
+  ui_scope: &id087
+  - olist_marketplace
+  phenomenon: ambiguous_sales
+  state: &id088
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: &id085
+    - '2018-01-02'
+    - '2018-01-07'
+    filters: []
+    breakdown: null
+  oracle_intent: &id089
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: *id085
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-02' AND '2018-01-07'
+  expected_result: &id086
+    columns:
+    - revenue
+    rows:
+    - - 72
+  expected_results_by_world: &id090
+    base: *id086
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 72
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 72
+  tags:
+  - clarification
+  - ambiguous_sales
+  - olist_marketplace
+  - en
+  id: clarify_r1_20_ask__base
+  question: Report sales for Olist from 2018-01-02 through 2018-01-07.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - revenue
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_20
+  source_id: olist_marketplace
+  language: en
+  ui_scope: *id087
+  phenomenon: explicit_control
+  state: *id088
+  oracle_intent: *id089
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-02' AND '2018-01-07'
+  expected_result: *id086
+  expected_results_by_world: *id090
+  tags:
+  - clarification_control
+  - olist_marketplace
+  - en
+  id: clarify_r1_20_control__base
+  question: Report purchase revenue for Olist from 2018-01-02 through 2018-01-07.
+  control_of: clarify_r1_20_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_21
+  source_id: cosmetics_shop
+  language: en
+  ui_scope: &id093
+  - cosmetics_shop
+  phenomenon: ambiguous_sales
+  state: &id094
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: &id091
+    - '2025-03-02'
+    - '2025-03-08'
+    filters: []
+    breakdown: null
+  oracle_intent: &id095
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: *id091
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-03-02' AND '2025-03-08'
+  expected_result: &id092
+    columns:
+    - purchases
+    rows:
+    - - 3
+  expected_results_by_world: &id096
+    base: *id092
+    grain_counterexample:
+      columns:
+      - purchases
+      rows:
+      - - 3
+    coverage_edge:
+      columns:
+      - purchases
+      rows:
+      - - 3
+  tags:
+  - clarification
+  - ambiguous_sales
+  - cosmetics_shop
+  - en
+  id: clarify_r1_21_ask__base
+  question: Report sales for Cosmetics Shop from 2025-03-02 through 2025-03-08.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - purchases
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_21
+  source_id: cosmetics_shop
+  language: en
+  ui_scope: *id093
+  phenomenon: explicit_control
+  state: *id094
+  oracle_intent: *id095
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-03-02' AND '2025-03-08'
+  expected_result: *id092
+  expected_results_by_world: *id096
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  - en
+  id: clarify_r1_21_control__base
+  question: Count purchase events for Cosmetics Shop from 2025-03-02 through 2025-03-08.
+  control_of: clarify_r1_21_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_22
+  source_id: olist_marketplace
+  language: vi
+  ui_scope: &id099
+  - olist_marketplace
+  phenomenon: ambiguous_sales
+  state: &id100
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: &id097
+    - '2018-01-08'
+    - '2018-01-12'
+    filters: []
+    breakdown: null
+  oracle_intent: &id101
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: *id097
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-08' AND '2018-01-12'
+  expected_result: &id098
+    columns:
+    - revenue
+    rows:
+    - - 0
+  expected_results_by_world: &id102
+    base: *id098
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 0
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 0
+  tags:
+  - clarification
+  - ambiguous_sales
+  - olist_marketplace
+  - vi
+  id: clarify_r1_22_ask__base
+  question: Báo cáo doanh số của Olist từ ngày 2018-01-08 đến ngày 2018-01-12.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - revenue
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_22
+  source_id: olist_marketplace
+  language: vi
+  ui_scope: *id099
+  phenomenon: explicit_control
+  state: *id100
+  oracle_intent: *id101
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-08' AND '2018-01-12'
+  expected_result: *id098
+  expected_results_by_world: *id102
+  tags:
+  - clarification_control
+  - olist_marketplace
+  - vi
+  id: clarify_r1_22_control__base
+  question: Cho biết tổng doanh thu từ sản phẩm đã mua của Olist từ ngày 2018-01-08 đến ngày 2018-01-12.
+  control_of: clarify_r1_22_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_23
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope: &id105
+  - cosmetics_shop
+  phenomenon: ambiguous_sales
+  state: &id106
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: &id103
+    - '2025-01-04'
+    - '2025-01-09'
+    filters: []
+    breakdown: null
+  oracle_intent: &id107
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: *id103
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-04' AND '2025-01-09'
+  expected_result: &id104
+    columns:
+    - purchases
+    rows:
+    - - 2
+  expected_results_by_world: &id108
+    base: *id104
+    grain_counterexample:
+      columns:
+      - purchases
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - purchases
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - ambiguous_sales
+  - cosmetics_shop
+  - vi
+  id: clarify_r1_23_ask__base
+  question: Báo cáo doanh số của Cosmetics Shop từ ngày 2025-01-04 đến ngày 2025-01-09.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - purchases
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_23
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope: *id105
+  phenomenon: explicit_control
+  state: *id106
+  oracle_intent: *id107
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-04' AND '2025-01-09'
+  expected_result: *id104
+  expected_results_by_world: *id108
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  - vi
+  id: clarify_r1_23_control__base
+  question: Đếm số lượt mua của Cosmetics Shop từ ngày 2025-01-04 đến ngày 2025-01-09.
+  control_of: clarify_r1_23_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_24
+  source_id: olist_marketplace
+  language: en
+  ui_scope: &id111
+  - olist_marketplace
+  phenomenon: ambiguous_sales
+  state: &id112
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: &id109
+    - '2018-01-14'
+    - '2018-01-20'
+    filters: []
+    breakdown: null
+  oracle_intent: &id113
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: *id109
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-14' AND '2018-01-20'
+  expected_result: &id110
+    columns:
+    - revenue
+    rows:
+    - - 57
+  expected_results_by_world: &id114
+    base: *id110
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 57
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 57
+  tags:
+  - clarification
+  - ambiguous_sales
+  - olist_marketplace
+  - en
+  id: clarify_r1_24_ask__base
+  question: Report sales for Olist from 2018-01-14 through 2018-01-20.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - revenue
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_24
+  source_id: olist_marketplace
+  language: en
+  ui_scope: *id111
+  phenomenon: explicit_control
+  state: *id112
+  oracle_intent: *id113
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-14' AND '2018-01-20'
+  expected_result: *id110
+  expected_results_by_world: *id114
+  tags:
+  - clarification_control
+  - olist_marketplace
+  - en
+  id: clarify_r1_24_control__base
+  question: Report purchase revenue for Olist from 2018-01-14 through 2018-01-20.
+  control_of: clarify_r1_24_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_25
+  source_id: cosmetics_shop
+  language: en
+  ui_scope: &id117
+  - cosmetics_shop
+  phenomenon: ambiguous_sales
+  state: &id118
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: &id115
+    - '2025-01-10'
+    - '2025-01-14'
+    filters: []
+    breakdown: null
+  oracle_intent: &id119
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: *id115
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-10' AND '2025-01-14'
+  expected_result: &id116
+    columns:
+    - purchases
+    rows:
+    - - 2
+  expected_results_by_world: &id120
+    base: *id116
+    grain_counterexample:
+      columns:
+      - purchases
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - purchases
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - ambiguous_sales
+  - cosmetics_shop
+  - en
+  id: clarify_r1_25_ask__base
+  question: Report sales for Cosmetics Shop from 2025-01-10 through 2025-01-14.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - purchases
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_25
+  source_id: cosmetics_shop
+  language: en
+  ui_scope: *id117
+  phenomenon: explicit_control
+  state: *id118
+  oracle_intent: *id119
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-10' AND '2025-01-14'
+  expected_result: *id116
+  expected_results_by_world: *id120
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  - en
+  id: clarify_r1_25_control__base
+  question: Count purchase events for Cosmetics Shop from 2025-01-10 through 2025-01-14.
+  control_of: clarify_r1_25_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_26
+  source_id: olist_marketplace
+  language: vi
+  ui_scope: &id123
+  - olist_marketplace
+  phenomenon: ambiguous_sales
+  state: &id124
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: &id121
+    - '2018-01-20'
+    - '2018-01-25'
+    filters: []
+    breakdown: null
+  oracle_intent: &id125
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: *id121
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-20' AND '2018-01-25'
+  expected_result: &id122
+    columns:
+    - revenue
+    rows:
+    - - 37
+  expected_results_by_world: &id126
+    base: *id122
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 37
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 37
+  tags:
+  - clarification
+  - ambiguous_sales
+  - olist_marketplace
+  - vi
+  id: clarify_r1_26_ask__base
+  question: Báo cáo doanh số của Olist từ ngày 2018-01-20 đến ngày 2018-01-25.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - revenue
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_26
+  source_id: olist_marketplace
+  language: vi
+  ui_scope: *id123
+  phenomenon: explicit_control
+  state: *id124
+  oracle_intent: *id125
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-20' AND '2018-01-25'
+  expected_result: *id122
+  expected_results_by_world: *id126
+  tags:
+  - clarification_control
+  - olist_marketplace
+  - vi
+  id: clarify_r1_26_control__base
+  question: Cho biết tổng doanh thu từ sản phẩm đã mua của Olist từ ngày 2018-01-20 đến ngày 2018-01-25.
+  control_of: clarify_r1_26_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_27
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope: &id129
+  - cosmetics_shop
+  phenomenon: ambiguous_sales
+  state: &id130
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: &id127
+    - '2025-01-16'
+    - '2025-01-22'
+    filters: []
+    breakdown: null
+  oracle_intent: &id131
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: *id127
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-16' AND '2025-01-22'
+  expected_result: &id128
+    columns:
+    - purchases
+    rows:
+    - - 3
+  expected_results_by_world: &id132
+    base: *id128
+    grain_counterexample:
+      columns:
+      - purchases
+      rows:
+      - - 3
+    coverage_edge:
+      columns:
+      - purchases
+      rows:
+      - - 3
+  tags:
+  - clarification
+  - ambiguous_sales
+  - cosmetics_shop
+  - vi
+  id: clarify_r1_27_ask__base
+  question: Báo cáo doanh số của Cosmetics Shop từ ngày 2025-01-16 đến ngày 2025-01-22.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - purchases
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_27
+  source_id: cosmetics_shop
+  language: vi
+  ui_scope: *id129
+  phenomenon: explicit_control
+  state: *id130
+  oracle_intent: *id131
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-16' AND '2025-01-22'
+  expected_result: *id128
+  expected_results_by_world: *id132
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  - vi
+  id: clarify_r1_27_control__base
+  question: Đếm số lượt mua của Cosmetics Shop từ ngày 2025-01-16 đến ngày 2025-01-22.
+  control_of: clarify_r1_27_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_28
+  source_id: olist_marketplace
+  language: en
+  ui_scope: &id135
+  - olist_marketplace
+  phenomenon: ambiguous_sales
+  state: &id136
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: &id133
+    - '2018-01-26'
+    - '2018-01-30'
+    filters: []
+    breakdown: null
+  oracle_intent: &id137
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: *id133
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-26' AND '2018-01-30'
+  expected_result: &id134
+    columns:
+    - revenue
+    rows:
+    - - 35
+  expected_results_by_world: &id138
+    base: *id134
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 35
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 35
+  tags:
+  - clarification
+  - ambiguous_sales
+  - olist_marketplace
+  - en
+  id: clarify_r1_28_ask__base
+  question: Report sales for Olist from 2018-01-26 through 2018-01-30.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - revenue
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_28
+  source_id: olist_marketplace
+  language: en
+  ui_scope: *id135
+  phenomenon: explicit_control
+  state: *id136
+  oracle_intent: *id137
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-01-26' AND '2018-01-30'
+  expected_result: *id134
+  expected_results_by_world: *id138
+  tags:
+  - clarification_control
+  - olist_marketplace
+  - en
+  id: clarify_r1_28_control__base
+  question: Report purchase revenue for Olist from 2018-01-26 through 2018-01-30.
+  control_of: clarify_r1_28_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_29
+  source_id: cosmetics_shop
+  language: en
+  ui_scope: &id141
+  - cosmetics_shop
+  phenomenon: ambiguous_sales
+  state: &id142
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: &id139
+    - '2025-01-22'
+    - '2025-01-27'
+    filters: []
+    breakdown: null
+  oracle_intent: &id143
+    source_id: cosmetics_shop
+    metric: purchases
+    time_range: *id139
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-22' AND '2025-01-27'
+  expected_result: &id140
+    columns:
+    - purchases
+    rows:
+    - - 2
+  expected_results_by_world: &id144
+    base: *id140
+    grain_counterexample:
+      columns:
+      - purchases
+      rows:
+      - - 2
+    coverage_edge:
+      columns:
+      - purchases
+      rows:
+      - - 2
+  tags:
+  - clarification
+  - ambiguous_sales
+  - cosmetics_shop
+  - en
+  id: clarify_r1_29_ask__base
+  question: Report sales for Cosmetics Shop from 2025-01-22 through 2025-01-27.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - purchases
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_29
+  source_id: cosmetics_shop
+  language: en
+  ui_scope: *id141
+  phenomenon: explicit_control
+  state: *id142
+  oracle_intent: *id143
+  gold_sql: SELECT count(*) FILTER (WHERE event_name='purchase')::bigint AS purchases FROM analytics.event_activity
+    WHERE source_id='cosmetics_shop' AND event_date BETWEEN '2025-01-22' AND '2025-01-27'
+  expected_result: *id140
+  expected_results_by_world: *id144
+  tags:
+  - clarification_control
+  - cosmetics_shop
+  - en
+  id: clarify_r1_29_control__base
+  question: Count purchase events for Cosmetics Shop from 2025-01-22 through 2025-01-27.
+  control_of: clarify_r1_29_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_30
+  source_id: olist_marketplace
+  language: vi
+  ui_scope: &id147
+  - olist_marketplace
+  phenomenon: ambiguous_sales
+  state: &id148
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: &id145
+    - '2018-02-01'
+    - '2018-02-07'
+    filters: []
+    breakdown: null
+  oracle_intent: &id149
+    source_id: olist_marketplace
+    metric: revenue
+    time_range: *id145
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-01' AND '2018-02-07'
+  expected_result: &id146
+    columns:
+    - revenue
+    rows:
+    - - 72
+  expected_results_by_world: &id150
+    base: *id146
+    grain_counterexample:
+      columns:
+      - revenue
+      rows:
+      - - 72
+    coverage_edge:
+      columns:
+      - revenue
+      rows:
+      - - 72
+  tags:
+  - clarification
+  - ambiguous_sales
+  - olist_marketplace
+  - vi
+  id: clarify_r1_30_ask__base
+  question: Báo cáo doanh số của Olist từ ngày 2018-02-01 đến ngày 2018-02-07.
+  ask_fields:
+  - recipe
+  oracle_answers:
+    recipe:
+    - revenue
+  fixture_world: base
+- split: test
+  family: test_ambiguous_sales
+  cluster_id: clarify_r1_30
+  source_id: olist_marketplace
+  language: vi
+  ui_scope: *id147
+  phenomenon: explicit_control
+  state: *id148
+  oracle_intent: *id149
+  gold_sql: SELECT coalesce(sum(revenue) FILTER (WHERE event_name='order_purchased'),0)::numeric AS revenue FROM
+    analytics.event_activity WHERE source_id='olist_marketplace' AND event_date BETWEEN '2018-02-01' AND '2018-02-07'
+  expected_result: *id146
+  expected_results_by_world: *id150
+  tags:
+  - clarification_control
+  - olist_marketplace
+  - vi
+  id: clarify_r1_30_control__base
+  question: Cho biết tổng doanh thu từ sản phẩm đã mua của Olist từ ngày 2018-02-01 đến ngày 2018-02-07.
+  control_of: clarify_r1_30_ask__base
+  ask_fields: []
+  oracle_answers: {}
+  fixture_world: base

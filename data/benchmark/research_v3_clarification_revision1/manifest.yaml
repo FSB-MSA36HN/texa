@@ -1,0 +1,101 @@
+name: Texa Research Benchmark v3 clarification revision 1
+dataset_type: challenge_candidate
+version: 3.1
+status: candidate_agent_reviewed_not_sealed
+engine: PostgreSQL 16+
+sources:
+  - cosmetics_shop
+  - olist_marketplace
+languages:
+  - en
+  - vi
+metrics:
+  - events
+  - users
+  - sessions
+  - viewers
+  - purchases
+  - buyers
+  - revenue
+  - buyer_conversion_rate
+output_aliases:
+  metrics:
+    events: events
+    users: users
+    sessions: sessions
+    viewers: viewers
+    purchases: purchases
+    buyers: buyers
+    revenue: revenue
+    buyer_conversion_rate: buyer_conversion_rate
+fixture: worlds/base.sql
+fixture_worlds:
+  base:
+    file: worlds/base.sql
+    rows: 120
+    cosmetics_rows: 60
+    olist_rows: 60
+  grain_counterexample:
+    file: worlds/grain_counterexample.sql
+    rows: 121
+    cosmetics_rows: 60
+    olist_rows: 61
+  coverage_edge:
+    file: worlds/coverage_edge.sql
+    rows: 118
+    cosmetics_rows: 59
+    olist_rows: 59
+single_turn_suite: cases.yaml
+interaction_suite: interactions.yaml
+dialogue_suite: dialogues.yaml
+unsupported_suite: unsupported.yaml
+protocol_revision:
+  revision: 1
+  prior_dataset: ../research_v3
+  change_reason: >-
+    User/source-scope knowledge is now supplied equally to Texa and the schema-only
+    interactive baseline via ui_scope. The previous metric-ambiguity questions about
+    customers were invalid because the live catalog maps customer wording to users;
+    this revision replaces those 15 pairs with sales/doanh số ambiguity between
+    purchase revenue and purchase-row count. The original 15 missing-period pairs
+    are preserved verbatim and receive only source/language/scope metadata.
+  source_scope_contract: >-
+    Every clarification case has ui_scope: [source_id]. The same source is visible
+    in both systems' user input; the candidate must not be scored on source guessing.
+  metric_ambiguity_contract: >-
+    The revised ambiguous term is sales/doanh số, which can mean monetary revenue
+    or a count of purchase events/item lines. The explicit controls state either
+    purchase revenue or purchase-row count. Olist purchase count is item-line grain.
+  preserved_cases: >-
+    The 15 original missing-period prompts, hidden time_range intents, SQL, and gold
+    results are preserved from research_v3/interactions.yaml. Added fields only:
+    source_id, language, ui_scope.
+  replaced_cases: >-
+    The 15 invalid customer-count ambiguity/control pairs are replaced by 15 paired
+    sales metric ambiguity/control scenarios with independent gold for all worlds.
+counts:
+  clarification_logical_cases: 60
+  clarification_ambiguous: 30
+  clarification_clear_controls: 30
+  missing_period_ambiguous: 15
+  sales_metric_ambiguous: 15
+  records_per_world: 60
+  physical_model_test_records: 60
+  gold_worlds_per_record: 3
+  conversations: 0
+  unsupported: 0
+human_review: pending independent reviewers
+sealed: false
+test_labels_exposed_to_author: true
+provenance: >-
+  Three SQL fixtures are copied from challenge_v1. Independent gold SQL and Python
+  row aggregation are provided by the copied gold_oracle.py, which imports the
+  challenge_v1 synthetic source-row generator. No Texa QuerySpec/compiler or LLM
+  is used to generate the expected answers. The 15 retained time pairs are copied
+  from the frozen research_v3 candidate and receive no question/gold changes.
+limitations: >-
+  Synthetic controlled worlds do not estimate accuracy on production sources.
+  Sales can remain context-sensitive even when revenue and purchase-row count are
+  legitimate interpretations; two independent reviewers must verify naturalness
+  and that the resolver should ask rather than select a default. Candidate is
+  unsealed and must not support confirmatory claims.
