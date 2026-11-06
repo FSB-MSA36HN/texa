@@ -33,6 +33,10 @@ V3_INPUT_POLICIES = {
     "T10": "texa_semantic_catalog_and_compiler",
     "T01": "texa_semantic_catalog_and_compiler",
     "T11": "texa_semantic_catalog_and_compiler",
+    "F": "texa_structured_memory_and_clarification",
+    "M6": "texa_window6_memory_and_clarification",
+    "M0": "texa_without_memory_and_clarification",
+    "C0": "texa_without_interactive_clarification",
 }
 V3_PROTOCOL = "v3_schema_only_full_table"
 
