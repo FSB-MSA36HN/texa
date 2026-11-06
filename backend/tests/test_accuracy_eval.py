@@ -9,7 +9,8 @@ from eval.accuracy_study import (confirmatory_eligibility, score_scenario, sql_e
                                 validate_coverage)
 from eval.report_accuracy_study import apply_annotation_erratum, compare, read_run, summarize
 from eval.check_world_robustness import C19_CASES_SHA256, C19_ID
-from eval.run_accuracy_study import RawHistorySession, _question
+from eval.run_accuracy_study import (CHALLENGE_SCHEMA, RawHistorySession, _schema_only_question,
+                                     _score_output_table, _rescore_texa_table_scores)
 
 
 FROZEN_DATA = Path(__file__).resolve().parents[2] / 'data/benchmark/results/accuracy-dev-20261106-v2/frozen_dataset'
@@ -111,11 +112,14 @@ class AccuracyEvalTests(unittest.TestCase):
         with patch("texa.llm.generate_structured", return_value={"action": "sql", "sql": "SELECT 1", "ask_fields": []}) as llm_call, \
              patch("eval.run_accuracy_study.execute_readonly", return_value=(("events",), ((5,),))):
             session = RawHistorySession("model", "dsn")
-            got = session.ask("How many events?", manifest)
+            got = session.ask("How many events?")
             self.assertEqual(got["rows"], [[5]])
             prompt = llm_call.call_args.kwargs["prompt"]
             self.assertNotIn("expected_result", prompt)
             self.assertNotIn("gold_sql", prompt)
+            self.assertIn("Database schema:", prompt)
+            self.assertNotIn("Metric definitions", prompt)
+            self.assertNotIn("public business contract", prompt.lower())
             self.assertEqual(session.history[0]["result"]["rows"], ((5,),))
 
     def test_raw_history_sql_retry_gets_error_class_not_db_error_text(self):
@@ -124,22 +128,55 @@ class AccuracyEvalTests(unittest.TestCase):
         with patch("texa.llm.generate_structured", side_effect=replies) as llm_call, \
              patch("eval.run_accuracy_study.execute_readonly", side_effect=[RuntimeError("syntax error SECRET_VALUE"), (("x",), ((1,),))]):
             session = RawHistorySession("model", "dsn")
-            got = session.ask("question", {"sources": [], "metric_policy": ""})
+            got = session.ask("question")
             self.assertEqual(got["rows"], [[1]])
             retry_prompt = llm_call.call_args_list[1].kwargs["prompt"]
             self.assertIn("syntax_error", retry_prompt)
             self.assertNotIn("SECRET_VALUE", retry_prompt)
 
-    def test_sql_baseline_gets_public_catalog_and_relative_date_anchor(self):
-        prompt = _question({"question": "last 7 days", "ui_scope": ["cosmetics_shop"],
-                           "expected_result": {"columns": ["revenue"], "rows": [[20]]}},
-                           {"sources": ["cosmetics_shop"], "metric_policy": "public metrics"},
-                           "cosmetics_shop 2025-01-01..2025-01-31")
-        self.assertIn("max_date", prompt)
-        self.assertIn("2025-01-01..2025-01-31", prompt)
-        self.assertIn("Explicit user-selected source scope: cosmetics_shop", prompt)
-        self.assertIn("Required output column aliases: revenue", prompt)
-        self.assertNotIn("rows\": [[20]]", prompt)
+    def test_schema_only_baseline_receives_no_catalog_or_gold_contract(self):
+        prompt = _schema_only_question({"question": "revenue last 7 days", "ui_scope": ["cosmetics_shop"],
+                                      "expected_result": {"columns": ["revenue"], "rows": [[20]]},
+                                      "business_contract": {"gold_alias": "revenue"}})
+        self.assertIn(CHALLENGE_SCHEMA, prompt)
+        self.assertIn("User-selected source IDs: cosmetics_shop", prompt)
+        self.assertIn("revenue last 7 days", prompt)
+        self.assertNotIn("Metric definitions", prompt)
+        self.assertNotIn("gold_alias", prompt)
+        self.assertNotIn("2025-01-01", prompt)
+        for physical_column in ("event_ts TIMESTAMPTZ", "platform TEXT", "country TEXT",
+                                "item_id TEXT", "item_price NUMERIC(14,2)", "quantity INTEGER",
+                                "revenue_usd NUMERIC(14,2)", "up JSONB", "ingested_at TIMESTAMPTZ"):
+            self.assertIn(physical_column, CHALLENGE_SCHEMA)
+
+    def test_v3_score_ignores_aliases_but_requires_complete_ordered_projection(self):
+        item = {"expected_result": {"columns": ["month", "revenue"],
+                                    "rows": [["2025-01", 12], ["2025-02", None]]}}
+        scored = _score_output_table(["bucket", "amount"], [["2025-02", None], ["2025-01", 12.0000001]], item)
+        self.assertTrue(scored["result_correct"])
+        self.assertFalse(scored["strict_result_correct"])
+        self.assertFalse(scored["output_contract_compliant"])
+        self.assertFalse(_score_output_table(["amount"], [[12]], item)["result_correct"])
+        self.assertFalse(_score_output_table(["amount", "bucket"], [[12, "2025-01"], [None, "2025-02"]], item)["result_correct"])
+        self.assertFalse(_score_output_table(["bucket", "amount"], [["2025-01", 12], ["2025-01", 12]], item)["result_correct"])
+
+    def test_texa_replay_adapter_uses_same_alias_insensitive_full_table_score(self):
+        observed = {"id": "turn-1", "columns": [{"name": "bucket"}, {"name": "amount"}]}
+        class FakeSession:
+            observed_turns = [observed]
+            def output(self, turn):
+                return ["bucket", "amount"], [["2025-01", 12]]
+        item = {"expected_result": {"columns": ["month", "revenue"], "rows": [["2025-01", 12]]},
+                "business_contract": {"columns": []}}
+        record = {"turns": [{"index": 1, "trace": {"id": "turn-1"},
+                              "result_correct": False, "business_result_correct": False}]}
+        second = {"expected_result": {"columns": ["n"], "rows": [[3]]}, "gold_sql": "select 3"}
+        got = _rescore_texa_table_scores(record, {"turns": [{**item, "gold_sql": "select 1"}, second]}, FakeSession(), "conversation")
+        self.assertTrue(got["turns"][0]["result_correct"])
+        self.assertFalse(got["turns"][0]["strict_result_correct"])
+        self.assertEqual(got["answer_count"], 2)
+        self.assertEqual(got["answer_correct"], 1)
+        self.assertFalse(got["result_correct"])
 
     def test_compare_requires_all_worlds_and_pairs_complete_blocks(self):
         worlds = {"base": ["a"], "grain_counterexample": ["b"], "coverage_edge": ["c"]}

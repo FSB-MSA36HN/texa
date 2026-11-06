@@ -1,0 +1,152 @@
+- id: browser_single_cosmetics_revenue
+  split: dev
+  fixture_world: base
+  family: browser_full_table_metric
+  source_id: cosmetics_shop
+  language: vi
+  question: Tổng doanh thu Cosmetics Shop trên toàn bộ dữ liệu là bao nhiêu?
+  gold_sql: SELECT coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: {columns: [revenue], rows: [[420.00]]}
+- id: browser_single_olist_revenue
+  split: dev
+  fixture_world: base
+  family: browser_full_table_metric
+  source_id: olist_marketplace
+  language: vi
+  question: Tổng doanh thu Olist trên toàn bộ dữ liệu là bao nhiêu?
+  gold_sql: SELECT coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace'
+  expected_result: {columns: [revenue], rows: [[432.00]]}
+- id: browser_single_cosmetics_buyers
+  split: dev
+  fixture_world: base
+  family: browser_full_table_metric
+  source_id: cosmetics_shop
+  language: vi
+  question: Cosmetics Shop có bao nhiêu người mua trên toàn bộ dữ liệu?
+  gold_sql: SELECT count(DISTINCT user_id) FILTER(WHERE event_name IN ('purchase','order_purchased')) AS buyers FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: {columns: [buyers], rows: [[9]]}
+- id: browser_single_cosmetics_view_events
+  split: dev
+  fixture_world: base
+  family: browser_false_refusal
+  source_id: cosmetics_shop
+  language: vi
+  question: Cosmetics Shop có bao nhiêu lượt xem sản phẩm trên toàn bộ dữ liệu?
+  gold_sql: SELECT count(*) AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='view'
+  expected_result: {columns: [events], rows: [[24]]}
+- id: browser_single_cosmetics_viewers
+  split: dev
+  fixture_world: base
+  family: browser_false_refusal
+  source_id: cosmetics_shop
+  language: vi
+  question: Cosmetics Shop có bao nhiêu người dùng duy nhất đã xem sản phẩm trên toàn bộ dữ liệu?
+  gold_sql: SELECT count(DISTINCT user_id) AS viewers FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='view'
+  expected_result: {columns: [viewers], rows: [[12]]}
+- id: browser_single_cosmetics_sessions
+  split: dev
+  fixture_world: base
+  family: browser_full_table_metric
+  source_id: cosmetics_shop
+  language: vi
+  question: Tổng số phiên truy cập Cosmetics Shop trên toàn bộ dữ liệu?
+  gold_sql: SELECT count(DISTINCT session_id) AS sessions FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: {columns: [sessions], rows: [[30]]}
+- id: browser_single_cosmetics_users
+  split: dev
+  fixture_world: base
+  family: browser_full_table_metric
+  source_id: cosmetics_shop
+  language: vi
+  question: Tổng số người dùng duy nhất của Cosmetics Shop trên toàn bộ dữ liệu?
+  gold_sql: SELECT count(DISTINCT user_id) AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: {columns: [users], rows: [[21]]}
+- id: browser_single_cosmetics_events
+  split: dev
+  fixture_world: base
+  family: browser_full_table_metric
+  source_id: cosmetics_shop
+  language: vi
+  question: Tổng số sự kiện Cosmetics Shop trên toàn bộ dữ liệu?
+  gold_sql: SELECT count(*) AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: {columns: [events], rows: [[60]]}
+- id: browser_single_cosmetics_purchases
+  split: dev
+  fixture_world: base
+  family: browser_full_table_metric
+  source_id: cosmetics_shop
+  language: vi
+  question: Tổng số dòng sản phẩm được mua Cosmetics Shop trên toàn bộ dữ liệu?
+  gold_sql: SELECT count(*) FILTER(WHERE event_name IN ('purchase','order_purchased')) AS purchases FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: {columns: [purchases], rows: [[24]]}
+- id: browser_single_cosmetics_conversion
+  split: dev
+  fixture_world: base
+  family: browser_full_table_metric
+  source_id: cosmetics_shop
+  language: vi
+  question: Tỷ lệ người mua trên người dùng quan sát của Cosmetics Shop trên toàn bộ dữ liệu?
+  gold_sql: SELECT count(DISTINCT user_id) FILTER(WHERE event_name='purchase')::numeric / NULLIF(count(DISTINCT user_id),0) AS buyer_conversion_rate FROM analytics.event_activity WHERE source_id='cosmetics_shop'
+  expected_result: {columns: [buyer_conversion_rate], rows: [['0.42857142857142857143']]}
+- id: browser_single_cosmetics_monthly_revenue
+  split: dev
+  fixture_world: base
+  family: browser_full_table_grouping
+  source_id: cosmetics_shop
+  language: vi
+  question: Doanh thu Cosmetics Shop theo tháng trên toàn bộ dữ liệu?
+  gold_sql: SELECT date_trunc('month',event_date)::date AS event_month, coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase' GROUP BY 1
+  expected_result: {columns: [event_month, revenue], rows: [['2025-01-01', 185.00], ['2025-02-01', 205.00], ['2025-03-01', 30.00]]}
+- id: browser_single_olist_buyers
+  split: dev
+  fixture_world: base
+  family: browser_full_table_metric
+  source_id: olist_marketplace
+  language: vi
+  question: Tổng số người mua Olist trên toàn bộ dữ liệu?
+  gold_sql: SELECT count(DISTINCT user_id) FILTER(WHERE event_name IN ('purchase','order_purchased')) AS buyers FROM analytics.event_activity WHERE source_id='olist_marketplace'
+  expected_result: {columns: [buyers], rows: [[10]]}
+- id: browser_single_olist_purchases
+  split: dev
+  fixture_world: base
+  family: browser_full_table_metric
+  source_id: olist_marketplace
+  language: vi
+  question: Tổng số dòng sản phẩm được mua Olist trên toàn bộ dữ liệu?
+  gold_sql: SELECT count(*) FILTER(WHERE event_name IN ('purchase','order_purchased')) AS purchases FROM analytics.event_activity WHERE source_id='olist_marketplace'
+  expected_result: {columns: [purchases], rows: [[30]]}
+- id: browser_single_cosmetics_revenue_by_device
+  split: dev
+  fixture_world: base
+  family: browser_full_table_grouping
+  source_id: cosmetics_shop
+  language: vi
+  question: Doanh thu Cosmetics Shop theo thiết bị trên toàn bộ dữ liệu?
+  gold_sql: SELECT ep->'device'->>'type' AS device_type, coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase' GROUP BY 1
+  expected_result: {columns: [device_type, revenue], rows: [[null, 31.00], [mobile, 99.00], [desktop, 142.00], [tablet, 148.00]]}
+- id: browser_single_cosmetics_buyers_by_campaign
+  split: dev
+  fixture_world: base
+  family: browser_full_table_grouping
+  source_id: cosmetics_shop
+  language: vi
+  question: Người mua Cosmetics Shop theo kênh chiến dịch trên toàn bộ dữ liệu?
+  gold_sql: SELECT ep->'campaign'->>'channel' AS campaign_channel, count(DISTINCT user_id) FILTER(WHERE event_name IN ('purchase','order_purchased')) AS buyers FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase' GROUP BY 1
+  expected_result: {columns: [campaign_channel, buyers], rows: [[email, 7], [paid, 8], [null, 1]]}
+- id: browser_diagnostic_olist_sessions_unsupported
+  split: diagnostic
+  fixture_world: base
+  family: unsupported_source_capability
+  source_id: olist_marketplace
+  language: vi
+  question: Olist có bao nhiêu phiên truy cập trên toàn bộ dữ liệu?
+  expected_action: unsupported
+- id: browser_diagnostic_ui_text_source_conflict
+  split: diagnostic
+  fixture_world: base
+  family: explicit_source_conflict
+  source_id: olist_marketplace
+  ui_scope: [cosmetics_shop]
+  language: vi
+  question: Tổng số người mua Olist trên toàn bộ dữ liệu là bao nhiêu?
+  expected_action: clarify_source_conflict

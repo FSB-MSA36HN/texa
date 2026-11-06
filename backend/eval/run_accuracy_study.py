@@ -25,8 +25,48 @@ except ImportError:
 
 SQL_SCHEMA = {"type": "object", "properties": {"sql": {"type": "string"}},
               "required": ["sql"], "additionalProperties": False}
-SYSTEM = ("You are a PostgreSQL analyst. Generate one read-only SELECT query. Use only supplied schema and metric definitions. "
-          "Return JSON with exactly one key, sql. No markdown, comments, multiple statements, or writes.")
+SCHEMA_ONLY_SYSTEM = ("You are a PostgreSQL analyst. Generate one read-only SELECT query from the user's request and the supplied database schema. "
+                      "Do not assume undocumented business meanings. If the request cannot be determined from the schema and question, make the best direct SQL interpretation. "
+                      "Return JSON with exactly one key, sql. No markdown, comments, multiple statements, or writes.")
+CHALLENGE_SCHEMA = """CREATE TABLE analytics.event_activity (
+    event_id TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    event_ts TIMESTAMPTZ NOT NULL,
+    event_date DATE NOT NULL,
+    event_name TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    session_id TEXT,
+    first_seen_date DATE NOT NULL,
+    platform TEXT,
+    country TEXT,
+    region TEXT,
+    city TEXT,
+    item_id TEXT,
+    item_category TEXT,
+    item_brand TEXT,
+    item_price NUMERIC(14,2),
+    quantity INTEGER,
+    revenue NUMERIC(14,2),
+    revenue_usd NUMERIC(14,2),
+    currency TEXT,
+    ep JSONB NOT NULL,
+    up JSONB NOT NULL,
+    src_table TEXT,
+    ingested_at TIMESTAMPTZ NOT NULL,
+    PRIMARY KEY (source_id, event_id)
+);
+
+CREATE TABLE analytics.source_registry (
+    source_id TEXT PRIMARY KEY,
+    label TEXT NOT NULL,
+    description TEXT NOT NULL,
+    currency TEXT,
+    min_date DATE,
+    max_date DATE,
+    row_count BIGINT,
+    user_count BIGINT,
+    last_loaded_at TIMESTAMPTZ
+);"""
 
 
 @contextmanager
@@ -79,28 +119,44 @@ def _hash(value: Any) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest()
 
 
-def _question(item: dict, manifest: dict, public_context: str = "") -> str:
-    scope = ("\nExplicit user-selected source scope: " + ", ".join(item["ui_scope"])) if item.get("ui_scope") else ""
-    output_columns = item.get("expected_result", {}).get("columns", [])
-    contract = item.get("business_contract")
-    return ("Schema: analytics.event_activity(event_id, event_date DATE, event_name, user_id, session_id, "
-            "item_category, revenue, ep JSONB, source_id).\n"
-            "Source roles: cosmetics_shop is product browsing and purchase events; olist_marketplace is marketplace "
-            "item-line purchases plus separate payment events.\n"
-            "Raw event values: view, cart, remove_from_cart, purchase, order_purchased, order_approved, "
-            "order_shipped, order_delivered, order_canceled, payment_made, review_submitted. Purchase rows are "
-            "item lines (not orders); payment rows are not purchase revenue.\nSources: " + ", ".join(manifest["sources"]) +
-            ".\nMetric definitions: events=count rows; users/sessions=distinct observed IDs; viewers=distinct users "
-            "with view events; purchases=count purchase item-line rows; buyers=distinct users with purchase events; "
-            "revenue=sum purchase-row revenue (zero for empty aggregate); buyer_conversion_rate=distinct buyers / "
-            "distinct observed users, NULL on zero denominator. Group-domain values are eligible observed events; "
-            "for conversion ratios retain rows supported by numerator OR denominator.\n" + manifest["metric_policy"] +
-            "\nRelative periods are anchored to the selected source's public max_date shown in CATALOG, not the current date. "
-            "Use canonical catalog IDs as SQL output aliases (metric IDs and dimension IDs), in the requested dimension order then metric. "
-            "Return only a read-only PostgreSQL SELECT. Never invent rows or sources." + scope +
-            ("\nRequired output column aliases: " + ", ".join(map(str, output_columns)) if output_columns else "") +
-            ("\nBusiness output contract: " + json.dumps(contract, ensure_ascii=False, sort_keys=True) if contract else "") +
-            "\n\nPUBLIC CATALOG CONTEXT\n" + public_context + "\nQuestion: " + item["question"])
+def _schema_only_question(item: dict) -> str:
+    """Direct-SQL baseline input: physical query schema plus user-authored inputs only.
+
+    Do not pass catalog definitions, metric policies, gold-derived aliases/contracts,
+    fixture values, or inferred source descriptions into the schema-only baseline.
+    An explicit UI source selection is an observed user input shared with Texa.
+    """
+    scope = item.get("ui_scope") or []
+    scope_text = ("\nUser-selected source IDs: " + ", ".join(map(str, scope))) if scope else ""
+    return ("Database schema:\n" + CHALLENGE_SCHEMA + scope_text +
+            "\n\nUser question:\n" + str(item["question"]))
+
+
+def _score_output_table(columns, rows, item: dict) -> dict[str, Any]:
+    """Score complete SQL output by position, independently of output aliases.
+
+    Width and requested column order remain significant; rows are a multiset unless
+    the case explicitly requests ordering. This prevents gold aliases from leaking
+    into baseline prompts while retaining full-table execution correctness.
+    """
+    gold = item["expected_result"]
+    strict = results_equal(columns, rows, gold["columns"], gold["rows"],
+                           ordered=bool(item.get("ordered")))
+    values_match = (len(columns) == len(gold["columns"]) and
+                    results_equal(tuple(range(len(columns))), rows,
+                                  tuple(range(len(gold["columns"]))), gold["rows"],
+                                  ordered=bool(item.get("ordered"))))
+    contract = score_business_result(columns, rows, gold["columns"], gold["rows"],
+                                     ordered=bool(item.get("ordered")),
+                                     contract=item.get("business_contract"))
+    return {"result_correct": values_match,
+            "alias_insensitive_result_correct": values_match,
+            "strict_result_correct": strict,
+            "business_result_correct": values_match,
+            "business_contract_result_correct": contract["business_result_correct"],
+            "output_contract_compliant": contract["output_contract_compliant"],
+            "metric_protocol": "v3_schema_only_full_table",
+            "answer_count": 1, "answer_correct": int(values_match)}
 
 
 _ACTIONS = {"type": "object", "additionalProperties": False,
@@ -112,21 +168,18 @@ _ACTIONS = {"type": "object", "additionalProperties": False,
 
 class RawHistorySession:
     """B1 oracle with text-only history, no Texa answer/query-spec/compiler path."""
-    def __init__(self, model: str, dsn: str, *, correction=True, public_context=""):
+    def __init__(self, model: str, dsn: str, *, correction=True):
         from texa import llm
         self.llm, self.model, self.dsn = llm, model, dsn
         self.history: list[dict] = []
         self.calls: list[str] = []
         self.correction = correction
-        self.public_context = public_context
 
-    def ask(self, question: str, manifest: dict, *, choices=None, ui_scope=None, output_columns=None, business_contract=None) -> dict:
-        public_item = {"question": question}
+    def ask(self, question: str, *, choices=None, ui_scope=None) -> dict:
+        public_item = {"question": question, "ui_scope": ui_scope or []}
         # Conversation/clarification controls must not see gold output aliases:
         # an alias such as revenue would disclose the unresolved metric intent.
-        question = _question(public_item, manifest, self.public_context)
-        if ui_scope:
-            question += "\nExplicit user-selected source scope: " + ", ".join(ui_scope)
+        question = _schema_only_question(public_item)
         if choices:
             question += "\nUser clarification (only selected offered options): " + json.dumps(choices, ensure_ascii=False)
         prompt = "Prior conversation (user questions and actual returned result summaries only):\n" + json.dumps(self.history, ensure_ascii=False, default=str) + "\n\nLatest request:\n" + question
@@ -236,13 +289,62 @@ def _score_rows(record: dict, item: dict) -> dict:
         return {"business_result_correct": False, "result_correct": False, "answer_count": 1, "answer_correct": 0}
     try:
         gold = item["expected_result"]
-        metrics = score_business_result(record["columns"], record["rows"], gold["columns"], gold["rows"],
-                                        ordered=bool(item.get("ordered")), contract=item.get("business_contract"))
-        strict = results_equal(record["columns"], record["rows"], gold["columns"], gold["rows"], ordered=bool(item.get("ordered")))
-        return {**metrics, "result_correct": strict, "answer_count": 1,
-                "answer_correct": int(bool(metrics.get("business_result_correct")))}
+        return _score_output_table(record["columns"], record["rows"], item)
     except Exception:
         return {"business_result_correct": False, "result_correct": False, "answer_count": 1, "answer_correct": 0}
+
+
+def _rescore_texa_table_scores(record: dict, item: dict, session, suite: str) -> dict:
+    """Replace legacy alias-sensitive scores with this run's declared v3 score."""
+    observed = {str(turn.get("id")): turn for turn in session.observed_turns if turn.get("id")}
+
+    def score_turn(turn_row: dict, target: dict) -> None:
+        trace = turn_row.get("trace") or {}
+        observed_turn = observed.get(str(trace.get("id")))
+        if observed_turn is None or "expected_result" not in target:
+            return
+        try:
+            columns, rows = session.output(observed_turn)
+            turn_row.update(_score_output_table(columns, rows, target))
+            turn_row["columns"] = columns
+            turn_row["row_count"] = len(rows)
+        except Exception as exc:
+            turn_row.update(result_correct=False, alias_insensitive_result_correct=False,
+                            strict_result_correct=False, business_result_correct=False,
+                            answer_count=1, answer_correct=0,
+                            result_error=type(exc).__name__)
+
+    if suite == "conversation":
+        targets = item.get("turns", [])
+        scored = []
+        for turn_row in record.get("turns", []):
+            index = int(turn_row.get("index", 0)) - 1
+            if 0 <= index < len(targets):
+                target = targets[index]
+                if target.get("gold_sql") and target.get("scoring_kind") != "discussion_answer":
+                    score_turn(turn_row, target)
+                    if "result_correct" in turn_row:
+                        scored.append(turn_row)
+        record["answer_count"] = expected_answer_count(item)
+        record["answer_correct"] = sum(bool(turn.get("result_correct")) for turn in scored)
+        record["result_correct"] = (record["answer_count"] > 0
+                                     and record["answer_correct"] == record["answer_count"])
+        record["strict_result_correct"] = (record["answer_count"] > 0 and
+            sum(bool(turn.get("strict_result_correct")) for turn in scored) == record["answer_count"])
+        record["business_result_correct"] = record["result_correct"]
+    elif suite == "clarification":
+        turns = record.get("turns", [])
+        if turns:
+            score_turn(turns[-1], item)
+            if "result_correct" in turns[-1]:
+                record.update({key: turns[-1][key] for key in (
+                    "result_correct", "alias_insensitive_result_correct", "strict_result_correct",
+                    "business_result_correct", "business_contract_result_correct",
+                    "output_contract_compliant", "metric_protocol") if key in turns[-1]})
+                record["answer_count"] = 1
+                record["answer_correct"] = int(bool(turns[-1]["result_correct"]))
+                record["success"] = bool(turns[-1]["result_correct"]) and not record.get("oracle_error")
+    return record
 
 
 def diagnostic_score(item, actual):
@@ -273,15 +375,11 @@ def _run_raw_scenario(item: dict, suite: str, manifest: dict, session: RawHistor
     out = []
     for target in targets:
         if target.get("action") == "social":
-            got = session.ask(target["question"], manifest, ui_scope=item.get("ui_scope"),
-                              output_columns=(target.get("expected_result") or {}).get("columns"),
-                              business_contract=target.get("business_contract"))
+            got = session.ask(target["question"], ui_scope=item.get("ui_scope"))
             out.append({"expected_action": "conversation", "actual_action": got["action"], "scorable": False,
                         "unsupported_reason": "social_turn_not_sql_scored"})
             continue
-        got = session.ask(target["question"], manifest, ui_scope=item.get("ui_scope"),
-                              output_columns=(target.get("expected_result") or {}).get("columns"),
-                              business_contract=target.get("business_contract"))
+        got = session.ask(target["question"], ui_scope=item.get("ui_scope"))
         rounds = 0
         while got.get("action") == "clarify" and rounds < 2:
             # Form choices are protocol-derived, never copied from gold result data.
@@ -301,9 +399,7 @@ def _run_raw_scenario(item: dict, suite: str, manifest: dict, session: RawHistor
                     if not values or any(v not in allowed for v in values):
                         raise ValueError("oracle_mismatch")
                     choices[field["id"]] = values
-                got = session.ask(target["question"], manifest, choices=choices, ui_scope=item.get("ui_scope"),
-                                  output_columns=(target.get("expected_result") or {}).get("columns"),
-                                  business_contract=target.get("business_contract"))
+                got = session.ask(target["question"], choices=choices, ui_scope=item.get("ui_scope"))
                 rounds += 1
             except Exception:
                 got["error_class"] = "oracle_mismatch"
@@ -346,8 +442,8 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
     source_map = catalog_mod.scoped_sources(cat, catalog_mod.load_sources(max_age=0))
     if set(manifest["sources"]) - set(source_map):
         raise ValueError("public catalog metadata is missing a challenge source")
-    # Texa excludes verified Q->A exemplars on B0/B1; keep this common context
-    # metadata-only so baseline variants receive no benchmark training examples.
+    # Texa sees the published semantic catalog; schema-only direct baselines below
+    # intentionally do not receive this context or any gold-derived output contract.
     public_cat = cat.model_copy(update={"verified_questions": []})
     public_context = render_catalog(public_cat, {sid: source_map[sid] for sid in manifest["sources"]})
     public_context += "\nPHYSICAL METRIC DEFINITIONS (public business contract, no examples)\n" + json.dumps(
@@ -371,6 +467,7 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
         "backend/eval/accuracy_study.py", "backend/eval/run_accuracy_study.py",
         "backend/eval/report_accuracy_study.py", "backend/eval/benchmark.py",
         "backend/texa/interpret.py", "backend/texa/answer.py", "backend/texa/catalog.py",
+        "backend/texa/intent.py", "backend/texa/prompts.py",
         "backend/texa/compile.py", "backend/texa/examples.py", "backend/texa/consistency.py",
         "backend/texa/runtime_guard.py", "catalog/product_events.yaml", "catalog/verified_examples.yaml")
         if (ROOT / p).exists()]
@@ -379,7 +476,13 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                   "bank_hash": hashlib.sha256((ROOT / "catalog/verified_examples.yaml").read_bytes()).hexdigest(),
         "implementation_hashes": {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
                                              for p in implementation_paths},
+                  # This is Texa's catalog snapshot fingerprint, never a direct-baseline prompt input.
+                  # Keep the established key because paired reports validate it per fixture world.
                   "public_context_hash": public_context_hash,
+                  "evaluation_protocol": "v3_schema_only_full_table",
+                  "baseline_input_policy": "schema_only_v1",
+                  "baseline_schema_hash": hashlib.sha256(CHALLENGE_SCHEMA.encode()).hexdigest(),
+                  "baseline_source_scope_policy": "explicit_ui_selection_only",
                   "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                   "example_policy": "sql_verified",
                   "usage_policy": "known completed logical calls; unresolved provider attempt reservations remain in the cumulative gateway ledger",
@@ -417,6 +520,9 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
         write({"type": "run_manifest", "variant": args.variant, "suite": args.suite, "split": args.split,
                "repeat": args.repeat, "model": args.model, "provenance": provenance, "expected_ids": [x["id"] for x in rows],
                "dataset": manifest, "status": "diagnostic_candidate", "fixture_world": args.world,
+               "input_policy": ({"B0": "schema_only_direct_sql", "B0R": "schema_plus_verified_retrieved_examples",
+                                 "B1": "schema_only_raw_history_clarification_and_one_sql_retry"}.get(
+                                     args.variant, "texa_semantic_catalog_and_compiler")),
                "confirmatory_requested": args.confirmatory,
                "expected_answer_counts": {item["id"]: expected_answer_count(item) for item in rows},
                "fixture_hash": provenance["dataset_hashes"].get(f"worlds/{args.world}.sql"),
@@ -433,7 +539,7 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                 raw_sql = None
                 selected_examples = []
                 if args.variant in {"B0", "B0R"}:
-                    prompt = _question(item, manifest, public_context)
+                    prompt = _schema_only_question(item)
                     if args.variant == "B0R":
                         from texa.examples import retrieve_examples
                         found = retrieve_examples(bank, item["question"], confirmed_sources=item.get("ui_scope", []))
@@ -446,7 +552,7 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                                 demos.append(f"Question: {example['question']}\nSQL: {sql}")
                         if demos:
                             prompt = "Verified reference examples (demonstrations only):\n" + "\n\n".join(demos) + "\n\n" + prompt
-                    response = llm.generate_structured(model=args.model, system=SYSTEM, prompt=prompt,
+                    response = llm.generate_structured(model=args.model, system=SCHEMA_ONLY_SYSTEM, prompt=prompt,
                                                        schema=SQL_SCHEMA, name="accuracy_b0", max_output_tokens=1200)
                     raw_sql = response["sql"]
                     cols, values = execute_readonly(dsn, raw_sql)
@@ -454,9 +560,9 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                     row = {**result, "sql": raw_sql, "retrieved_example_ids": selected_examples,
                            "retrieval_activated": bool(selected_examples), "success": bool(result["business_result_correct"])}
                 elif args.variant == "B1":
-                    raw_session = RawHistorySession(args.model, dsn, public_context=public_context)
+                    raw_session = RawHistorySession(args.model, dsn)
                     if args.suite == "diagnostic":
-                        current = raw_session.ask(item["question"], manifest, ui_scope=item.get("ui_scope"))
+                        current = raw_session.ask(item["question"], ui_scope=item.get("ui_scope"))
                         row = diagnostic_score(item, current.get("action"))
                         row["refusal_reason"] = current.get("reason")
                         row["sql"] = current.get("sql")
@@ -476,6 +582,13 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                         current = session.ask(item["question"])
                         record = {"result_correct": False, "business_result_correct": False}
                         record.update(score_answer(item, current, session))
+                        try:
+                            cols, values = session.output(current)
+                            record.update(_score_output_table(cols, values, item))
+                        except Exception as scoring_error:
+                            record.update(result_correct=False, alias_insensitive_result_correct=False,
+                                          business_result_correct=False, answer_count=1, answer_correct=0,
+                                          result_error=type(scoring_error).__name__)
                         row = {**record, "answer_count": 1,
                                "answer_correct": int(bool(record.get("business_result_correct"))),
                                "success": bool(record.get("business_result_correct")), "turns": [{"trace": trace(current)}],
@@ -497,6 +610,8 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                         row["unsupported_turn_count"] = row.get("unsupported_answer_count", 0)
                     else:
                         raise ValueError("unsupported suite")
+                    if args.suite != "single":
+                        row = _rescore_texa_table_scores(row, item, session, args.suite)
                     if args.suite != "single":
                         trace_rows = [turn.get("trace", {}) for turn in row.get("turns", [])]
                         row["texa_accuracy_trace"] = next((t.get("candidate", {}).get("_accuracy")

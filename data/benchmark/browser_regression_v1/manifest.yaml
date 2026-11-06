@@ -1,0 +1,30 @@
+name: texa-browser-regression-v1
+dataset_type: challenge_candidate
+version: 1
+status: candidate_agent_reviewed_not_sealed
+purpose: Regression replay of real user questions submitted through the browser on 2026-11-06.
+provenance:
+  source_artifact: ../results/accuracy-browser-20261106/browser-check.json
+  source_sha256: df286972709306aed07f00770c4f6e300a0542885602ca9d2b0928ac905012c7
+  labels: Copied only from independent reference_sql and expected_columns/expected_rows in the immutable browser artifact.
+  holdout: false
+  note: These questions and labels were exposed during prior development; regression data only, not a fair sealed comparison set.
+engine: PostgreSQL 16+
+timezone: UTC
+sources: [cosmetics_shop, olist_marketplace]
+metrics: [events, users, sessions, viewers, purchases, buyers, revenue, buyer_conversion_rate]
+fixture: worlds/base.sql
+fixture_worlds:
+  base: {file: worlds/base.sql}
+  grain_counterexample: {file: worlds/grain_counterexample.sql}
+  coverage_edge: {file: worlds/coverage_edge.sql}
+fixture_policy: Exact copies of challenge_v1 fixture worlds; browser regression rows are not new production data.
+input_policy:
+  baseline: Physical PostgreSQL schema plus user-authored text and explicit UI scope only; no semantic metric definitions.
+  texa: Same user turns, fixture and model; Texa may use its semantic catalog/workflow.
+  source_conflict: Separate diagnostic; user-selected Cosmetics conflicts with text naming Olist, expected to clarify.
+  scoring: Full independently authored SQL output tables; no QuerySpec, model trace, or internal state is a scoring oracle.
+quality:
+  human_review: pending
+  test_labels_exposed_to_author: true
+  sealed: false

@@ -4,6 +4,27 @@ Cập nhật: 05/11/2026. Trạng thái: **đã implement các phần code chín
 
 ## Bổ sung ngày 06/11/2026
 
+### Vòng sửa theo yêu cầu baseline chỉ nhận schema
+
+**Giao thức được chốt trước lần đo tiếp theo:** B0 nhận câu hỏi và schema vật lý PostgreSQL; không nhận catalog, định nghĩa metric, event-role mapping, gold SQL, tên cột đáp án hay business contract. B1 dùng cùng đầu vào, thêm lịch sử câu hỏi/kết quả thực tế và quyền hỏi người dùng làm rõ; cùng các tình huống hội thoại, nguồn mâu thuẫn, yêu cầu ngoài phạm vi với Texa. B0R là đối chứng riêng có ví dụ đã kiểm chứng, không gọi nó là baseline thuần. Texa nhận semantic catalog vì đó là một thành phần của sản phẩm. Đây là so sánh hai hệ thống có lượng tri thức khác nhau, không phải chứng minh cùng một LLM trở nên thông minh hơn.
+
+**Không so trực tiếp với 96,7% cũ:** prompt cũ còn nhận định nghĩa nghiệp vụ, catalog và output aliases từ annotation. Giữ nguyên artifact cũ và ghi rõ giao thức. Không sửa gold hoặc chọn câu chỉ để baseline thấp. Phép đo mới phải dùng cùng model, dữ liệu, câu hỏi, thời điểm và rubric kết quả. Chấm toàn bộ bảng, giữ số cột/thứ tự vai trò, duplicate, NULL, tolerance và ordering khi được yêu cầu; không bắt tên alias giống nhau. Compliance tên cột được báo riêng. Không chiếu bỏ cột sai để tăng điểm.
+
+**Các lỗi đã kiểm tra trực tiếp trên raw trace:**
+
+| Bằng chứng | Kết luận cần sửa |
+|---|---|
+| `c16`, `c37`: SQL có `WHERE event_name='purchase'`, output alias `events` thay vì `purchases`; supplementary full-table đúng | Đây là khác alias, **không phải** compiler đếm toàn bộ event. Giữ riêng lỗi output contract, tránh sửa compiler đang đúng. |
+| `c49`: tự thêm `item_category='Cosmetics'`, bỏ category breakdown; binder từ chối vì giá trị không tồn tại | Diễn giải vai trò nguồn/dimension sai. Cần ground các ràng buộc vào catalog và dữ liệu, trả lỗi có cấu trúc cho bounded re-resolution; không xóa filter người dùng chỉ để truy vấn chạy. |
+| Browser: hai câu đếm lượt xem/người xem Cosmetics bị từ chối | Refusal chưa có bằng chứng capability. Query và refusal phải dùng chung capability contract; không tự biến một spec hợp lệ thành bằng chứng đúng ý. |
+| `x02`, T10/v4: SQL trả revenue/purchases; writer được yêu cầu tính AOV bằng revenue/purchases | Sai grain: purchase rows là item lines, không phải orders. Cần requested measure contract độc lập với selected metric và kiểm trước query/writer. |
+| `x11`, T01/T11: source conflict bị từ chối | Policy bắt buộc hỏi nguồn phải được quyết định ngoài voting và trước nhánh refusal. |
+| `q03`, `q10`: hỏi thêm kỳ nhưng oracle chỉ có nguồn | Phân loại protocol/oracle mismatch riêng; không tự coi đây là bằng chứng Texa hiểu sai hoặc bỏ lỗi khỏi mẫu số. |
+
+**Căn cứ kiến trúc đã đọc lại:** [dbt Semantic Layer architecture](https://docs.getdbt.com/docs/use-dbt-semantic-layer/sl-architecture) tập trung metric/semantic model trong YAML và dịch metric query thành SQL; [Snowflake Semantic Views overview](https://docs.snowflake.com/en/user-guide/views-semantic/overview) tách ý nghĩa nghiệp vụ khỏi schema vật lý, giữ định nghĩa nhất quán. Texa áp dụng contract/version/capability dùng chung ở ranh giới diễn giải → bind → compiler. Requested intent, refusal evidence và bounded repair là thiết kế cụ thể của Texa dựa trên các nguyên tắc này, **không phải** tính năng được khẳng định có nguyên xi ở hai nhà cung cấp. LLM vẫn có thể diễn giải sai; contract không thay thế đánh giá độc lập.
+
+**Nghiệm thu:** hồi quy trên measure/grain không tương thích, supported composition, source conflict dù model/voting chọn refusal, nguồn đổi tên và biến thể metric; chạy lại cùng các câu browser thực tế cho cả B1 và Texa, giữ lỗi/timeout trong mẫu số, báo accuracy/clarification/refusal/latency/cost riêng. Các câu đã xem là regression, chưa phải holdout. Retrieval/consistency vẫn tắt mặc định đến khi có bằng chứng qua gate.
+
 - Hoàn tất compiler metric-support domain, retrieval bank và selective self-consistency có cờ tắt mặc định; chi tiết tại `TEXT2SQL_ACCURACY_IMPLEMENTATION_PLAN.md`, mục 10.
 - Công cụ đánh giá đã thêm preflight typed business contract, mẫu số theo authored answer slots kể cả khi lỗi, JSON hóa kết quả PostgreSQL trong baseline history, trace mọi lượt và hash-pinned annotation erratum. Giữ nguyên raw và snapshot; không sửa gold để tăng điểm.
 - Câu đơn dev mới: B0 29/30, T00 27/30, T10 26/30, T01 28/30, T11 27/30 theo primary protocol sau erratum. Alias-insensitive supplemental: B0/T00/T01 cùng 29/30. Chưa chứng minh hai thành phần mới tăng accuracy; chưa bật mặc định.

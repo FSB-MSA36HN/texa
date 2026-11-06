@@ -2,6 +2,8 @@
 
 > Phạm vi và kiến trúc hiện tại. Kết quả benchmark là exploratory trên một repeat của bộ dev đã thấy; không phải sealed human holdout hay bằng chứng production.
 
+> Lưu ý giao thức: các bảng lịch sử dưới đây cho baseline cả schema và định nghĩa nghiệp vụ/catalog. Theo giao thức mới, baseline thuần chỉ nhận schema + câu hỏi; B1 có thêm lịch sử/hỏi lại, cùng tình huống thực tế với Texa. Không gọi điểm 96,7% cũ là điểm baseline schema-only. Lần đo mới chấm toàn bộ giá trị bảng không phụ thuộc alias, tách compliance tên cột; không thay ngược raw hoặc kết quả cũ.
+
 ## Slide 1 — Texa: hỏi dữ liệu thương mại điện tử bằng ngôn ngữ tự nhiên (0:40)
 
 - Trợ lý phân tích cho PM/PO và quản lý không chuyên SQL
