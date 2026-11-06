@@ -1,0 +1,15 @@
+{
+  "status": "interrupted_preserved_not_a_complete_matrix",
+  "reason": "T00 c17 exposed false refusal: model used entity grain purchased_item_line but catalog encoded revenue as purchased_item_line_value. Stop before further paid calls; correct entity grain versus unit and constrain identifiers from catalog before rerun.",
+  "complete_variants": [
+    "B0",
+    "B0R",
+    "B1"
+  ],
+  "partial_variants": [
+    "T00",
+    "T10"
+  ],
+  "comparison_eligible": false,
+  "do_not_pool_with_rerun": true
+}

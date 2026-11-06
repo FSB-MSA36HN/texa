@@ -1,0 +1,4767 @@
+{
+  "type": "actual_browser_real_model_round2_readonly_replay",
+  "model": "gpt-6-luna",
+  "anchor_turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+  "conversation_id": "32026a46-da03-4d2e-83a3-2005ffdf4053",
+  "dataset_type": "exposed browser regression; not holdout",
+  "fixture": "data/benchmark/challenge_v1/worlds/base.sql",
+  "fixture_sha256": "dee8420aedaf21991b24034b5abc340e6eafe90973806fabf325f6e66b3b14a9",
+  "gold_method": "Pre-authored independent SQL map; complete saved result tables checked with results_equal. QuerySpec is retained only as observed diagnostic state, never used to produce gold.",
+  "limitations": [
+    "Single real-browser conversation; not a holdout or classroom concurrency test.",
+    "Only observed SQL/query and saved state are captured; no extra UI behavior is inferred."
+  ],
+  "browser_observations": {
+    "source_conflict_form_seen": true,
+    "olist_choice_clicked": true,
+    "final_olist_buyers_result_visually_observed": false,
+    "final_olist_buyers_result_validated_from_saved_db_state": true,
+    "filter_removal_reference_picker_was_required": true,
+    "selected_reference_result_number": 4
+  },
+  "run_steps": [
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "run_queue",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:26:38.060306+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "read_conversation",
+      "status": "done",
+      "ms": 3,
+      "note": "0 relevant turns · unresolved · catalog v7",
+      "created_at": "2026-11-06T11:26:38.065546+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "prepare_context",
+      "status": "done",
+      "ms": 0,
+      "note": "~1,864 tokens of catalog",
+      "created_at": "2026-11-06T11:26:38.066421+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "interpret",
+      "created_at": "2026-11-06T11:26:38.067251+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 8090,
+      "note": "interpret:success",
+      "created_at": "2026-11-06T11:26:46.159291+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "interpret",
+      "status": "done",
+      "ms": 8108,
+      "note": "query",
+      "created_at": "2026-11-06T11:26:46.175719+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "check_interpretation",
+      "status": "done",
+      "ms": 0,
+      "note": "spec",
+      "created_at": "2026-11-06T11:26:46.178185+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "validate_query",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:26:46.178707+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "check_data",
+      "status": "done",
+      "ms": 0,
+      "note": "Challenge Cosmetics Shop",
+      "created_at": "2026-11-06T11:26:46.179110+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "compile_sql",
+      "status": "done",
+      "ms": 1,
+      "note": null,
+      "created_at": "2026-11-06T11:26:46.180785+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "run_query",
+      "status": "done",
+      "ms": 1,
+      "note": "1 rows · 1 ms",
+      "created_at": "2026-11-06T11:26:46.182931+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "insight",
+      "created_at": "2026-11-06T11:26:46.183734+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 3346,
+      "note": "insight:success",
+      "created_at": "2026-11-06T11:26:49.530916+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "write_answer",
+      "status": "done",
+      "ms": 3354,
+      "note": null,
+      "created_at": "2026-11-06T11:26:49.538608+07:00"
+    },
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "step": "result",
+      "status": "done",
+      "ms": null,
+      "note": null,
+      "created_at": "2026-11-06T11:26:49.544079+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "run_queue",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:27:05.361056+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "read_conversation",
+      "status": "done",
+      "ms": 3,
+      "note": "0 relevant turns · unresolved · catalog v7",
+      "created_at": "2026-11-06T11:27:05.365355+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "prepare_context",
+      "status": "done",
+      "ms": 0,
+      "note": "~1,864 tokens of catalog",
+      "created_at": "2026-11-06T11:27:05.366222+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "interpret",
+      "created_at": "2026-11-06T11:27:05.367906+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 8532,
+      "note": "interpret:success",
+      "created_at": "2026-11-06T11:27:13.900789+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "interpret",
+      "status": "done",
+      "ms": 8551,
+      "note": "query",
+      "created_at": "2026-11-06T11:27:13.919436+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "check_interpretation",
+      "status": "done",
+      "ms": 0,
+      "note": "spec",
+      "created_at": "2026-11-06T11:27:13.921943+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "validate_query",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:27:13.922462+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "check_data",
+      "status": "done",
+      "ms": 0,
+      "note": "Challenge Cosmetics Shop",
+      "created_at": "2026-11-06T11:27:13.922911+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "compile_sql",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:27:13.923988+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "run_query",
+      "status": "done",
+      "ms": 1,
+      "note": "1 rows · 1 ms",
+      "created_at": "2026-11-06T11:27:13.926029+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "insight",
+      "created_at": "2026-11-06T11:27:13.926446+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 3419,
+      "note": "insight:success",
+      "created_at": "2026-11-06T11:27:17.346209+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "write_answer",
+      "status": "done",
+      "ms": 3427,
+      "note": null,
+      "created_at": "2026-11-06T11:27:17.354342+07:00"
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "step": "result",
+      "status": "done",
+      "ms": null,
+      "note": null,
+      "created_at": "2026-11-06T11:27:17.359237+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "run_queue",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:27:29.576350+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "read_conversation",
+      "status": "done",
+      "ms": 2,
+      "note": "0 relevant turns · unresolved · catalog v7",
+      "created_at": "2026-11-06T11:27:29.580146+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "prepare_context",
+      "status": "done",
+      "ms": 0,
+      "note": "~1,864 tokens of catalog",
+      "created_at": "2026-11-06T11:27:29.581344+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "interpret",
+      "created_at": "2026-11-06T11:27:29.582055+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 8221,
+      "note": "interpret:success",
+      "created_at": "2026-11-06T11:27:37.803968+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "interpret",
+      "status": "done",
+      "ms": 8239,
+      "note": "query",
+      "created_at": "2026-11-06T11:27:37.821891+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "check_interpretation",
+      "status": "done",
+      "ms": 0,
+      "note": "spec",
+      "created_at": "2026-11-06T11:27:37.825196+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "validate_query",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:27:37.825641+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "check_data",
+      "status": "done",
+      "ms": 0,
+      "note": "Challenge Cosmetics Shop",
+      "created_at": "2026-11-06T11:27:37.825993+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "compile_sql",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:27:37.827041+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "run_query",
+      "status": "done",
+      "ms": 1,
+      "note": "2 rows · 1 ms",
+      "created_at": "2026-11-06T11:27:37.828966+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "insight",
+      "created_at": "2026-11-06T11:27:37.829617+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 5172,
+      "note": "insight:success",
+      "created_at": "2026-11-06T11:27:43.002415+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "write_answer",
+      "status": "done",
+      "ms": 5181,
+      "note": null,
+      "created_at": "2026-11-06T11:27:43.011084+07:00"
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "step": "result",
+      "status": "done",
+      "ms": null,
+      "note": null,
+      "created_at": "2026-11-06T11:27:43.018130+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "run_queue",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:27:59.256167+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "read_conversation",
+      "status": "done",
+      "ms": 5,
+      "note": "0 relevant turns · unresolved · catalog v7",
+      "created_at": "2026-11-06T11:27:59.263316+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "prepare_context",
+      "status": "done",
+      "ms": 0,
+      "note": "~1,864 tokens of catalog",
+      "created_at": "2026-11-06T11:27:59.265899+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "interpret",
+      "created_at": "2026-11-06T11:27:59.268046+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 7591,
+      "note": "interpret:success",
+      "created_at": "2026-11-06T11:28:06.860929+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "interpret",
+      "status": "done",
+      "ms": 7608,
+      "note": "query",
+      "created_at": "2026-11-06T11:28:06.876131+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "check_interpretation",
+      "status": "done",
+      "ms": 0,
+      "note": "spec",
+      "created_at": "2026-11-06T11:28:06.878340+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "validate_query",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:28:06.878777+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "check_data",
+      "status": "done",
+      "ms": 0,
+      "note": "Challenge Cosmetics Shop",
+      "created_at": "2026-11-06T11:28:06.879135+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "compile_sql",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:28:06.880524+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "run_query",
+      "status": "done",
+      "ms": 1,
+      "note": "1 rows · 1 ms",
+      "created_at": "2026-11-06T11:28:06.881991+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "insight",
+      "created_at": "2026-11-06T11:28:06.882546+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 4366,
+      "note": "insight:success",
+      "created_at": "2026-11-06T11:28:11.249718+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "write_answer",
+      "status": "done",
+      "ms": 4374,
+      "note": null,
+      "created_at": "2026-11-06T11:28:11.257186+07:00"
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "step": "result",
+      "status": "done",
+      "ms": null,
+      "note": null,
+      "created_at": "2026-11-06T11:28:11.263357+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "run_queue",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:28:39.635972+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "read_conversation",
+      "status": "done",
+      "ms": 3,
+      "note": "0 relevant turns · unresolved · catalog v7",
+      "created_at": "2026-11-06T11:28:39.640438+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "prepare_context",
+      "status": "done",
+      "ms": 0,
+      "note": "~1,864 tokens of catalog",
+      "created_at": "2026-11-06T11:28:39.641258+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "interpret",
+      "created_at": "2026-11-06T11:28:39.641834+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 9098,
+      "note": "interpret:success",
+      "created_at": "2026-11-06T11:28:48.741295+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "interpret",
+      "status": "done",
+      "ms": 9116,
+      "note": "query",
+      "created_at": "2026-11-06T11:28:48.758576+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "result",
+      "status": "done",
+      "ms": null,
+      "note": null,
+      "created_at": "2026-11-06T11:28:48.765965+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "run_queue",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:29:47.833943+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "read_conversation",
+      "status": "done",
+      "ms": 3,
+      "note": "1 relevant turns · followup · catalog v7",
+      "created_at": "2026-11-06T11:29:47.838044+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "prepare_context",
+      "status": "done",
+      "ms": 0,
+      "note": "~1,864 tokens of catalog",
+      "created_at": "2026-11-06T11:29:47.838836+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "interpret",
+      "created_at": "2026-11-06T11:29:47.839722+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 21984,
+      "note": "interpret:success",
+      "created_at": "2026-11-06T11:30:09.824746+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "interpret",
+      "status": "done",
+      "ms": 22000,
+      "note": "query",
+      "created_at": "2026-11-06T11:30:09.840107+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "check_interpretation",
+      "status": "done",
+      "ms": 0,
+      "note": "spec",
+      "created_at": "2026-11-06T11:30:09.841357+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "validate_query",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:30:09.841644+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "check_data",
+      "status": "done",
+      "ms": 0,
+      "note": "Challenge Cosmetics Shop",
+      "created_at": "2026-11-06T11:30:09.841970+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "compile_sql",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:30:09.842782+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "run_query",
+      "status": "done",
+      "ms": 0,
+      "note": "1 rows · 0 ms",
+      "created_at": "2026-11-06T11:30:09.843660+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "insight",
+      "created_at": "2026-11-06T11:30:09.843979+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 10899,
+      "note": "insight:success",
+      "created_at": "2026-11-06T11:30:20.744253+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "write_answer",
+      "status": "done",
+      "ms": 10908,
+      "note": null,
+      "created_at": "2026-11-06T11:30:20.752701+07:00"
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "step": "result",
+      "status": "done",
+      "ms": null,
+      "note": null,
+      "created_at": "2026-11-06T11:30:20.759563+07:00"
+    },
+    {
+      "turn_id": "6a47e6cd-3515-401d-b86b-b48c97f5032d",
+      "step": "run_queue",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:30:32.035842+07:00"
+    },
+    {
+      "turn_id": "6a47e6cd-3515-401d-b86b-b48c97f5032d",
+      "step": "read_conversation",
+      "status": "done",
+      "ms": 3,
+      "note": "0 relevant turns · unresolved · catalog v7",
+      "created_at": "2026-11-06T11:30:32.040954+07:00"
+    },
+    {
+      "turn_id": "6a47e6cd-3515-401d-b86b-b48c97f5032d",
+      "step": "prepare_context",
+      "status": "done",
+      "ms": 0,
+      "note": "~1,864 tokens of catalog",
+      "created_at": "2026-11-06T11:30:32.041827+07:00"
+    },
+    {
+      "turn_id": "6a47e6cd-3515-401d-b86b-b48c97f5032d",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "interpret",
+      "created_at": "2026-11-06T11:30:32.042714+07:00"
+    },
+    {
+      "turn_id": "6a47e6cd-3515-401d-b86b-b48c97f5032d",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 9761,
+      "note": "interpret:success",
+      "created_at": "2026-11-06T11:30:41.804947+07:00"
+    },
+    {
+      "turn_id": "6a47e6cd-3515-401d-b86b-b48c97f5032d",
+      "step": "interpret",
+      "status": "done",
+      "ms": 9770,
+      "note": "unsupported",
+      "created_at": "2026-11-06T11:30:41.812966+07:00"
+    },
+    {
+      "turn_id": "6a47e6cd-3515-401d-b86b-b48c97f5032d",
+      "step": "result",
+      "status": "done",
+      "ms": null,
+      "note": null,
+      "created_at": "2026-11-06T11:30:41.819385+07:00"
+    },
+    {
+      "turn_id": "c2a9ea60-2b8d-4f05-acc7-449d8f104385",
+      "step": "run_queue",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:31:11.126741+07:00"
+    },
+    {
+      "turn_id": "c2a9ea60-2b8d-4f05-acc7-449d8f104385",
+      "step": "read_conversation",
+      "status": "done",
+      "ms": 4,
+      "note": "0 relevant turns · unresolved · catalog v7",
+      "created_at": "2026-11-06T11:31:11.133421+07:00"
+    },
+    {
+      "turn_id": "c2a9ea60-2b8d-4f05-acc7-449d8f104385",
+      "step": "prepare_context",
+      "status": "done",
+      "ms": 0,
+      "note": "~1,864 tokens of catalog",
+      "created_at": "2026-11-06T11:31:11.134181+07:00"
+    },
+    {
+      "turn_id": "c2a9ea60-2b8d-4f05-acc7-449d8f104385",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "interpret",
+      "created_at": "2026-11-06T11:31:11.134967+07:00"
+    },
+    {
+      "turn_id": "c2a9ea60-2b8d-4f05-acc7-449d8f104385",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 6940,
+      "note": "interpret:success",
+      "created_at": "2026-11-06T11:31:18.075566+07:00"
+    },
+    {
+      "turn_id": "c2a9ea60-2b8d-4f05-acc7-449d8f104385",
+      "step": "interpret",
+      "status": "done",
+      "ms": 6958,
+      "note": "conversation",
+      "created_at": "2026-11-06T11:31:18.093145+07:00"
+    },
+    {
+      "turn_id": "c2a9ea60-2b8d-4f05-acc7-449d8f104385",
+      "step": "result",
+      "status": "done",
+      "ms": null,
+      "note": null,
+      "created_at": "2026-11-06T11:31:18.100227+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "run_queue",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:32:16.048840+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "read_conversation",
+      "status": "done",
+      "ms": 2,
+      "note": "0 relevant turns · unresolved · catalog v7",
+      "created_at": "2026-11-06T11:32:16.052576+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "prepare_context",
+      "status": "done",
+      "ms": 0,
+      "note": "~1,864 tokens of catalog",
+      "created_at": "2026-11-06T11:32:16.054188+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "interpret",
+      "created_at": "2026-11-06T11:32:16.055556+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 13379,
+      "note": "interpret:success",
+      "created_at": "2026-11-06T11:32:29.435694+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "interpret",
+      "status": "done",
+      "ms": 13396,
+      "note": "query",
+      "created_at": "2026-11-06T11:32:29.452037+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "check_interpretation",
+      "status": "done",
+      "ms": 0,
+      "note": "spec",
+      "created_at": "2026-11-06T11:32:29.454676+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "validate_query",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:32:29.455242+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "check_data",
+      "status": "done",
+      "ms": 0,
+      "note": "Challenge Cosmetics Shop",
+      "created_at": "2026-11-06T11:32:29.455684+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "compile_sql",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:32:29.456875+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "run_query",
+      "status": "done",
+      "ms": 1,
+      "note": "3 rows · 1 ms",
+      "created_at": "2026-11-06T11:32:29.458476+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "insight",
+      "created_at": "2026-11-06T11:32:29.458957+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 3789,
+      "note": "insight:success",
+      "created_at": "2026-11-06T11:32:33.249122+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "write_answer",
+      "status": "done",
+      "ms": 3797,
+      "note": null,
+      "created_at": "2026-11-06T11:32:33.256663+07:00"
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "step": "result",
+      "status": "done",
+      "ms": null,
+      "note": null,
+      "created_at": "2026-11-06T11:32:33.264828+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "run_queue",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:33:21.767748+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "read_conversation",
+      "status": "done",
+      "ms": 5,
+      "note": "0 relevant turns · unresolved · catalog v7",
+      "created_at": "2026-11-06T11:33:21.773900+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "prepare_context",
+      "status": "done",
+      "ms": 0,
+      "note": "~1,864 tokens of catalog",
+      "created_at": "2026-11-06T11:33:21.774794+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "interpret",
+      "created_at": "2026-11-06T11:33:21.775479+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 7985,
+      "note": "interpret:success",
+      "created_at": "2026-11-06T11:33:29.762183+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "interpret",
+      "status": "done",
+      "ms": 8002,
+      "note": "query",
+      "created_at": "2026-11-06T11:33:29.778345+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "check_interpretation",
+      "status": "done",
+      "ms": 0,
+      "note": "spec",
+      "created_at": "2026-11-06T11:33:29.780697+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "validate_query",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:33:29.781160+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "check_data",
+      "status": "done",
+      "ms": 0,
+      "note": "Challenge Olist Marketplace",
+      "created_at": "2026-11-06T11:33:29.781796+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "compile_sql",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:33:29.782725+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "run_query",
+      "status": "done",
+      "ms": 1,
+      "note": "1 rows · 1 ms",
+      "created_at": "2026-11-06T11:33:29.784707+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "insight",
+      "created_at": "2026-11-06T11:33:29.785267+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 5808,
+      "note": "insight:success",
+      "created_at": "2026-11-06T11:33:35.594070+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "write_answer",
+      "status": "done",
+      "ms": 5816,
+      "note": null,
+      "created_at": "2026-11-06T11:33:35.601805+07:00"
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "step": "result",
+      "status": "done",
+      "ms": null,
+      "note": null,
+      "created_at": "2026-11-06T11:33:35.610745+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "run_queue",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:34:53.075054+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "read_conversation",
+      "status": "done",
+      "ms": 4,
+      "note": "0 relevant turns · unresolved · catalog v7",
+      "created_at": "2026-11-06T11:34:53.082352+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "prepare_context",
+      "status": "done",
+      "ms": 0,
+      "note": "~1,864 tokens of catalog",
+      "created_at": "2026-11-06T11:34:53.083631+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "interpret",
+      "created_at": "2026-11-06T11:34:53.084555+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 9915,
+      "note": "interpret:success",
+      "created_at": "2026-11-06T11:35:03.001061+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "interpret",
+      "status": "done",
+      "ms": 9934,
+      "note": "query",
+      "created_at": "2026-11-06T11:35:03.019116+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "result",
+      "status": "done",
+      "ms": null,
+      "note": null,
+      "created_at": "2026-11-06T11:35:03.026098+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "run_queue",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:36:08.233006+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "check_interpretation",
+      "status": "done",
+      "ms": 0,
+      "note": "spec",
+      "created_at": "2026-11-06T11:36:08.235116+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "validate_query",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:36:08.235714+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "check_data",
+      "status": "done",
+      "ms": 0,
+      "note": "Challenge Olist Marketplace",
+      "created_at": "2026-11-06T11:36:08.236270+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "compile_sql",
+      "status": "done",
+      "ms": 0,
+      "note": null,
+      "created_at": "2026-11-06T11:36:08.236935+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "run_query",
+      "status": "done",
+      "ms": 0,
+      "note": "1 rows · 0 ms",
+      "created_at": "2026-11-06T11:36:08.237948+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "llm_queue_wait",
+      "status": "done",
+      "ms": 0,
+      "note": "insight",
+      "created_at": "2026-11-06T11:36:08.238254+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "llm_provider_total",
+      "status": "done",
+      "ms": 7881,
+      "note": "insight:success",
+      "created_at": "2026-11-06T11:36:16.119691+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "write_answer",
+      "status": "done",
+      "ms": 7888,
+      "note": null,
+      "created_at": "2026-11-06T11:36:16.127233+07:00"
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "step": "result",
+      "status": "done",
+      "ms": null,
+      "note": null,
+      "created_at": "2026-11-06T11:36:16.135236+07:00"
+    }
+  ],
+  "records": [
+    {
+      "turn_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4",
+      "question": "Cosmetics Shop có bao nhiêu lượt xem sản phẩm trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:26:38.058619+07:00",
+      "actual_columns": [
+        "events"
+      ],
+      "actual_rows": [
+        [
+          24
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "events",
+        "filters": [
+          {
+            "field": "event_name",
+            "values": [
+              "view"
+            ],
+            "operator": "="
+          }
+        ],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT count(*) FILTER (WHERE (e.event_name = ANY('{view,cart,remove_from_cart,purchase,order_purchased,order_approved,order_shipped,order_delivered,order_canceled,payment_made,review_submitted}'))) AS \"events\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') AND \"e\".\"event_name\" = 'view' LIMIT 1001",
+      "answer_message": null,
+      "form": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 7,
+        "inherited_slots": {},
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "clear",
+          "recipe": "set",
+          "filters": "set",
+          "metrics": "clear",
+          "selection": "clear",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false
+      },
+      "state_snapshot": {
+        "form": null,
+        "rows": [
+          {
+            "events": 24
+          }
+        ],
+        "error": null,
+        "facts": [
+          {
+            "id": "f_rows",
+            "unit": "count",
+            "label": "Rows in the result",
+            "value": 1
+          },
+          {
+            "id": "f_events",
+            "unit": "count",
+            "label": "Events",
+            "value": 24
+          }
+        ],
+        "notes": [],
+        "scope": [],
+        "period": {
+          "cosmetics_shop": {
+            "end": "2025-03-11",
+            "start": "2025-01-01",
+            "data_end": "2025-03-11",
+            "data_start": "2025-01-01"
+          }
+        },
+        "status": "answered",
+        "timing": {
+          "end_to_end_ms": 11479,
+          "first_result_ms": 8122
+        },
+        "answers": {},
+        "columns": [
+          {
+            "name": "events",
+            "role": "metric",
+            "unit": "count",
+            "label": "Lượt sự kiện",
+            "additive": true,
+            "currency": null,
+            "value_type": "number"
+          }
+        ],
+        "context": {
+          "language": "vi",
+          "relation": "new_topic",
+          "questions": [],
+          "references": [],
+          "catalog_version": 7,
+          "inherited_slots": {},
+          "slot_operations": {
+            "shape": "set",
+            "top_k": "clear",
+            "recipe": "set",
+            "filters": "set",
+            "metrics": "clear",
+            "selection": "clear",
+            "source_ids": "set",
+            "time_range": "set"
+          },
+          "structured_memory": true,
+          "clarification_needed": false
+        },
+        "insight": {
+          "body": [],
+          "cited": [
+            "24"
+          ],
+          "marks": [
+            {
+              "kind": "sql",
+              "text": "24",
+              "label": "Events"
+            }
+          ],
+          "caveats": [],
+          "derived": [],
+          "headline": "Cosmetics Shop có 24 lượt xem sản phẩm trong giai đoạn 2025-01-01 đến 2025-03-11.",
+          "follow_ups": [
+            "Người dùng của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+            "Lượt sự kiện của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+            "Phiên truy cập của Challenge Cosmetics Shop, toàn bộ dữ liệu"
+          ]
+        },
+        "message": null,
+        "partial": false,
+        "sources": [
+          "cosmetics_shop"
+        ],
+        "ablation": {
+          "variant": "F",
+          "clarification_field": null,
+          "clarification_reason": "not_applicable",
+          "clarification_choices": [],
+          "clarification_invoked": false,
+          "clarification_eligible": false,
+          "clarification_choice_id": null,
+          "clarification_requested": false,
+          "clarification_choice_count": 0
+        },
+        "language": "vi",
+        "variants": [],
+        "warnings": [],
+        "candidate": {
+          "reply": "",
+          "shape": "aggregate",
+          "top_k": 0,
+          "reason": "",
+          "recipe": "events",
+          "filters": [
+            {
+              "field": "event_name",
+              "operator": "IN",
+              "values_mentioned": [
+                "view"
+              ]
+            }
+          ],
+          "metrics": [],
+          "outcome": "query",
+          "dialogue": {
+            "slots": {
+              "shape": "set",
+              "top_k": "clear",
+              "recipe": "set",
+              "filters": "set",
+              "metrics": "clear",
+              "selection": "clear",
+              "source_ids": "set",
+              "time_range": "set"
+            },
+            "relation": "new_topic",
+            "target_id": ""
+          },
+          "language": "vi",
+          "_accuracy": {
+            "retrieval": {
+              "enabled": false
+            },
+            "consistency": {
+              "enabled": false
+            }
+          },
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": "",
+            "days": 0,
+            "kind": "all",
+            "start": ""
+          },
+          "suggestions": [],
+          "recipe_stated": true,
+          "answer_request": {
+            "ask": "",
+            "need": "describe"
+          },
+          "intent_contract": {
+            "kind": "catalog_metric",
+            "grain": "event_row",
+            "entity": "Lượt xem sản phẩm",
+            "operation": "count_events",
+            "filter_ids": [
+              "event_name"
+            ],
+            "metric_ids": [
+              "events"
+            ],
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "breakdown_ids": []
+          },
+          "_registry_complete": true,
+          "recipe_alternatives": []
+        },
+        "row_count": 1,
+        "query_spec": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "events",
+          "filters": [
+            {
+              "field": "event_name",
+              "values": [
+                "view"
+              ],
+              "operator": "="
+            }
+          ],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "currency_of": {
+          "cosmetics_shop": "USD"
+        },
+        "compiled_sql": "SELECT count(*) FILTER (WHERE (e.event_name = ANY('{view,cart,remove_from_cart,purchase,order_purchased,order_approved,order_shipped,order_delivered,order_canceled,payment_made,review_submitted}'))) AS \"events\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') AND \"e\".\"event_name\" = 'view' LIMIT 1001",
+        "model_preview": [
+          {
+            "events": 24
+          }
+        ],
+        "dataset_version": "17ce03c17d5095363f03",
+        "source_resolution": {
+          "ui": [],
+          "text": [
+            "cosmetics_shop"
+          ],
+          "model": [
+            "cosmetics_shop"
+          ],
+          "memory": [],
+          "effective": [
+            "cosmetics_shop"
+          ],
+          "resolved_by_user": false
+        },
+        "metric_definitions": [
+          {
+            "id": "events",
+            "label": "Lượt sự kiện",
+            "description": "Tổng số sự kiện được ghi nhận trong kỳ."
+          }
+        ],
+        "unavailable_metrics": {},
+        "filter_binding_trace": [
+          {
+            "origin": "question_interpretation",
+            "field_id": "event_name",
+            "operator": "=",
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "bound_values": [
+              "view"
+            ],
+            "input_values": [
+              "view"
+            ],
+            "catalog_version": 7,
+            "vocabulary_status": {
+              "cosmetics_shop": "complete"
+            }
+          }
+        ]
+      },
+      "reference_sql_id": "browser_round2_view_events",
+      "full_result_correct": true,
+      "reference_sql": "SELECT count(*) AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='view'",
+      "expected_columns": [
+        "events"
+      ],
+      "expected_rows": [
+        [
+          24
+        ]
+      ]
+    },
+    {
+      "turn_id": "2a632077-4e33-4d57-8a0d-1c9a296040d5",
+      "question": "Cosmetics Shop có bao nhiêu người dùng duy nhất đã xem sản phẩm trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:27:05.359768+07:00",
+      "actual_columns": [
+        "viewers"
+      ],
+      "actual_rows": [
+        [
+          12
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "viewers",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT count(DISTINCT e.user_id) FILTER (WHERE (e.event_name = ANY('{view}'))) AS \"viewers\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') LIMIT 1001",
+      "answer_message": null,
+      "form": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 7,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "clear",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "clear",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "state_snapshot": {
+        "form": null,
+        "rows": [
+          {
+            "viewers": 12
+          }
+        ],
+        "error": null,
+        "facts": [
+          {
+            "id": "f_rows",
+            "unit": "count",
+            "label": "Rows in the result",
+            "value": 1
+          },
+          {
+            "id": "f_viewers",
+            "unit": "count",
+            "label": "Users who viewed",
+            "value": 12
+          }
+        ],
+        "notes": [],
+        "scope": [],
+        "period": {
+          "cosmetics_shop": {
+            "end": "2025-03-11",
+            "start": "2025-01-01",
+            "data_end": "2025-03-11",
+            "data_start": "2025-01-01"
+          }
+        },
+        "status": "answered",
+        "timing": {
+          "end_to_end_ms": 11994,
+          "first_result_ms": 8565
+        },
+        "answers": {},
+        "columns": [
+          {
+            "name": "viewers",
+            "role": "metric",
+            "unit": "count",
+            "label": "Người xem sản phẩm",
+            "additive": false,
+            "currency": null,
+            "value_type": "number"
+          }
+        ],
+        "context": {
+          "language": "vi",
+          "relation": "new_topic",
+          "questions": [],
+          "references": [],
+          "catalog_version": 7,
+          "inherited_slots": {},
+          "result_ordinals": {
+            "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+          },
+          "slot_operations": {
+            "shape": "set",
+            "top_k": "clear",
+            "recipe": "set",
+            "filters": "clear",
+            "metrics": "clear",
+            "selection": "clear",
+            "source_ids": "set",
+            "time_range": "set"
+          },
+          "structured_memory": true,
+          "clarification_needed": false,
+          "unavailable_result_numbers": []
+        },
+        "insight": {
+          "body": [],
+          "cited": [
+            "12"
+          ],
+          "marks": [
+            {
+              "kind": "sql",
+              "text": "12",
+              "label": "Users who viewed"
+            }
+          ],
+          "caveats": [],
+          "derived": [],
+          "headline": "Challenge Cosmetics Shop có 12 người dùng duy nhất đã xem sản phẩm trong toàn bộ dữ liệu từ 2025-01-01 đến 2025-03-11.",
+          "follow_ups": [
+            "Người dùng của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+            "Lượt sự kiện của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+            "Phiên truy cập của Challenge Cosmetics Shop, toàn bộ dữ liệu"
+          ]
+        },
+        "message": null,
+        "partial": false,
+        "sources": [
+          "cosmetics_shop"
+        ],
+        "ablation": {
+          "variant": "F",
+          "clarification_field": null,
+          "clarification_reason": "not_applicable",
+          "clarification_choices": [],
+          "clarification_invoked": false,
+          "clarification_eligible": false,
+          "clarification_choice_id": null,
+          "clarification_requested": false,
+          "clarification_choice_count": 0
+        },
+        "language": "vi",
+        "variants": [],
+        "warnings": [],
+        "candidate": {
+          "reply": "",
+          "shape": "aggregate",
+          "top_k": 0,
+          "reason": "",
+          "recipe": "viewers",
+          "filters": [],
+          "metrics": [],
+          "outcome": "query",
+          "dialogue": {
+            "slots": {
+              "shape": "set",
+              "top_k": "clear",
+              "recipe": "set",
+              "filters": "clear",
+              "metrics": "clear",
+              "selection": "clear",
+              "source_ids": "set",
+              "time_range": "set"
+            },
+            "relation": "new_topic",
+            "target_id": ""
+          },
+          "language": "vi",
+          "_accuracy": {
+            "retrieval": {
+              "enabled": false
+            },
+            "consistency": {
+              "enabled": false
+            }
+          },
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": "",
+            "days": 0,
+            "kind": "all",
+            "start": ""
+          },
+          "suggestions": [],
+          "recipe_stated": true,
+          "answer_request": {
+            "ask": "",
+            "need": "describe"
+          },
+          "intent_contract": {
+            "kind": "catalog_metric",
+            "grain": "product_viewer_period",
+            "entity": "Người dùng duy nhất đã xem sản phẩm",
+            "operation": "count_users",
+            "filter_ids": [],
+            "metric_ids": [
+              "viewers"
+            ],
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "breakdown_ids": []
+          },
+          "_registry_complete": true,
+          "recipe_alternatives": []
+        },
+        "row_count": 1,
+        "query_spec": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "viewers",
+          "filters": [],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "currency_of": {
+          "cosmetics_shop": "USD"
+        },
+        "compiled_sql": "SELECT count(DISTINCT e.user_id) FILTER (WHERE (e.event_name = ANY('{view}'))) AS \"viewers\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') LIMIT 1001",
+        "model_preview": [
+          {
+            "viewers": 12
+          }
+        ],
+        "dataset_version": "17ce03c17d5095363f03",
+        "source_resolution": {
+          "ui": [],
+          "text": [
+            "cosmetics_shop"
+          ],
+          "model": [
+            "cosmetics_shop"
+          ],
+          "memory": [],
+          "effective": [
+            "cosmetics_shop"
+          ],
+          "resolved_by_user": false
+        },
+        "metric_definitions": [
+          {
+            "id": "viewers",
+            "label": "Người xem sản phẩm",
+            "description": "Số người dùng duy nhất đã xem sản phẩm."
+          }
+        ],
+        "unavailable_metrics": {},
+        "filter_binding_trace": []
+      },
+      "reference_sql_id": "browser_round2_viewers",
+      "full_result_correct": true,
+      "reference_sql": "SELECT count(DISTINCT user_id) AS viewers FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='view'",
+      "expected_columns": [
+        "viewers"
+      ],
+      "expected_rows": [
+        [
+          12
+        ]
+      ]
+    },
+    {
+      "turn_id": "0422ac39-1540-437e-ae45-f9b453aa9150",
+      "question": "Doanh thu Cosmetics Shop theo danh mục sản phẩm trong tháng 2/2025, chỉ thiết bị mobile?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:27:29.575154+07:00",
+      "actual_columns": [
+        "item_category",
+        "revenue"
+      ],
+      "actual_rows": [
+        [
+          "serum",
+          44.0
+        ],
+        [
+          "cream",
+          12.0
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "breakdown",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [
+          {
+            "field": "device_type",
+            "values": [
+              "mobile"
+            ],
+            "operator": "="
+          }
+        ],
+        "metrics": [],
+        "selection": [
+          "item_category"
+        ],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": "2025-02-28",
+          "days": null,
+          "kind": "between",
+          "field": "event_date",
+          "start": "2025-02-01"
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT * FROM (SELECT \"e\".\"item_category\" AS \"item_category\", coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') AND e.\"event_date\" BETWEEN '2025-02-01'::date AND '2025-02-28'::date AND (\"e\".\"ep\" -> 'device' ->> 'type') = 'mobile' AND ((e.event_name = ANY('{purchase,order_purchased}'))) GROUP BY 1) q ORDER BY \"revenue\" DESC NULLS LAST, \"item_category\" ASC NULLS LAST LIMIT 1001",
+      "answer_message": null,
+      "form": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 7,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+          "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "clear",
+          "recipe": "set",
+          "filters": "set",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "state_snapshot": {
+        "form": null,
+        "rows": [
+          {
+            "revenue": 44.0,
+            "item_category": "serum"
+          },
+          {
+            "revenue": 12.0,
+            "item_category": "cream"
+          }
+        ],
+        "error": null,
+        "facts": [
+          {
+            "id": "f_rows",
+            "unit": "count",
+            "label": "Rows in the result",
+            "value": 2
+          },
+          {
+            "id": "f_total_revenue",
+            "unit": "currency",
+            "label": "Total Revenue",
+            "value": 56.0,
+            "currency": "USD"
+          },
+          {
+            "id": "f_max_revenue",
+            "unit": "currency",
+            "label": "Highest Revenue",
+            "value": 44.0,
+            "currency": "USD"
+          },
+          {
+            "id": "f_max_revenue_at",
+            "unit": "text",
+            "label": "Where Revenue is highest",
+            "value": "serum"
+          },
+          {
+            "id": "f_min_revenue",
+            "unit": "currency",
+            "label": "Lowest Revenue",
+            "value": 12.0,
+            "currency": "USD"
+          },
+          {
+            "id": "f_min_revenue_at",
+            "unit": "text",
+            "label": "Where Revenue is lowest",
+            "value": "cream"
+          },
+          {
+            "id": "f_avg_revenue",
+            "unit": "currency",
+            "label": "Average Revenue per row",
+            "value": 28.0,
+            "currency": "USD"
+          },
+          {
+            "id": "f_max_revenue_share",
+            "unit": "percent",
+            "label": "Share of total Revenue at the highest row",
+            "value": 0.7857142857142857
+          },
+          {
+            "id": "f_diff_revenue",
+            "unit": "currency",
+            "label": "Revenue: serum minus cream",
+            "value": 32.0,
+            "currency": "USD"
+          },
+          {
+            "id": "f_diff_revenue_pct",
+            "unit": "percent",
+            "label": "Revenue: serum vs cream relative difference",
+            "value": 2.6666666666666665
+          }
+        ],
+        "notes": [],
+        "scope": [],
+        "period": {
+          "cosmetics_shop": {
+            "end": "2025-02-28",
+            "start": "2025-02-01",
+            "data_end": "2025-03-11",
+            "data_start": "2025-01-01"
+          }
+        },
+        "status": "answered",
+        "timing": {
+          "end_to_end_ms": 13435,
+          "first_result_ms": 8252
+        },
+        "answers": {},
+        "columns": [
+          {
+            "name": "item_category",
+            "role": "dimension",
+            "unit": "",
+            "label": "Danh mục sản phẩm",
+            "additive": false,
+            "currency": null,
+            "value_type": "text"
+          },
+          {
+            "name": "revenue",
+            "role": "metric",
+            "unit": "currency",
+            "label": "Doanh thu",
+            "additive": true,
+            "currency": null,
+            "value_type": "number"
+          }
+        ],
+        "context": {
+          "language": "vi",
+          "relation": "new_topic",
+          "questions": [],
+          "references": [],
+          "catalog_version": 7,
+          "inherited_slots": {},
+          "result_ordinals": {
+            "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+            "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+          },
+          "slot_operations": {
+            "shape": "set",
+            "top_k": "clear",
+            "recipe": "set",
+            "filters": "set",
+            "metrics": "clear",
+            "selection": "set",
+            "source_ids": "set",
+            "time_range": "set"
+          },
+          "structured_memory": true,
+          "clarification_needed": false,
+          "unavailable_result_numbers": []
+        },
+        "insight": {
+          "body": [
+            "Tổng doanh thu là 56,00 USD; serum đạt 44,00 USD, còn cream đạt 12,00 USD.",
+            "Dữ liệu bao gồm hai danh mục sản phẩm trong giai đoạn từ 2025-02-01 đến 2025-02-28."
+          ],
+          "cited": [
+            "56,00 USD",
+            "44,00 USD",
+            "12,00 USD"
+          ],
+          "marks": [
+            {
+              "kind": "sql",
+              "text": "56,00 USD",
+              "label": "Total Revenue"
+            },
+            {
+              "kind": "sql",
+              "text": "44,00 USD",
+              "label": "Highest Revenue"
+            },
+            {
+              "kind": "sql",
+              "text": "12,00 USD",
+              "label": "Lowest Revenue"
+            }
+          ],
+          "caveats": [],
+          "derived": [],
+          "headline": "Trong tháng 2/2025, doanh thu từ thiết bị mobile tại Challenge Cosmetics Shop cao nhất ở danh mục serum.",
+          "follow_ups": [
+            "Người dùng của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+            "Lượt sự kiện của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+            "Phiên truy cập của Challenge Cosmetics Shop, toàn bộ dữ liệu"
+          ]
+        },
+        "message": null,
+        "partial": false,
+        "sources": [
+          "cosmetics_shop"
+        ],
+        "ablation": {
+          "variant": "F",
+          "clarification_field": null,
+          "clarification_reason": "not_applicable",
+          "clarification_choices": [],
+          "clarification_invoked": false,
+          "clarification_eligible": false,
+          "clarification_choice_id": null,
+          "clarification_requested": false,
+          "clarification_choice_count": 0
+        },
+        "language": "vi",
+        "variants": [],
+        "warnings": [],
+        "candidate": {
+          "reply": "",
+          "shape": "breakdown",
+          "top_k": 0,
+          "reason": "",
+          "recipe": "revenue",
+          "filters": [
+            {
+              "field": "device_type",
+              "operator": "=",
+              "values_mentioned": [
+                "mobile"
+              ]
+            }
+          ],
+          "metrics": [],
+          "outcome": "query",
+          "dialogue": {
+            "slots": {
+              "shape": "set",
+              "top_k": "clear",
+              "recipe": "set",
+              "filters": "set",
+              "metrics": "clear",
+              "selection": "set",
+              "source_ids": "set",
+              "time_range": "set"
+            },
+            "relation": "new_topic",
+            "target_id": ""
+          },
+          "language": "vi",
+          "_accuracy": {
+            "retrieval": {
+              "enabled": false
+            },
+            "consistency": {
+              "enabled": false
+            }
+          },
+          "selection": [
+            "item_category"
+          ],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": "2025-02-28",
+            "days": 0,
+            "kind": "between",
+            "start": "2025-02-01"
+          },
+          "suggestions": [],
+          "recipe_stated": false,
+          "answer_request": {
+            "ask": "",
+            "need": "describe"
+          },
+          "intent_contract": {
+            "kind": "catalog_metric",
+            "grain": "purchased_item_line",
+            "entity": "Doanh thu từ các dòng sản phẩm đã mua",
+            "operation": "sum",
+            "filter_ids": [
+              "device_type"
+            ],
+            "metric_ids": [
+              "revenue"
+            ],
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "breakdown_ids": [
+              "item_category"
+            ]
+          },
+          "_registry_complete": true,
+          "recipe_alternatives": []
+        },
+        "row_count": 2,
+        "query_spec": {
+          "limit": 1000,
+          "shape": "breakdown",
+          "top_k": null,
+          "recipe": "revenue",
+          "filters": [
+            {
+              "field": "device_type",
+              "values": [
+                "mobile"
+              ],
+              "operator": "="
+            }
+          ],
+          "metrics": [],
+          "selection": [
+            "item_category"
+          ],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": "2025-02-28",
+            "days": null,
+            "kind": "between",
+            "field": "event_date",
+            "start": "2025-02-01"
+          },
+          "contract_version": 7
+        },
+        "currency_of": {
+          "cosmetics_shop": "USD"
+        },
+        "compiled_sql": "SELECT * FROM (SELECT \"e\".\"item_category\" AS \"item_category\", coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') AND e.\"event_date\" BETWEEN '2025-02-01'::date AND '2025-02-28'::date AND (\"e\".\"ep\" -> 'device' ->> 'type') = 'mobile' AND ((e.event_name = ANY('{purchase,order_purchased}'))) GROUP BY 1) q ORDER BY \"revenue\" DESC NULLS LAST, \"item_category\" ASC NULLS LAST LIMIT 1001",
+        "model_preview": [
+          {
+            "revenue": 44.0,
+            "item_category": "serum"
+          },
+          {
+            "revenue": 12.0,
+            "item_category": "cream"
+          }
+        ],
+        "dataset_version": "17ce03c17d5095363f03",
+        "source_resolution": {
+          "ui": [],
+          "text": [
+            "cosmetics_shop"
+          ],
+          "model": [
+            "cosmetics_shop"
+          ],
+          "memory": [],
+          "effective": [
+            "cosmetics_shop"
+          ],
+          "resolved_by_user": false
+        },
+        "metric_definitions": [
+          {
+            "id": "revenue",
+            "label": "Doanh thu",
+            "description": "Tổng giá trị sản phẩm trên sự kiện mua hàng, theo tiền tệ của nguồn; không gồm thuế, vận chuyển hoặc hoàn tiền nếu không được ghi nhận. Không phải doanh thu kế toán."
+          }
+        ],
+        "unavailable_metrics": {},
+        "filter_binding_trace": [
+          {
+            "origin": "question_interpretation",
+            "field_id": "device_type",
+            "operator": "=",
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "bound_values": [
+              "mobile"
+            ],
+            "input_values": [
+              "mobile"
+            ],
+            "catalog_version": 7,
+            "vocabulary_status": {
+              "cosmetics_shop": "complete"
+            }
+          }
+        ]
+      },
+      "reference_sql_id": "challenge_v1:c49_cosmetics_feb_mobile_revenue_category",
+      "full_result_correct": true,
+      "reference_sql": "SELECT item_category, coalesce(sum(revenue),0) AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='purchase' AND event_date BETWEEN '2025-02-01' AND '2025-02-28' AND ep #>> '{device,type}'='mobile' GROUP BY 1 ORDER BY 1",
+      "expected_columns": [
+        "item_category",
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "cream",
+          "12.00"
+        ],
+        [
+          "serum",
+          "44.00"
+        ]
+      ]
+    },
+    {
+      "turn_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+      "question": "Doanh thu Cosmetics Shop trên toàn bộ dữ liệu, chỉ thiết bị mobile và kênh paid?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:27:59.253806+07:00",
+      "actual_columns": [
+        "revenue"
+      ],
+      "actual_rows": [
+        [
+          62.0
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [
+          {
+            "field": "device_type",
+            "values": [
+              "mobile"
+            ],
+            "operator": "="
+          },
+          {
+            "field": "campaign_channel",
+            "values": [
+              "paid"
+            ],
+            "operator": "="
+          }
+        ],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') AND (\"e\".\"ep\" -> 'device' ->> 'type') = 'mobile' AND (\"e\".\"ep\" -> 'campaign' ->> 'channel') = 'paid' LIMIT 1001",
+      "answer_message": null,
+      "form": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "cosmetics_shop"
+        ],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 7,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+          "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+          "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "clear",
+          "recipe": "set",
+          "filters": "set",
+          "metrics": "clear",
+          "selection": "clear",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "state_snapshot": {
+        "form": null,
+        "rows": [
+          {
+            "revenue": 62.0
+          }
+        ],
+        "error": null,
+        "facts": [
+          {
+            "id": "f_rows",
+            "unit": "count",
+            "label": "Rows in the result",
+            "value": 1
+          },
+          {
+            "id": "f_revenue",
+            "unit": "currency",
+            "label": "Revenue",
+            "value": 62.0,
+            "currency": "USD"
+          }
+        ],
+        "notes": [],
+        "scope": [],
+        "period": {
+          "cosmetics_shop": {
+            "end": "2025-03-11",
+            "start": "2025-01-01",
+            "data_end": "2025-03-11",
+            "data_start": "2025-01-01"
+          }
+        },
+        "status": "answered",
+        "timing": {
+          "end_to_end_ms": 12002,
+          "first_result_ms": 7625
+        },
+        "answers": {},
+        "columns": [
+          {
+            "name": "revenue",
+            "role": "metric",
+            "unit": "currency",
+            "label": "Doanh thu",
+            "additive": true,
+            "currency": null,
+            "value_type": "number"
+          }
+        ],
+        "context": {
+          "language": "vi",
+          "relation": "new_topic",
+          "questions": [],
+          "references": [],
+          "catalog_version": 7,
+          "inherited_slots": {},
+          "result_ordinals": {
+            "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+            "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+            "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+          },
+          "slot_operations": {
+            "shape": "set",
+            "top_k": "clear",
+            "recipe": "set",
+            "filters": "set",
+            "metrics": "clear",
+            "selection": "clear",
+            "source_ids": "set",
+            "time_range": "set"
+          },
+          "structured_memory": true,
+          "clarification_needed": false,
+          "unavailable_result_numbers": []
+        },
+        "insight": {
+          "body": [
+            "Kết quả bao phủ toàn bộ dữ liệu từ 2025-01-01 đến 2025-03-11."
+          ],
+          "cited": [
+            "62,00 USD"
+          ],
+          "marks": [
+            {
+              "kind": "sql",
+              "text": "62,00 USD",
+              "label": "Revenue"
+            }
+          ],
+          "caveats": [],
+          "derived": [],
+          "headline": "Doanh thu của Challenge Cosmetics Shop từ thiết bị mobile và kênh paid là 62,00 USD.",
+          "follow_ups": [
+            "Người dùng của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+            "Lượt sự kiện của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+            "Phiên truy cập của Challenge Cosmetics Shop, toàn bộ dữ liệu"
+          ]
+        },
+        "message": null,
+        "partial": false,
+        "sources": [
+          "cosmetics_shop"
+        ],
+        "ablation": {
+          "variant": "F",
+          "clarification_field": null,
+          "clarification_reason": "not_applicable",
+          "clarification_choices": [],
+          "clarification_invoked": false,
+          "clarification_eligible": false,
+          "clarification_choice_id": null,
+          "clarification_requested": false,
+          "clarification_choice_count": 0
+        },
+        "language": "vi",
+        "variants": [],
+        "warnings": [],
+        "candidate": {
+          "reply": "",
+          "shape": "aggregate",
+          "top_k": 0,
+          "reason": "",
+          "recipe": "revenue",
+          "filters": [
+            {
+              "field": "device_type",
+              "operator": "=",
+              "values_mentioned": [
+                "mobile"
+              ]
+            },
+            {
+              "field": "campaign_channel",
+              "operator": "=",
+              "values_mentioned": [
+                "paid"
+              ]
+            }
+          ],
+          "metrics": [],
+          "outcome": "query",
+          "dialogue": {
+            "slots": {
+              "shape": "set",
+              "top_k": "clear",
+              "recipe": "set",
+              "filters": "set",
+              "metrics": "clear",
+              "selection": "clear",
+              "source_ids": "set",
+              "time_range": "set"
+            },
+            "relation": "new_topic",
+            "target_id": ""
+          },
+          "language": "vi",
+          "_accuracy": {
+            "retrieval": {
+              "enabled": false
+            },
+            "consistency": {
+              "enabled": false
+            }
+          },
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": "",
+            "days": 0,
+            "kind": "all",
+            "start": ""
+          },
+          "suggestions": [],
+          "recipe_stated": false,
+          "answer_request": {
+            "ask": "",
+            "need": "describe"
+          },
+          "intent_contract": {
+            "kind": "catalog_metric",
+            "grain": "purchased_item_line",
+            "entity": "Doanh thu từ các dòng sản phẩm đã mua",
+            "operation": "sum",
+            "filter_ids": [
+              "device_type",
+              "campaign_channel"
+            ],
+            "metric_ids": [
+              "revenue"
+            ],
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "breakdown_ids": []
+          },
+          "_registry_complete": true,
+          "recipe_alternatives": []
+        },
+        "row_count": 1,
+        "query_spec": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "revenue",
+          "filters": [
+            {
+              "field": "device_type",
+              "values": [
+                "mobile"
+              ],
+              "operator": "="
+            },
+            {
+              "field": "campaign_channel",
+              "values": [
+                "paid"
+              ],
+              "operator": "="
+            }
+          ],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "currency_of": {
+          "cosmetics_shop": "USD"
+        },
+        "compiled_sql": "SELECT coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') AND (\"e\".\"ep\" -> 'device' ->> 'type') = 'mobile' AND (\"e\".\"ep\" -> 'campaign' ->> 'channel') = 'paid' LIMIT 1001",
+        "model_preview": [
+          {
+            "revenue": 62.0
+          }
+        ],
+        "dataset_version": "17ce03c17d5095363f03",
+        "source_resolution": {
+          "ui": [],
+          "text": [
+            "cosmetics_shop"
+          ],
+          "model": [
+            "cosmetics_shop"
+          ],
+          "memory": [],
+          "effective": [
+            "cosmetics_shop"
+          ],
+          "resolved_by_user": false
+        },
+        "metric_definitions": [
+          {
+            "id": "revenue",
+            "label": "Doanh thu",
+            "description": "Tổng giá trị sản phẩm trên sự kiện mua hàng, theo tiền tệ của nguồn; không gồm thuế, vận chuyển hoặc hoàn tiền nếu không được ghi nhận. Không phải doanh thu kế toán."
+          }
+        ],
+        "unavailable_metrics": {},
+        "filter_binding_trace": [
+          {
+            "origin": "question_interpretation",
+            "field_id": "device_type",
+            "operator": "=",
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "bound_values": [
+              "mobile"
+            ],
+            "input_values": [
+              "mobile"
+            ],
+            "catalog_version": 7,
+            "vocabulary_status": {
+              "cosmetics_shop": "complete"
+            }
+          },
+          {
+            "origin": "question_interpretation",
+            "field_id": "campaign_channel",
+            "operator": "=",
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "bound_values": [
+              "paid"
+            ],
+            "input_values": [
+              "paid"
+            ],
+            "catalog_version": 7,
+            "vocabulary_status": {
+              "cosmetics_shop": "complete"
+            }
+          }
+        ]
+      },
+      "reference_sql_id": "browser_regression_v1:browser_selective_filter_removal:turn1",
+      "full_result_correct": true,
+      "reference_sql": "SELECT coalesce(sum(revenue) FILTER (WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND ep #>> '{device,type}'='mobile' AND ep #>> '{campaign,channel}'='paid'",
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "62.00"
+        ]
+      ]
+    },
+    {
+      "turn_id": "6e2f1e40-fee9-425c-b484-ac1f34312553",
+      "question": "Bỏ điều kiện thiết bị, giữ nguyên các điều kiện còn lại.",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:28:39.633731+07:00",
+      "actual_columns": [
+        "revenue"
+      ],
+      "actual_rows": [
+        [
+          204.0
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [
+          {
+            "field": "campaign_channel",
+            "values": [
+              "paid"
+            ],
+            "operator": "="
+          }
+        ],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') AND (\"e\".\"ep\" -> 'campaign' ->> 'channel') = 'paid' LIMIT 1001",
+      "answer_message": null,
+      "form": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [
+          "cosmetics_shop"
+        ],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "context": {
+        "language": "vi",
+        "relation": "followup",
+        "questions": [
+          "Doanh thu Cosmetics Shop trên toàn bộ dữ liệu, chỉ thiết bị mobile và kênh paid?"
+        ],
+        "references": [
+          "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde"
+        ],
+        "catalog_version": 7,
+        "inherited_slots": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "revenue",
+          "filters": [
+            {
+              "field": "device_type",
+              "values": [
+                "mobile"
+              ],
+              "operator": "="
+            },
+            {
+              "field": "campaign_channel",
+              "values": [
+                "paid"
+              ],
+              "operator": "="
+            }
+          ],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "result_ordinals": {
+          "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+          "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+          "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde": 4,
+          "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+        },
+        "slot_operations": {
+          "shape": "keep",
+          "top_k": "keep",
+          "recipe": "keep",
+          "filters": "set",
+          "metrics": "keep",
+          "selection": "keep",
+          "source_ids": "keep",
+          "time_range": "keep"
+        },
+        "forced_reference": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "state_snapshot": {
+        "form": null,
+        "rows": [
+          {
+            "revenue": 204.0
+          }
+        ],
+        "error": null,
+        "facts": [
+          {
+            "id": "f_rows",
+            "unit": "count",
+            "label": "Rows in the result",
+            "value": 1
+          },
+          {
+            "id": "f_revenue",
+            "unit": "currency",
+            "label": "Revenue",
+            "value": 204.0,
+            "currency": "USD"
+          }
+        ],
+        "notes": [],
+        "scope": [],
+        "period": {
+          "cosmetics_shop": {
+            "end": "2025-03-11",
+            "start": "2025-01-01",
+            "data_end": "2025-03-11",
+            "data_start": "2025-01-01"
+          }
+        },
+        "status": "answered",
+        "timing": {
+          "end_to_end_ms": 32919,
+          "first_result_ms": 22009
+        },
+        "answers": {},
+        "columns": [
+          {
+            "name": "revenue",
+            "role": "metric",
+            "unit": "currency",
+            "label": "Doanh thu",
+            "additive": true,
+            "currency": null,
+            "value_type": "number"
+          }
+        ],
+        "context": {
+          "language": "vi",
+          "relation": "followup",
+          "questions": [
+            "Doanh thu Cosmetics Shop trên toàn bộ dữ liệu, chỉ thiết bị mobile và kênh paid?"
+          ],
+          "references": [
+            "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde"
+          ],
+          "catalog_version": 7,
+          "inherited_slots": {
+            "limit": 1000,
+            "shape": "aggregate",
+            "top_k": null,
+            "recipe": "revenue",
+            "filters": [
+              {
+                "field": "device_type",
+                "values": [
+                  "mobile"
+                ],
+                "operator": "="
+              },
+              {
+                "field": "campaign_channel",
+                "values": [
+                  "paid"
+                ],
+                "operator": "="
+              }
+            ],
+            "metrics": [],
+            "selection": [],
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "time_range": {
+              "end": null,
+              "days": null,
+              "kind": "all",
+              "field": "event_date",
+              "start": null
+            },
+            "contract_version": 7
+          },
+          "result_ordinals": {
+            "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+            "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+            "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde": 4,
+            "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+          },
+          "slot_operations": {
+            "shape": "keep",
+            "top_k": "keep",
+            "recipe": "keep",
+            "filters": "set",
+            "metrics": "keep",
+            "selection": "keep",
+            "source_ids": "keep",
+            "time_range": "keep"
+          },
+          "forced_reference": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde",
+          "structured_memory": true,
+          "clarification_needed": false,
+          "unavailable_result_numbers": []
+        },
+        "insight": {
+          "body": [
+            "Kết quả giữ điều kiện kênh chiến dịch là paid; không áp dụng điều kiện thiết bị."
+          ],
+          "cited": [
+            "204,00 USD"
+          ],
+          "marks": [
+            {
+              "kind": "sql",
+              "text": "204,00 USD",
+              "label": "Revenue"
+            }
+          ],
+          "caveats": [],
+          "derived": [],
+          "headline": "Doanh thu của Challenge Cosmetics Shop với kênh chiến dịch paid là 204,00 USD trong kỳ từ 2025-01-01 đến 2025-03-11.",
+          "follow_ups": [
+            "Người dùng của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+            "Lượt sự kiện của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+            "Phiên truy cập của Challenge Cosmetics Shop, toàn bộ dữ liệu"
+          ]
+        },
+        "message": null,
+        "partial": false,
+        "sources": [
+          "cosmetics_shop"
+        ],
+        "ablation": {
+          "variant": "F",
+          "clarification_field": null,
+          "clarification_reason": "not_applicable",
+          "clarification_choices": [],
+          "clarification_invoked": false,
+          "clarification_eligible": false,
+          "clarification_choice_id": null,
+          "clarification_requested": false,
+          "clarification_choice_count": 0
+        },
+        "language": "vi",
+        "variants": [],
+        "warnings": [],
+        "candidate": {
+          "reply": "",
+          "shape": "aggregate",
+          "top_k": 0,
+          "reason": "",
+          "recipe": "revenue",
+          "filters": [
+            {
+              "field": "campaign_channel",
+              "operator": "=",
+              "values_mentioned": [
+                "paid"
+              ]
+            }
+          ],
+          "metrics": [],
+          "outcome": "query",
+          "dialogue": {
+            "slots": {
+              "shape": "keep",
+              "top_k": "keep",
+              "recipe": "keep",
+              "filters": "set",
+              "metrics": "keep",
+              "selection": "keep",
+              "source_ids": "keep",
+              "time_range": "keep"
+            },
+            "relation": "followup",
+            "target_id": "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde"
+          },
+          "language": "vi",
+          "_accuracy": {
+            "retrieval": {
+              "enabled": false
+            },
+            "consistency": {
+              "enabled": false
+            }
+          },
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "start": null
+          },
+          "suggestions": [],
+          "recipe_stated": true,
+          "answer_request": {
+            "ask": "",
+            "need": "describe"
+          },
+          "intent_contract": {
+            "kind": "continuation",
+            "grain": "purchased_item_line",
+            "entity": "Doanh thu từ các dòng sản phẩm đã mua",
+            "operation": "sum",
+            "filter_ids": [
+              "campaign_channel"
+            ],
+            "metric_ids": [
+              "revenue"
+            ],
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "breakdown_ids": []
+          },
+          "_registry_complete": true,
+          "recipe_alternatives": []
+        },
+        "row_count": 1,
+        "query_spec": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "revenue",
+          "filters": [
+            {
+              "field": "campaign_channel",
+              "values": [
+                "paid"
+              ],
+              "operator": "="
+            }
+          ],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "currency_of": {
+          "cosmetics_shop": "USD"
+        },
+        "compiled_sql": "SELECT coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') AND (\"e\".\"ep\" -> 'campaign' ->> 'channel') = 'paid' LIMIT 1001",
+        "model_preview": [
+          {
+            "revenue": 204.0
+          }
+        ],
+        "dataset_version": "17ce03c17d5095363f03",
+        "source_resolution": {
+          "ui": [],
+          "text": [],
+          "model": [
+            "cosmetics_shop"
+          ],
+          "memory": [
+            "cosmetics_shop"
+          ],
+          "effective": [
+            "cosmetics_shop"
+          ],
+          "resolved_by_user": false
+        },
+        "metric_definitions": [
+          {
+            "id": "revenue",
+            "label": "Doanh thu",
+            "description": "Tổng giá trị sản phẩm trên sự kiện mua hàng, theo tiền tệ của nguồn; không gồm thuế, vận chuyển hoặc hoàn tiền nếu không được ghi nhận. Không phải doanh thu kế toán."
+          }
+        ],
+        "unavailable_metrics": {},
+        "filter_binding_trace": [
+          {
+            "origin": "question_interpretation",
+            "field_id": "campaign_channel",
+            "operator": "=",
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "bound_values": [
+              "paid"
+            ],
+            "input_values": [
+              "paid"
+            ],
+            "catalog_version": 7,
+            "vocabulary_status": {
+              "cosmetics_shop": "complete"
+            }
+          }
+        ]
+      },
+      "reference_sql_id": "browser_regression_v1:browser_selective_filter_removal:turn2",
+      "full_result_correct": true,
+      "reference_sql": "SELECT coalesce(sum(revenue) FILTER (WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND ep #>> '{campaign,channel}'='paid'",
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "204.00"
+        ]
+      ]
+    },
+    {
+      "turn_id": "6a47e6cd-3515-401d-b86b-b48c97f5032d",
+      "question": "Giá trị đơn hàng trung bình của Olist trên toàn bộ dữ liệu là bao nhiêu?",
+      "status": "refused",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:30:32.032367+07:00",
+      "actual_columns": [],
+      "actual_rows": [],
+      "query_spec": null,
+      "compiled_sql": null,
+      "answer_message": "Olist không có chỉ số hoặc số lượng đơn hàng được định nghĩa để tính giá trị đơn hàng trung bình; chỉ số purchases là số dòng sản phẩm đã mua, không phải số đơn hàng.",
+      "form": null,
+      "source_resolution": null,
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 7,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+          "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+          "6e2f1e40-fee9-425c-b484-ac1f34312553": 5,
+          "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde": 4,
+          "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "clear",
+          "recipe": "clear",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "clear",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "state_snapshot": {
+        "scope": [],
+        "status": "refused",
+        "timing": {
+          "end_to_end_ms": 9779,
+          "first_result_ms": null
+        },
+        "context": {
+          "language": "vi",
+          "relation": "new_topic",
+          "questions": [],
+          "references": [],
+          "catalog_version": 7,
+          "inherited_slots": {},
+          "result_ordinals": {
+            "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+            "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+            "6e2f1e40-fee9-425c-b484-ac1f34312553": 5,
+            "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde": 4,
+            "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+          },
+          "slot_operations": {
+            "shape": "set",
+            "top_k": "clear",
+            "recipe": "clear",
+            "filters": "clear",
+            "metrics": "clear",
+            "selection": "clear",
+            "source_ids": "set",
+            "time_range": "set"
+          },
+          "structured_memory": true,
+          "clarification_needed": false,
+          "unavailable_result_numbers": []
+        },
+        "message": "Olist không có chỉ số hoặc số lượng đơn hàng được định nghĩa để tính giá trị đơn hàng trung bình; chỉ số purchases là số dòng sản phẩm đã mua, không phải số đơn hàng.",
+        "ablation": {
+          "variant": "F",
+          "clarification_field": null,
+          "clarification_reason": "not_applicable",
+          "clarification_choices": [],
+          "clarification_invoked": false,
+          "clarification_eligible": false,
+          "clarification_choice_id": null,
+          "clarification_requested": false,
+          "clarification_choice_count": 0
+        },
+        "language": "vi",
+        "candidate": {
+          "reply": "",
+          "shape": "aggregate",
+          "top_k": 0,
+          "reason": "Olist không có chỉ số hoặc số lượng đơn hàng được định nghĩa để tính giá trị đơn hàng trung bình; chỉ số purchases là số dòng sản phẩm đã mua, không phải số đơn hàng.",
+          "recipe": "",
+          "filters": [],
+          "metrics": [],
+          "outcome": "unsupported",
+          "dialogue": {
+            "slots": {
+              "shape": "set",
+              "top_k": "clear",
+              "recipe": "clear",
+              "filters": "clear",
+              "metrics": "clear",
+              "selection": "clear",
+              "source_ids": "set",
+              "time_range": "set"
+            },
+            "relation": "new_topic",
+            "target_id": ""
+          },
+          "language": "vi",
+          "_accuracy": {
+            "retrieval": {
+              "enabled": false
+            },
+            "consistency": {
+              "enabled": false
+            }
+          },
+          "selection": [],
+          "source_ids": [
+            "olist_marketplace"
+          ],
+          "time_range": {
+            "end": "",
+            "days": 0,
+            "kind": "all",
+            "start": ""
+          },
+          "suggestions": [
+            "Doanh thu Olist trên toàn bộ dữ liệu là bao nhiêu?",
+            "Có bao nhiêu dòng sản phẩm đã mua trên Olist trên toàn bộ dữ liệu?",
+            "Có bao nhiêu người mua duy nhất trên Olist trên toàn bộ dữ liệu?"
+          ],
+          "recipe_stated": false,
+          "answer_request": {
+            "ask": "",
+            "need": "none"
+          },
+          "intent_contract": {
+            "kind": "unsupported_measure",
+            "grain": "uncatalogued",
+            "entity": "Giá trị đơn hàng trung bình trên mỗi đơn hàng",
+            "operation": "uncatalogued",
+            "filter_ids": [],
+            "metric_ids": [],
+            "source_ids": [
+              "olist_marketplace"
+            ],
+            "breakdown_ids": []
+          },
+          "_registry_complete": true,
+          "recipe_alternatives": []
+        },
+        "suggestions": [
+          "Người dùng của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+          "Người dùng của Challenge Olist Marketplace, toàn bộ dữ liệu",
+          "Lượt sự kiện của Challenge Cosmetics Shop, toàn bộ dữ liệu"
+        ],
+        "dataset_version": "17ce03c17d5095363f03"
+      },
+      "reference_sql_id": null,
+      "full_result_correct": null,
+      "expected_action": "unsupported",
+      "reference_sql": null
+    },
+    {
+      "turn_id": "c2a9ea60-2b8d-4f05-acc7-449d8f104385",
+      "question": "Cảm ơn nhé, hôm nay trời đẹp quá.",
+      "status": "conversation",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:31:11.125349+07:00",
+      "actual_columns": [],
+      "actual_rows": [],
+      "query_spec": null,
+      "compiled_sql": null,
+      "answer_message": "Không có gì! Chúc bạn tận hưởng một ngày đẹp trời nhé.",
+      "form": null,
+      "source_resolution": null,
+      "context": {
+        "language": "vi",
+        "relation": "social",
+        "questions": [],
+        "references": [],
+        "catalog_version": 7,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+          "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+          "6e2f1e40-fee9-425c-b484-ac1f34312553": 5,
+          "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde": 4,
+          "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "state_snapshot": {
+        "scope": [],
+        "status": "conversation",
+        "timing": {
+          "end_to_end_ms": 6969,
+          "first_result_ms": null
+        },
+        "context": {
+          "language": "vi",
+          "relation": "social",
+          "questions": [],
+          "references": [],
+          "catalog_version": 7,
+          "inherited_slots": {},
+          "result_ordinals": {
+            "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+            "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+            "6e2f1e40-fee9-425c-b484-ac1f34312553": 5,
+            "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde": 4,
+            "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+          },
+          "structured_memory": true,
+          "clarification_needed": false,
+          "unavailable_result_numbers": []
+        },
+        "message": "Không có gì! Chúc bạn tận hưởng một ngày đẹp trời nhé.",
+        "ablation": {
+          "variant": "F",
+          "clarification_field": null,
+          "clarification_reason": "not_applicable",
+          "clarification_choices": [],
+          "clarification_invoked": false,
+          "clarification_eligible": false,
+          "clarification_choice_id": null,
+          "clarification_requested": false,
+          "clarification_choice_count": 0
+        },
+        "language": "vi",
+        "candidate": {
+          "reply": "Không có gì! Chúc bạn tận hưởng một ngày đẹp trời nhé.",
+          "shape": "unclear",
+          "top_k": 0,
+          "reason": "",
+          "recipe": "",
+          "filters": [],
+          "metrics": [],
+          "outcome": "conversation",
+          "dialogue": {
+            "slots": {
+              "shape": "clear",
+              "top_k": "clear",
+              "recipe": "clear",
+              "filters": "clear",
+              "metrics": "clear",
+              "selection": "clear",
+              "source_ids": "clear",
+              "time_range": "clear"
+            },
+            "relation": "social",
+            "target_id": ""
+          },
+          "language": "vi",
+          "_accuracy": {
+            "retrieval": {
+              "enabled": false
+            },
+            "consistency": {
+              "enabled": false
+            }
+          },
+          "selection": [],
+          "source_ids": [],
+          "time_range": {
+            "end": "",
+            "days": 0,
+            "kind": "none",
+            "start": ""
+          },
+          "suggestions": [
+            "Cosmetics Shop có bao nhiêu lượt xem sản phẩm?",
+            "Doanh thu theo danh mục sản phẩm trong tháng 2/2025 là bao nhiêu?",
+            "Doanh thu của Cosmetics Shop theo kênh chiến dịch là bao nhiêu?"
+          ],
+          "recipe_stated": false,
+          "answer_request": {
+            "ask": "",
+            "need": "none"
+          },
+          "intent_contract": {
+            "kind": "non_metric",
+            "grain": "",
+            "entity": "",
+            "operation": "",
+            "filter_ids": [],
+            "metric_ids": [],
+            "source_ids": [],
+            "breakdown_ids": []
+          },
+          "_registry_complete": true,
+          "recipe_alternatives": []
+        },
+        "suggestions": [
+          "Người dùng của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+          "Người dùng của Challenge Olist Marketplace, toàn bộ dữ liệu",
+          "Lượt sự kiện của Challenge Cosmetics Shop, toàn bộ dữ liệu"
+        ],
+        "dataset_version": "17ce03c17d5095363f03"
+      },
+      "reference_sql_id": null,
+      "full_result_correct": null
+    },
+    {
+      "turn_id": "5438c649-78ce-462d-ae86-c71d53d8be18",
+      "question": "Quay lại kết quả đầu tiên và chia theo tháng giúp tôi.",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:32:16.047301+07:00",
+      "actual_columns": [
+        "event_month",
+        "events"
+      ],
+      "actual_rows": [
+        [
+          "2025-01-01",
+          11
+        ],
+        [
+          "2025-02-01",
+          9
+        ],
+        [
+          "2025-03-01",
+          4
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "time_trend",
+        "top_k": null,
+        "recipe": "events",
+        "filters": [
+          {
+            "field": "event_name",
+            "values": [
+              "view"
+            ],
+            "operator": "="
+          }
+        ],
+        "metrics": [],
+        "selection": [
+          "event_month"
+        ],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT * FROM (SELECT date_trunc('month', \"e\".\"event_date\")::date AS \"event_month\", count(*) FILTER (WHERE (e.event_name = ANY('{view,cart,remove_from_cart,purchase,order_purchased,order_approved,order_shipped,order_delivered,order_canceled,payment_made,review_submitted}'))) AS \"events\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') AND \"e\".\"event_name\" = 'view' AND ((e.event_name = ANY('{view,cart,remove_from_cart,purchase,order_purchased,order_approved,order_shipped,order_delivered,order_canceled,payment_made,review_submitted}'))) GROUP BY 1) q ORDER BY \"event_month\" ASC LIMIT 1001",
+      "answer_message": null,
+      "form": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [],
+        "model": [
+          "cosmetics_shop"
+        ],
+        "memory": [
+          "cosmetics_shop"
+        ],
+        "effective": [
+          "cosmetics_shop"
+        ],
+        "resolved_by_user": false
+      },
+      "context": {
+        "language": "vi",
+        "relation": "followup",
+        "questions": [
+          "Cosmetics Shop có bao nhiêu lượt xem sản phẩm trên toàn bộ dữ liệu?"
+        ],
+        "references": [
+          "d5ee0a09-c460-4df3-a41d-54dc16e34db4"
+        ],
+        "catalog_version": 7,
+        "inherited_slots": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "events",
+          "filters": [
+            {
+              "field": "event_name",
+              "values": [
+                "view"
+              ],
+              "operator": "="
+            }
+          ],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "result_ordinals": {
+          "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+          "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+          "6e2f1e40-fee9-425c-b484-ac1f34312553": 5,
+          "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde": 4,
+          "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "keep",
+          "recipe": "keep",
+          "filters": "keep",
+          "metrics": "clear",
+          "selection": "set",
+          "source_ids": "keep",
+          "time_range": "keep"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "state_snapshot": {
+        "form": null,
+        "rows": [
+          {
+            "events": 11,
+            "event_month": "2025-01-01"
+          },
+          {
+            "events": 9,
+            "event_month": "2025-02-01"
+          },
+          {
+            "events": 4,
+            "event_month": "2025-03-01"
+          }
+        ],
+        "error": null,
+        "facts": [
+          {
+            "id": "f_rows",
+            "unit": "count",
+            "label": "Rows in the result",
+            "value": 3
+          },
+          {
+            "id": "f_total_events",
+            "unit": "count",
+            "label": "Total Events",
+            "value": 24
+          },
+          {
+            "id": "f_max_events",
+            "unit": "count",
+            "label": "Highest Events",
+            "value": 11
+          },
+          {
+            "id": "f_max_events_at",
+            "unit": "text",
+            "label": "Where Events is highest",
+            "value": "2025-01-01"
+          },
+          {
+            "id": "f_min_events",
+            "unit": "count",
+            "label": "Lowest Events",
+            "value": 4
+          },
+          {
+            "id": "f_min_events_at",
+            "unit": "text",
+            "label": "Where Events is lowest",
+            "value": "2025-03-01"
+          },
+          {
+            "id": "f_avg_events",
+            "unit": "count",
+            "label": "Average Events per row",
+            "value": 8.0
+          },
+          {
+            "id": "f_max_events_share",
+            "unit": "percent",
+            "label": "Share of total Events at the highest row",
+            "value": 0.4583333333333333
+          },
+          {
+            "id": "f_first_events",
+            "unit": "count",
+            "label": "Events at the start (2025-01-01)",
+            "value": 11
+          },
+          {
+            "id": "f_last_events",
+            "unit": "count",
+            "label": "Events at the end (2025-03-01)",
+            "value": 4
+          },
+          {
+            "id": "f_change_events",
+            "unit": "count",
+            "label": "Change in Events from start to end",
+            "value": -7
+          },
+          {
+            "id": "f_change_events_pct",
+            "unit": "percent",
+            "label": "Relative change in Events from start to end",
+            "value": -0.6363636363636364
+          },
+          {
+            "id": "f_peak_events",
+            "unit": "count",
+            "label": "Peak Events",
+            "value": 11
+          },
+          {
+            "id": "f_peak_events_at",
+            "unit": "text",
+            "label": "When Events peaked",
+            "value": "2025-01-01"
+          },
+          {
+            "id": "f_trough_events",
+            "unit": "count",
+            "label": "Lowest Events",
+            "value": 4
+          },
+          {
+            "id": "f_trough_events_at",
+            "unit": "text",
+            "label": "When Events was lowest",
+            "value": "2025-03-01"
+          }
+        ],
+        "notes": [],
+        "scope": [],
+        "period": {
+          "cosmetics_shop": {
+            "end": "2025-03-11",
+            "start": "2025-01-01",
+            "data_end": "2025-03-11",
+            "data_start": "2025-01-01"
+          }
+        },
+        "status": "answered",
+        "timing": {
+          "end_to_end_ms": 17208,
+          "first_result_ms": 13409
+        },
+        "answers": {},
+        "columns": [
+          {
+            "name": "event_month",
+            "role": "dimension",
+            "unit": "",
+            "label": "Tháng",
+            "additive": false,
+            "currency": null,
+            "value_type": "date"
+          },
+          {
+            "name": "events",
+            "role": "metric",
+            "unit": "count",
+            "label": "Lượt sự kiện",
+            "additive": true,
+            "currency": null,
+            "value_type": "number"
+          }
+        ],
+        "context": {
+          "language": "vi",
+          "relation": "followup",
+          "questions": [
+            "Cosmetics Shop có bao nhiêu lượt xem sản phẩm trên toàn bộ dữ liệu?"
+          ],
+          "references": [
+            "d5ee0a09-c460-4df3-a41d-54dc16e34db4"
+          ],
+          "catalog_version": 7,
+          "inherited_slots": {
+            "limit": 1000,
+            "shape": "aggregate",
+            "top_k": null,
+            "recipe": "events",
+            "filters": [
+              {
+                "field": "event_name",
+                "values": [
+                  "view"
+                ],
+                "operator": "="
+              }
+            ],
+            "metrics": [],
+            "selection": [],
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "time_range": {
+              "end": null,
+              "days": null,
+              "kind": "all",
+              "field": "event_date",
+              "start": null
+            },
+            "contract_version": 7
+          },
+          "result_ordinals": {
+            "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+            "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+            "6e2f1e40-fee9-425c-b484-ac1f34312553": 5,
+            "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde": 4,
+            "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+          },
+          "slot_operations": {
+            "shape": "set",
+            "top_k": "keep",
+            "recipe": "keep",
+            "filters": "keep",
+            "metrics": "clear",
+            "selection": "set",
+            "source_ids": "keep",
+            "time_range": "keep"
+          },
+          "structured_memory": true,
+          "clarification_needed": false,
+          "unavailable_result_numbers": []
+        },
+        "insight": {
+          "body": [
+            "Tháng 1: 11 lượt; đây là mức cao nhất trong kỳ.",
+            "Tháng 2: 9 lượt. Tháng 3: 4 lượt, mức thấp nhất."
+          ],
+          "cited": [
+            "11",
+            "4"
+          ],
+          "marks": [
+            {
+              "kind": "sql",
+              "text": "11",
+              "label": "Events at the start (2025-01-01)"
+            },
+            {
+              "kind": "sql",
+              "text": "4",
+              "label": "Events at the end (2025-03-01)"
+            }
+          ],
+          "caveats": [],
+          "derived": [],
+          "headline": "Cửa hàng Challenge Cosmetics Shop ghi nhận lượt sự kiện “view” giảm dần theo tháng trong kỳ từ tháng 1 đến tháng 3 năm 2025.",
+          "follow_ups": [
+            "Người dùng của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+            "Lượt sự kiện của Challenge Cosmetics Shop, toàn bộ dữ liệu",
+            "Phiên truy cập của Challenge Cosmetics Shop, toàn bộ dữ liệu"
+          ]
+        },
+        "message": null,
+        "partial": false,
+        "sources": [
+          "cosmetics_shop"
+        ],
+        "ablation": {
+          "variant": "F",
+          "clarification_field": null,
+          "clarification_reason": "not_applicable",
+          "clarification_choices": [],
+          "clarification_invoked": false,
+          "clarification_eligible": false,
+          "clarification_choice_id": null,
+          "clarification_requested": false,
+          "clarification_choice_count": 0
+        },
+        "language": "vi",
+        "variants": [],
+        "warnings": [],
+        "candidate": {
+          "reply": "",
+          "shape": "time_trend",
+          "top_k": 0,
+          "reason": "",
+          "recipe": "events",
+          "filters": [
+            {
+              "field": "event_name",
+              "operator": "=",
+              "values_mentioned": [
+                "view"
+              ]
+            }
+          ],
+          "metrics": [],
+          "outcome": "query",
+          "dialogue": {
+            "slots": {
+              "shape": "set",
+              "top_k": "keep",
+              "recipe": "keep",
+              "filters": "keep",
+              "metrics": "clear",
+              "selection": "set",
+              "source_ids": "keep",
+              "time_range": "keep"
+            },
+            "relation": "followup",
+            "target_id": "d5ee0a09-c460-4df3-a41d-54dc16e34db4"
+          },
+          "language": "vi",
+          "_accuracy": {
+            "retrieval": {
+              "enabled": false
+            },
+            "consistency": {
+              "enabled": false
+            }
+          },
+          "selection": [
+            "event_month"
+          ],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "start": null
+          },
+          "suggestions": [],
+          "recipe_stated": false,
+          "answer_request": {
+            "ask": "",
+            "need": "describe"
+          },
+          "intent_contract": {
+            "kind": "continuation",
+            "grain": "event_row",
+            "entity": "lượt xem sản phẩm (sự kiện xem)",
+            "operation": "count_events",
+            "filter_ids": [
+              "event_name"
+            ],
+            "metric_ids": [
+              "events"
+            ],
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "breakdown_ids": [
+              "event_month"
+            ]
+          },
+          "_registry_complete": true,
+          "recipe_alternatives": []
+        },
+        "row_count": 3,
+        "query_spec": {
+          "limit": 1000,
+          "shape": "time_trend",
+          "top_k": null,
+          "recipe": "events",
+          "filters": [
+            {
+              "field": "event_name",
+              "values": [
+                "view"
+              ],
+              "operator": "="
+            }
+          ],
+          "metrics": [],
+          "selection": [
+            "event_month"
+          ],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "currency_of": {
+          "cosmetics_shop": "USD"
+        },
+        "compiled_sql": "SELECT * FROM (SELECT date_trunc('month', \"e\".\"event_date\")::date AS \"event_month\", count(*) FILTER (WHERE (e.event_name = ANY('{view,cart,remove_from_cart,purchase,order_purchased,order_approved,order_shipped,order_delivered,order_canceled,payment_made,review_submitted}'))) AS \"events\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') AND \"e\".\"event_name\" = 'view' AND ((e.event_name = ANY('{view,cart,remove_from_cart,purchase,order_purchased,order_approved,order_shipped,order_delivered,order_canceled,payment_made,review_submitted}'))) GROUP BY 1) q ORDER BY \"event_month\" ASC LIMIT 1001",
+        "model_preview": [
+          {
+            "events": 11,
+            "event_month": "2025-01-01"
+          },
+          {
+            "events": 9,
+            "event_month": "2025-02-01"
+          },
+          {
+            "events": 4,
+            "event_month": "2025-03-01"
+          }
+        ],
+        "dataset_version": "17ce03c17d5095363f03",
+        "source_resolution": {
+          "ui": [],
+          "text": [],
+          "model": [
+            "cosmetics_shop"
+          ],
+          "memory": [
+            "cosmetics_shop"
+          ],
+          "effective": [
+            "cosmetics_shop"
+          ],
+          "resolved_by_user": false
+        },
+        "metric_definitions": [
+          {
+            "id": "events",
+            "label": "Lượt sự kiện",
+            "description": "Tổng số sự kiện được ghi nhận trong kỳ."
+          }
+        ],
+        "unavailable_metrics": {},
+        "filter_binding_trace": [
+          {
+            "origin": "memory",
+            "field_id": "event_name",
+            "operator": "=",
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "bound_values": [
+              "view"
+            ],
+            "input_values": [
+              "view"
+            ],
+            "catalog_version": 7,
+            "vocabulary_status": {
+              "cosmetics_shop": "complete"
+            }
+          }
+        ]
+      },
+      "reference_sql_id": "browser_round2_view_events_by_month",
+      "full_result_correct": true,
+      "reference_sql": "SELECT date_trunc('month',event_date)::date AS event_month, count(*) AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='view' GROUP BY 1 ORDER BY 1",
+      "expected_columns": [
+        "event_month",
+        "events"
+      ],
+      "expected_rows": [
+        [
+          "2025-01-01",
+          11
+        ],
+        [
+          "2025-02-01",
+          9
+        ],
+        [
+          "2025-03-01",
+          4
+        ]
+      ]
+    },
+    {
+      "turn_id": "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30",
+      "question": "Tổng doanh thu Olist trên toàn bộ dữ liệu là bao nhiêu?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:33:21.766453+07:00",
+      "actual_columns": [
+        "revenue"
+      ],
+      "actual_rows": [
+        [
+          432.0
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "olist_marketplace"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{olist_marketplace}') LIMIT 1001",
+      "answer_message": null,
+      "form": null,
+      "source_resolution": {
+        "ui": [],
+        "text": [
+          "olist_marketplace"
+        ],
+        "model": [
+          "olist_marketplace"
+        ],
+        "memory": [],
+        "effective": [
+          "olist_marketplace"
+        ],
+        "resolved_by_user": false
+      },
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 7,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+          "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+          "5438c649-78ce-462d-ae86-c71d53d8be18": 6,
+          "6e2f1e40-fee9-425c-b484-ac1f34312553": 5,
+          "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde": 4,
+          "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "clear",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "clear",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "state_snapshot": {
+        "form": null,
+        "rows": [
+          {
+            "revenue": 432.0
+          }
+        ],
+        "error": null,
+        "facts": [
+          {
+            "id": "f_rows",
+            "unit": "count",
+            "label": "Rows in the result",
+            "value": 1
+          },
+          {
+            "id": "f_revenue",
+            "unit": "currency",
+            "label": "Revenue",
+            "value": 432.0,
+            "currency": "BRL"
+          }
+        ],
+        "notes": [],
+        "scope": [],
+        "period": {
+          "olist_marketplace": {
+            "end": "2018-03-04",
+            "start": "2018-01-01",
+            "data_end": "2018-03-04",
+            "data_start": "2018-01-01"
+          }
+        },
+        "status": "answered",
+        "timing": {
+          "end_to_end_ms": 13835,
+          "first_result_ms": 8017
+        },
+        "answers": {},
+        "columns": [
+          {
+            "name": "revenue",
+            "role": "metric",
+            "unit": "currency",
+            "label": "Doanh thu",
+            "additive": true,
+            "currency": null,
+            "value_type": "number"
+          }
+        ],
+        "context": {
+          "language": "vi",
+          "relation": "new_topic",
+          "questions": [],
+          "references": [],
+          "catalog_version": 7,
+          "inherited_slots": {},
+          "result_ordinals": {
+            "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+            "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+            "5438c649-78ce-462d-ae86-c71d53d8be18": 6,
+            "6e2f1e40-fee9-425c-b484-ac1f34312553": 5,
+            "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde": 4,
+            "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1
+          },
+          "slot_operations": {
+            "shape": "set",
+            "top_k": "clear",
+            "recipe": "set",
+            "filters": "clear",
+            "metrics": "clear",
+            "selection": "clear",
+            "source_ids": "set",
+            "time_range": "set"
+          },
+          "structured_memory": true,
+          "clarification_needed": false,
+          "unavailable_result_numbers": []
+        },
+        "insight": {
+          "body": [
+            "Kết quả bao phủ cửa hàng Challenge Olist Marketplace và toàn bộ dữ liệu trong giai đoạn được báo cáo."
+          ],
+          "cited": [
+            "432,00 BRL"
+          ],
+          "marks": [
+            {
+              "kind": "sql",
+              "text": "432,00 BRL",
+              "label": "Revenue"
+            }
+          ],
+          "caveats": [
+            "Doanh thu được tính bằng BRL, không cộng sự kiện thanh toán hoặc phí vận chuyển."
+          ],
+          "derived": [],
+          "headline": "Doanh thu Olist là 432,00 BRL trong giai đoạn từ 2018-01-01 đến 2018-03-04.",
+          "follow_ups": [
+            "Người dùng của Challenge Olist Marketplace, toàn bộ dữ liệu",
+            "Lượt sự kiện của Challenge Olist Marketplace, toàn bộ dữ liệu",
+            "Sản phẩm đã mua của Challenge Olist Marketplace, toàn bộ dữ liệu"
+          ]
+        },
+        "message": null,
+        "partial": false,
+        "sources": [
+          "olist_marketplace"
+        ],
+        "ablation": {
+          "variant": "F",
+          "clarification_field": null,
+          "clarification_reason": "not_applicable",
+          "clarification_choices": [],
+          "clarification_invoked": false,
+          "clarification_eligible": false,
+          "clarification_choice_id": null,
+          "clarification_requested": false,
+          "clarification_choice_count": 0
+        },
+        "language": "vi",
+        "variants": [],
+        "warnings": [
+          "Olist ghi nhận vòng đời đơn hàng, thanh toán và đánh giá; không ghi nhận phiên truy cập hay lượt xem sản phẩm. Sản phẩm đã mua được đếm theo dòng sản phẩm; doanh thu bằng BRL, không cộng sự kiện thanh toán hoặc phí vận chuyển."
+        ],
+        "candidate": {
+          "reply": "",
+          "shape": "aggregate",
+          "top_k": 0,
+          "reason": "",
+          "recipe": "revenue",
+          "filters": [],
+          "metrics": [],
+          "outcome": "query",
+          "dialogue": {
+            "slots": {
+              "shape": "set",
+              "top_k": "clear",
+              "recipe": "set",
+              "filters": "clear",
+              "metrics": "clear",
+              "selection": "clear",
+              "source_ids": "set",
+              "time_range": "set"
+            },
+            "relation": "new_topic",
+            "target_id": ""
+          },
+          "language": "vi",
+          "_accuracy": {
+            "retrieval": {
+              "enabled": false
+            },
+            "consistency": {
+              "enabled": false
+            }
+          },
+          "selection": [],
+          "source_ids": [
+            "olist_marketplace"
+          ],
+          "time_range": {
+            "end": "",
+            "days": 0,
+            "kind": "all",
+            "start": ""
+          },
+          "suggestions": [],
+          "recipe_stated": false,
+          "answer_request": {
+            "ask": "",
+            "need": "describe"
+          },
+          "intent_contract": {
+            "kind": "catalog_metric",
+            "grain": "purchased_item_line",
+            "entity": "Doanh thu từ các dòng sản phẩm đã mua",
+            "operation": "sum",
+            "filter_ids": [],
+            "metric_ids": [
+              "revenue"
+            ],
+            "source_ids": [
+              "olist_marketplace"
+            ],
+            "breakdown_ids": []
+          },
+          "_registry_complete": true,
+          "recipe_alternatives": []
+        },
+        "row_count": 1,
+        "query_spec": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "revenue",
+          "filters": [],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "olist_marketplace"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "currency_of": {
+          "olist_marketplace": "BRL"
+        },
+        "compiled_sql": "SELECT coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{olist_marketplace}') LIMIT 1001",
+        "model_preview": [
+          {
+            "revenue": 432.0
+          }
+        ],
+        "dataset_version": "17ce03c17d5095363f03",
+        "source_resolution": {
+          "ui": [],
+          "text": [
+            "olist_marketplace"
+          ],
+          "model": [
+            "olist_marketplace"
+          ],
+          "memory": [],
+          "effective": [
+            "olist_marketplace"
+          ],
+          "resolved_by_user": false
+        },
+        "metric_definitions": [
+          {
+            "id": "revenue",
+            "label": "Doanh thu",
+            "description": "Tổng giá trị sản phẩm trên sự kiện mua hàng, theo tiền tệ của nguồn; không gồm thuế, vận chuyển hoặc hoàn tiền nếu không được ghi nhận. Không phải doanh thu kế toán."
+          }
+        ],
+        "unavailable_metrics": {},
+        "filter_binding_trace": []
+      },
+      "reference_sql_id": "browser_regression_v1:browser_single_olist_revenue",
+      "full_result_correct": true,
+      "reference_sql": "SELECT coalesce(sum(revenue) FILTER (WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace'",
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "432.00"
+        ]
+      ]
+    },
+    {
+      "turn_id": "77d60d4e-c0bc-4796-b4a8-91d2b1fff023",
+      "question": "Tổng số người mua Olist trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:34:53.072002+07:00",
+      "actual_columns": [
+        "buyers"
+      ],
+      "actual_rows": [
+        [
+          10
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "buyers",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "olist_marketplace"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT count(DISTINCT e.user_id) FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))) AS \"buyers\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{olist_marketplace}') LIMIT 1001",
+      "answer_message": null,
+      "form": null,
+      "source_resolution": {
+        "ui": [
+          "cosmetics_shop"
+        ],
+        "text": [
+          "olist_marketplace"
+        ],
+        "model": [
+          "olist_marketplace"
+        ],
+        "memory": [],
+        "effective": [
+          "olist_marketplace"
+        ],
+        "resolved_by_user": true
+      },
+      "context": {
+        "language": "vi",
+        "relation": "new_topic",
+        "questions": [],
+        "references": [],
+        "catalog_version": 7,
+        "inherited_slots": {},
+        "result_ordinals": {
+          "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+          "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+          "5438c649-78ce-462d-ae86-c71d53d8be18": 6,
+          "6e2f1e40-fee9-425c-b484-ac1f34312553": 5,
+          "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde": 4,
+          "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1,
+          "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30": 7
+        },
+        "slot_operations": {
+          "shape": "set",
+          "top_k": "clear",
+          "recipe": "set",
+          "filters": "clear",
+          "metrics": "clear",
+          "selection": "clear",
+          "source_ids": "set",
+          "time_range": "set"
+        },
+        "structured_memory": true,
+        "clarification_needed": false,
+        "unavailable_result_numbers": []
+      },
+      "state_snapshot": {
+        "form": null,
+        "rows": [
+          {
+            "buyers": 10
+          }
+        ],
+        "error": null,
+        "facts": [
+          {
+            "id": "f_rows",
+            "unit": "count",
+            "label": "Rows in the result",
+            "value": 1
+          },
+          {
+            "id": "f_buyers",
+            "unit": "count",
+            "label": "Buyers",
+            "value": 10
+          }
+        ],
+        "notes": [],
+        "scope": [
+          "cosmetics_shop"
+        ],
+        "period": {
+          "olist_marketplace": {
+            "end": "2018-03-04",
+            "start": "2018-01-01",
+            "data_end": "2018-03-04",
+            "data_start": "2018-01-01"
+          }
+        },
+        "status": "answered",
+        "timing": {
+          "end_to_end_ms": 7895,
+          "first_result_ms": 5
+        },
+        "answers": {
+          "context:source": [
+            "olist_marketplace"
+          ]
+        },
+        "columns": [
+          {
+            "name": "buyers",
+            "role": "metric",
+            "unit": "count",
+            "label": "Người mua",
+            "additive": false,
+            "currency": null,
+            "value_type": "number"
+          }
+        ],
+        "context": {
+          "language": "vi",
+          "relation": "new_topic",
+          "questions": [],
+          "references": [],
+          "catalog_version": 7,
+          "inherited_slots": {},
+          "result_ordinals": {
+            "0422ac39-1540-437e-ae45-f9b453aa9150": 3,
+            "2a632077-4e33-4d57-8a0d-1c9a296040d5": 2,
+            "5438c649-78ce-462d-ae86-c71d53d8be18": 6,
+            "6e2f1e40-fee9-425c-b484-ac1f34312553": 5,
+            "77fdc8a6-9cb2-4d38-9c02-35e34e1b2fde": 4,
+            "d5ee0a09-c460-4df3-a41d-54dc16e34db4": 1,
+            "dec9d72f-a9b5-4d17-a65b-d9f2cb38ab30": 7
+          },
+          "slot_operations": {
+            "shape": "set",
+            "top_k": "clear",
+            "recipe": "set",
+            "filters": "clear",
+            "metrics": "clear",
+            "selection": "clear",
+            "source_ids": "set",
+            "time_range": "set"
+          },
+          "structured_memory": true,
+          "clarification_needed": false,
+          "unavailable_result_numbers": []
+        },
+        "insight": {
+          "body": [],
+          "cited": [
+            "10"
+          ],
+          "marks": [
+            {
+              "kind": "sql",
+              "text": "10",
+              "label": "Buyers"
+            }
+          ],
+          "caveats": [],
+          "derived": [],
+          "headline": "Toàn bộ dữ liệu của cửa hàng Challenge Olist Marketplace ghi nhận 10 người mua trong giai đoạn 2018-01-01 đến 2018-03-04.",
+          "follow_ups": [
+            "Người dùng của Challenge Olist Marketplace, toàn bộ dữ liệu",
+            "Lượt sự kiện của Challenge Olist Marketplace, toàn bộ dữ liệu",
+            "Sản phẩm đã mua của Challenge Olist Marketplace, toàn bộ dữ liệu"
+          ]
+        },
+        "message": null,
+        "partial": false,
+        "sources": [
+          "olist_marketplace"
+        ],
+        "ablation": {
+          "variant": "F",
+          "clarification_field": null,
+          "clarification_reason": "not_applicable",
+          "clarification_choices": [],
+          "clarification_invoked": false,
+          "clarification_eligible": false,
+          "clarification_choice_id": null,
+          "clarification_requested": false,
+          "clarification_choice_count": 0
+        },
+        "language": "vi",
+        "variants": [],
+        "warnings": [
+          "Olist ghi nhận vòng đời đơn hàng, thanh toán và đánh giá; không ghi nhận phiên truy cập hay lượt xem sản phẩm. Sản phẩm đã mua được đếm theo dòng sản phẩm; doanh thu bằng BRL, không cộng sự kiện thanh toán hoặc phí vận chuyển."
+        ],
+        "candidate": {
+          "reply": "",
+          "shape": "aggregate",
+          "top_k": 0,
+          "reason": "",
+          "recipe": "buyers",
+          "filters": [],
+          "metrics": [],
+          "outcome": "query",
+          "dialogue": {
+            "slots": {
+              "shape": "set",
+              "top_k": "clear",
+              "recipe": "set",
+              "filters": "clear",
+              "metrics": "clear",
+              "selection": "clear",
+              "source_ids": "set",
+              "time_range": "set"
+            },
+            "relation": "new_topic",
+            "target_id": ""
+          },
+          "language": "vi",
+          "_accuracy": {
+            "retrieval": {
+              "enabled": false
+            },
+            "consistency": {
+              "enabled": false
+            }
+          },
+          "selection": [],
+          "source_ids": [
+            "olist_marketplace"
+          ],
+          "time_range": {
+            "end": "",
+            "days": 0,
+            "kind": "all",
+            "start": ""
+          },
+          "suggestions": [],
+          "recipe_stated": false,
+          "answer_request": {
+            "ask": "",
+            "need": "describe"
+          },
+          "intent_contract": {
+            "kind": "catalog_metric",
+            "grain": "purchasing_user_period",
+            "entity": "distinct users who made at least one purchase",
+            "operation": "count_users",
+            "filter_ids": [],
+            "metric_ids": [
+              "buyers"
+            ],
+            "source_ids": [
+              "olist_marketplace"
+            ],
+            "breakdown_ids": []
+          },
+          "_registry_complete": true,
+          "recipe_alternatives": []
+        },
+        "row_count": 1,
+        "query_spec": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "buyers",
+          "filters": [],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "olist_marketplace"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "currency_of": {
+          "olist_marketplace": "BRL"
+        },
+        "compiled_sql": "SELECT count(DISTINCT e.user_id) FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))) AS \"buyers\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{olist_marketplace}') LIMIT 1001",
+        "model_preview": [
+          {
+            "buyers": 10
+          }
+        ],
+        "dataset_version": "17ce03c17d5095363f03",
+        "source_resolution": {
+          "ui": [
+            "cosmetics_shop"
+          ],
+          "text": [
+            "olist_marketplace"
+          ],
+          "model": [
+            "olist_marketplace"
+          ],
+          "memory": [],
+          "effective": [
+            "olist_marketplace"
+          ],
+          "resolved_by_user": true
+        },
+        "metric_definitions": [
+          {
+            "id": "buyers",
+            "label": "Người mua",
+            "description": "Số người dùng duy nhất có ít nhất một sự kiện mua hàng."
+          }
+        ],
+        "unavailable_metrics": {},
+        "filter_binding_trace": []
+      },
+      "reference_sql_id": "browser_regression_v1:browser_single_olist_buyers",
+      "full_result_correct": true,
+      "reference_sql": "SELECT count(DISTINCT user_id) FILTER (WHERE event_name IN ('purchase','order_purchased')) AS buyers FROM analytics.event_activity WHERE source_id='olist_marketplace'",
+      "expected_columns": [
+        "buyers"
+      ],
+      "expected_rows": [
+        [
+          10
+        ]
+      ]
+    }
+  ],
+  "previous_download_csv": {
+    "source": ".runtime/live-e2e-extended/browser-current-olist-monthly.csv",
+    "saved_as": "browser-current-olist-monthly.csv",
+    "sha256": "ae2bd04288fb6f770e16e2f7e74a95b7879986be3a350c3596fff1da3daf67a1",
+    "round": "round1_before_23ac0b8",
+    "note": "Copied earlier-round export for provenance only; no CSV download was performed in round2.",
+    "evidence": "../accuracy-browser-20261106-v4/browser-check.json"
+  }
+}

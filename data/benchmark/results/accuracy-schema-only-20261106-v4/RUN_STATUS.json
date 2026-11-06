@@ -1,0 +1,5 @@
+{
+  "status": "interrupted_not_final",
+  "reason": "Actual browser exposed count-entity confusion and c49 binding failure. Run interrupted for root-cause fixes. Source prompt patch was applied shortly before interruption; artifacts are exploratory and excluded from final comparisons due to possible mixed provenance.",
+  "stopped_at": "2026-11-06T04:21:33.641496+00:00"
+}

@@ -1,0 +1,1323 @@
+{
+  "artifact": "data/benchmark/results/accuracy-schema-only-20261106-v3/single-dev-B0-base-r1.jsonl",
+  "metric": "v3 positional full-table values; alias-insensitive, original outputs and same fixture gold",
+  "counterfactual_policy": "Diagnostic only: rewrite only equality literals on source_registry.label to the case source actual label using sqlglot PostgreSQL AST. ILIKE/LIKE, missing source filters, other SQL clauses remain unchanged. Does not replace measured baseline.",
+  "actual_registry_labels": {
+    "cosmetics_shop": "Challenge Cosmetics Shop",
+    "event_benchmark": "Synthetic product events pilot",
+    "olist_marketplace": "Challenge Olist Marketplace"
+  },
+  "case_count": 30,
+  "recorded_baseline_correct": 2,
+  "original_rerun_correct": 2,
+  "counterfactual_correct": 9,
+  "cases_repaired_by_literal_replacement": [
+    "c01_cosmetics_jan_events",
+    "c02_cosmetics_users",
+    "c03_cosmetics_revenue",
+    "c05_cosmetics_conversion",
+    "c19_olist_payment_records",
+    "c20_cosmetics_sessions",
+    "c37_cosmetics_purchase_total"
+  ],
+  "cases_broken_by_literal_replacement": [],
+  "equality_literal_replacements": 12,
+  "cases": [
+    {
+      "id": "c01_cosmetics_jan_events",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": true,
+      "label_equalities_replaced": [
+        {
+          "old_literal": "Cosmetics Shop",
+          "new_literal": "Challenge Cosmetics Shop",
+          "table_alias": "s"
+        }
+      ],
+      "original_sql": "SELECT COUNT(*) AS event_count\nFROM analytics.event_activity AS e\nJOIN analytics.source_registry AS s ON s.source_id = e.source_id\nWHERE s.label = 'Cosmetics Shop'\n  AND e.event_date >= DATE '2025-01-05'\n  AND e.event_date < DATE '2025-01-08'",
+      "counterfactual_sql": "SELECT COUNT(*) AS event_count FROM analytics.event_activity AS e JOIN analytics.source_registry AS s ON s.source_id = e.source_id WHERE s.label = 'Challenge Cosmetics Shop' AND e.event_date >= CAST('2025-01-05' AS DATE) AND e.event_date < CAST('2025-01-08' AS DATE)",
+      "original_actual_columns": [
+        "event_count"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "event_count"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          3
+        ]
+      ],
+      "expected_columns": [
+        "events"
+      ],
+      "expected_rows": [
+        [
+          3
+        ]
+      ],
+      "failure_class": "source_label_equality_only",
+      "diagnostic_note": "Replacing s.label with the case source registry label makes the same count/date query match gold."
+    },
+    {
+      "id": "c02_cosmetics_users",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": true,
+      "label_equalities_replaced": [
+        {
+          "old_literal": "Cosmetics Shop",
+          "new_literal": "Challenge Cosmetics Shop",
+          "table_alias": "sr"
+        }
+      ],
+      "original_sql": "SELECT COUNT(DISTINCT ea.user_id) AS unique_users\nFROM analytics.event_activity AS ea\nJOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id\nWHERE sr.label = 'Cosmetics Shop'\n  AND ea.event_date BETWEEN DATE '2025-01-05' AND DATE '2025-01-06';",
+      "counterfactual_sql": "SELECT COUNT(DISTINCT ea.user_id) AS unique_users FROM analytics.event_activity AS ea JOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id WHERE sr.label = 'Challenge Cosmetics Shop' AND ea.event_date BETWEEN CAST('2025-01-05' AS DATE) AND CAST('2025-01-06' AS DATE)",
+      "original_actual_columns": [
+        "unique_users"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "unique_users"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          2
+        ]
+      ],
+      "expected_columns": [
+        "users"
+      ],
+      "expected_rows": [
+        [
+          2
+        ]
+      ],
+      "failure_class": "source_label_equality_only",
+      "diagnostic_note": "Replacing sr.label with the case source registry label makes the same distinct-user/date query match gold."
+    },
+    {
+      "id": "c03_cosmetics_revenue",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": true,
+      "label_equalities_replaced": [
+        {
+          "old_literal": "Cosmetics Shop",
+          "new_literal": "Challenge Cosmetics Shop",
+          "table_alias": "s"
+        }
+      ],
+      "original_sql": "SELECT SUM(e.revenue) AS purchase_revenue\nFROM analytics.event_activity AS e\nJOIN analytics.source_registry AS s ON s.source_id = e.source_id\nWHERE s.label = 'Cosmetics Shop'\n  AND e.event_name = 'purchase'\n  AND EXTRACT(MONTH FROM e.event_date) = 1\n  AND EXTRACT(DAY FROM e.event_date) BETWEEN 5 AND 7;",
+      "counterfactual_sql": "SELECT SUM(e.revenue) AS purchase_revenue FROM analytics.event_activity AS e JOIN analytics.source_registry AS s ON s.source_id = e.source_id WHERE s.label = 'Challenge Cosmetics Shop' AND e.event_name = 'purchase' AND EXTRACT(MONTH FROM e.event_date) = 1 AND EXTRACT(DAY FROM e.event_date) BETWEEN 5 AND 7",
+      "original_actual_columns": [
+        "purchase_revenue"
+      ],
+      "original_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "purchase_revenue"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          "18.00"
+        ]
+      ],
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          18.0
+        ]
+      ],
+      "failure_class": "source_label_equality_only",
+      "diagnostic_note": "The purchase/date constraints match gold once the source label equality is corrected."
+    },
+    {
+      "id": "c04_cosmetics_mobile_buyers",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": true,
+      "original_current_fixture_correct": true,
+      "counterfactual_correct": true,
+      "label_equalities_replaced": [
+        {
+          "old_literal": "Cosmetics Shop",
+          "new_literal": "Challenge Cosmetics Shop",
+          "table_alias": "sr"
+        }
+      ],
+      "original_sql": "SELECT COUNT(DISTINCT ea.user_id) AS distinct_mobile_buyers\nFROM analytics.event_activity AS ea\nJOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id\nWHERE sr.label = 'Cosmetics Shop'\n  AND ea.platform = 'mobile'\n  AND ea.event_name = 'purchase'\n  AND EXTRACT(MONTH FROM ea.event_date) = 1\n  AND EXTRACT(DAY FROM ea.event_date) BETWEEN 5 AND 7",
+      "counterfactual_sql": "SELECT COUNT(DISTINCT ea.user_id) AS distinct_mobile_buyers FROM analytics.event_activity AS ea JOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id WHERE sr.label = 'Challenge Cosmetics Shop' AND ea.platform = 'mobile' AND ea.event_name = 'purchase' AND EXTRACT(MONTH FROM ea.event_date) = 1 AND EXTRACT(DAY FROM ea.event_date) BETWEEN 5 AND 7",
+      "original_actual_columns": [
+        "distinct_mobile_buyers"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "distinct_mobile_buyers"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "expected_columns": [
+        "buyers"
+      ],
+      "expected_rows": [
+        [
+          0
+        ]
+      ],
+      "failure_class": "correct_by_zero_result_despite_wrong_source_label",
+      "diagnostic_note": "Original wrong source equality returns zero, which coincides with this case gold; source correction also remains zero."
+    },
+    {
+      "id": "c05_cosmetics_conversion",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": true,
+      "label_equalities_replaced": [
+        {
+          "old_literal": "Cosmetics Shop",
+          "new_literal": "Challenge Cosmetics Shop",
+          "table_alias": "sr"
+        }
+      ],
+      "original_sql": "SELECT 100.0 * COUNT(DISTINCT user_id) FILTER (WHERE event_name = 'purchase') / NULLIF(COUNT(DISTINCT user_id), 0) AS buyer_percentage\nFROM analytics.event_activity AS ea\nJOIN analytics.source_registry AS sr USING (source_id)\nWHERE sr.label = 'Cosmetics Shop'\n  AND EXTRACT(MONTH FROM ea.event_date) = 1\n  AND EXTRACT(DAY FROM ea.event_date) BETWEEN 5 AND 6;",
+      "counterfactual_sql": "SELECT 100.0 * COUNT(DISTINCT user_id) FILTER(WHERE event_name = 'purchase') / NULLIF(COUNT(DISTINCT user_id), 0) AS buyer_percentage FROM analytics.event_activity AS ea JOIN analytics.source_registry AS sr USING (source_id) WHERE sr.label = 'Challenge Cosmetics Shop' AND EXTRACT(MONTH FROM ea.event_date) = 1 AND EXTRACT(DAY FROM ea.event_date) BETWEEN 5 AND 6",
+      "original_actual_columns": [
+        "buyer_percentage"
+      ],
+      "original_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "buyer_percentage"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          "0E-20"
+        ]
+      ],
+      "expected_columns": [
+        "buyer_conversion_rate"
+      ],
+      "expected_rows": [
+        [
+          0.0
+        ]
+      ],
+      "failure_class": "source_label_equality_only",
+      "diagnostic_note": "The requested user ratio/date query matches gold after correcting only the source label."
+    },
+    {
+      "id": "c13_cosmetics_sessions",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT COUNT(DISTINCT ea.session_id) AS distinct_sessions\nFROM analytics.event_activity AS ea\nJOIN analytics.source_registry AS sr\n  ON sr.source_id = ea.source_id\nWHERE sr.label ILIKE '%Cosmetics challenge snapshot%'\n   OR sr.description ILIKE '%Cosmetics challenge snapshot%'",
+      "counterfactual_sql": "SELECT COUNT(DISTINCT ea.session_id) AS distinct_sessions FROM analytics.event_activity AS ea JOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id WHERE sr.label ILIKE '%Cosmetics challenge snapshot%' OR sr.description ILIKE '%Cosmetics challenge snapshot%'",
+      "original_actual_columns": [
+        "distinct_sessions"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "distinct_sessions"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "expected_columns": [
+        "sessions"
+      ],
+      "expected_rows": [
+        [
+          30
+        ]
+      ],
+      "failure_class": "source_label_matcher_and_measure_issues",
+      "diagnostic_note": "ILIKE pattern targets “Cosmetics challenge snapshot”, not the actual registry label; no equality was eligible for rewrite. Also source choice is inferred from an invented snapshot phrase."
+    },
+    {
+      "id": "c14_cosmetics_viewers",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [
+        {
+          "old_literal": "Cosmetics snapshot",
+          "new_literal": "Challenge Cosmetics Shop",
+          "table_alias": "sr"
+        }
+      ],
+      "original_sql": "SELECT COUNT(DISTINCT ea.user_id) AS unique_users\nFROM analytics.event_activity AS ea\nJOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id\nWHERE sr.label = 'Cosmetics snapshot'\n  AND ea.event_name = 'view_item';",
+      "counterfactual_sql": "SELECT COUNT(DISTINCT ea.user_id) AS unique_users FROM analytics.event_activity AS ea JOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id WHERE sr.label = 'Challenge Cosmetics Shop' AND ea.event_name = 'view_item'",
+      "original_actual_columns": [
+        "unique_users"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "unique_users"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "expected_columns": [
+        "viewers"
+      ],
+      "expected_rows": [
+        [
+          12
+        ]
+      ],
+      "failure_class": "source_label_plus_event_role_error",
+      "diagnostic_note": "Correcting the source equality still returns zero; SQL asks for view_item, while the catalog fixture event role uses a different event name."
+    },
+    {
+      "id": "c15_cosmetics_mobile_revenue",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [
+        {
+          "old_literal": "Cosmetics Shop",
+          "new_literal": "Challenge Cosmetics Shop",
+          "table_alias": "s"
+        }
+      ],
+      "original_sql": "SELECT SUM(e.revenue) AS purchase_revenue\nFROM analytics.event_activity AS e\nJOIN analytics.source_registry AS s ON s.source_id = e.source_id\nWHERE s.label = 'Cosmetics Shop'\n  AND e.event_name = 'purchase'\n  AND e.ep->>'device' = 'mobile';",
+      "counterfactual_sql": "SELECT SUM(e.revenue) AS purchase_revenue FROM analytics.event_activity AS e JOIN analytics.source_registry AS s ON s.source_id = e.source_id WHERE s.label = 'Challenge Cosmetics Shop' AND e.event_name = 'purchase' AND e.ep ->> 'device' = 'mobile'",
+      "original_actual_columns": [
+        "purchase_revenue"
+      ],
+      "original_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "purchase_revenue"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          99.0
+        ]
+      ],
+      "failure_class": "source_label_plus_nested_dimension_error",
+      "diagnostic_note": "Correcting source still returns NULL; query uses ep->>device as a scalar/mobile field, while nested device value is under a deeper path."
+    },
+    {
+      "id": "c16_cosmetics_mobile_purchase_rows",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [
+        {
+          "old_literal": "Cosmetics Shop",
+          "new_literal": "Challenge Cosmetics Shop",
+          "table_alias": "s"
+        }
+      ],
+      "original_sql": "SELECT COUNT(*) AS purchase_event_rows\nFROM analytics.event_activity AS e\nJOIN analytics.source_registry AS s ON s.source_id = e.source_id\nWHERE s.label = 'Cosmetics Shop'\n  AND e.event_name = 'purchase'\n  AND e.platform = 'mobile';",
+      "counterfactual_sql": "SELECT COUNT(*) AS purchase_event_rows FROM analytics.event_activity AS e JOIN analytics.source_registry AS s ON s.source_id = e.source_id WHERE s.label = 'Challenge Cosmetics Shop' AND e.event_name = 'purchase' AND e.platform = 'mobile'",
+      "original_actual_columns": [
+        "purchase_event_rows"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "purchase_event_rows"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "expected_columns": [
+        "purchases"
+      ],
+      "expected_rows": [
+        [
+          7
+        ]
+      ],
+      "failure_class": "source_label_plus_dimension_or_population_error",
+      "diagnostic_note": "Correcting source still returns zero; platform=mobile does not match the fixture’s purchase/device representation."
+    },
+    {
+      "id": "c17_cosmetics_category_revenue_control",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT item_category, SUM(revenue) AS purchase_revenue\nFROM analytics.event_activity\nWHERE event_name = 'purchase'\n  AND item_category = 'Cosmetics'\nGROUP BY item_category;",
+      "counterfactual_sql": "SELECT item_category, SUM(revenue) AS purchase_revenue FROM analytics.event_activity WHERE event_name = 'purchase' AND item_category = 'Cosmetics' GROUP BY item_category",
+      "original_actual_columns": [
+        "item_category",
+        "purchase_revenue"
+      ],
+      "original_actual_rows": [],
+      "counterfactual_actual_columns": [
+        "item_category",
+        "purchase_revenue"
+      ],
+      "counterfactual_actual_rows": [],
+      "expected_columns": [
+        "item_category",
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "cleanser",
+          75.0
+        ],
+        [
+          "cream",
+          55.0
+        ],
+        [
+          "mask",
+          118.0
+        ],
+        [
+          "serum",
+          56.0
+        ],
+        [
+          "sunscreen",
+          86.0
+        ],
+        [
+          "toner",
+          30.0
+        ]
+      ],
+      "failure_class": "missing_source_and_domain_role_error",
+      "diagnostic_note": "No source predicate; treats the store name “Cosmetics” as item_category, but categories are item values such as cleanser/cream."
+    },
+    {
+      "id": "c18_olist_payment_exclusion",
+      "source_id": "olist_marketplace",
+      "actual_registry_label": "Challenge Olist Marketplace",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT SUM(e.revenue_usd) AS item_purchase_value_usd\nFROM analytics.event_activity AS e\nJOIN analytics.source_registry AS s USING (source_id)\nWHERE s.label ILIKE '%olist%'\n  AND e.event_name ILIKE '%purchase%'",
+      "counterfactual_sql": "SELECT SUM(e.revenue_usd) AS item_purchase_value_usd FROM analytics.event_activity AS e JOIN analytics.source_registry AS s USING (source_id) WHERE s.label ILIKE '%olist%' AND e.event_name ILIKE '%purchase%'",
+      "original_actual_columns": [
+        "item_purchase_value_usd"
+      ],
+      "original_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "item_purchase_value_usd"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          432.0
+        ]
+      ],
+      "failure_class": "event_role_and_measure_field_error",
+      "diagnostic_note": "The Olist substring source matcher already matches actual registry label; query uses revenue_usd and purchase substring, yielding NULL instead of the item-revenue gold."
+    },
+    {
+      "id": "c19_olist_payment_records",
+      "source_id": "olist_marketplace",
+      "actual_registry_label": "Challenge Olist Marketplace",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": true,
+      "label_equalities_replaced": [
+        {
+          "old_literal": "Olist",
+          "new_literal": "Challenge Olist Marketplace",
+          "table_alias": "s"
+        }
+      ],
+      "original_sql": "SELECT COUNT(*) AS event_rows\nFROM analytics.event_activity AS e\nWHERE e.event_name = 'payment_made'\n  AND EXISTS (\n    SELECT 1\n    FROM analytics.source_registry AS s\n    WHERE s.source_id = e.source_id\n      AND s.label = 'Olist'\n  )",
+      "counterfactual_sql": "SELECT COUNT(*) AS event_rows FROM analytics.event_activity AS e WHERE e.event_name = 'payment_made' AND EXISTS(SELECT 1 FROM analytics.source_registry AS s WHERE s.source_id = e.source_id AND s.label = 'Challenge Olist Marketplace')",
+      "original_actual_columns": [
+        "event_rows"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "event_rows"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          18
+        ]
+      ],
+      "expected_columns": [
+        "events"
+      ],
+      "expected_rows": [
+        [
+          18
+        ]
+      ],
+      "failure_class": "source_label_equality_only",
+      "diagnostic_note": "The EXISTS source equality is the sole defect; correcting it makes the event count match."
+    },
+    {
+      "id": "c20_cosmetics_sessions",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": true,
+      "label_equalities_replaced": [
+        {
+          "old_literal": "Cosmetics Shop",
+          "new_literal": "Challenge Cosmetics Shop",
+          "table_alias": "sr"
+        }
+      ],
+      "original_sql": "SELECT COUNT(DISTINCT ea.session_id) AS distinct_sessions\nFROM analytics.event_activity AS ea\nJOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id\nWHERE sr.label = 'Cosmetics Shop';",
+      "counterfactual_sql": "SELECT COUNT(DISTINCT ea.session_id) AS distinct_sessions FROM analytics.event_activity AS ea JOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id WHERE sr.label = 'Challenge Cosmetics Shop'",
+      "original_actual_columns": [
+        "distinct_sessions"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "distinct_sessions"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          30
+        ]
+      ],
+      "expected_columns": [
+        "sessions"
+      ],
+      "expected_rows": [
+        [
+          30
+        ]
+      ],
+      "failure_class": "source_label_equality_only",
+      "diagnostic_note": "The distinct session count matches gold after correcting source equality."
+    },
+    {
+      "id": "c21_olist_users",
+      "source_id": "olist_marketplace",
+      "actual_registry_label": "Challenge Olist Marketplace",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT COUNT(DISTINCT ea.user_id) AS unique_users\nFROM analytics.event_activity AS ea\nJOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id\nWHERE sr.label ILIKE 'Olist'",
+      "counterfactual_sql": "SELECT COUNT(DISTINCT ea.user_id) AS unique_users FROM analytics.event_activity AS ea JOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id WHERE sr.label ILIKE 'Olist'",
+      "original_actual_columns": [
+        "unique_users"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "unique_users"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "expected_columns": [
+        "users"
+      ],
+      "expected_rows": [
+        [
+          10
+        ]
+      ],
+      "failure_class": "source_label_pattern_error",
+      "diagnostic_note": "ILIKE “Olist” has no wildcard and does not match the longer actual registry label; no equality rewrite applies."
+    },
+    {
+      "id": "c22_olist_category_purchase_rows",
+      "source_id": "olist_marketplace",
+      "actual_registry_label": "Challenge Olist Marketplace",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT ea.item_category AS product_category, COUNT(*) AS item_line_rows\nFROM analytics.event_activity AS ea\nJOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id\nWHERE lower(sr.label) LIKE '%olist%'\n  AND ea.event_name = 'purchase'\nGROUP BY ea.item_category\nORDER BY item_line_rows DESC, product_category",
+      "counterfactual_sql": "SELECT ea.item_category AS product_category, COUNT(*) AS item_line_rows FROM analytics.event_activity AS ea JOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id WHERE LOWER(sr.label) LIKE '%olist%' AND ea.event_name = 'purchase' GROUP BY ea.item_category ORDER BY item_line_rows DESC, product_category",
+      "original_actual_columns": [
+        "product_category",
+        "item_line_rows"
+      ],
+      "original_actual_rows": [],
+      "counterfactual_actual_columns": [
+        "product_category",
+        "item_line_rows"
+      ],
+      "counterfactual_actual_rows": [],
+      "expected_columns": [
+        "item_category",
+        "purchases"
+      ],
+      "expected_rows": [
+        [
+          "cleanser",
+          4
+        ],
+        [
+          "cream",
+          6
+        ],
+        [
+          "mask",
+          6
+        ],
+        [
+          "serum",
+          6
+        ],
+        [
+          "sunscreen",
+          4
+        ],
+        [
+          "toner",
+          4
+        ]
+      ],
+      "failure_class": "event_role_and_grouping_population_error",
+      "diagnostic_note": "The source substring matches; event_name=purchase yields no eligible Olist item rows, whose event role is represented differently."
+    },
+    {
+      "id": "c23_olist_category_revenue",
+      "source_id": "olist_marketplace",
+      "actual_registry_label": "Challenge Olist Marketplace",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT ea.item_category, SUM(ea.revenue) AS total_revenue\nFROM analytics.event_activity AS ea\nJOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id\nWHERE ea.event_name = 'purchase'\n  AND sr.label ILIKE '%olist%'\nGROUP BY ea.item_category\nORDER BY ea.item_category",
+      "counterfactual_sql": "SELECT ea.item_category, SUM(ea.revenue) AS total_revenue FROM analytics.event_activity AS ea JOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id WHERE ea.event_name = 'purchase' AND sr.label ILIKE '%olist%' GROUP BY ea.item_category ORDER BY ea.item_category",
+      "original_actual_columns": [
+        "item_category",
+        "total_revenue"
+      ],
+      "original_actual_rows": [],
+      "counterfactual_actual_columns": [
+        "item_category",
+        "total_revenue"
+      ],
+      "counterfactual_actual_rows": [],
+      "expected_columns": [
+        "item_category",
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "cleanser",
+          72.0
+        ],
+        [
+          "cream",
+          94.0
+        ],
+        [
+          "mask",
+          72.0
+        ],
+        [
+          "serum",
+          72.0
+        ],
+        [
+          "sunscreen",
+          72.0
+        ],
+        [
+          "toner",
+          50.0
+        ]
+      ],
+      "failure_class": "event_role_and_measure_field_error",
+      "diagnostic_note": "The source substring matches; the event_name and revenue field do not reproduce the Olist item-revenue definition."
+    },
+    {
+      "id": "c25_cosmetics_email_events",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT COUNT(*) AS event_rows\nFROM analytics.event_activity\nWHERE item_category = 'Cosmetics'\n  AND ep->>'campaign' = 'email'",
+      "counterfactual_sql": "SELECT COUNT(*) AS event_rows FROM analytics.event_activity WHERE item_category = 'Cosmetics' AND ep ->> 'campaign' = 'email'",
+      "original_actual_columns": [
+        "event_rows"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "event_rows"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "expected_columns": [
+        "events"
+      ],
+      "expected_rows": [
+        [
+          29
+        ]
+      ],
+      "failure_class": "missing_source_and_domain_role_error",
+      "diagnostic_note": "No source predicate; uses item_category=Cosmetics as if it were the store, which removes all rows."
+    },
+    {
+      "id": "c37_cosmetics_purchase_total",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": true,
+      "label_equalities_replaced": [
+        {
+          "old_literal": "full Cosmetics snapshot",
+          "new_literal": "Challenge Cosmetics Shop",
+          "table_alias": "sr"
+        }
+      ],
+      "original_sql": "SELECT COUNT(*) AS purchase_event_rows\nFROM analytics.event_activity AS ea\nJOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id\nWHERE sr.label = 'full Cosmetics snapshot'\n  AND ea.event_name = 'purchase';",
+      "counterfactual_sql": "SELECT COUNT(*) AS purchase_event_rows FROM analytics.event_activity AS ea JOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id WHERE sr.label = 'Challenge Cosmetics Shop' AND ea.event_name = 'purchase'",
+      "original_actual_columns": [
+        "purchase_event_rows"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "purchase_event_rows"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          24
+        ]
+      ],
+      "expected_columns": [
+        "purchases"
+      ],
+      "expected_rows": [
+        [
+          24
+        ]
+      ],
+      "failure_class": "source_label_equality_only",
+      "diagnostic_note": "Replacing the source equality makes the same purchase-row count match gold."
+    },
+    {
+      "id": "c38_olist_event_total",
+      "source_id": "olist_marketplace",
+      "actual_registry_label": "Challenge Olist Marketplace",
+      "artifact_result_correct": true,
+      "original_current_fixture_correct": true,
+      "counterfactual_correct": true,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT COUNT(*) AS event_count\nFROM analytics.event_activity AS ea\nWHERE EXISTS (\n    SELECT 1\n    FROM analytics.source_registry AS sr\n    WHERE sr.source_id = ea.source_id\n      AND (sr.label ILIKE '%olist%' OR sr.description ILIKE '%olist%')\n);",
+      "counterfactual_sql": "SELECT COUNT(*) AS event_count FROM analytics.event_activity AS ea WHERE EXISTS(SELECT 1 FROM analytics.source_registry AS sr WHERE sr.source_id = ea.source_id AND (sr.label ILIKE '%olist%' OR sr.description ILIKE '%olist%'))",
+      "original_actual_columns": [
+        "event_count"
+      ],
+      "original_actual_rows": [
+        [
+          60
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "event_count"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          60
+        ]
+      ],
+      "expected_columns": [
+        "events"
+      ],
+      "expected_rows": [
+        [
+          60
+        ]
+      ],
+      "failure_class": "correct_without_source_label_equality",
+      "diagnostic_note": "Uses a source description/label substring matching the actual registry label and returns expected total."
+    },
+    {
+      "id": "c39_cosmetics_buyers_total",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT COUNT(DISTINCT user_id) AS distinct_cosmetics_purchasers\nFROM analytics.event_activity\nWHERE item_category = 'Cosmetics'\n  AND event_name = 'purchase';",
+      "counterfactual_sql": "SELECT COUNT(DISTINCT user_id) AS distinct_cosmetics_purchasers FROM analytics.event_activity WHERE item_category = 'Cosmetics' AND event_name = 'purchase'",
+      "original_actual_columns": [
+        "distinct_cosmetics_purchasers"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "distinct_cosmetics_purchasers"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "expected_columns": [
+        "buyers"
+      ],
+      "expected_rows": [
+        [
+          9
+        ]
+      ],
+      "failure_class": "missing_source_and_domain_role_error",
+      "diagnostic_note": "No source predicate; confuses store name Cosmetics with item_category and returns zero."
+    },
+    {
+      "id": "c43_cosmetics_lines_vs_buyers",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT COUNT(DISTINCT user_id) AS distinct_people\nFROM analytics.event_activity\nWHERE event_name = 'purchase'\n  AND item_category = 'Cosmetics';",
+      "counterfactual_sql": "SELECT COUNT(DISTINCT user_id) AS distinct_people FROM analytics.event_activity WHERE event_name = 'purchase' AND item_category = 'Cosmetics'",
+      "original_actual_columns": [
+        "distinct_people"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "distinct_people"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "expected_columns": [
+        "buyers"
+      ],
+      "expected_rows": [
+        [
+          9
+        ]
+      ],
+      "failure_class": "missing_source_and_domain_role_error",
+      "diagnostic_note": "No source predicate; confuses store name Cosmetics with item_category and returns zero."
+    },
+    {
+      "id": "c44_olist_null_purchase_revenue",
+      "source_id": "olist_marketplace",
+      "actual_registry_label": "Challenge Olist Marketplace",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT SUM(e.revenue) AS known_revenue\nFROM analytics.event_activity AS e\nJOIN analytics.source_registry AS s ON s.source_id = e.source_id\nWHERE s.label ILIKE '%Olist%'\n  AND e.event_name = 'purchase'\n  AND e.revenue IS NOT NULL",
+      "counterfactual_sql": "SELECT SUM(e.revenue) AS known_revenue FROM analytics.event_activity AS e JOIN analytics.source_registry AS s ON s.source_id = e.source_id WHERE s.label ILIKE '%Olist%' AND e.event_name = 'purchase' AND NOT e.revenue IS NULL",
+      "original_actual_columns": [
+        "known_revenue"
+      ],
+      "original_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "known_revenue"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          432.0
+        ]
+      ],
+      "failure_class": "measure_field_error",
+      "diagnostic_note": "Olist source substring matches; SUM(revenue) is NULL instead of the defined item-revenue field/population."
+    },
+    {
+      "id": "c45_cosmetics_purchase_zero_included",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT SUM(revenue) AS total_revenue\nFROM analytics.event_activity\nWHERE event_name = 'purchase'\n  AND item_category = 'Cosmetics';",
+      "counterfactual_sql": "SELECT SUM(revenue) AS total_revenue FROM analytics.event_activity WHERE event_name = 'purchase' AND item_category = 'Cosmetics'",
+      "original_actual_columns": [
+        "total_revenue"
+      ],
+      "original_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "total_revenue"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          420.0
+        ]
+      ],
+      "failure_class": "missing_source_and_domain_role_error",
+      "diagnostic_note": "No source predicate; item_category=Cosmetics selects no store rows and SUM returns NULL."
+    },
+    {
+      "id": "c49_cosmetics_feb_mobile_revenue_category",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT SUM(revenue) AS purchase_revenue\nFROM analytics.event_activity\nWHERE event_name = 'purchase'\n  AND item_category = 'Cosmetics'\n  AND platform = 'mobile'\n  AND event_date >= DATE '2025-02-01'\n  AND event_date < DATE '2025-03-01';",
+      "counterfactual_sql": "SELECT SUM(revenue) AS purchase_revenue FROM analytics.event_activity WHERE event_name = 'purchase' AND item_category = 'Cosmetics' AND platform = 'mobile' AND event_date >= CAST('2025-02-01' AS DATE) AND event_date < CAST('2025-03-01' AS DATE)",
+      "original_actual_columns": [
+        "purchase_revenue"
+      ],
+      "original_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "purchase_revenue"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "expected_columns": [
+        "item_category",
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "cream",
+          12.0
+        ],
+        [
+          "serum",
+          44.0
+        ]
+      ],
+      "failure_class": "missing_source_and_domain_role_error",
+      "diagnostic_note": "No source predicate; confuses Cosmetics store with item_category, so its correct-looking date/device constraints still return NULL."
+    },
+    {
+      "id": "c50_olist_feb_paid_revenue",
+      "source_id": "olist_marketplace",
+      "actual_registry_label": "Challenge Olist Marketplace",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT SUM(e.revenue) AS purchase_revenue\nFROM analytics.event_activity AS e\nJOIN analytics.source_registry AS s ON s.source_id = e.source_id\nWHERE s.label ILIKE '%olist%'\n  AND e.event_name = 'purchase'\n  AND e.event_date >= DATE '2018-02-01'\n  AND e.event_date < DATE '2018-03-01'\n  AND e.ep ->> 'campaign' = 'paid'",
+      "counterfactual_sql": "SELECT SUM(e.revenue) AS purchase_revenue FROM analytics.event_activity AS e JOIN analytics.source_registry AS s ON s.source_id = e.source_id WHERE s.label ILIKE '%olist%' AND e.event_name = 'purchase' AND e.event_date >= CAST('2018-02-01' AS DATE) AND e.event_date < CAST('2018-03-01' AS DATE) AND e.ep ->> 'campaign' = 'paid'",
+      "original_actual_columns": [
+        "purchase_revenue"
+      ],
+      "original_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "purchase_revenue"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          null
+        ]
+      ],
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          50.0
+        ]
+      ],
+      "failure_class": "event_role_and_measure_field_error",
+      "diagnostic_note": "Olist source substring matches; purchase event/revenue field fails to represent the paid item-revenue measure."
+    },
+    {
+      "id": "c51_cosmetics_event_counts_by_device",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [
+        {
+          "old_literal": "Cosmetics Shop",
+          "new_literal": "Challenge Cosmetics Shop",
+          "table_alias": "s"
+        }
+      ],
+      "original_sql": "SELECT e.ep->>'device_type' AS device_type, COUNT(*) AS event_rows\nFROM analytics.event_activity AS e\nJOIN analytics.source_registry AS s ON s.source_id = e.source_id\nWHERE s.label = 'Cosmetics Shop'\n  AND e.event_date >= DATE '2025-01-01'\n  AND e.event_date < DATE '2025-02-01'\nGROUP BY e.ep->>'device_type';",
+      "counterfactual_sql": "SELECT e.ep ->> 'device_type' AS device_type, COUNT(*) AS event_rows FROM analytics.event_activity AS e JOIN analytics.source_registry AS s ON s.source_id = e.source_id WHERE s.label = 'Challenge Cosmetics Shop' AND e.event_date >= CAST('2025-01-01' AS DATE) AND e.event_date < CAST('2025-02-01' AS DATE) GROUP BY e.ep ->> 'device_type'",
+      "original_actual_columns": [
+        "device_type",
+        "event_rows"
+      ],
+      "original_actual_rows": [],
+      "counterfactual_actual_columns": [
+        "device_type",
+        "event_rows"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          null,
+          31
+        ]
+      ],
+      "expected_columns": [
+        "device_type",
+        "events"
+      ],
+      "expected_rows": [
+        [
+          "desktop",
+          10
+        ],
+        [
+          "mobile",
+          11
+        ],
+        [
+          "tablet",
+          10
+        ]
+      ],
+      "failure_class": "source_label_plus_nested_dimension_error",
+      "diagnostic_note": "Correcting source leaves a NULL device_type group; ep.device_type is not the nested device type path in the schema."
+    },
+    {
+      "id": "c52_olist_mobile_buyers",
+      "source_id": "olist_marketplace",
+      "actual_registry_label": "Challenge Olist Marketplace",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT COUNT(DISTINCT ea.user_id) AS distinct_buyers\nFROM analytics.event_activity AS ea\nJOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id\nWHERE sr.label ILIKE '%Olist%'\n  AND ea.event_date >= DATE '2018-02-01'\n  AND ea.event_date < DATE '2018-03-01'\n  AND ea.platform ILIKE 'mobile'",
+      "counterfactual_sql": "SELECT COUNT(DISTINCT ea.user_id) AS distinct_buyers FROM analytics.event_activity AS ea JOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id WHERE sr.label ILIKE '%Olist%' AND ea.event_date >= CAST('2018-02-01' AS DATE) AND ea.event_date < CAST('2018-03-01' AS DATE) AND ea.platform ILIKE 'mobile'",
+      "original_actual_columns": [
+        "distinct_buyers"
+      ],
+      "original_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "distinct_buyers"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          0
+        ]
+      ],
+      "expected_columns": [
+        "buyers"
+      ],
+      "expected_rows": [
+        [
+          4
+        ]
+      ],
+      "failure_class": "dimension_or_population_error",
+      "diagnostic_note": "Olist source substring matches; platform=mobile query does not represent the registered nested device values/population."
+    },
+    {
+      "id": "c53_cosmetics_conversion_by_channel",
+      "source_id": "cosmetics_shop",
+      "actual_registry_label": "Challenge Cosmetics Shop",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "WITH cosmetics_events AS (\n    SELECT\n        user_id,\n        ep->>'campaign_channel' AS campaign_channel,\n        event_name\n    FROM analytics.event_activity\n    WHERE item_category = 'Cosmetics'\n),\nchannel_users AS (\n    SELECT\n        campaign_channel,\n        COUNT(DISTINCT user_id) AS observed_users,\n        COUNT(DISTINCT user_id) FILTER (WHERE event_name = 'purchase') AS buyers\n    FROM cosmetics_events\n    GROUP BY campaign_channel\n)\nSELECT\n    campaign_channel,\n    buyers,\n    observed_users,\n    buyers::numeric / NULLIF(observed_users, 0) AS buyer_rate\nFROM channel_users\nORDER BY campaign_channel",
+      "counterfactual_sql": "WITH cosmetics_events AS (SELECT user_id, ep ->> 'campaign_channel' AS campaign_channel, event_name FROM analytics.event_activity WHERE item_category = 'Cosmetics'), channel_users AS (SELECT campaign_channel, COUNT(DISTINCT user_id) AS observed_users, COUNT(DISTINCT user_id) FILTER(WHERE event_name = 'purchase') AS buyers FROM cosmetics_events GROUP BY campaign_channel) SELECT campaign_channel, buyers, observed_users, CAST(buyers AS DECIMAL) / NULLIF(observed_users, 0) AS buyer_rate FROM channel_users ORDER BY campaign_channel",
+      "original_actual_columns": [
+        "campaign_channel",
+        "buyers",
+        "observed_users",
+        "buyer_rate"
+      ],
+      "original_actual_rows": [],
+      "counterfactual_actual_columns": [
+        "campaign_channel",
+        "buyers",
+        "observed_users",
+        "buyer_rate"
+      ],
+      "counterfactual_actual_rows": [],
+      "expected_columns": [
+        "campaign_channel",
+        "buyer_conversion_rate"
+      ],
+      "expected_rows": [
+        [
+          null,
+          1.0
+        ],
+        [
+          "email",
+          0.5
+        ],
+        [
+          "paid",
+          0.5714285714285714
+        ]
+      ],
+      "failure_class": "missing_source_and_domain_role_error",
+      "diagnostic_note": "No source predicate; Cosmetics is incorrectly applied as item_category before grouping by campaign_channel."
+    },
+    {
+      "id": "c54_olist_conversion_by_device",
+      "source_id": "olist_marketplace",
+      "actual_registry_label": "Challenge Olist Marketplace",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "WITH olist_events AS (\n    SELECT ea.user_id, ea.platform, ea.event_name\n    FROM analytics.event_activity AS ea\n    JOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id\n    WHERE sr.label ILIKE '%olist%'\n),\nuser_device AS (\n    SELECT\n        platform,\n        user_id,\n        BOOL_OR(LOWER(event_name) = 'purchase') AS converted\n    FROM olist_events\n    GROUP BY platform, user_id\n)\nSELECT\n    platform AS device_type,\n    COUNT(*) AS observed_users,\n    COUNT(*) FILTER (WHERE converted) AS buyers,\n    COUNT(*) FILTER (WHERE converted)::NUMERIC / NULLIF(COUNT(*), 0) AS conversion_rate\nFROM user_device\nGROUP BY platform\nORDER BY platform",
+      "counterfactual_sql": "WITH olist_events AS (SELECT ea.user_id, ea.platform, ea.event_name FROM analytics.event_activity AS ea JOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id WHERE sr.label ILIKE '%olist%'), user_device AS (SELECT platform, user_id, BOOL_OR(LOWER(event_name) = 'purchase') AS converted FROM olist_events GROUP BY platform, user_id) SELECT platform AS device_type, COUNT(*) AS observed_users, COUNT(*) FILTER(WHERE converted) AS buyers, CAST(COUNT(*) FILTER(WHERE converted) AS DECIMAL) / NULLIF(COUNT(*), 0) AS conversion_rate FROM user_device GROUP BY platform ORDER BY platform",
+      "original_actual_columns": [
+        "device_type",
+        "observed_users",
+        "buyers",
+        "conversion_rate"
+      ],
+      "original_actual_rows": [
+        [
+          "web",
+          10,
+          0,
+          "0E-20"
+        ]
+      ],
+      "counterfactual_actual_columns": [
+        "device_type",
+        "observed_users",
+        "buyers",
+        "conversion_rate"
+      ],
+      "counterfactual_actual_rows": [
+        [
+          "web",
+          10,
+          0,
+          "0E-20"
+        ]
+      ],
+      "expected_columns": [
+        "device_type",
+        "buyer_conversion_rate"
+      ],
+      "expected_rows": [
+        [
+          null,
+          1.0
+        ],
+        [
+          "desktop",
+          0.9
+        ],
+        [
+          "mobile",
+          0.75
+        ],
+        [
+          "tablet",
+          1.0
+        ]
+      ],
+      "failure_class": "event_role_and_grain_error",
+      "diagnostic_note": "Olist source substring matches, but purchase detection and grouping user-device by event row/platform do not match the registered event/device semantics."
+    },
+    {
+      "id": "c60_olist_monthly_buyers",
+      "source_id": "olist_marketplace",
+      "actual_registry_label": "Challenge Olist Marketplace",
+      "artifact_result_correct": false,
+      "original_current_fixture_correct": false,
+      "counterfactual_correct": false,
+      "label_equalities_replaced": [],
+      "original_sql": "SELECT date_trunc('month', ea.event_date)::date AS calendar_month, COUNT(DISTINCT ea.user_id) AS unique_purchasers\nFROM analytics.event_activity AS ea\nJOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id\nWHERE sr.label ILIKE 'Olist'\n  AND ea.event_name = 'purchase'\nGROUP BY 1\nORDER BY 1",
+      "counterfactual_sql": "SELECT CAST(DATE_TRUNC('MONTH', ea.event_date) AS DATE) AS calendar_month, COUNT(DISTINCT ea.user_id) AS unique_purchasers FROM analytics.event_activity AS ea JOIN analytics.source_registry AS sr ON sr.source_id = ea.source_id WHERE sr.label ILIKE 'Olist' AND ea.event_name = 'purchase' GROUP BY 1 ORDER BY 1",
+      "original_actual_columns": [
+        "calendar_month",
+        "unique_purchasers"
+      ],
+      "original_actual_rows": [],
+      "counterfactual_actual_columns": [
+        "calendar_month",
+        "unique_purchasers"
+      ],
+      "counterfactual_actual_rows": [],
+      "expected_columns": [
+        "event_month",
+        "buyers"
+      ],
+      "expected_rows": [
+        [
+          "2018-01-01",
+          8
+        ],
+        [
+          "2018-02-01",
+          7
+        ]
+      ],
+      "failure_class": "source_label_pattern_error",
+      "diagnostic_note": "ILIKE “Olist” has no wildcard and excludes the actual longer registry label; no equality rewrite applies."
+    }
+  ],
+  "diagnostic_class_counts": {
+    "source_label_equality_only": 7,
+    "correct_by_zero_result_despite_wrong_source_label": 1,
+    "source_label_matcher_and_measure_issues": 1,
+    "source_label_plus_event_role_error": 1,
+    "source_label_plus_nested_dimension_error": 2,
+    "source_label_plus_dimension_or_population_error": 1,
+    "missing_source_and_domain_role_error": 7,
+    "event_role_and_measure_field_error": 3,
+    "source_label_pattern_error": 2,
+    "event_role_and_grouping_population_error": 1,
+    "correct_without_source_label_equality": 1,
+    "measure_field_error": 1,
+    "dimension_or_population_error": 1,
+    "event_role_and_grain_error": 1
+  },
+  "interpretation": "Measured B0 is 2/30 and remains the reported score. Rewriting only source_registry.label equality literals to the actual case-source label yields 9/30 as a counterfactual diagnostic: 7 formerly wrong cases become right; no case is newly broken. It isolates a substantial source-name/schema-linking contribution, but does not explain most failures. Several zero/empty outputs are accidental/unsupported by the label edit; remaining errors span event-role mapping, metric field/grain, store-name versus item-category conflation, and nested/device paths."
+}

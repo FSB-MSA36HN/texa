@@ -1,0 +1,254 @@
+{
+  "type": "actual_product_real_model_headless_browser_regression",
+  "model": "gpt-6-luna",
+  "app_url": "http://127.0.0.1:15173",
+  "dataset": "challenge_v1 base fixture; exposed regression, not holdout",
+  "gold_method": "independent read-only SQL for desktop/mobile paid, view counts and Olist revenue; expected values for unchanged v5 scenarios retained from their independently authored SQL; no model output or QuerySpec used to derive gold",
+  "desktop_paid_revenue_expected_from_read_only_postgres_at_run": 61,
+  "records": [
+    {
+      "label": "unique-viewers",
+      "text": "Cosmetics Shop có bao nhiêu người dùng duy nhất đã xem sản phẩm trên toàn bộ dữ liệu?",
+      "turn_id": "4c7d0c35-2eab-4c49-b45c-79fd37130a49",
+      "status": "answered",
+      "result": {
+        "status": "answered",
+        "row_count": 1,
+        "columns": [
+          "viewers"
+        ],
+        "rows": [
+          {
+            "viewers": 12
+          }
+        ],
+        "source_resolution": {
+          "ui": [
+            "cosmetics_shop"
+          ],
+          "text": [
+            "cosmetics_shop"
+          ],
+          "model": [
+            "cosmetics_shop"
+          ],
+          "memory": [],
+          "effective": [
+            "cosmetics_shop"
+          ],
+          "resolved_by_user": false
+        },
+        "context": {
+          "language": "vi",
+          "relation": "new_topic",
+          "questions": [],
+          "references": [],
+          "catalog_version": 7,
+          "inherited_slots": {},
+          "slot_operations": {
+            "shape": "set",
+            "top_k": "clear",
+            "recipe": "set",
+            "filters": "clear",
+            "metrics": "clear",
+            "selection": "clear",
+            "source_ids": "set",
+            "time_range": "set"
+          },
+          "structured_memory": true,
+          "clarification_needed": false
+        },
+        "query_spec": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "viewers",
+          "filters": [],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "compiled_sql": "SELECT count(DISTINCT e.user_id) FILTER (WHERE (e.event_name = ANY('{view}'))) AS \"viewers\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') LIMIT 1001",
+        "error": null,
+        "message": null
+      }
+    },
+    {
+      "label": "olist-revenue",
+      "text": "Tổng doanh thu Olist trên toàn bộ dữ liệu là bao nhiêu?",
+      "turn_id": "a19ed5e2-ef7a-4a18-9599-57f2543ce07f",
+      "status": "answered",
+      "result": {
+        "status": "answered",
+        "row_count": 1,
+        "columns": [
+          "revenue"
+        ],
+        "rows": [
+          {
+            "revenue": 432
+          }
+        ],
+        "source_resolution": {
+          "ui": [
+            "olist_marketplace"
+          ],
+          "text": [
+            "olist_marketplace"
+          ],
+          "model": [
+            "olist_marketplace"
+          ],
+          "memory": [],
+          "effective": [
+            "olist_marketplace"
+          ],
+          "resolved_by_user": false
+        },
+        "context": {
+          "language": "vi",
+          "relation": "new_topic",
+          "questions": [],
+          "references": [],
+          "catalog_version": 7,
+          "inherited_slots": {},
+          "result_ordinals": {
+            "4c7d0c35-2eab-4c49-b45c-79fd37130a49": 1
+          },
+          "slot_operations": {
+            "shape": "set",
+            "top_k": "clear",
+            "recipe": "set",
+            "filters": "clear",
+            "metrics": "clear",
+            "selection": "clear",
+            "source_ids": "set",
+            "time_range": "set"
+          },
+          "structured_memory": true,
+          "clarification_needed": false,
+          "unavailable_result_numbers": []
+        },
+        "query_spec": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "revenue",
+          "filters": [],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "olist_marketplace"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "compiled_sql": "SELECT coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{olist_marketplace}') LIMIT 1001",
+        "error": null,
+        "message": null
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "session_ready",
+      "model": "gpt-6-luna",
+      "allowed_models": [
+        "gpt-6-luna"
+      ],
+      "sources": [
+        {
+          "id": "cosmetics_shop",
+          "label": "Challenge Cosmetics Shop"
+        },
+        {
+          "id": "olist_marketplace",
+          "label": "Challenge Olist Marketplace"
+        }
+      ]
+    },
+    {
+      "type": "user_selected_source",
+      "source_id": "cosmetics_shop"
+    },
+    {
+      "type": "question_sent",
+      "label": "unique-viewers",
+      "text": "Cosmetics Shop có bao nhiêu người dùng duy nhất đã xem sản phẩm trên toàn bộ dữ liệu?",
+      "conversation_id": "a0090b6e-f0b2-481b-a6f2-1086b54ab734",
+      "turn_id": "4c7d0c35-2eab-4c49-b45c-79fd37130a49"
+    },
+    {
+      "type": "result_check",
+      "label": "unique-viewers",
+      "expected": 12,
+      "observed_rows": [
+        {
+          "viewers": 12
+        }
+      ],
+      "passed": true
+    },
+    {
+      "type": "visible_table_check",
+      "label": "unique-viewers",
+      "text": "Người xem sản phẩm\n12",
+      "passed": true
+    },
+    {
+      "type": "user_selected_source",
+      "source_id": "olist_marketplace"
+    },
+    {
+      "type": "question_sent",
+      "label": "olist-revenue",
+      "text": "Tổng doanh thu Olist trên toàn bộ dữ liệu là bao nhiêu?",
+      "conversation_id": "a0090b6e-f0b2-481b-a6f2-1086b54ab734",
+      "turn_id": "a19ed5e2-ef7a-4a18-9599-57f2543ce07f"
+    },
+    {
+      "type": "result_check",
+      "label": "olist-revenue",
+      "expected": 432,
+      "observed_rows": [
+        {
+          "revenue": 432
+        }
+      ],
+      "passed": true
+    },
+    {
+      "type": "visible_table_check",
+      "label": "olist-revenue",
+      "text": "Doanh thu\n432 BRL",
+      "passed": true
+    },
+    {
+      "type": "csv_download",
+      "suggested_filename": "texa-result.csv",
+      "saved_as": "olist-revenue.csv",
+      "bytes": 16
+    }
+  ],
+  "limitations": [
+    "One local headless browser session; not classroom concurrency evidence.",
+    "Clarifications only completed if the UI offered exactly one visible choice; multi-choice needs reviewer/user adjudication.",
+    "Benchmark/controller frozen commit and fixture provenance must be added by the orchestrator."
+  ]
+}

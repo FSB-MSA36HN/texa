@@ -1,0 +1,96 @@
+{
+  "type": "real_product_browser_regression_summary",
+  "git_commit": "abb55a8edd6168fa911cc67a81519c6b2b63f6c0",
+  "fixture_sha256": "dee8420aedaf21991b24034b5abc340e6eafe90973806fabf325f6e66b3b14a9",
+  "model": "gpt-6-luna",
+  "features": {
+    "example_retrieval": false,
+    "consistency": false
+  },
+  "answer_count": 6,
+  "answer_correct": 5,
+  "checks": [
+    {
+      "type": "result_check",
+      "label": "cosmetics-mobile-paid",
+      "expected": 62,
+      "observed_rows": [
+        {
+          "revenue": 62
+        }
+      ],
+      "passed": true
+    },
+    {
+      "type": "result_check",
+      "label": "remove-device-keep-paid",
+      "expected": 204,
+      "observed_rows": [
+        {
+          "revenue": 204
+        }
+      ],
+      "passed": true
+    },
+    {
+      "type": "result_check",
+      "label": "desktop-keep-paid",
+      "expected": 61,
+      "observed_rows": [
+        {
+          "revenue": 61
+        }
+      ],
+      "passed": true
+    },
+    {
+      "type": "result_check",
+      "label": "view-event-count",
+      "expected": 24,
+      "observed_rows": [
+        {
+          "viewers": 12
+        }
+      ],
+      "passed": false
+    },
+    {
+      "type": "result_check",
+      "label": "unique-viewers",
+      "expected": 12,
+      "observed_rows": [
+        {
+          "viewers": 12
+        }
+      ],
+      "passed": true
+    },
+    {
+      "type": "result_check",
+      "label": "olist-revenue",
+      "expected": 432,
+      "observed_rows": [
+        {
+          "revenue": 432
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "run_policy": "First session halted on first wrong answer; failed question was not retried. Two untested cases completed in a separate session. Both retained.",
+  "evidence_files": [
+    "browser-check.partial.json",
+    "../accuracy-browser-20261106-v6-remaining/browser-check.json"
+  ],
+  "csv": {
+    "path": "../accuracy-browser-20261106-v6-remaining/olist-revenue.csv",
+    "sha256": "dffad8d1b0eaae4858222c5cf43211cd0bba2451651133d59cf682f2d8f95c04",
+    "complete_table_matches_reference": true
+  },
+  "limitations": [
+    "Exposed synthetic regression, not holdout or classroom real-model load test.",
+    "Main matrix up to 4 workers; supplementary up to 6; this single browser ran during source-selected control on the same immutable base fixture. Latencies are local observed values, not provider SLO.",
+    "A wrong view count remains: model chose distinct viewers12 instead of event occurrences24."
+  ],
+  "services": "Owned browser API/Web stopped after each session."
+}

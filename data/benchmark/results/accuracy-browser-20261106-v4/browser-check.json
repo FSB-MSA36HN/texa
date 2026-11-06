@@ -1,0 +1,551 @@
+{
+  "type": "actual_browser_real_model_round1_read_only_replay",
+  "model": "gpt-6-luna",
+  "anchor_turn_id": "339c51a7-6e63-4c31-a7a4-2cca7a027778",
+  "conversation_id": "9527e7d7-0e6c-41e2-9787-a0abdf63cdaf",
+  "dataset_type": "exposed browser regression evidence; not holdout",
+  "fixture": "data/benchmark/challenge_v1/worlds/base.sql",
+  "fixture_sha256": "dee8420aedaf21991b24034b5abc340e6eafe90973806fabf325f6e66b3b14a9",
+  "gold_method": "Independent reference SQL from browser_regression_v1 executed read-only against PostgreSQL; complete output tables compared with backend.eval.benchmark.results_equal.",
+  "first_question_mapping": {
+    "actual_question": "Tng doanh thu Cosmetics Shop trn ton b d liu l bao nhiu?",
+    "gold_question": "Tổng doanh thu Cosmetics Shop trên toàn bộ dữ liệu là bao nhiêu?",
+    "gold_id": "browser_single_cosmetics_revenue",
+    "note": "UI input omitted Vietnamese accented characters; mapped to corresponding authored browser question; reference returns revenue 420."
+  },
+  "turns": 10,
+  "sql_turns": 9,
+  "correct_full_results": 8,
+  "wrong_view_case": {
+    "turn_id": "8836b277-b58d-4f50-ab74-a64483c78928",
+    "actual": [
+      [
+        12
+      ]
+    ],
+    "expected": [
+      [
+        24
+      ]
+    ],
+    "reason": "Returned distinct viewers=12 for view-event count; reference expects 24."
+  },
+  "memory_reference": {
+    "turn_id": "d0c26d0d-f532-45ee-9607-5b6f95fcbd5c",
+    "referenced_turn_id": "074567d0-d3d7-4077-8bb3-eee530846416",
+    "second_result": true,
+    "social_noise_turn_id": "eafc105b-3329-46e1-89e3-42c3a4ad4f53",
+    "full_result_correct": true
+  },
+  "csv_download": {
+    "source_path": ".runtime/live-e2e-extended/browser-current-olist-monthly.csv",
+    "saved_as": "browser-current-olist-monthly.csv",
+    "sha256": "ae2bd04288fb6f770e16e2f7e74a95b7879986be3a350c3596fff1da3daf67a1",
+    "rows": [
+      {
+        "Tháng": "2018-01-01",
+        "Doanh thu": "216"
+      },
+      {
+        "Tháng": "2018-02-01",
+        "Doanh thu": "216"
+      }
+    ],
+    "matches_memory_query_values": true
+  },
+  "db_access": "read-only SELECT only; no model calls or service changes",
+  "records": [
+    {
+      "turn_id": "339c51a7-6e63-4c31-a7a4-2cca7a027778",
+      "question": "Tng doanh thu Cosmetics Shop trn ton b d liu l bao nhiu?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:03:28.702878+07:00",
+      "actual_columns": [
+        "revenue"
+      ],
+      "actual_rows": [
+        [
+          420.0
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') LIMIT 1001",
+      "answer_message": null,
+      "conversation_relation": "new_topic",
+      "referenced_turn_ids": [],
+      "gold_source_id": "browser_single_cosmetics_revenue",
+      "gold_question": "Tổng doanh thu Cosmetics Shop trên toàn bộ dữ liệu là bao nhiêu?",
+      "reference_sql": "SELECT coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='cosmetics_shop'",
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "420.00"
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "turn_id": "074567d0-d3d7-4077-8bb3-eee530846416",
+      "question": "Tổng doanh thu Olist trên toàn bộ dữ liệu là bao nhiêu?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:03:49.166646+07:00",
+      "actual_columns": [
+        "revenue"
+      ],
+      "actual_rows": [
+        [
+          432.0
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "olist_marketplace"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{olist_marketplace}') LIMIT 1001",
+      "answer_message": null,
+      "conversation_relation": "new_topic",
+      "referenced_turn_ids": [],
+      "gold_source_id": "browser_single_olist_revenue",
+      "gold_question": "Tổng doanh thu Olist trên toàn bộ dữ liệu là bao nhiêu?",
+      "reference_sql": "SELECT coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace'",
+      "expected_columns": [
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "432.00"
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "turn_id": "8836b277-b58d-4f50-ab74-a64483c78928",
+      "question": "Cosmetics Shop có bao nhiêu lượt xem sản phẩm trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:04:25.741893+07:00",
+      "actual_columns": [
+        "viewers"
+      ],
+      "actual_rows": [
+        [
+          12
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "viewers",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT count(DISTINCT e.user_id) FILTER (WHERE (e.event_name = ANY('{view}'))) AS \"viewers\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') LIMIT 1001",
+      "answer_message": null,
+      "conversation_relation": "new_topic",
+      "referenced_turn_ids": [],
+      "gold_source_id": "browser_single_cosmetics_view_events",
+      "gold_question": "Cosmetics Shop có bao nhiêu lượt xem sản phẩm trên toàn bộ dữ liệu?",
+      "reference_sql": "SELECT count(*) AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='view'",
+      "expected_columns": [
+        "events"
+      ],
+      "expected_rows": [
+        [
+          24
+        ]
+      ],
+      "full_result_correct": false
+    },
+    {
+      "turn_id": "a805f3c5-066f-4f91-ba24-20fcdb775c34",
+      "question": "Cosmetics Shop có bao nhiêu người dùng duy nhất đã xem sản phẩm trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:07:19.571295+07:00",
+      "actual_columns": [
+        "viewers"
+      ],
+      "actual_rows": [
+        [
+          12
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "viewers",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT count(DISTINCT e.user_id) FILTER (WHERE (e.event_name = ANY('{view}'))) AS \"viewers\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') LIMIT 1001",
+      "answer_message": null,
+      "conversation_relation": "new_topic",
+      "referenced_turn_ids": [],
+      "gold_source_id": "browser_single_cosmetics_viewers",
+      "gold_question": "Cosmetics Shop có bao nhiêu người dùng duy nhất đã xem sản phẩm trên toàn bộ dữ liệu?",
+      "reference_sql": "SELECT count(DISTINCT user_id) AS viewers FROM analytics.event_activity WHERE source_id='cosmetics_shop' AND event_name='view'",
+      "expected_columns": [
+        "viewers"
+      ],
+      "expected_rows": [
+        [
+          12
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "turn_id": "1b766fb6-b977-4ebd-ad35-a058fa728ff9",
+      "question": "Tổng số phiên truy cập Cosmetics Shop trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:08:40.854625+07:00",
+      "actual_columns": [
+        "sessions"
+      ],
+      "actual_rows": [
+        [
+          30
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "sessions",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT count(DISTINCT \"e\".\"session_id\") FILTER (WHERE (e.event_name = ANY('{view,cart,remove_from_cart,purchase,order_purchased,order_approved,order_shipped,order_delivered,order_canceled,payment_made,review_submitted}'))) AS \"sessions\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') LIMIT 1001",
+      "answer_message": null,
+      "conversation_relation": "new_topic",
+      "referenced_turn_ids": [],
+      "gold_source_id": "browser_single_cosmetics_sessions",
+      "gold_question": "Tổng số phiên truy cập Cosmetics Shop trên toàn bộ dữ liệu?",
+      "reference_sql": "SELECT count(DISTINCT session_id) AS sessions FROM analytics.event_activity WHERE source_id='cosmetics_shop'",
+      "expected_columns": [
+        "sessions"
+      ],
+      "expected_rows": [
+        [
+          30
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "turn_id": "74a100ae-5982-45b6-ab83-efc03249ecae",
+      "question": "Tổng số người dùng duy nhất của Cosmetics Shop trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:09:53.429096+07:00",
+      "actual_columns": [
+        "users"
+      ],
+      "actual_rows": [
+        [
+          21
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "users",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT count(DISTINCT e.user_id) FILTER (WHERE (e.event_name = ANY('{view,cart,remove_from_cart,purchase,order_purchased,order_approved,order_shipped,order_delivered,order_canceled,payment_made,review_submitted}'))) AS \"users\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') LIMIT 1001",
+      "answer_message": null,
+      "conversation_relation": "new_topic",
+      "referenced_turn_ids": [],
+      "gold_source_id": "browser_single_cosmetics_users",
+      "gold_question": "Tổng số người dùng duy nhất của Cosmetics Shop trên toàn bộ dữ liệu?",
+      "reference_sql": "SELECT count(DISTINCT user_id) AS users FROM analytics.event_activity WHERE source_id='cosmetics_shop'",
+      "expected_columns": [
+        "users"
+      ],
+      "expected_rows": [
+        [
+          21
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "turn_id": "b7cefedb-e7e2-4f05-be2a-92ed92dea8ad",
+      "question": "Tổng số sự kiện Cosmetics Shop trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:11:13.920694+07:00",
+      "actual_columns": [
+        "events"
+      ],
+      "actual_rows": [
+        [
+          60
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "events",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "cosmetics_shop"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT count(*) FILTER (WHERE (e.event_name = ANY('{view,cart,remove_from_cart,purchase,order_purchased,order_approved,order_shipped,order_delivered,order_canceled,payment_made,review_submitted}'))) AS \"events\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') LIMIT 1001",
+      "answer_message": null,
+      "conversation_relation": "new_topic",
+      "referenced_turn_ids": [],
+      "gold_source_id": "browser_single_cosmetics_events",
+      "gold_question": "Tổng số sự kiện Cosmetics Shop trên toàn bộ dữ liệu?",
+      "reference_sql": "SELECT count(*) AS events FROM analytics.event_activity WHERE source_id='cosmetics_shop'",
+      "expected_columns": [
+        "events"
+      ],
+      "expected_rows": [
+        [
+          60
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "turn_id": "b12a4afa-912d-442b-8ec8-c9f2b2660c26",
+      "question": "Tổng số người mua Olist trên toàn bộ dữ liệu?",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:13:44.744946+07:00",
+      "actual_columns": [
+        "buyers"
+      ],
+      "actual_rows": [
+        [
+          10
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "aggregate",
+        "top_k": null,
+        "recipe": "buyers",
+        "filters": [],
+        "metrics": [],
+        "selection": [],
+        "source_ids": [
+          "olist_marketplace"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT count(DISTINCT e.user_id) FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))) AS \"buyers\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{olist_marketplace}') LIMIT 1001",
+      "answer_message": null,
+      "conversation_relation": "new_topic",
+      "referenced_turn_ids": [],
+      "gold_source_id": "browser_single_olist_buyers",
+      "gold_question": "Tổng số người mua Olist trên toàn bộ dữ liệu?",
+      "reference_sql": "SELECT count(DISTINCT user_id) FILTER(WHERE event_name IN ('purchase','order_purchased')) AS buyers FROM analytics.event_activity WHERE source_id='olist_marketplace'",
+      "expected_columns": [
+        "buyers"
+      ],
+      "expected_rows": [
+        [
+          10
+        ]
+      ],
+      "full_result_correct": true
+    },
+    {
+      "turn_id": "eafc105b-3329-46e1-89e3-42c3a4ad4f53",
+      "question": "Cảm ơn nhé, hôm nay trời đẹp quá.",
+      "status": "conversation",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:15:03.527825+07:00",
+      "actual_columns": [],
+      "actual_rows": [],
+      "query_spec": null,
+      "compiled_sql": null,
+      "answer_message": "Không có gì nhé! Đúng là một ngày đẹp trời.",
+      "conversation_relation": "social",
+      "referenced_turn_ids": [],
+      "gold_source_id": null,
+      "full_result_correct": null
+    },
+    {
+      "turn_id": "d0c26d0d-f532-45ee-9607-5b6f95fcbd5c",
+      "question": "Quay lại kết quả thứ hai và chia theo tháng giúp tôi.",
+      "status": "answered",
+      "model": "gpt-6-luna",
+      "created_at": "2026-11-06T11:16:26.351264+07:00",
+      "actual_columns": [
+        "event_month",
+        "revenue"
+      ],
+      "actual_rows": [
+        [
+          "2018-01-01",
+          216.0
+        ],
+        [
+          "2018-02-01",
+          216.0
+        ]
+      ],
+      "query_spec": {
+        "limit": 1000,
+        "shape": "time_trend",
+        "top_k": null,
+        "recipe": "revenue",
+        "filters": [],
+        "metrics": [],
+        "selection": [
+          "event_month"
+        ],
+        "source_ids": [
+          "olist_marketplace"
+        ],
+        "time_range": {
+          "end": null,
+          "days": null,
+          "kind": "all",
+          "field": "event_date",
+          "start": null
+        },
+        "contract_version": 7
+      },
+      "compiled_sql": "SELECT * FROM (SELECT date_trunc('month', \"e\".\"event_date\")::date AS \"event_month\", coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{olist_marketplace}') AND ((e.event_name = ANY('{purchase,order_purchased}'))) GROUP BY 1) q ORDER BY \"event_month\" ASC LIMIT 1001",
+      "answer_message": null,
+      "conversation_relation": "followup",
+      "referenced_turn_ids": [
+        "074567d0-d3d7-4077-8bb3-eee530846416"
+      ],
+      "gold_source_id": "dialogue_1_turn_17",
+      "gold_question": "Quay lại kết quả thứ hai và chia theo tháng giúp tôi.",
+      "reference_sql": "SELECT date_trunc('month',event_date)::date AS event_month, coalesce(sum(revenue) FILTER(WHERE event_name IN ('purchase','order_purchased')),0) AS revenue FROM analytics.event_activity WHERE source_id='olist_marketplace' AND event_name='order_purchased' GROUP BY 1",
+      "expected_columns": [
+        "event_month",
+        "revenue"
+      ],
+      "expected_rows": [
+        [
+          "2018-02-01",
+          "216.00"
+        ],
+        [
+          "2018-01-01",
+          "216.00"
+        ]
+      ],
+      "full_result_correct": true,
+      "source_artifact_record": 16
+    }
+  ]
+}

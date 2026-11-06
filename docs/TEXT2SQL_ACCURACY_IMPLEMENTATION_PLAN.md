@@ -1,6 +1,6 @@
 # Texa — Plan tăng độ đúng bằng ví dụ đã kiểm chứng và self-consistency
 
-Cập nhật 05/11/2026, bổ sung thiết kế benchmark theo yêu cầu mới. **Chưa triển khai retrieval/consistency. Bắt đầu chuẩn bị contract/blueprint benchmark trước.** Mốc code sản phẩm trước thay đổi: `83403e3`. Giữ PostgreSQL, Cosmetics + Olist, một nguồn/truy vấn, tám metric và nested scalar theo catalog. Không mở rộng engine, domain hoặc SQL tự do.
+Trạng thái 06/11/2026: **đã triển khai retrieval và adaptive self-consistency, đo đầy đủ v6 trên commit `abb55a8`; hai toggle vẫn tắt mặc định vì chưa chứng minh lợi ích ổn định.** Đây là bản thiết kế lịch sử; kết quả và scope hiện hành ở [PRODUCT_SCOPE](PRODUCT_SCOPE.md), lỗi còn mở ở [ISSUES_AND_REMEDIATION_PLAN](ISSUES_AND_REMEDIATION_PLAN.md#7-kết-quả-v6-và-việc-còn-mở). Candidate hiện có 60 câu đơn/24 clarification records/9 hội thoại, chưa đạt mục tiêu mở rộng của kế hoạch và chưa sealed/human-reviewed. Mốc code trước thay đổi: `83403e3`. Giữ PostgreSQL, Cosmetics + Olist, một nguồn/truy vấn, tám metric và nested scalar theo catalog. Không mở rộng engine, domain hoặc SQL tự do.
 
 ## 1. Kết luận nghiên cứu
 

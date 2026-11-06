@@ -1,0 +1,70 @@
+{
+  "suite": "single",
+  "split": "dev",
+  "variants": {
+    "B0": {
+      "runs": 1,
+      "answer_count": 30,
+      "business_accuracy": 0.43333333333333335,
+      "latency_ms_p50": 6456.0,
+      "latency_ms_p95": 10274.0,
+      "tokens": 19194.0,
+      "cost_estimated_usd": 0.0048446,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 0,
+      "retrieval_activated_decisions": 0,
+      "component_decision_count": 0,
+      "consistency_scheduled_decisions": 0,
+      "consistency_completed_decisions": 0,
+      "consistency_scheduled_samples": 0,
+      "consistency_completed_samples": 0,
+      "consistency_scheduled_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 0
+    },
+    "T00": {
+      "runs": 1,
+      "answer_count": 30,
+      "business_accuracy": 0.9333333333333333,
+      "latency_ms_p50": 12625.5,
+      "latency_ms_p95": 19189.0,
+      "tokens": 207319.0,
+      "cost_estimated_usd": 0.026096300000000003,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 0,
+      "retrieval_activated_decisions": 0,
+      "component_decision_count": 30,
+      "consistency_scheduled_decisions": 0,
+      "consistency_completed_decisions": 0,
+      "consistency_scheduled_samples": 0,
+      "consistency_completed_samples": 0,
+      "consistency_scheduled_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 0
+    }
+  },
+  "paired_comparisons": {
+    "B0_vs_T00": {
+      "paired_accuracy_delta_right_minus_left": 0.5,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 6.103515625e-05,
+      "cluster_bootstrap_ci95": [
+        0.3103448275862069,
+        0.6875
+      ],
+      "clusters": 29,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 15
+    }
+  },
+  "factorial_effects": null,
+  "interpretation": "diagnostic exploratory candidate results; not confirmatory human-reviewed holdout evidence"
+}

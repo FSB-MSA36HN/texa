@@ -1,8 +1,6 @@
 # Kịch bản thuyết trình cuối — Texa
 
-> Phạm vi và kiến trúc hiện tại. Kết quả benchmark là exploratory trên một repeat của bộ dev đã thấy; không phải sealed human holdout hay bằng chứng production.
-
-> Lưu ý giao thức: các bảng lịch sử dưới đây cho baseline cả schema và định nghĩa nghiệp vụ/catalog. Theo giao thức mới, baseline thuần chỉ nhận schema + câu hỏi; B1 có thêm lịch sử/hỏi lại, cùng tình huống thực tế với Texa. Không gọi điểm 96,7% cũ là điểm baseline schema-only. Lần đo mới chấm toàn bộ giá trị bảng không phụ thuộc alias, tách compliance tên cột; không thay ngược raw hoặc kết quả cũ.
+> Phạm vi và kiến trúc hiện tại. Benchmark v6 là một lần chạy trên candidate do nhóm xây dựng; test split chưa được thẩm định độc lập và khóa kín, nên chưa phải holdout xác nhận hay bằng chứng production.
 
 ## Slide 1 — Texa: hỏi dữ liệu thương mại điện tử bằng ngôn ngữ tự nhiên (0:40)
 
@@ -51,7 +49,7 @@
 - Catalog quản lý metric, event role, field, mapping và coverage
 - Một semantic contract dùng chung cho xử lý, kiểm tra khả năng và giải thích kết quả
 
-**Lời nói:** Mỗi nguồn có adapter ETL riêng để đưa dữ liệu về dạng event rows. Catalog mô tả metric, trường, event tương ứng, mapping và độ bao phủ. Bộ đánh giá hiện có 60 câu đơn, 24 record clarification, 9 hội thoại và 12 diagnostic cases; fixture có ba worlds, gồm 120 dòng base và phần mở rộng synthetic nested cho Olist. Đây là candidate dev, không phải dữ liệu holdout độc lập. Khi một nguồn không có trường hoặc event cần thiết, hệ thống phải báo không hỗ trợ thay vì trả số 0 gây hiểu nhầm.
+**Lời nói:** Mỗi nguồn có adapter ETL riêng để đưa dữ liệu về dạng event rows. Catalog mô tả metric, trường, event tương ứng, mapping và độ bao phủ. Bộ đánh giá hiện có 60 câu đơn, 24 record clarification, 9 hội thoại và 12 diagnostic cases; fixture có ba worlds, gồm 120 dòng base và phần mở rộng synthetic nested cho Olist. Đây là bộ candidate được tách dev/test đã thấy, chưa phải holdout độc lập; 60 câu đơn/9 hội thoại còn dưới mục tiêu thiết kế 180/24. Khi một nguồn không có trường hoặc event cần thiết, hệ thống phải báo không hỗ trợ thay vì trả số 0 gây hiểu nhầm.
 
 ## Slide 7 — Từ câu hỏi đến kết quả có thể kiểm tra (1:20)
 
@@ -68,66 +66,73 @@ Câu hỏi + nguồn
 
 ## Slide 8 — Memory hội thoại (1:00)
 
-- Lưu truy vấn thành công dưới dạng QuerySpec và mã kết quả, không chỉ giữ sáu lượt gần nhất
-- Câu tiếp theo có thể tham chiếu kết quả trước; server kiểm tra target và snapshot trước khi kế thừa
+- Lưu truy vấn thành công dưới dạng QuerySpec và mã kết quả, không dựa vào cửa sổ cố định sáu lượt
+- Follow-up chỉ sửa đúng nhóm filter được nêu; các filter khác được giữ nguyên
 - Noise không nên ghi đè truy vấn; tham chiếu mơ hồ thì hỏi lại
 
-**Lời nói:** Memory hiện dựa trên các truy vấn thành công có cấu trúc và mã kết quả, không phải quy tắc cố định lấy sáu lượt gần nhất. Khi người dùng nói “kết quả thứ hai”, server tìm trong registry kết quả và kiểm tra nguồn, kỳ, catalog trước khi kế thừa. Câu xã giao không nên làm đổi truy vấn. Nếu không xác định chắc đang nói tới kết quả nào, Texa cần hỏi lại. Một chuỗi demo thành công chưa chứng minh mọi cách diễn đạt đều được hiểu đúng.
+**Lời nói:** Memory dựa trên truy vấn thành công có cấu trúc và mã kết quả, thay vì chỉ lấy một số lượt gần nhất. Khi người dùng yêu cầu đổi một điều kiện bằng ngôn ngữ tự nhiên, mô hình xác định trường và thao tác; server chỉ cập nhật điều kiện đó, giữ các filter còn lại và kiểm tra nguồn, kỳ, metric, kết quả trước khi chạy. Người dùng không cần biết cấu trúc nội bộ. Câu xã giao không nên đổi truy vấn; nếu không rõ đang tham chiếu kết quả nào thì Texa cần hỏi lại. Cơ chế này vẫn cần đánh giá thêm trên nhiều hội thoại thực tế.
 
-## Slide 9 — Cách đánh giá và các đối chứng (1:10)
+## Slide 9 — So sánh công bằng thế nào? (1:00)
 
-- Cùng model `gpt-6-luna`, cùng câu hỏi và dữ liệu
-- B0: cùng model sinh SQL trực tiếp; B0R thêm ví dụ đã SQL-verify
-- B1: baseline history văn bản thuần; T00/T10/T01/T11 bật/tắt retrieval và self-consistency
-- Chấm strict business contract; world check alias-insensitive full values là metric phụ
+- Cùng `gpt-6-luna`, cùng câu hỏi và dữ liệu
+- B0: câu hỏi + schema PostgreSQL vật lý + nguồn UI nếu đã chọn; không catalog, business definitions hay enum/source mappings
+- B1: thêm lịch sử hội thoại và hỏi lại/thử lại trong kịch bản tương ứng
+- Texa: semantic catalog, intent resolution, memory có cấu trúc, compiler và SQL checks
 
-**Lời nói:** Nhóm giữ cùng model, câu hỏi và dữ liệu. B0 sinh SQL trực tiếp; B0R thêm retrieval ví dụ SQL đã xác minh. B1 là baseline dùng history văn bản thuần, không có đường QuerySpec/compiler của Texa. Với Texa, T00 tắt retrieval và consistency; T10 bật retrieval, T01 bật self-consistency, T11 bật cả hai. Bank có 45 ví dụ, 42 được agent duyệt; trong đó 7 có SQL được thực thi kiểm chứng độc lập; cùng tập 7 được dùng để so sánh retrieval. Self-consistency lấy tối đa ba mẫu, có giới hạn và không đoán khi thiếu thông tin. Điểm chính chấm strict business contract; kiểm tra world bổ sung so sánh full values nhưng bỏ qua alias output. Hai cách chấm không được gộp.
+**Lời nói:** Nhóm giữ nguyên model, câu hỏi và dữ liệu. Baseline chính chỉ nhận câu hỏi và cấu trúc vật lý của database, không được đưa trước định nghĩa nghiệp vụ hay catalog. Texa có thêm lớp semantic được quản trị cùng workflow chuyển câu hỏi thành truy vấn. Do baseline không biết các nhãn nguồn và giá trị đã được catalog ánh xạ, kết quả đo lợi ích tổng hợp của thông tin semantic và workflow; đây không phải cuộc thi model hay phép đo riêng tác dụng của một component.
 
-## Slide 10 — Single-dev: diagnostic, chưa kết luận hiệu quả (1:30)
+## Slide 10 — Metric và kết quả single-question (1:10)
 
-| Cấu hình | Strict business / 30 | Full values / 30* |
+Metric chính là tỷ lệ khớp **toàn bộ bảng kết quả**; khác alias được chấp nhận, nhưng không được thiếu/thừa cột, hàng hay giá trị. Strict contract được theo dõi riêng.
+
+| Cấu hình | Dev / 30 | Test / 30 |
 |---|---:|---:|
-| B0 | 29 | 29 |
-| B0R | 29 | 29 |
-| B1 | 25 | 25 |
-| T00 · T10 · T01 · T11 | 27 · 26 · 28 · 27 | 29 · 28 · 29 · 28 |
+| B0 schema-only | 3 (10,0%) | 1 (3,3%) |
+| B0R + ví dụ SQL | 11 (36,7%) | 16 (53,3%) |
+| B1 + history | 2 (6,7%) | 1 (3,3%) |
+| Texa T00 | 29 (96,7%) | 28 (93,3%) |
+| Texa T10 · T01 | 29 · 29 | 27 · 27 |
+| Texa T11 | 29 (96,7%) | 30 (100%) |
 
-- Một repeat trên candidate dev; C19 score dùng annotation erratum hash-pinned
-- *Full values là posthoc alias-insensitive; các count trên giống nhau ở cả ba fixture worlds
-- Không có cải thiện nào được chứng minh; feature toggles vẫn là thử nghiệm
+**Lời nói:** Trên 30 câu single test, B0 đúng một câu, T00 đúng 28 và T11 đúng cả 30. Đây là một lần chạy trên bộ candidate tổng hợp, không phải accuracy cho mọi tình huống thực tế. B0 chỉ có schema vật lý nên phần chênh lệch cũng phản ánh việc Texa có catalog và ánh xạ business value; không thể quy toàn bộ cho compiler hay workflow. Ở đối chứng cung cấp cùng nguồn đã chọn trên 30 câu dev, B0 đạt 13/30 (43,3%) và Texa 28/30 (93,3%); vẫn còn khác biệt tri thức catalog. B0R là đối chứng riêng có ví dụ SQL đã kiểm chứng, không gọi là baseline thuần.
 
-**Lời nói:** Trên 30 single-dev cases, bảng đối chiếu strict business và world check full values cho thấy các cấu hình có thể khác nhau khi bỏ qua alias. Full values là metric bổ sung, không thay score chính; ba fixture worlds cho cùng counts. C19 được sửa bằng annotation erratum tường minh, hash-pinned, chỉ tính lại từ raw full-result correctness. Đây là một repeat trên dev đã thấy, chưa có reviewer độc lập hay sealed human holdout. Các số này không chứng minh retrieval hay consistency cải thiện kết quả.
+## Slide 11 — Ablation, clarification và hội thoại (1:10)
 
-## Slide 11 — Retrieval và self-consistency: chưa chứng minh lợi ích (1:05)
+| Suite test | B1 | T00 | T10 | T01 | T11 |
+|---|---:|---:|---:|---:|---:|
+| Clarification / 12 | 1 (8,3%) | 12 (100%) | 11 (91,7%) | 11 (91,7%) | 11 (91,7%) |
+| Conversation / 24 lượt | 1 (4,2%) | 22 (91,7%) | 19 (79,2%) | 20 (83,3%) | 22 (91,7%) |
 
-- T10 chỉ bật retrieval; T01 chỉ bật consistency; T11 bật cả hai
-- Bank 45 ví dụ; 7 ví dụ có SQL được kiểm chứng độc lập là tập đối chứng chung
-- Consistency tối đa ba mẫu, bounded; không suy đoán khi thiếu thông tin
+- T00 tắt retrieval/consistency; T10 bật retrieval; T01 bật adaptive consistency; T11 bật cả hai
+- T11 đạt 30/30 single test trong một repeat; không phải overall accuracy
+- Consistency được gọi ở 1/30 câu test của T01; retrieval và consistency vẫn tắt mặc định
 
-**Lời nói:** Đây là toggle factorial: T10 chỉ bật retrieval, T01 chỉ bật consistency, T11 bật cả hai. Retrieval dùng bank 45 ví dụ, trong đó tập bảy ví dụ có SQL được kiểm chứng độc lập là tập so sánh chung. Consistency chỉ lấy tối đa ba mẫu, bị giới hạn và không đoán thông tin thiếu. Một lượt dev chưa đủ để kết luận tính năng nào giúp ích; trong các số hiện tại T00 đạt 27, T10 26, T01 28, T11 27 trên 30 câu. Các toggle vẫn tắt mặc định cho đến khi có đánh giá độc lập lặp lại.
+**Lời nói:** Ablation kiểm tra từng thành phần nhưng chưa đủ để tuyên bố retrieval hay consistency luôn làm hệ thống tốt hơn. T00 tốt hơn một số toggle ở clarification hoặc hội thoại; T11 cao nhất ở single test. Adaptive consistency chỉ được kích hoạt một lần trong 30 câu T01, nên đây là chính sách gọi có điều kiện, không phải ba lần gọi cho mọi câu. Các feature vẫn để mặc định tắt cho đến khi có thêm lần chạy và holdout độc lập.
 
-## Slide 12 — Hội thoại, kiểm thử sản phẩm và giới hạn (1:15)
+## Slide 12 — Chi phí, độ trễ và kiểm thử sản phẩm (1:15)
 
-- Hỏi lại: B1 9/12; Texa T00 10/12, T10 12/12, T01 11/12, T11 10/12
-- Bốn hội thoại ngắn chạy lại: B1 7/8; T00/T10/T01 8/8; T11 7/8
-- Backend **323 passed, 36 skipped**; Playwright **15/15** với provider mô phỏng
-- Browser model thật: **19/21** bảng đúng; hai câu view/viewers bị từ chối sai
-- Sau 13 kết quả + noise, tham chiếu kết quả thứ hai chọn đúng Olist và chia tháng đúng
+- Median latency single test: B0 **8,1 giây**; Texa T00 **12,8 giây**
+- Chi phí ước tính/30 câu: B0 **$0,0062**; Texa T00 **$0,0263**
+- Backend **383 passed, 36 skipped**; DB integration **30 passed**; Playwright **15 passed** với provider giả lập
+- Browser thật: 5/6 câu khớp; view count trả 12 thay vì 24
+- Browser regression benchmark riêng: T00 15/15 single, 18/19 lượt hội thoại; không phải holdout/UI E2E
 
-**Lời nói:** Bộ hỏi lại và bốn hội thoại ngắn có tín hiệu tích cực, nhưng chỉ là một lượt trên dev đã thấy. Trong kiểm tra trình duyệt, nhóm dùng sản phẩm trực tiếp, thử hai nguồn, SQL/CSV, hỏi lại, nguồn xung đột, lọc và xóa filter, hủy/thử lại và tải lại lịch sử. Có 19 trên 21 câu chấm bằng bảng khớp SQL viết độc lập; hai câu bị từ chối sai dù dữ liệu hỗ trợ. Memory quay lại đúng kết quả thứ hai sau 13 kết quả thành công và câu nhiễu. Diagnostic cũng phát hiện một lượt retrieval trả lời AOV bằng chỉ số khác; vì vậy tính năng mới chưa bật mặc định. Các số này phản ánh kịch bản synthetic đã thử, chưa bảo đảm độ đúng chung hay tải cả lớp.
+**Lời nói:** Texa cho kết quả đúng hơn trong bộ single test này, nhưng median chậm hơn khoảng năm giây và chi phí ước tính cao hơn. Kiểm thử backend, database và Playwright xác nhận luồng phần mềm bằng provider giả lập; chúng không đo chất lượng model thật. Trên giao diện thật, chuỗi filter cho ra 62, sau khi bỏ mobile vẫn giữ paid là 204, rồi đổi sang desktop và vẫn giữ paid là 61; unique viewers là 12 và Olist revenue là 432 BRL, khớp CSV. Một truy vấn đếm views vẫn sai 12 so với chuẩn 24. Các bài browser là kịch bản hồi quy nhỏ, không đại diện cho tải lớp học.
 
-## Slide 13 — Kết luận (0:45)
+## Slide 13 — Kết luận và giới hạn (0:45)
 
-- Texa là trợ lý hỏi dữ liệu có phạm vi và định nghĩa được kiểm soát
-- Điểm mạnh cần chứng minh bằng đánh giá độc lập, không bằng demo đơn lẻ
-- Ưu tiên tiếp: xử lý lỗi semantic còn lại, thẩm định gold độc lập, rồi đo lại trên holdout mới
+- Texa tập trung vào PM/PO hỏi dữ liệu event e-commerce đã định nghĩa trên PostgreSQL
+- Benchmark v6 cho tín hiệu mạnh trên candidate, nhưng chưa tách riêng giá trị workflow khỏi semantic knowledge
+- Cần review đáp án độc lập, khóa holdout mới, lặp lại benchmark và kiểm tải trước khi mở rộng
 
-**Lời nói:** Texa tập trung vào một bài toán hẹp: giúp PM/PO hỏi dữ liệu event thương mại điện tử trong phạm vi đã khai báo. Hệ thống có bước làm rõ, kiểm tra semantic và tạo truy vấn có thể kiểm tra, nhưng điều đó không bảo đảm kết quả luôn đúng. Trên candidate dev hiện tại, baseline cao hơn hoặc tương đương một số toggle; chưa có cải thiện nào được chứng minh. Việc tiếp theo là xử lý các lỗi semantic còn lại, thẩm định gold độc lập và đánh giá trên holdout mới. Xin cảm ơn.
+**Lời nói:** Kết quả v6 cho thấy Texa vượt baseline schema-only rõ rệt trên bộ câu hỏi hiện tại. Tuy nhiên baseline không được cung cấp enum hay business mapping, nên chênh lệch gồm cả lợi ích tri thức catalog; ta chưa thể khẳng định riêng kiến trúc workflow tạo ra toàn bộ phần tăng. Bộ test còn nhỏ, test split chưa được thẩm định độc lập và chưa khóa, và giao diện thật còn một lỗi đếm views. Bước tiếp theo là review gold độc lập, tạo holdout mới, lặp lại phép đo và thử tải nhiều người dùng trước khi kết luận khả năng triển khai rộng.
 
 ### Ghi chú cho người trình bày
 
-- Số single-dev mới là một repeat trên 30 cases đã thấy; annotation erratum C19 được hash-pin và chỉ thay score từ raw result correctness. World values là metric phụ, alias-insensitive.
-- Hội thoại repaired dùng số ở slide 12; raw conversation comparison đầu không hợp lệ do lỗi adapter B1. Diagnostic action là mức khớp rubric, không phải SQL accuracy.
-- Cũ protocol v3/v4 chỉ giữ trong kết quả lịch sử, không đưa lên headline hoặc gộp với current single-dev.
-- Persona PM/PO là định hướng sản phẩm chưa được xác nhận qua user study.
-- Dữ liệu hai nguồn giữ nguyên tiền tệ và ngữ nghĩa riêng; không cộng hai nguồn.
+- B0/B1/Texa đều dùng cùng model và fixtures; baseline không có catalog, định nghĩa business hay source-value mapping. Đây là so sánh hệ thống với thông tin đầu vào khác nhau, không phải model ranking.
+- Candidate gồm 60 câu đơn (30 dev/30 test), 24 clarification records (12 cặp query/control), 9 hội thoại (8 lượt dev/24 lượt test), 12 diagnostic; tổng hợp và chưa có holdout sealed/human-reviewed.
+- Browser parity (T00 15/15 câu đơn; 18/19 lượt hội thoại) là replay trên câu đã biết. Browser UI có một lỗi thực: event views trả 12 thay vì 24.
+- T11 đạt 30/30 test single ở một repeat; không gộp suite thành overall accuracy. Retrieval/consistency mặc định vẫn off.
+- Source-selected control: B0 13/30 (43,3%), T00 28/30 (93,3%); khoảng cách còn chịu ảnh hưởng của catalog/business mappings.
+- Frozen SQL replay trên ba fixture worlds không phải ba repeat độc lập; số đúng mỗi cấu hình lần lượt B0 1/30, B0R 16/30, B1 1/30, T00 28/30, T10/T01 27/30, T11 30/30.
+- Persona PM/PO chưa được xác nhận qua user study; không suy rộng hai nguồn hiện tại sang mọi doanh nghiệp.

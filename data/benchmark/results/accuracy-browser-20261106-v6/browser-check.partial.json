@@ -1,0 +1,570 @@
+{
+  "records": [
+    {
+      "label": "cosmetics-mobile-paid",
+      "text": "Doanh thu Cosmetics Shop trên toàn bộ dữ liệu, chỉ thiết bị mobile và kênh paid?",
+      "turn_id": "aa419fa0-23aa-40db-aa0e-761e297afec1",
+      "status": "answered",
+      "result": {
+        "status": "answered",
+        "row_count": 1,
+        "columns": [
+          "revenue"
+        ],
+        "rows": [
+          {
+            "revenue": 62
+          }
+        ],
+        "source_resolution": {
+          "ui": [
+            "cosmetics_shop"
+          ],
+          "text": [
+            "cosmetics_shop"
+          ],
+          "model": [
+            "cosmetics_shop"
+          ],
+          "memory": [],
+          "effective": [
+            "cosmetics_shop"
+          ],
+          "resolved_by_user": false
+        },
+        "context": {
+          "language": "vi",
+          "relation": "new_topic",
+          "questions": [],
+          "references": [],
+          "catalog_version": 7,
+          "inherited_slots": {},
+          "slot_operations": {
+            "shape": "set",
+            "top_k": "clear",
+            "recipe": "set",
+            "filters": "set",
+            "metrics": "clear",
+            "selection": "clear",
+            "source_ids": "set",
+            "time_range": "set"
+          },
+          "structured_memory": true,
+          "clarification_needed": false
+        },
+        "query_spec": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "revenue",
+          "filters": [
+            {
+              "field": "device_type",
+              "values": [
+                "mobile"
+              ],
+              "operator": "="
+            },
+            {
+              "field": "campaign_channel",
+              "values": [
+                "paid"
+              ],
+              "operator": "="
+            }
+          ],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "compiled_sql": "SELECT coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') AND (\"e\".\"ep\" -> 'device' ->> 'type') = 'mobile' AND (\"e\".\"ep\" -> 'campaign' ->> 'channel') = 'paid' LIMIT 1001",
+        "error": null,
+        "message": null
+      }
+    },
+    {
+      "label": "remove-device-keep-paid",
+      "text": "Bỏ điều kiện thiết bị, giữ nguyên các điều kiện còn lại.",
+      "turn_id": "b5755d5a-53e7-4824-b2df-41a47f48f831",
+      "status": "answered",
+      "result": {
+        "status": "answered",
+        "row_count": 1,
+        "columns": [
+          "revenue"
+        ],
+        "rows": [
+          {
+            "revenue": 204
+          }
+        ],
+        "source_resolution": {
+          "ui": [
+            "cosmetics_shop"
+          ],
+          "text": [],
+          "model": [
+            "cosmetics_shop"
+          ],
+          "memory": [
+            "cosmetics_shop"
+          ],
+          "effective": [
+            "cosmetics_shop"
+          ],
+          "resolved_by_user": false
+        },
+        "context": {
+          "language": "vi",
+          "relation": "followup",
+          "questions": [
+            "Doanh thu Cosmetics Shop trên toàn bộ dữ liệu, chỉ thiết bị mobile và kênh paid?"
+          ],
+          "references": [
+            "aa419fa0-23aa-40db-aa0e-761e297afec1"
+          ],
+          "filter_edits": [
+            {
+              "field": "device_type",
+              "operation": "remove"
+            }
+          ],
+          "catalog_version": 7,
+          "inherited_slots": {
+            "limit": 1000,
+            "shape": "aggregate",
+            "top_k": null,
+            "recipe": "revenue",
+            "filters": [
+              {
+                "field": "device_type",
+                "values": [
+                  "mobile"
+                ],
+                "operator": "="
+              },
+              {
+                "field": "campaign_channel",
+                "values": [
+                  "paid"
+                ],
+                "operator": "="
+              }
+            ],
+            "metrics": [],
+            "selection": [],
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "time_range": {
+              "end": null,
+              "days": null,
+              "kind": "all",
+              "field": "event_date",
+              "start": null
+            },
+            "contract_version": 7
+          },
+          "result_ordinals": {
+            "aa419fa0-23aa-40db-aa0e-761e297afec1": 1
+          },
+          "slot_operations": {
+            "shape": "keep",
+            "top_k": "keep",
+            "recipe": "keep",
+            "filters": "set",
+            "metrics": "keep",
+            "selection": "keep",
+            "source_ids": "keep",
+            "time_range": "keep"
+          },
+          "structured_memory": true,
+          "clarification_needed": false,
+          "unavailable_result_numbers": []
+        },
+        "query_spec": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "revenue",
+          "filters": [
+            {
+              "field": "campaign_channel",
+              "values": [
+                "paid"
+              ],
+              "operator": "="
+            }
+          ],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "compiled_sql": "SELECT coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') AND (\"e\".\"ep\" -> 'campaign' ->> 'channel') = 'paid' LIMIT 1001",
+        "error": null,
+        "message": null
+      }
+    },
+    {
+      "label": "desktop-keep-paid",
+      "text": "Đổi thiết bị sang desktop, vẫn giữ kênh paid.",
+      "turn_id": "0af02d98-68b5-4044-ba8b-dc4f63ccb6bb",
+      "status": "answered",
+      "result": {
+        "status": "answered",
+        "row_count": 1,
+        "columns": [
+          "revenue"
+        ],
+        "rows": [
+          {
+            "revenue": 61
+          }
+        ],
+        "source_resolution": {
+          "ui": [
+            "cosmetics_shop"
+          ],
+          "text": [],
+          "model": [
+            "cosmetics_shop"
+          ],
+          "memory": [
+            "cosmetics_shop"
+          ],
+          "effective": [
+            "cosmetics_shop"
+          ],
+          "resolved_by_user": false
+        },
+        "context": {
+          "language": "vi",
+          "relation": "followup",
+          "questions": [
+            "Doanh thu Cosmetics Shop trên toàn bộ dữ liệu, chỉ thiết bị mobile và kênh paid?"
+          ],
+          "references": [
+            "aa419fa0-23aa-40db-aa0e-761e297afec1"
+          ],
+          "filter_edits": [
+            {
+              "field": "device_type",
+              "operation": "set"
+            }
+          ],
+          "catalog_version": 7,
+          "inherited_slots": {
+            "limit": 1000,
+            "shape": "aggregate",
+            "top_k": null,
+            "recipe": "revenue",
+            "filters": [
+              {
+                "field": "device_type",
+                "values": [
+                  "mobile"
+                ],
+                "operator": "="
+              },
+              {
+                "field": "campaign_channel",
+                "values": [
+                  "paid"
+                ],
+                "operator": "="
+              }
+            ],
+            "metrics": [],
+            "selection": [],
+            "source_ids": [
+              "cosmetics_shop"
+            ],
+            "time_range": {
+              "end": null,
+              "days": null,
+              "kind": "all",
+              "field": "event_date",
+              "start": null
+            },
+            "contract_version": 7
+          },
+          "result_ordinals": {
+            "aa419fa0-23aa-40db-aa0e-761e297afec1": 1,
+            "b5755d5a-53e7-4824-b2df-41a47f48f831": 2
+          },
+          "slot_operations": {
+            "shape": "keep",
+            "top_k": "keep",
+            "recipe": "keep",
+            "filters": "set",
+            "metrics": "keep",
+            "selection": "keep",
+            "source_ids": "keep",
+            "time_range": "keep"
+          },
+          "structured_memory": true,
+          "clarification_needed": false,
+          "unavailable_result_numbers": []
+        },
+        "query_spec": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "revenue",
+          "filters": [
+            {
+              "field": "device_type",
+              "values": [
+                "desktop"
+              ],
+              "operator": "="
+            },
+            {
+              "field": "campaign_channel",
+              "values": [
+                "paid"
+              ],
+              "operator": "="
+            }
+          ],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "compiled_sql": "SELECT coalesce(sum(\"e\".\"revenue\") FILTER (WHERE (e.event_name = ANY('{purchase,order_purchased}'))), 0) AS \"revenue\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') AND (\"e\".\"ep\" -> 'device' ->> 'type') = 'desktop' AND (\"e\".\"ep\" -> 'campaign' ->> 'channel') = 'paid' LIMIT 1001",
+        "error": null,
+        "message": null
+      }
+    },
+    {
+      "label": "view-event-count",
+      "text": "Cosmetics Shop có bao nhiêu lượt xem sản phẩm trên toàn bộ dữ liệu?",
+      "turn_id": "6c494fb4-91f5-4510-818a-63412101f78d",
+      "status": "answered",
+      "result": {
+        "status": "answered",
+        "row_count": 1,
+        "columns": [
+          "viewers"
+        ],
+        "rows": [
+          {
+            "viewers": 12
+          }
+        ],
+        "source_resolution": {
+          "ui": [
+            "cosmetics_shop"
+          ],
+          "text": [
+            "cosmetics_shop"
+          ],
+          "model": [
+            "cosmetics_shop"
+          ],
+          "memory": [],
+          "effective": [
+            "cosmetics_shop"
+          ],
+          "resolved_by_user": false
+        },
+        "context": {
+          "language": "vi",
+          "relation": "new_topic",
+          "questions": [],
+          "references": [],
+          "catalog_version": 7,
+          "inherited_slots": {},
+          "result_ordinals": {
+            "0af02d98-68b5-4044-ba8b-dc4f63ccb6bb": 3,
+            "aa419fa0-23aa-40db-aa0e-761e297afec1": 1,
+            "b5755d5a-53e7-4824-b2df-41a47f48f831": 2
+          },
+          "slot_operations": {
+            "shape": "set",
+            "top_k": "clear",
+            "recipe": "set",
+            "filters": "clear",
+            "metrics": "clear",
+            "selection": "clear",
+            "source_ids": "set",
+            "time_range": "set"
+          },
+          "structured_memory": true,
+          "clarification_needed": false,
+          "unavailable_result_numbers": []
+        },
+        "query_spec": {
+          "limit": 1000,
+          "shape": "aggregate",
+          "top_k": null,
+          "recipe": "viewers",
+          "filters": [],
+          "metrics": [],
+          "selection": [],
+          "source_ids": [
+            "cosmetics_shop"
+          ],
+          "time_range": {
+            "end": null,
+            "days": null,
+            "kind": "all",
+            "field": "event_date",
+            "start": null
+          },
+          "contract_version": 7
+        },
+        "compiled_sql": "SELECT count(DISTINCT e.user_id) FILTER (WHERE (e.event_name = ANY('{view}'))) AS \"viewers\" FROM analytics.event_activity e JOIN analytics.source_registry sr ON sr.source_id = e.source_id WHERE e.source_id = ANY('{cosmetics_shop}') LIMIT 1001",
+        "error": null,
+        "message": null
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "session_ready",
+      "model": "gpt-6-luna",
+      "allowed_models": [
+        "gpt-6-luna"
+      ],
+      "sources": [
+        {
+          "id": "cosmetics_shop",
+          "label": "Challenge Cosmetics Shop"
+        },
+        {
+          "id": "olist_marketplace",
+          "label": "Challenge Olist Marketplace"
+        }
+      ]
+    },
+    {
+      "type": "user_selected_source",
+      "source_id": "cosmetics_shop"
+    },
+    {
+      "type": "question_sent",
+      "label": "cosmetics-mobile-paid",
+      "text": "Doanh thu Cosmetics Shop trên toàn bộ dữ liệu, chỉ thiết bị mobile và kênh paid?",
+      "conversation_id": "ec44202d-0f62-471d-b0e6-442292b6fcdc",
+      "turn_id": "aa419fa0-23aa-40db-aa0e-761e297afec1"
+    },
+    {
+      "type": "result_check",
+      "label": "cosmetics-mobile-paid",
+      "expected": 62,
+      "observed_rows": [
+        {
+          "revenue": 62
+        }
+      ],
+      "passed": true
+    },
+    {
+      "type": "visible_table_check",
+      "label": "cosmetics-mobile-paid",
+      "text": "Doanh thu\n62 USD",
+      "passed": true
+    },
+    {
+      "type": "question_sent",
+      "label": "remove-device-keep-paid",
+      "text": "Bỏ điều kiện thiết bị, giữ nguyên các điều kiện còn lại.",
+      "conversation_id": "ec44202d-0f62-471d-b0e6-442292b6fcdc",
+      "turn_id": "b5755d5a-53e7-4824-b2df-41a47f48f831"
+    },
+    {
+      "type": "result_check",
+      "label": "remove-device-keep-paid",
+      "expected": 204,
+      "observed_rows": [
+        {
+          "revenue": 204
+        }
+      ],
+      "passed": true
+    },
+    {
+      "type": "visible_table_check",
+      "label": "remove-device-keep-paid",
+      "text": "Doanh thu\n204 USD",
+      "passed": true
+    },
+    {
+      "type": "question_sent",
+      "label": "desktop-keep-paid",
+      "text": "Đổi thiết bị sang desktop, vẫn giữ kênh paid.",
+      "conversation_id": "ec44202d-0f62-471d-b0e6-442292b6fcdc",
+      "turn_id": "0af02d98-68b5-4044-ba8b-dc4f63ccb6bb"
+    },
+    {
+      "type": "result_check",
+      "label": "desktop-keep-paid",
+      "expected": 61,
+      "observed_rows": [
+        {
+          "revenue": 61
+        }
+      ],
+      "passed": true
+    },
+    {
+      "type": "visible_table_check",
+      "label": "desktop-keep-paid",
+      "text": "Doanh thu\n61 USD",
+      "passed": true
+    },
+    {
+      "type": "question_sent",
+      "label": "view-event-count",
+      "text": "Cosmetics Shop có bao nhiêu lượt xem sản phẩm trên toàn bộ dữ liệu?",
+      "conversation_id": "ec44202d-0f62-471d-b0e6-442292b6fcdc",
+      "turn_id": "6c494fb4-91f5-4510-818a-63412101f78d"
+    },
+    {
+      "type": "result_check",
+      "label": "view-event-count",
+      "expected": 24,
+      "observed_rows": [
+        {
+          "viewers": 12
+        }
+      ],
+      "passed": false
+    },
+    {
+      "type": "fatal",
+      "message": "view-event-count: expected 24, observed [{\"viewers\":12}]"
+    }
+  ]
+}
