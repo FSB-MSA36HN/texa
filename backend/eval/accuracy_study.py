@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-VARIANTS = ("B0", "B0R", "B1", "T00", "T10", "T01", "T11")
+VARIANTS = ("B0", "B0R", "B1", "T00", "T10", "T01", "T11", "F", "M6", "M0", "C0")
 
 
 def expected_answer_count(item: dict[str, Any]) -> int:
@@ -28,8 +28,8 @@ def gold_targets(rows: list[dict[str, Any]]):
             yield scenario['id'], target
 SUITE_VARIANTS = {
     "single": set(VARIANTS),
-    "clarification": {"B1", "T00", "T10", "T01", "T11"},
-    "conversation": {"B1", "T00", "T10", "T01", "T11"},
+    "clarification": {"B1", "T00", "T10", "T01", "T11", "F", "C0"},
+    "conversation": {"B1", "T00", "T10", "T01", "T11", "F", "M6", "M0"},
     "diagnostic": {"B1", "T00", "T10", "T01", "T11"},
 }
 

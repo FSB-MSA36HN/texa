@@ -568,9 +568,10 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
             call_names.append(kwargs["name"])
         return original_generate(**kwargs)
     llm.generate_structured = budgeted_generate
-    if args.variant in {"T00", "T01", "T10", "T11"}:
-        os.environ["TEXA_ABLATION_VARIANT"] = "F"
-        os.environ.pop("TEXA_MEMORY_MODE", None)
+    if args.variant in {"T00", "T01", "T10", "T11", "F", "M6", "M0", "C0"}:
+        os.environ["TEXA_ABLATION_VARIANT"] = args.variant
+        if args.variant in {"M6", "M0"}: os.environ["TEXA_MEMORY_MODE"] = "window6" if args.variant == "M6" else "structured"
+        else: os.environ.pop("TEXA_MEMORY_MODE", None)
     with _restore_mapping(os.environ, old_env), _restore_mapping(llm.__dict__, {"generate_structured": original_generate}), output.open("x", encoding="utf-8") as handle:
         def write(obj):
             handle.write(json.dumps(obj, ensure_ascii=False, default=str) + "\n"); handle.flush()
@@ -625,8 +626,9 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                     else:
                         row = _run_raw_scenario(item, args.suite, manifest, raw_session)
                 else:
-                    os.environ["TEXA_ABLATION_VARIANT"] = "F"
-                    os.environ.pop("TEXA_MEMORY_MODE", None)
+                    os.environ["TEXA_ABLATION_VARIANT"] = args.variant
+                    if args.variant in {"M6", "M0"}: os.environ["TEXA_MEMORY_MODE"] = "window6" if args.variant == "M6" else "structured"
+                    else: os.environ.pop("TEXA_MEMORY_MODE", None)
                     try:
                         from .run_ablation import TexaSession
                         from .run_ablation import score_answer, trace
