@@ -76,8 +76,8 @@ Câu hỏi + nguồn
 ## Slide 9 — So sánh công bằng thế nào? (1:00)
 
 - Cùng `gpt-6-luna`, cùng câu hỏi và dữ liệu
-- B0: câu hỏi + schema PostgreSQL vật lý + nguồn UI nếu đã chọn; không catalog, business definitions hay enum/source mappings
-- B1: thêm lịch sử hội thoại và hỏi lại/thử lại trong kịch bản tương ứng
+- LLM chỉ nhận schema: câu hỏi + schema PostgreSQL vật lý + nguồn UI nếu đã chọn; không catalog, business definitions hay enum/source mappings
+- LLM có lịch sử chat: thêm lịch sử hội thoại và hỏi lại/thử lại trong kịch bản tương ứng
 - Texa: semantic catalog, intent resolution, memory có cấu trúc, compiler và SQL checks
 
 **Lời nói:** Nhóm giữ nguyên model, câu hỏi và dữ liệu. Baseline chính chỉ nhận câu hỏi và cấu trúc vật lý của database, không được đưa trước định nghĩa nghiệp vụ hay catalog. Texa có thêm lớp semantic được quản trị cùng workflow chuyển câu hỏi thành truy vấn. Do baseline không biết các nhãn nguồn và giá trị đã được catalog ánh xạ, kết quả đo lợi ích tổng hợp của thông tin semantic và workflow; đây không phải cuộc thi model hay phép đo riêng tác dụng của một component.
@@ -88,37 +88,38 @@ Metric chính là tỷ lệ khớp **toàn bộ bảng kết quả**; khác alia
 
 | Cấu hình | Dev / 30 | Test / 30 |
 |---|---:|---:|
-| B0 schema-only | 3 (10,0%) | 1 (3,3%) |
-| B0R + ví dụ SQL | 11 (36,7%) | 16 (53,3%) |
-| B1 + history | 2 (6,7%) | 1 (3,3%) |
-| Ablation bỏ cả hai · T00 | 29 (96,7%) | 28 (93,3%) |
-| Ablation bỏ consistency · bỏ retrieval | 29 · 29 | 27 · 27 |
-| **Texa đầy đủ, mặc định · T11** | 29 (96,7%) | 30 (100%) |
+| LLM chỉ nhận schema | 3 (10,0%) | 1 (3,3%) |
+| LLM thêm ví dụ SQL | 11 (36,7%) | 16 (53,3%) |
+| LLM có lịch sử chat | 2 (6,7%) | 1 (3,3%) |
+| Texa bỏ cả hai | 29 (96,7%) | 28 (93,3%) |
+| Texa chỉ truy hồi ví dụ | 29 (96,7%) | 27 (90,0%) |
+| Texa chỉ kiểm tra nhất quán | 29 (96,7%) | 27 (90,0%) |
+| **Texa đầy đủ (mặc định)** | 29 (96,7%) | 30 (100%) |
 
-**Lời nói:** Texa mặc định là hệ thống đầy đủ T11 gồm truy hồi ví dụ và adaptive consistency. Trên 30 câu single test, baseline B0 đúng một câu, Texa đúng cả 30; bỏ cả hai thành phần (T00) còn 28 câu. Đây là một lần chạy trên bộ candidate tổng hợp, không phải accuracy cho mọi tình huống thực tế. B0 chỉ có schema vật lý nên phần chênh lệch cũng phản ánh việc Texa có catalog và ánh xạ business value; không thể quy toàn bộ cho compiler hay workflow. Ở đối chứng cung cấp cùng nguồn đã chọn trên 30 câu dev, B0 đạt 13/30 (43,3%) và ablation T00 28/30 (93,3%); vẫn còn khác biệt tri thức catalog. B0R là đối chứng riêng có ví dụ SQL đã kiểm chứng, không gọi là baseline thuần.
+**Lời nói:** Texa mặc định là hệ thống đầy đủ gồm truy hồi ví dụ và adaptive consistency. Trên 30 câu single test, baseline LLM chỉ nhận schema đúng một câu, Texa đúng cả 30; bỏ cả hai thành phần (Texa bỏ cả hai) còn 28 câu. Đây là một lần chạy trên bộ candidate tổng hợp, không phải accuracy cho mọi tình huống thực tế. LLM chỉ nhận schema chỉ có schema vật lý nên phần chênh lệch cũng phản ánh việc Texa có catalog và ánh xạ business value; không thể quy toàn bộ cho compiler hay workflow. Ở đối chứng cung cấp cùng nguồn đã chọn trên 30 câu dev, LLM chỉ nhận schema đạt 13/30 (43,3%) và ablation Texa bỏ cả hai 28/30 (93,3%); vẫn còn khác biệt tri thức catalog. LLM thêm ví dụ SQL là đối chứng riêng có ví dụ SQL đã kiểm chứng, không gọi là baseline thuần.
 
 ## Slide 11 — Ablation, clarification và hội thoại (1:10)
 
-| Suite test | B1 | Bỏ cả hai · T00 | Bỏ consistency · T10 | Bỏ retrieval · T01 | **Texa · T11** |
+| Suite test | LLM có lịch sử chat | Texa bỏ cả hai | Texa chỉ truy hồi ví dụ | Texa chỉ kiểm tra nhất quán | **Texa đầy đủ** |
 |---|---:|---:|---:|---:|---:|
 | Clarification / 12 | 1 (8,3%) | 12 (100%) | 11 (91,7%) | 11 (91,7%) | 11 (91,7%) |
 | Conversation / 24 lượt | 1 (4,2%) | 22 (91,7%) | 19 (79,2%) | 20 (83,3%) | 22 (91,7%) |
 
-- Texa đầy đủ/mặc định T11 bật cả hai; ablation T00 bỏ cả hai, T10 bỏ consistency, T01 bỏ retrieval
-- T11 đạt 30/30 single test trong một repeat; không phải overall accuracy
-- Consistency được gọi ở 1/30 câu test của T11; Texa mặc định là T11; T00/T10/T01 là ablation
+- Texa đầy đủ (mặc định) bật cả truy hồi ví dụ và kiểm tra nhất quán; ba bản rút gọn dùng để kiểm chứng đóng góp của từng thành phần
+- Texa đầy đủ đạt 30/30 single test trong một repeat; không phải overall accuracy
+- Kiểm tra nhất quán chỉ kích hoạt ở 1/30 câu test của Texa đầy đủ, không gọi thêm model cho mọi câu
 
-**Lời nói:** Ablation kiểm tra từng thành phần nhưng chưa đủ để tuyên bố retrieval hay consistency luôn làm hệ thống tốt hơn. T00 tốt hơn một số toggle ở clarification hoặc hội thoại; T11 cao nhất ở single test. Adaptive consistency chỉ được kích hoạt một lần trong 30 câu T11, nên đây là chính sách gọi có điều kiện, không phải ba lần gọi cho mọi câu. Nhóm chọn T11 làm cấu hình sản phẩm đầy đủ; các cấu hình bỏ một hoặc cả hai thành phần chỉ dùng cho ablation. Cần nhiều lần chạy và holdout độc lập để kết luận hiệu quả ổn định.
+**Lời nói:** Ablation kiểm tra từng thành phần nhưng chưa đủ để tuyên bố retrieval hay consistency luôn làm hệ thống tốt hơn. Texa bỏ cả hai tốt hơn một số toggle ở clarification hoặc hội thoại; Texa đầy đủ cao nhất ở single test. Adaptive consistency chỉ được kích hoạt một lần trong 30 câu Texa đầy đủ, nên đây là chính sách gọi có điều kiện, không phải ba lần gọi cho mọi câu. Nhóm chọn Texa đầy đủ làm cấu hình sản phẩm mặc định; các cấu hình bỏ một hoặc cả hai thành phần chỉ dùng cho ablation. Cần nhiều lần chạy và holdout độc lập để kết luận hiệu quả ổn định.
 
 ## Slide 12 — Chi phí, độ trễ và kiểm thử sản phẩm (1:15)
 
-- Median latency single test: B0 **8,1 giây**; Texa T11 **13,3 giây**
-- Chi phí ước tính/30 câu: B0 **$0,0062**; Texa T11 **$0,0280**
+- Median latency single test: LLM chỉ nhận schema **8,1 giây**; Texa đầy đủ **13,3 giây**
+- Chi phí ước tính/30 câu: LLM chỉ nhận schema **$0,0062**; Texa đầy đủ **$0,0280**
 - Backend **384 passed, 36 skipped**; DB integration **30 passed**; Playwright **15 passed** với provider giả lập
-- Browser model thật đã đo với cấu hình ablation T00: 5/6 câu khớp; view count trả 12 thay vì 24
-- Browser regression benchmark riêng: T00 15/15 single, 18/19 lượt hội thoại; không phải holdout/UI E2E
+- Browser model thật đã đo với cấu hình ablation Texa bỏ cả hai: 5/6 câu khớp; view count trả 12 thay vì 24
+- Browser regression benchmark riêng: Texa bỏ cả hai 15/15 single, 18/19 lượt hội thoại; không phải holdout/UI E2E
 
-**Lời nói:** Texa cho kết quả đúng hơn trong bộ single test này, nhưng median chậm hơn khoảng năm giây và chi phí ước tính cao hơn. Kiểm thử backend, database và Playwright xác nhận luồng phần mềm bằng provider giả lập; chúng không đo chất lượng model thật. Trong lần đo giao diện thật với T00 (chưa phải T11 mặc định mới), chuỗi filter cho ra 62, sau khi bỏ mobile vẫn giữ paid là 204, rồi đổi sang desktop và vẫn giữ paid là 61; unique viewers là 12 và Olist revenue là 432 BRL, khớp CSV. Một truy vấn đếm views vẫn sai 12 so với chuẩn 24. Các bài browser là kịch bản hồi quy nhỏ, không đại diện cho tải lớp học.
+**Lời nói:** Texa cho kết quả đúng hơn trong bộ single test này, nhưng median chậm hơn khoảng năm giây và chi phí ước tính cao hơn. Kiểm thử backend, database và Playwright xác nhận luồng phần mềm bằng provider giả lập; chúng không đo chất lượng model thật. Trong lần đo giao diện thật với Texa bỏ cả hai (chưa phải Texa đầy đủ mặc định mới), chuỗi filter cho ra 62, sau khi bỏ mobile vẫn giữ paid là 204, rồi đổi sang desktop và vẫn giữ paid là 61; unique viewers là 12 và Olist revenue là 432 BRL, khớp CSV. Một truy vấn đếm views vẫn sai 12 so với chuẩn 24. Các bài browser là kịch bản hồi quy nhỏ, không đại diện cho tải lớp học.
 
 ## Slide 13 — Kết luận và giới hạn (0:45)
 
@@ -130,10 +131,10 @@ Metric chính là tỷ lệ khớp **toàn bộ bảng kết quả**; khác alia
 
 ### Ghi chú cho người trình bày
 
-- B0/B1/Texa đều dùng cùng model và fixtures; baseline không có catalog, định nghĩa business hay source-value mapping. Đây là so sánh hệ thống với thông tin đầu vào khác nhau, không phải model ranking.
+- LLM chỉ nhận schema/LLM có lịch sử chat/Texa đều dùng cùng model và fixtures; baseline không có catalog, định nghĩa business hay source-value mapping. Đây là so sánh hệ thống với thông tin đầu vào khác nhau, không phải model ranking.
 - Candidate gồm 60 câu đơn (30 dev/30 test), 24 clarification records (12 cặp query/control), 9 hội thoại (8 lượt dev/24 lượt test), 12 diagnostic; tổng hợp và chưa có holdout sealed/human-reviewed.
-- Browser parity (T00 15/15 câu đơn; 18/19 lượt hội thoại) là replay trên câu đã biết. Browser UI đã đo với T00 có một lỗi thực: event views trả 12 thay vì 24.
-- T11 đạt 30/30 test single ở một repeat; không gộp suite thành overall accuracy. Texa mặc định mới là T11; T00/T10/T01 là ablation.
-- Source-selected control: B0 13/30 (43,3%), T00 28/30 (93,3%); khoảng cách còn chịu ảnh hưởng của catalog/business mappings.
-- Frozen SQL replay trên ba fixture worlds không phải ba repeat độc lập; số đúng mỗi cấu hình lần lượt B0 1/30, B0R 16/30, B1 1/30, T00 28/30, T10/T01 27/30, T11 30/30.
+- Browser parity (Texa bỏ cả hai 15/15 câu đơn; 18/19 lượt hội thoại) là replay trên câu đã biết. Browser UI đã đo với Texa bỏ cả hai có một lỗi thực: event views trả 12 thay vì 24.
+- Texa đầy đủ đạt 30/30 test single ở một repeat; không gộp suite thành overall accuracy. Texa đầy đủ là cấu hình mặc định; Texa bỏ cả hai/Texa chỉ truy hồi ví dụ/Texa chỉ kiểm tra nhất quán là ablation.
+- Source-selected control: LLM chỉ nhận schema 13/30 (43,3%), Texa bỏ cả hai 28/30 (93,3%); khoảng cách còn chịu ảnh hưởng của catalog/business mappings.
+- Frozen SQL replay trên ba fixture worlds không phải ba repeat độc lập; số đúng mỗi cấu hình lần lượt LLM chỉ nhận schema 1/30, LLM thêm ví dụ SQL 16/30, LLM có lịch sử chat 1/30, Texa bỏ cả hai 28/30, Texa chỉ truy hồi ví dụ/Texa chỉ kiểm tra nhất quán 27/30, Texa đầy đủ 30/30.
 - Persona PM/PO chưa được xác nhận qua user study; không suy rộng hai nguồn hiện tại sang mọi doanh nghiệp.
