@@ -544,8 +544,8 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                   "example_policy": "sql_verified",
                   "usage_policy": "known completed logical calls; unresolved provider attempt reservations remain in the cumulative gateway ledger",
                   "sampling_policy": "identical prompts with provider defaults, no assumed diversity",
-                  "model": args.model, "feature_config": {"example_retrieval": args.variant in {"T10", "T11"},
-                  "consistency": args.variant in {"T01", "T11"}}}
+                  "model": args.model, "feature_config": {"example_retrieval": args.variant in {"T10", "T11", "F", "M6", "M0", "C0"},
+                  "consistency": args.variant in {"T01", "T11", "F", "M6", "M0", "C0"}}}
     output = args.output.resolve(); output.relative_to(ROOT)
     output.parent.mkdir(parents=True, exist_ok=True)
     env_keys = ("TEXA_SOURCE_PROFILE", "TEXA_ABLATION_VARIANT", "TEXA_MEMORY_MODE",
@@ -591,8 +591,8 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
             item = protocol_item(original_item)
             started = time.monotonic()
             calls_before = calls
-            os.environ["TEXA_EXAMPLE_RETRIEVAL"] = "1" if args.variant in {"T10", "T11"} else "0"
-            os.environ["TEXA_CONSISTENCY"] = "1" if args.variant in {"T01", "T11"} else "0"
+            os.environ["TEXA_EXAMPLE_RETRIEVAL"] = "1" if args.variant in {"T10", "T11", "F", "M6", "M0", "C0"} else "0"
+            os.environ["TEXA_CONSISTENCY"] = "1" if args.variant in {"T01", "T11", "F", "M6", "M0", "C0"} else "0"
             os.environ["TEXA_EXAMPLE_POLICY"] = "sql_verified"
             session = None
             try:
