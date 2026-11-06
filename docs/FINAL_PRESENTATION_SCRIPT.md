@@ -113,7 +113,7 @@ Metric chính là tỷ lệ khớp **toàn bộ bảng kết quả**; khác alia
 
 - Median latency trên 400 lần chạy: LLM chỉ nhận schema **7,7 giây**; Texa **13,8 giây**
 - Chi phí ước tính/400 lần chạy: LLM chỉ nhận schema **$0,074**; Texa **$0,401**
-- Backend **384 passed, 36 skipped**; DB integration **30 passed**; Playwright **15 passed** với provider giả lập
+- Backend **398 passed, 36 skipped**; DB integration **30 passed**; Playwright **15 passed** với provider giả lập
 - Browser observations trước đây: 5/6 câu khớp; view count khi đó trả 12 thay vì 24. Đây là kết quả lịch sử, không thuộc benchmark mới.
 - Browser regression benchmark cũ: Texa without retrieval and consistency 15/15 single, 18/19 lượt hội thoại; chỉ là replay trên câu đã biết.
 

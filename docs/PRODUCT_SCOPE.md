@@ -60,7 +60,7 @@ Clarification có thêm metric hành động “có hỏi lại khi thiếu thô
 
 ## Kiểm thử runtime và giới hạn
 
-- Backend **384 passed, 36 skipped**; DB integration **30 passed**; Playwright **15 passed** với provider mô phỏng và 8 session. Các test xác nhận chức năng, không đo accuracy LLM.
+- Backend **398 passed, 36 skipped**; DB integration **30 passed**; Playwright **15 passed** với provider mô phỏng và 8 session. Các test xác nhận chức năng, không đo accuracy LLM.
 - Browser model thật đã đo với cấu hình Texa without retrieval and consistency: các luồng chính được thử trực tiếp; 5/6 câu có đáp án khớp, câu đếm view trả 12 thay vì 24. Chuỗi filter mobile+paid trả 62, bỏ mobile vẫn giữ paid trả 204, đổi sang desktop vẫn giữ paid trả 61; unique viewers 12 và Olist revenue 432 BRL/CSV đã đối chiếu. Đây là smoke/regression test nhỏ, không phải holdout.
 - Diagnostic ngoài phạm vi: Texa đạt action accuracy 95%; các biến thể còn lại đạt 83,75–93,75%. Đây là chẩn đoán hành động (từ chối/hỏi lại/giải thích), không gộp vào SQL accuracy.
 - Browser parity benchmark riêng: Texa without retrieval and consistency 15/15 câu đơn và 18/19 lượt hội thoại; đó là replay hồi quy trên các câu đã biết, không phải kiểm thử UI hay holdout.
