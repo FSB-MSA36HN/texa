@@ -75,6 +75,34 @@ class WorldRobustnessTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "malformed business_contract"):
                 _effective_contract(cid, altered, erratum=erratum, case_hash=bad_hash)
 
+    def test_v3_protocol_makes_full_table_values_primary_and_reports_alias_scores_separately(self):
+        runs = make_runs(self.cases)
+        runs[0]["manifest"]["provenance"]["evaluation_protocol"] = "v3_schema_only_full_table"
+        def execute(dsn, sql):
+            return ("alias_from_sql",), ((1,),)
+        with patch("eval.check_world_robustness._identity"):
+            result = check_worlds(runs, self.cases, "reader", apply_fixtures=True,
+                                  owner_dsn="owner", apply_world=lambda *args: None, execute=execute)
+        self.assertEqual(result["primary_metric"], "alias_insensitive_full_table_values")
+        self.assertEqual(result["summary"]["base"]["correct"], 3)
+        self.assertEqual(result["summary"]["base"]["business_contract_correct"], 0)
+        self.assertFalse(any(row["strict_alias_result_correct"] for row in result["cases"]))
+        self.assertEqual(result["all_world_case_counts"]["a"]["primary_correct_worlds"], 1)
+        self.assertEqual(result["all_world_case_counts"]["a"]["strict_correct_worlds"], 0)
+        self.assertEqual(result["all_world_case_counts"]["a"]["values_correct_worlds"], 1)
+
+    def test_cross_world_protocol_mixing_is_rejected(self):
+        changed = make_runs(self.cases)
+        other = {**changed[0], "manifest": {**changed[0]["manifest"], "fixture_world": "grain_counterexample",
+            "provenance": {**changed[0]["manifest"]["provenance"], "evaluation_protocol": "v3_schema_only_full_table"},
+            "fixture_hash": changed[0]["manifest"]["provenance"]["dataset_hashes"]["worlds/grain_counterexample.sql"],
+            "expected_ids": []}}
+        changed[0]["manifest"]["world_pool_ids"] = {"base": ["a", "b", "c"],
+            "grain_counterexample": [], "coverage_edge": []}
+        changed[0]["manifest"]["expected_ids"] = ["a", "b", "c"]
+        with self.assertRaisesRegex(ValueError, "frozen implementation/data provenance"):
+            _validate_provenance([changed[0], other], self.cases)
+
     def test_cross_world_scoring_uses_candidate_sql_not_gold_sql(self):
         calls = []
         def execute(dsn, sql):
@@ -90,6 +118,8 @@ class WorldRobustnessTests(unittest.TestCase):
         self.assertEqual(len(calls), len(self.cases) * len(WORLDS))
         self.assertEqual(result["summary"]["base"]["correct"], 3)
         self.assertEqual(result["summary"]["grain_counterexample"]["correct"], 0)
+        self.assertEqual(result["all_world_case_counts"]["a"]["primary_correct_worlds"], 1)
+        self.assertEqual(result["all_world_case_counts"]["a"]["strict_correct_worlds"], 1)
         self.assertEqual(applied, ["base", "grain_counterexample", "coverage_edge", "base"])
 
     def test_replay_retains_product_public_output_boundary_for_ratio_samples(self):

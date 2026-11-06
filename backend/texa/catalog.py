@@ -122,6 +122,8 @@ class Metric(Strict):
     # Which eligible rows may create groups; separate from the aggregate value.
     # Default preserves previously published/archived catalog contracts.
     group_domain: Literal["filtered_events", "metric_support"] = "filtered_events"
+    # Business grain used when reconciling a requested measure with its catalog definition.
+    intent_grain: str = ""
     simple: Simple | None = None
     ratio: Ratio | None = None
     cohort: Cohort | None = None

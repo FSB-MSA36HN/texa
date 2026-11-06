@@ -128,6 +128,9 @@ def _load_runs(paths: list[Path]) -> tuple[list[dict], dict[str, dict]]:
 
 def _validate_provenance(runs: list[dict], cases: dict[str, dict]) -> None:
     base = runs[0]["manifest"]
+    protocol = (base.get("provenance") or {}).get("evaluation_protocol") or "legacy_v2_full_result_contract"
+    if protocol not in {"legacy_v2_full_result_contract", "v3_schema_only_full_table"}:
+        raise ValueError(f"unsupported world-scoring protocol: {protocol}")
     run_worlds = set()
     world_pools = base.get("world_pool_ids")
     if not isinstance(world_pools, dict) or not world_pools or not set(world_pools) <= set(WORLDS):
@@ -174,6 +177,9 @@ def check_worlds(runs: list[dict], cases: dict[str, dict], reader_dsn: str,
                  apply_world=_apply_world, execute=execute_readonly,
                  annotation_erratum: str | None = None) -> dict[str, Any]:
     _validate_provenance(runs, cases)
+    protocol = ((runs[0]["manifest"].get("provenance") or {}).get("evaluation_protocol")
+                or "legacy_v2_full_result_contract")
+    v3_full_table = protocol == "v3_schema_only_full_table"
     case_hash = hashlib.sha256((DATA / "cases.yaml").read_bytes()).hexdigest()
     try:
         from .benchmark import validate_business_contract
@@ -211,6 +217,8 @@ def check_worlds(runs: list[dict], cases: dict[str, dict], reader_dsn: str,
                 result_row = {"id": case_id, "world": world, "sql_count": len(sqls),
                               "primary_base_correct": None, "world_correct": False,
                               "result_values_correct": False,
+                              "business_contract_result_correct": False,
+                              "strict_alias_result_correct": False,
                               "accidental_same_result_counts": False}
                 if not sqls:
                     result_row.update(status="no_candidate_sql", world_correct=False)
@@ -233,9 +241,15 @@ def check_worlds(runs: list[dict], cases: dict[str, dict], reader_dsn: str,
                         actual_results.append((tuple(cols), [tuple(row) for row in values]))
                         score = score_business_result(cols, values, expected["columns"], expected["rows"],
                             ordered=bool(case.get("ordered")), contract=contracts[case_id])
-                        sql_scores.append(bool(score["business_result_correct"]))
-                        result_row["result_values_correct"] = _values_equal(cols, values,
-                            expected["columns"], expected["rows"], ordered=bool(case.get("ordered")))
+                        value_correct = _values_equal(cols, values, expected["columns"], expected["rows"],
+                                                      ordered=bool(case.get("ordered")))
+                        alias_correct = results_equal(cols, values, expected["columns"], expected["rows"],
+                                                      ordered=bool(case.get("ordered")))
+                        contract_correct = bool(score["business_result_correct"])
+                        sql_scores.append(value_correct if v3_full_table else contract_correct)
+                        result_row["result_values_correct"] = value_correct
+                        result_row["business_contract_result_correct"] = contract_correct
+                        result_row["strict_alias_result_correct"] = alias_correct
                     except Exception as exc:
                         result_row["error_class"] = type(exc).__name__
                         sql_scores.append(False)
@@ -262,24 +276,36 @@ def check_worlds(runs: list[dict], cases: dict[str, dict], reader_dsn: str,
             actual = world_values[world]
             if not current_expected:
                 continue
-            intended_world_change = not score_business_result(base_expected["columns"], base_expected["rows"],
-                current_expected["columns"], current_expected["rows"], ordered=bool(case.get("ordered")),
-                contract=contracts[case_id])["business_result_correct"]
-            same_as_base_output = results_equal(actual[0], actual[1], base_actual[0], base_actual[1],
-                                                ordered=bool(case.get("ordered")))
+            expected_unchanged = (_values_equal(base_expected["columns"], base_expected["rows"],
+                current_expected["columns"], current_expected["rows"], ordered=bool(case.get("ordered")))
+                if v3_full_table else score_business_result(base_expected["columns"], base_expected["rows"],
+                    current_expected["columns"], current_expected["rows"], ordered=bool(case.get("ordered")),
+                    contract=contracts[case_id])["business_result_correct"])
+            intended_world_change = not expected_unchanged
+            same_as_base_output = (_values_equal(actual[0], actual[1], base_actual[0], base_actual[1],
+                ordered=bool(case.get("ordered"))) if v3_full_table else
+                results_equal(actual[0], actual[1], base_actual[0], base_actual[1],
+                              ordered=bool(case.get("ordered"))))
             if intended_world_change and same_as_base_output and not result_lookup[(case_id, world)]["world_correct"]:
                 result_lookup[(case_id, world)]["accidental_same_result_counts"] = True
     summary = {world: {"cases": sum(r["world"] == world for r in output_rows),
                        "correct": sum(r["world"] == world and r["world_correct"] for r in output_rows),
                        "values_correct": sum(r["world"] == world and r["result_values_correct"] for r in output_rows),
+                       "business_contract_correct": sum(r["world"] == world and r["business_contract_result_correct"] for r in output_rows),
                        "missing_sql": sum(r["world"] == world and r["status"] == "no_candidate_sql" for r in output_rows)}
                for world in WORLDS}
     return {"type": "world_robustness", "variant": base_run["manifest"]["variant"],
             "split": base_run["manifest"]["split"], "repeat": base_run["manifest"]["repeat"],
+            "evaluation_protocol": protocol,
+            "primary_metric": "alias_insensitive_full_table_values" if v3_full_table else "business_result_contract",
             "summary": summary, "cases": output_rows,
-            "values_correct_interpretation": "Posthoc exploratory alias-insensitive comparison of full ordered columns and rows; strict world_correct remains the primary metric.",
+            "values_correct_interpretation": ("v3 primary: complete positional result values, preserving width, column order, duplicate rows, NULLs, tolerance, and requested row ordering; aliases and contract scores are reported separately."
+                if v3_full_table else "Legacy supplementary: alias-insensitive comparison of full ordered columns and rows; legacy contract-based world_correct remains primary."),
             "all_world_case_counts": {case_id: {
-                "strict_correct_worlds": sum(row["id"] == case_id and row["world_correct"] for row in output_rows),
+                "primary_correct_worlds": sum(row["id"] == case_id and row["world_correct"] for row in output_rows),
+                "strict_correct_worlds": sum(row["id"] == case_id and
+                    (row["strict_alias_result_correct"] if v3_full_table else row["world_correct"])
+                    for row in output_rows),
                 "values_correct_worlds": sum(row["id"] == case_id and row["result_values_correct"] for row in output_rows)}
                 for case_id in all_ids},
             "provenance": {"run_files": [str(r["path"]) for r in runs],

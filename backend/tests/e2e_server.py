@@ -69,7 +69,24 @@ def candidate(**changes):
     from texa.memory import SLOT_KEYS
     base['dialogue'] = {'relation': 'social' if changes.get('outcome') == 'conversation' else 'new_topic',
                         'target_id': '', 'slots': {k: 'set' for k in SLOT_KEYS}}
-    return base | changes
+    result = base | changes
+    # Exercise the current runtime contract rather than its persisted-legacy
+    # compatibility path. The provider is scripted; meaning is supplied here
+    # by the fixture, while production still has to bind/validate the proposal.
+    from texa import catalog, intent
+    cat = catalog.published()
+    metric_ids = intent.candidate_metric_ids(result)
+    kind = ("unsupported_measure" if result["outcome"] == "unsupported" else
+            "non_metric" if result["outcome"] == "conversation" else
+            "continuation" if result["dialogue"]["relation"] == "followup" else "catalog_metric")
+    result["intent_contract"] = {
+        "kind": kind, "metric_ids": metric_ids if kind == "catalog_metric" else [],
+        "operation": intent.metric_operation(cat, metric_ids) or "" if kind == "catalog_metric" else "",
+        "entity": "", "grain": intent.metric_grain(cat, metric_ids) or "" if kind == "catalog_metric" else "",
+        "source_ids": list(result["source_ids"]), "breakdown_ids": list(result["selection"]),
+        "filter_ids": intent.candidate_filter_ids(result),
+    }
+    return result
 
 
 def generate(*, name, prompt, turn_id=None, model=None, **kwargs):

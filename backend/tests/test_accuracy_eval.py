@@ -107,6 +107,23 @@ class AccuracyEvalTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "confirmatory report refused"):
             summarize([run], confirmatory=True)
 
+    def test_v3_input_policy_is_pinned_to_variant_and_legacy_is_unchanged(self):
+        from eval.report_accuracy_study import _validate_input_policy
+        legacy = {"variant": "B0", "provenance": {}}
+        _validate_input_policy(legacy)
+        current = {"variant": "B0", "input_policy": "schema_only_direct_sql",
+                   "provenance": {"evaluation_protocol": "v3_schema_only_full_table",
+                                  "baseline_schema_hash": "a" * 64}}
+        _validate_input_policy(current)
+        for altered in (
+            {**current, "input_policy": "texa_semantic_catalog_and_compiler"},
+            {**current, "input_policy": None},
+            {**current, "provenance": {"evaluation_protocol": "future_unknown"}},
+            {**current, "provenance": {"evaluation_protocol": "v3_schema_only_full_table"}},
+        ):
+            with self.assertRaises(ValueError):
+                _validate_input_policy(altered)
+
     def test_raw_history_uses_actual_rows_not_hidden_expected_result(self):
         manifest = {"sources": ["cosmetics_shop"], "metric_policy": "events count rows"}
         with patch("texa.llm.generate_structured", return_value={"action": "sql", "sql": "SELECT 1", "ask_fields": []}) as llm_call, \

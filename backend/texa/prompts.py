@@ -10,6 +10,11 @@ Use only ids that appear in the CATALOG below: store ids from STORES, metric ids
 from DIMENSIONS. Never invent an id. Labels, synonyms and descriptions tell you what each id means; match by meaning in
 any language.
 
+SOURCE CAPABILITIES is server-verified evidence. Compose a supported metric with declared dimension filters or
+breakdowns when that answers the request; a separate named metric is not required for every filtered question.
+Do not claim a source lacks a capability listed as available. A store name selects a source; it is not a product
+category restriction unless the user independently requests that category. Preserve the requested counting grain.
+
 outcome:
 - "query": the question asks for numbers, rankings, trends, comparisons or lists that the catalog can compute.
 - "conversation": greetings, thanks, or questions about what you can do. Put a short friendly reply in `reply`
@@ -26,6 +31,20 @@ outcome:
   answer_request.ask. The writer computes it. Only a number the user has not given and the data does not hold (an
   exchange rate never stated, a target, a price list) makes that part impossible: then still answer the data part
   and let the writer ask for the missing number.
+
+For every turn also return `intent_contract`, a concise record of the requested meaning, separate from the
+executable proposal. `catalog_metric` means exactly a declared catalog metric or set of metrics; provide those
+metric ids and the catalog aggregation operation (`multiple` only for separate metrics). `derived_measure` means
+the user asks for a new measure formed from data; describe its operation, entity and grain. `unsupported_measure`
+means the requested measure or grain is not defined. `continuation` is an elliptical follow-up whose measure is
+inherited. `ambiguous_metric` means one of the declared `recipe_alternatives` is needed; list exactly those ids and
+wait for the user to select before querying. `presentation_arithmetic` is arithmetic over already requested catalog metrics or a number supplied by
+the user; identify the underlying catalog metric ids and do not change their grain. It does not authorize a new
+data measure such as an average per order. `dimension_query` is a request to list values of a declared dimension
+without a metric. `non_metric` is conversation or explanation without a new measure. Record requested source, breakdown,
+and filter dimension ids independently. Never list component metrics as the requested measure when the user asks
+for a new measure such as an average or ratio. The server checks this assertion against the executable proposal and
+catalog contracts; it does not treat a valid QuerySpec alone as proof that it matches the question.
 
 For "query":
 - recipe: the single metric id asked for. Several metrics (2-4) go in `metrics` and recipe stays "".
@@ -72,13 +91,25 @@ All keys are required; use "" , [] , 0 or false for anything that does not apply
 CANDIDATE_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["outcome", "reason", "reply", "suggestions", "source_ids", "shape", "selection", "recipe", "metrics",
+    "required": ["outcome", "reason", "reply", "suggestions", "intent_contract", "source_ids", "shape", "selection", "recipe", "metrics",
                  "recipe_alternatives", "recipe_stated", "filters", "time_range", "answer_request", "language", "top_k"],
     "properties": {
         "outcome": {"type": "string", "enum": ["query", "conversation", "answer_from_previous", "unsupported"]},
         "reason": {"type": "string"},
         "reply": {"type": "string"},
         "suggestions": {"type": "array", "items": {"type": "string"}, "maxItems": 3},
+        "intent_contract": {"type": "object", "additionalProperties": False,
+            "required": ["kind", "metric_ids", "operation", "entity", "grain", "source_ids", "breakdown_ids", "filter_ids"],
+            "properties": {
+                "kind": {"type": "string", "enum": ["catalog_metric", "ambiguous_metric", "derived_measure", "unsupported_measure", "presentation_arithmetic", "dimension_query", "continuation", "non_metric"]},
+                "metric_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 4},
+                "operation": {"type": "string", "maxLength": 80},
+                "entity": {"type": "string", "maxLength": 120},
+                "grain": {"type": "string", "maxLength": 120},
+                "source_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 3},
+                "breakdown_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 6},
+                "filter_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 8},
+            }},
         "source_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 3},
         "shape": {"type": "string", "enum": ["aggregate", "breakdown", "time_trend", "distinct_values", "unclear"]},
         "selection": {"type": "array", "items": {"type": "string"}, "maxItems": 6},

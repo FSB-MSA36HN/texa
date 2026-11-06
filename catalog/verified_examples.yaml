@@ -1,7 +1,7 @@
-version: "2026-11-06.1"
-catalog_version: 1
-contract_version: 1
-catalog_fingerprint: b0f481c30e2b509b
+version: "2026-11-06.2"
+catalog_version: 2
+contract_version: 2
+catalog_fingerprint: dd13d3a043292916
 # 42 examples passed independent semantic review; 7 of these also have SQL
 # independently executed against the private review fixture. Agent review is
 # provenance only and never counts as human-reviewed benchmark gold.

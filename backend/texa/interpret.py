@@ -31,12 +31,31 @@ def render_catalog(cat: Catalog, sources: dict[str, Source], ids: set[str] | Non
         out.append(_line(s.id, s.label, ", ".join(cat.source_aliases.get(s.id, [])), s.description, f"{s.min_date}..{s.max_date}", s.currency,
                          "cannot compute: " + ", ".join(c["metrics_missing"]) if c["metrics_missing"] else "",
                          "no data for: " + ", ".join(c["dimensions_missing"]) if c["dimensions_missing"] else ""))
-    out.append("\nMETRICS (id | label | unit | description | synonyms | when to use | ways of counting)")
+    out.append("\nSOURCE CAPABILITIES (authoritative profiler/catalog evidence; availability is not a query answer)")
+    for source in sources.values():
+        out.append(json.dumps({
+            "source_id": source.id,
+            "available_metric_ids": cov[source.id]["metrics_ok"],
+            "unavailable_metric_reasons": cov[source.id]["metrics_missing"],
+            "tracked_event_roles": {role.id: source.logs_role(role) for role in cat.event_roles
+                                    if source.logs_role(role)},
+            "available_dimension_ids": [d.id for d in cat.dimensions
+                                        if not d.field or source.has_field(cat.mapped_field(d.field, source.id))],
+        }, ensure_ascii=False, sort_keys=True))
+    out.append("\nMETRICS (id | label | unit | grain | description | synonyms | when to use | ways of counting)")
     for m in cat.metrics:
         if keep(m.id):
             g = cat.variant_group_of(m.id)
-            out.append(_line(m.id, m.label, m.unit, m.description, ", ".join(m.synonyms), m.when_to_use,
-                             f"one way of counting '{g.label}': {', '.join(g.metrics)}" if g else ""))
+            if m.type == "simple":
+                signature = _line("semantic operation=" + m.simple.aggregation,
+                                  "event_role=" + m.simple.event_role,
+                                  "field=" + m.simple.field if m.simple.field else "")
+            elif m.type == "ratio":
+                signature = f"semantic operation=ratio numerator={m.ratio.numerator} denominator={m.ratio.denominator}"
+            else:
+                signature = "semantic operation=" + m.type
+            out.append(_line(m.id, m.label, m.unit, m.intent_grain, m.description, ", ".join(m.synonyms), m.when_to_use,
+                             signature, f"one way of counting '{g.label}': {', '.join(g.metrics)}" if g else ""))
     out.append("\nDIMENSIONS (id | label | kind | description | synonyms | path | value type)")
     for d in cat.dimensions:
         if keep(d.id) or d.kind == "time" or d.id in ALWAYS_INCLUDED_DIMS:

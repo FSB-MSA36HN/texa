@@ -7,7 +7,7 @@ import time
 import traceback
 
 from . import ablation, catalog as catalog_mod
-from . import clarify, db, insight, interpret, llm, memory, suggestions, locale
+from . import clarify, db, insight, interpret, intent, llm, memory, suggestions, locale
 from .pipeline import run_spec
 from .progress import Cancelled, Progress
 from .spec import SpecError, validate_spec
@@ -278,7 +278,18 @@ def _continue_checked(turn: dict, candidate: dict, answers: dict, progress: Prog
                                      "required": True, "allow_other": False, "default": [], "choices": choices}]}}
     if resolved_source:
         candidate = candidate | {"source_ids": resolved_source}
+        if isinstance(candidate.get("intent_contract"), dict):
+            candidate = candidate | {"intent_contract": candidate["intent_contract"] | {"source_ids": resolved_source}}
         scope = resolved_source
+    if answers.get("recipe"):
+        offered_metrics = {choice["id"] for field in (turn["state"].get("form") or {}).get("fields", [])
+                           if field.get("id") == "recipe" for choice in field.get("choices", [])}
+        candidate = intent.resolve_ambiguous_contract(candidate, answers["recipe"][0], cat,
+                                                       offered_metrics=offered_metrics)
+    if candidate.get("outcome") == "unsupported":
+        recovered = intent.materialize_catalog_intent(candidate, cat)
+        if recovered is not None:
+            candidate = recovered | {"outcome": "query", "reason": ""}
     source_resolution = {"ui": turn["state"].get("scope") or [], "text": text_sources, "memory": memory_sources, "model": model_sources,
                          "resolved_by_user": bool(resolved_source), "effective": resolved_source or named or scope or []}
     with progress("check_interpretation") as s:
@@ -314,6 +325,15 @@ def _continue_checked(turn: dict, candidate: dict, answers: dict, progress: Prog
     if out.kind == "refuse":
         return {"status": "refused", "message": out.message, "suggestions": suggestions.questions(cat, sources, scope, lang), "candidate": candidate,
                 "answers": answers, "language": lang, "ablation": trace}
+    contract_error = intent.mismatch(candidate, cat, spec=out.spec,
+                                     allow_continuation=bool(turn.get("state", {}).get("context", {}).get("references")) or
+                                     (turn.get("state", {}).get("context", {}).get("relation") == "window6" and
+                                      bool(turn.get("state", {}).get("context", {}).get("questions"))))
+    if contract_error:
+        return {"status": "refused", "reason_code": "intent_contract_mismatch",
+                "message": "The requested measure does not match the available metric definition. Please rephrase or choose a supported metric."
+                if lang != "vi" else "Chỉ số được yêu cầu chưa khớp với định nghĩa hiện có. Vui lòng diễn đạt lại hoặc chọn một chỉ số được hỗ trợ.",
+                "candidate": candidate, "answers": answers, "language": lang, "ablation": trace}
     result = run_spec(out.spec, cat, sources, progress)
     state = _answered(turn["question"], result, cat, sources, candidate, turn["model"], turn["id"], progress,
                       out.variants, out.notes, earlier_questions=turn["state"].get("context", {}).get("questions", []))
@@ -465,19 +485,28 @@ def _question_work(turn_id: str, reference_id: str | None = None):
             # Dry-run the same reducer/binder/validator, on this request's catalog,
             # sources and complete compatible history. No query or durable writes.
             resolved = {}
+            proposal = intent.reconcile_dimension_roles(proposal, cat)
             if context.get("structured_memory"):
                 proposal, resolved = memory.reduce_candidate(proposal, previous, cat.contract_version, reference_id)
                 if resolved.get("clarification_needed"):
                     return {"kind": "clarify", "field": "context:reference"}
             outcome = proposal.get("outcome")
             if outcome == "unsupported":
+                catalog_candidate = intent.materialize_catalog_intent(proposal, cat)
+                if catalog_candidate is None:
+                    return {"kind": "unsupported"}
                 try:
-                    probe = normalize(proposal | {"outcome": "query"})
+                    probe = normalize(catalog_candidate | {"outcome": "query"})
                 except (llm.LLMError, SpecError):
                     return {"kind": "unsupported"}
-                return {"kind": "unsupported", "supported_proposal": probe if probe.get("kind") == "spec" else None}
+                return {"kind": "unsupported", "supported_proposal": catalog_candidate if probe.get("kind") in {"spec", "clarify"} else None}
             if outcome != "query":
                 return {"kind": outcome}
+            has_memory_target = bool(resolved.get("references")) or (
+                context.get("relation") == "window6" and bool(context.get("questions")))
+            contract_error = intent.mismatch(proposal, cat, allow_continuation=has_memory_target)
+            if contract_error:
+                return {"kind": "intent_mismatch", "reason": contract_error}
             named = proposal.get("source_ids") or []
             mentions = catalog_mod.mentioned_sources(cat, sources, question)
             if (any(sid not in sources for sid in named) or len(named) > cat.policy.max_sources):
@@ -489,6 +518,10 @@ def _question_work(turn_id: str, reference_id: str | None = None):
                 return {"kind": out.kind}
             spec = validate_spec(out.spec | {"contract_version": cat.contract_version}, cat, sources)
             check_availability(spec, cat, sources)
+            contract_error = intent.mismatch(proposal, cat, spec=spec.model_dump(mode="json"),
+                                             allow_continuation=bool(resolved.get("references")))
+            if contract_error:
+                return {"kind": "intent_mismatch", "reason": contract_error}
             bundle = {"kind": "spec", "spec": spec.model_dump(mode="json"),
                       "dialogue": proposal.get("dialogue"), "references": resolved.get("references", []),
                       "dataset_version": dataset_version}
@@ -496,18 +529,50 @@ def _question_work(turn_id: str, reference_id: str | None = None):
         candidate = interpret.interpret(question, selected, cat, sources, model=model, turn_id=turn_id,
                                         scope=scope, step=progress, context=context, normalize=normalize,
                                         cancelled=progress.cancelled)
+        if context.get("structured_memory"):
+            candidate = intent.reconcile_dimension_roles(candidate, cat)
+            candidate, resolved = memory.reduce_candidate(candidate, previous, cat.contract_version, reference_id)
+            context.update(resolved)
+            context["language"] = _lang(candidate)
+            context.pop("registry", None)
+            context["questions"] = [p["question"] for p in previous if str(p["id"]) in context["references"]]
+            if context.get("clarification_needed"):
+                return _reference_form(previous, context, cat, sources) | metadata | {"candidate": candidate}
+        contract = candidate.get("intent_contract") or {}
+        requested_sources = contract.get("source_ids") or candidate.get("source_ids") or []
+        textual_sources = catalog_mod.mentioned_sources(cat, sources, question)
+        source_conflict = intent.has_source_conflict(scope, requested_sources, textual_sources, cat.policy.max_sources)
+        if source_conflict:
+            choices = list(dict.fromkeys([*(scope or []), *requested_sources, *textual_sources]))
+            choices = [sid for sid in choices if sid in sources]
+            lang = _lang(candidate)
+            return {"status": "needs_clarification", "candidate": candidate, "language": lang,
+                    "source_resolution": {"ui": scope or [], "text": textual_sources,
+                                          "intent": requested_sources, "effective": None},
+                    "form": {"message": "The request names conflicting data sources. Choose one to continue."
+                             if lang != "vi" else "Câu hỏi nhắc đến các nguồn dữ liệu khác nhau. Chọn một nguồn để tiếp tục.",
+                             "fields": [{"id": "context:source", "label": "Source" if lang != "vi" else "Nguồn",
+                                         "kind": "single_choice", "required": True, "allow_other": False,
+                                         "default": [], "choices": [{"id": sid, "label": sources[sid].label,
+                                                                       "description": ""} for sid in choices]}]}} | metadata
+        if candidate.get("outcome") == "unsupported":
+            recovered = intent.materialize_catalog_intent(candidate, cat)
+            if recovered is not None:
+                probe = normalize(recovered | {"outcome": "query"})
+                if probe.get("kind") in {"spec", "clarify"}:
+                    candidate = recovered | {"outcome": "query", "reason": ""}
+        elif candidate.get("outcome") == "query":
+            contract_error = None if contract.get("kind") == "continuation" else intent.mismatch(candidate, cat)
+            if contract_error:
+                lang = _lang(candidate)
+                return {"status": "refused", "reason_code": "intent_contract_mismatch",
+                        "message": "The requested measure does not match the available metric definition. Please rephrase or choose a supported metric."
+                        if lang != "vi" else "Chỉ số được yêu cầu chưa khớp với định nghĩa hiện có. Vui lòng diễn đạt lại hoặc chọn một chỉ số được hỗ trợ.",
+                        "candidate": candidate, "language": lang} | metadata
         if candidate.get("_consistency_unresolved"):
             context.pop("registry", None)
             return {"status": "refused", "message": candidate["reason"], "candidate": candidate,
                     "language": _lang(candidate), "reason_code": "interpretation_disagreement"} | metadata
-        if context.get("structured_memory"):
-            candidate, resolved = memory.reduce_candidate(candidate, previous, cat.contract_version, reference_id)
-            context.update(resolved)
-            context["language"] = _lang(candidate)
-            context.pop("registry", None)  # durable context stores pointers and provenance, not another history copy
-            context["questions"] = [p["question"] for p in previous if str(p["id"]) in context["references"]]
-            if context.get("clarification_needed"):
-                return _reference_form(previous, context, cat, sources) | metadata | {"candidate": candidate}
         lang = _lang(candidate)
         _persist_language(turn_id, lang)
         if candidate["outcome"] == "conversation":

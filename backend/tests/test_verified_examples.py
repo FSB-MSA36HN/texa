@@ -124,7 +124,7 @@ def test_candidate_is_expanded_to_full_schema_and_source_scope_unknown_is_reject
     bank = approved_fixture(tmp_path)
     result = examples.retrieve_examples(bank, "event counts", max_examples=1)
     candidate = result.selected[0]["candidate"]
-    assert set(candidate) == {"outcome", "reason", "reply", "suggestions", "source_ids", "shape", "selection",
+    assert set(candidate) == {"outcome", "reason", "reply", "suggestions", "intent_contract", "source_ids", "shape", "selection",
                               "recipe", "metrics", "recipe_alternatives", "recipe_stated", "filters", "time_range",
                               "answer_request", "language", "top_k", "dialogue"}
     from texa.prompts import CANDIDATE_SCHEMA, structured_candidate_schema

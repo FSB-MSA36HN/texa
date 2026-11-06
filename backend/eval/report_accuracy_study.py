@@ -25,11 +25,41 @@ except ImportError:
     from accuracy_study import confirmatory_eligibility, validate_coverage
 
 
+V3_INPUT_POLICIES = {
+    "B0": "schema_only_direct_sql",
+    "B0R": "schema_plus_verified_retrieved_examples",
+    "B1": "schema_only_raw_history_clarification_and_one_sql_retry",
+    "T00": "texa_semantic_catalog_and_compiler",
+    "T10": "texa_semantic_catalog_and_compiler",
+    "T01": "texa_semantic_catalog_and_compiler",
+    "T11": "texa_semantic_catalog_and_compiler",
+}
+V3_PROTOCOL = "v3_schema_only_full_table"
+
+
+def _validate_input_policy(manifest: dict[str, Any]) -> None:
+    """Reject mislabeled v3 prompt protocols while retaining legacy artifacts."""
+    provenance = manifest.get("provenance") or {}
+    protocol = provenance.get("evaluation_protocol")
+    if protocol is None:
+        return  # historical runs predate explicit evaluation protocol metadata
+    if protocol != V3_PROTOCOL:
+        raise ValueError(f"unsupported evaluation protocol: {protocol}")
+    expected = V3_INPUT_POLICIES.get(manifest.get("variant"))
+    if expected is None:
+        raise ValueError(f"v3 input policy is undefined for variant {manifest.get('variant')!r}")
+    if manifest.get("input_policy") != expected:
+        raise ValueError(f"{manifest.get('variant')}: input_policy does not match the frozen v3 protocol")
+    if not provenance.get("baseline_schema_hash"):
+        raise ValueError("v3 run manifest lacks the shared baseline schema hash")
+
+
 def read_run(path: Path) -> dict[str, Any]:
     records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
     if len(records) < 3 or records[0].get("type") != "run_manifest" or records[-1].get("type") != "run_complete":
         raise ValueError(f"{path}: incomplete run; partial records are not pooled")
     manifest = records[0]
+    _validate_input_policy(manifest)
     rows = records[1:-1]
     validate_coverage(rows, manifest.get("expected_ids"), variant=manifest.get("variant"), suite=manifest.get("suite"))
     if records[-1].get("scenarios") != len(rows):
@@ -115,6 +145,8 @@ def _component_traces(row: dict[str, Any]) -> list[dict[str, Any]]:
 def summarize(runs: list[dict[str, Any]], *, confirmatory: bool = False) -> dict[str, Any]:
     if not runs:
         raise ValueError("no runs supplied")
+    for run in runs:
+        _validate_input_policy(run["manifest"])
     pair = {(run["manifest"].get("suite"), run["manifest"].get("split"), run["manifest"].get("variant")) for run in runs}
     if len(pair) != 1:
         raise ValueError("one report group must contain one suite/split/variant")
@@ -144,6 +176,7 @@ def compare(runs: list[dict[str, Any]], *, iterations: int = 3000) -> dict[str, 
     if not runs:
         raise ValueError("no runs supplied")
     for run in runs:
+        _validate_input_policy(run["manifest"])
         declared_counts = run["manifest"].get("expected_answer_counts")
         if declared_counts is not None:
             if set(declared_counts) != {row["id"] for row in run["rows"]} or any(

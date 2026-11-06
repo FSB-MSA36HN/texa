@@ -1,5 +1,5 @@
 # Product analytics scope. Legacy catalog remains ecommerce.yaml.
-version: 1
+version: 2
 table: analytics.event_activity
 allowed_sources:
 - cosmetics_shop
@@ -134,6 +134,7 @@ dimensions:
   - channel
 metrics:
 - id: users
+  intent_grain: user_period
   label: Users
   labels: {vi: Người dùng}
   description: Distinct users with any event in the period. Olist observes only customers
@@ -151,6 +152,7 @@ metrics:
     aggregation: count_users
     event_role: any_event
 - id: events
+  intent_grain: event_row
   label: Events
   labels: {vi: Lượt sự kiện}
   description: Number of logged events of any kind.
@@ -165,6 +167,7 @@ metrics:
     aggregation: count_events
     event_role: any_event
 - id: sessions
+  intent_grain: session_period
   label: Sessions
   labels: {vi: Phiên truy cập}
   description: Distinct session IDs on sources that record session_id; availability is determined from source metadata.
@@ -180,6 +183,7 @@ metrics:
     event_role: any_event
     field: session_id
 - id: viewers
+  intent_grain: product_viewer_period
   label: Users who viewed
   labels: {vi: Người xem sản phẩm}
   description: Distinct users with a product view.
@@ -193,6 +197,7 @@ metrics:
     aggregation: count_users
     event_role: product_view
 - id: purchases
+  intent_grain: purchased_item_line
   label: Items purchased
   labels: {vi: Sản phẩm đã mua}
   description: Purchased item lines (one per item).
@@ -209,6 +214,7 @@ metrics:
     aggregation: count_events
     event_role: purchase
 - id: buyers
+  intent_grain: purchasing_user_period
   label: Buyers
   labels: {vi: Người mua}
   description: Distinct users with at least one purchase.
@@ -225,6 +231,7 @@ metrics:
     aggregation: count_users
     event_role: purchase
 - id: buyer_conversion_rate
+  intent_grain: period_user_ratio
   label: Buyer conversion rate
   labels: {vi: Tỷ lệ người mua}
   description: Distinct buyers / distinct active users in the selected period. This
@@ -243,6 +250,7 @@ metrics:
     numerator: buyers
     denominator: users
 - id: revenue
+  intent_grain: purchased_item_line_value
   label: Revenue
   labels: {vi: Doanh thu}
   description: Sum of revenue on purchase item events, in the selected dataset currency;

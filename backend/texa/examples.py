@@ -16,7 +16,7 @@ import yaml
 
 
 DEFAULT_BANK_PATH = Path(__file__).resolve().parents[2] / "catalog" / "verified_examples.yaml"
-CONTRACT_VERSION = 1
+CONTRACT_VERSION = 2
 MAX_EXAMPLES = 3
 DEFAULT_TOKEN_BUDGET = 600
 HARD_UTF8_BYTE_CAP = 1200
@@ -84,7 +84,7 @@ def _candidate_issues(item: dict) -> list[str]:
     return issues
 
 
-def _complete_candidate(item: dict) -> dict:
+def _complete_candidate(item: dict, cat) -> dict:
     """Expand concise authored expectations to the complete current output shape."""
     base = {"outcome": "query", "reason": "", "reply": "", "suggestions": [], "source_ids": [],
             "shape": "unclear", "selection": [], "recipe": "", "metrics": [], "recipe_alternatives": [],
@@ -95,6 +95,25 @@ def _complete_candidate(item: dict) -> dict:
     base["time_range"] = {**{"kind": "none", "days": 0, "start": "", "end": ""}, **base.get("time_range", {})}
     base["answer_request"] = {**{"need": "describe", "ask": ""}, **base.get("answer_request", {})}
     base["language"] = item["language"]
+    if "intent_contract" not in base:
+        metric_ids = [m for m in ([base.get("recipe", "")] + base.get("metrics", [])) if m]
+        metrics = [cat.mets[m] for m in metric_ids if m in cat.mets]
+        if base["outcome"] == "query" and not metric_ids and base.get("recipe_alternatives"):
+            kind, metric_ids, operation, grain = "ambiguous_metric", list(base["recipe_alternatives"]), "", ""
+        elif base["outcome"] == "query" and metric_ids and len(metrics) == len(metric_ids):
+            kind = "presentation_arithmetic" if base.get("answer_request", {}).get("ask") else "catalog_metric"
+            operation = ("presentation_arithmetic" if kind == "presentation_arithmetic" else
+                         "multiple" if len(metrics) > 1 else
+                         metrics[0].simple.aggregation if metrics[0].type == "simple" else
+                         "ratio" if metrics[0].type == "ratio" else metrics[0].type)
+            grain = "multiple" if len(metrics) > 1 else metrics[0].intent_grain or "unspecified"
+        else:
+            kind, metric_ids, operation, grain = ("unsupported_measure" if base["outcome"] == "unsupported" else "non_metric"), [], "", ""
+        base["intent_contract"] = {"kind": kind, "metric_ids": metric_ids, "operation": operation,
+                                   "entity": "", "grain": grain,
+                                   "source_ids": list(base.get("source_ids", [])),
+                                   "breakdown_ids": list(base.get("selection", [])),
+                                   "filter_ids": list(dict.fromkeys(f.get("field") for f in base.get("filters", []) if f.get("field")))}
     # The live product uses structured memory. A standalone new-topic example
     # must satisfy its strict dialogue contract and must never inherit history.
     if "dialogue" not in base:
@@ -187,7 +206,7 @@ def load_bank(cat, path: str | Path | None = None, *, contract_version: int = CO
     ).encode()).hexdigest()[:16]
     if fingerprint != raw["catalog_fingerprint"]:
         raise ExampleBankError("catalog content fingerprint mismatch")
-    eligible = tuple({**x, "candidate": _complete_candidate(x)} for x in raw["examples"]
+    eligible = tuple({**x, "candidate": _complete_candidate(x, cat)} for x in raw["examples"]
                      if x["review"].get("review_status") == "approved")
     import hashlib
     return ExampleBank(str(raw["version"]), raw["catalog_version"], raw["contract_version"], eligible,
