@@ -29,6 +29,7 @@ ap.add_argument('--split',default='test',choices=['dev','test','diagnostic'])
 ap.add_argument('--repeat',type=int,default=1)
 ap.add_argument('--workers',type=int,default=8,choices=range(1,25))
 ap.add_argument('--shards',type=int,default=4,choices=range(1,17))
+ap.add_argument('--worlds',nargs='+',default=['base','grain_counterexample','coverage_edge'])
 a=ap.parse_args()
 DATA=a.dataset_dir.resolve();DATA.relative_to(ROOT)
 out=a.output.resolve();out.relative_to(ROOT);out.mkdir(parents=True,exist_ok=True)
@@ -42,7 +43,7 @@ try:
  cmd([PGCTL,'-D',PGDATA,'-l',ROOT/'.runtime/pg-study.log','-o',f'-h 127.0.0.1 -p 15433 -k {ROOT}/.runtime -c shared_buffers=64MB -c max_connections=128','start','-w','-t','15'],stdout=subprocess.DEVNULL)
  started=True
  cmd([PYTHON,'-c','from texa import db; db.migrate()'])
- for world in ['base','grain_counterexample','coverage_edge']:
+ for world in a.worlds:
   jobs=[]
   for suite in a.suites:
    filename={'single':'cases.yaml','clarification':'interactions.yaml','conversation':'dialogues.yaml','diagnostic':'cases.yaml'}[suite]
