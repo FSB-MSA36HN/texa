@@ -27,3 +27,7 @@ Target three repeats per configuration, rotating run order. The protected cumula
 Freeze and commit all questions, gold, fixture snapshots, catalog, example bank, evaluator and runtime before paid test execution. Validate gold with an independent Python row oracle and PostgreSQL across three fixture worlds. The extra worlds are controlled data perturbations, not independent model repeats. Keep development/test logical overlap and family clustering visible; unique question strings alone do not establish independence. No runtime tuning on the new test results during this measurement.
 
 Two independent human reviewers and a separately held-out dataset are still needed for confirmatory research claims.
+
+## Execution partitioning
+
+Independent scenarios may run in deterministic round-robin shards for throughput. A conversation remains intact within one shard. A full result is merged only when all shard indices are complete, scenario IDs are disjoint, their union exactly matches the frozen suite, and metadata/provenance match. Raw shard files and SHA-256 audit links are retained. Partial pilot runs before this execution improvement are excluded from the final comparison.

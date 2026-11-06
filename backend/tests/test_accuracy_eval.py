@@ -14,7 +14,7 @@ from eval.report_accuracy_study import apply_annotation_erratum, compare, read_r
 from eval.check_world_robustness import C19_CASES_SHA256, C19_ID
 from eval.run_accuracy_study import (CHALLENGE_SCHEMA, RawHistorySession, _schema_only_question,
                                      _score_output_table, _rescore_texa_table_scores,
-                                     _assert_study_inputs_frozen, diagnostic_score)
+                                     _assert_study_inputs_frozen, diagnostic_score, select_shard)
 
 
 FROZEN_DATA = Path(__file__).resolve().parents[2] / 'data/benchmark/results/accuracy-dev-20261106-v2/frozen_dataset'
@@ -319,6 +319,43 @@ def test_live_freeze_guard_includes_untracked_active_dataset_files(monkeypatch, 
         study._assert_study_inputs_frozen(dataset)
     assert '--untracked-files=all' in called['args']
     assert 'data/benchmark/research_v3' in called['args']
+
+
+def test_round_robin_shards_partition_the_loaded_cohort_exactly_once():
+    rows = [{'id': f'q{i}'} for i in range(11)]
+    shards = [select_shard(rows, index, 4) for index in range(4)]
+    flattened = [row['id'] for shard in shards for row in shard]
+    assert set(flattened) == {row['id'] for row in rows}
+    assert len(flattened) == len(set(flattened)) == len(rows)
+    assert [row['id'] for row in shards[0]] == ['q0', 'q4', 'q8']
+    assert select_shard(rows) == rows
+
+
+@pytest.mark.parametrize('index,count', [(-1, 2), (2, 2), (0, 0)])
+def test_round_robin_shard_rejects_invalid_arguments(index, count):
+    with pytest.raises(ValueError, match='shard'):
+        select_shard([{'id': 'q'}], index, count)
+
+
+def test_round_robin_shard_rejects_empty_partition():
+    with pytest.raises(ValueError, match='no scenarios'):
+        select_shard([{'id': 'q'}], 1, 2)
+
+
+def test_cli_shard_arguments_select_only_requested_dry_run_ids(tmp_path, capsys):
+    import yaml
+    from eval.run_accuracy_study import main, world_pools
+    (tmp_path / 'manifest.yaml').write_text(yaml.safe_dump({
+        'dataset_type': 'research_candidate', 'status': 'agent_authored_unsealed_pending_human_review'}))
+    (tmp_path / 'unsupported.yaml').write_text(yaml.safe_dump([
+        {'id': f'q{i}', 'split': 'test', 'question': 'Outside scope', 'expected_action': 'refuse'}
+        for i in range(5)]))
+    assert world_pools(tmp_path, 'diagnostic', 'test') == {'base': [f'q{i}' for i in range(5)]}
+    assert main(['--dataset-dir', str(tmp_path), '--suite', 'diagnostic', '--split', 'test',
+                 '--world', 'base', '--variant', 'T11', '--shard-index', '1', '--shard-count', '2']) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report['scenarios'] == 2 and report['ids'] == ['q1', 'q3']
+    assert report['model_calls'] == 0
 
 
 def test_action_diagnostics_without_sql_are_not_answer_gold():

@@ -110,12 +110,25 @@ def load_suite(directory: Path, suite: str, split: str, world: str) -> tuple[dic
 
 
 def world_pools(directory: Path, suite: str, split: str) -> dict[str, list[str]]:
-    all_rows = yaml.safe_load((directory / SUITE_FILES[suite]).read_text(encoding="utf-8"))
+    suite_file = "unsupported.yaml" if suite == "diagnostic" and (directory / "unsupported.yaml").is_file() else SUITE_FILES[suite]
+    all_rows = yaml.safe_load((directory / suite_file).read_text(encoding="utf-8"))
     pools = {}
     for row in all_rows:
         if row.get("split") == split:
             pools.setdefault(row.get("fixture_world", "base"), []).append(row["id"])
     return {key: sorted(value) for key, value in pools.items()}
+
+
+def select_shard(rows: list[dict[str, Any]], shard_index: int = 0, shard_count: int = 1) -> list[dict[str, Any]]:
+    """Select a deterministic round-robin slice after the complete cohort is loaded."""
+    if shard_count < 1:
+        raise ValueError("--shard-count must be at least 1")
+    if shard_index < 0 or shard_index >= shard_count:
+        raise ValueError("--shard-index must be in [0, shard-count)")
+    selected = rows[shard_index::shard_count]
+    if not selected:
+        raise ValueError("shard selects no scenarios; reduce --shard-count")
+    return selected
 
 
 def _hash(value: Any) -> str:
@@ -563,6 +576,8 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
             handle.write(json.dumps(obj, ensure_ascii=False, default=str) + "\n"); handle.flush()
         write({"type": "run_manifest", "variant": args.variant, "suite": args.suite, "split": args.split,
                "repeat": args.repeat, "model": args.model, "provenance": provenance, "expected_ids": [x["id"] for x in rows],
+               "expected_scenario_count": len(rows),
+               "shard": {"index": args.shard_index, "count": args.shard_count},
                "dataset": manifest, "status": "diagnostic_candidate", "fixture_world": args.world,
                "input_policy": ({"B0": "schema_only_direct_sql", "B0R": "schema_plus_verified_retrieved_examples",
                                  "B1": "schema_only_raw_history_clarification_and_one_sql_retry"}.get(
@@ -721,6 +736,8 @@ def main(argv=None) -> int:
     parser.add_argument("--model")
     parser.add_argument("--max-model-calls", type=int)
     parser.add_argument("--repeat", type=int, default=1)
+    parser.add_argument("--shard-index", type=int, default=0, help="zero-based shard index")
+    parser.add_argument("--shard-count", type=int, default=1, help="number of round-robin shards")
     parser.add_argument("--output", type=Path, default=ROOT / "backend/eval/results" / f"accuracy-{uuid.uuid4().hex}.jsonl")
     args = parser.parse_args(argv)
     try:
@@ -729,6 +746,7 @@ def main(argv=None) -> int:
         if (args.suite == "diagnostic" and args.split not in {"diagnostic", "test"}) or (args.suite != "diagnostic" and args.split not in {"dev", "test"}):
             raise ValueError("diagnostic suite requires --split diagnostic or test; answer suites require dev/test")
         manifest, rows = load_suite(args.dataset_dir.resolve(), args.suite, args.split, args.world)
+        rows = select_shard(rows, args.shard_index, args.shard_count)
         validate_coverage([{"id": row["id"]} for row in rows], [row["id"] for row in rows],
                           variant=args.variant, suite=args.suite)
         eligible, reason = confirmatory_eligibility(manifest)
