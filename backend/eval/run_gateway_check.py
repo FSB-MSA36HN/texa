@@ -25,8 +25,8 @@ def main():
     path = validate_credentials_path(Path(args.credentials), ROOT / '.runtime')
     secret = json.loads(path.read_text())
     model, base_url = secret['model'], secret['base_url']
-    if not 0 < secret['max_usd'] <= 60:
-        raise ValueError('This validation wrapper is capped at the authorized 60 USD')
+    if not 0 < secret['max_usd'] <= 150:
+        raise ValueError('This validation wrapper is capped at the authorized 150 USD')
     import httpx
     try:
         response = httpx.get(base_url.removesuffix('/v1') + '/model/info',
