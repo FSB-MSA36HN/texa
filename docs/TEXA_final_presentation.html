@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="21 slide TEXA. Toàn bộ nội dung HTML và CSS nằm trong file này.">
+  <meta name="description" content="22 slide TEXA. Toàn bộ nội dung HTML và CSS nằm trong file này.">
   <link rel="icon" href="data:,">
   <title>TEXA — Final Presentation</title>
   <style>
@@ -43,11 +43,11 @@
       flex: 0 0 100%;
       width: 100%;
       height: 100%;
-      padding: 0 0 64px;
+      padding: 0;
       display: grid;
       place-items: center;
       margin: 0;
-      background: #10202d;
+      background: var(--background);
       scroll-snap-align: start;
       scroll-snap-stop: always;
       overflow: hidden;
@@ -56,7 +56,7 @@
     .canvas {
       position: relative;
       container-type: inline-size;
-      width: min(100vw, calc((100dvh - 64px) * 16 / 9));
+      width: min(100vw, calc(100dvh * 16 / 9));
       aspect-ratio: 16 / 9;
       background: white;
       overflow: hidden;
@@ -186,7 +186,7 @@
 </head>
 <body>
 <!--
-  TEXA — 21 SLIDE
+  TEXA — 22 SLIDE
   Mở file này trực tiếp bằng Chrome / Edge để xem.
   Sửa mã HTML/CSS bằng trình soạn thảo bất kỳ.
   Ctrl+F "SLIDE 06" để tìm nhanh slide 6, tương tự cho các trang khác.
@@ -197,7 +197,7 @@
 <main class="deck" id="deck" aria-label="Trình chiếu TEXA">
 
 <!-- ==================== SLIDE 01: TEXA ==================== -->
-<section class="slide" id="slide-01" aria-label="01. TEXA">
+<section class="slide" id="slide-01" aria-label="01. TEXA" data-speaker="Người 1">
   <div class="canvas">
     <div class="shape rect" aria-hidden="true" style="left:7.239583%;top:34.259259%;width:4.947917%;height:1.481481%;background:#087F82;"></div>
     <div class="text" style="left:7.255208%;top:31.801852%;width:85.317708%;min-height:3.25%;font-size:1.40625cqw;font-weight:400;color:#132F46;">BÁO CÁO FINAL  •  TEXT-TO-SQL</div>
@@ -208,7 +208,7 @@
 </section>
 
 <!-- ==================== SLIDE 02: Một câu hỏi ngắn, nhiều lựa chọn ==================== -->
-<section class="slide" id="slide-02" aria-label="02. Một câu hỏi ngắn, nhiều lựa chọn">
+<section class="slide" id="slide-02" aria-label="02. Một câu hỏi ngắn, nhiều lựa chọn" data-speaker="Người 1">
   <div class="canvas">
     <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:21.296296%;width:91.666667%;height:14.814815%;background:#132F46;"></div>
     <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:42.12963%;width:29.6875%;height:28.240741%;background:#F0F5F8;"></div>
@@ -239,7 +239,7 @@
 </section>
 
 <!-- ==================== SLIDE 03: Phạm vi sau proposal ==================== -->
-<section class="slide" id="slide-03" aria-label="03. Phạm vi sau proposal">
+<section class="slide" id="slide-03" aria-label="03. Phạm vi sau proposal" data-speaker="Người 1">
   <div class="canvas">
     <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:23.425926%;width:44.791667%;height:20.833333%;background:#F0F5F8;"></div>
     <div class="shape roundRect" aria-hidden="true" style="left:51.041667%;top:23.425926%;width:44.791667%;height:20.833333%;background:#F0F5F8;"></div>
@@ -270,7 +270,7 @@
 </section>
 
 <!-- ==================== SLIDE 04: Tám chỉ số, nhiều cách đặt câu hỏi ==================== -->
-<section class="slide" id="slide-04" aria-label="04. Tám chỉ số, nhiều cách đặt câu hỏi">
+<section class="slide" id="slide-04" aria-label="04. Tám chỉ số, nhiều cách đặt câu hỏi" data-speaker="Người 1">
   <div class="canvas">
     <div class="shape rect" aria-hidden="true" style="left:4.166667%;top:25.462963%;width:91.666667%;height:12.5%;background:#E7F2F3;"></div>
     <div class="shape rect" aria-hidden="true" style="left:4.166667%;top:81.944444%;width:91.666667%;height:12.037037%;background:#F0F5F8;"></div>
@@ -283,10 +283,10 @@
 </section>
 
 <!-- ==================== SLIDE 05: Vì sao chọn Cosmetics và Olist? ==================== -->
-<section class="slide" id="slide-05" aria-label="05. Vì sao chọn Cosmetics và Olist?"><div class="canvas"><div class="text" style="left:4.166667%;top:5.555556%;width:91.666667%;font-size:1.145833cqw;font-weight:700;color:#087F82;">TEXA • BÁO CÁO FINAL</div><div class="text" style="left:4.166667%;top:10.648148%;width:91.666667%;font-size:3.125000cqw;font-weight:700;color:#132F46;">Vì sao chọn Cosmetics và Olist?</div><div class="text" style="left:4.166667%;top:18.981481%;width:91.666667%;font-size:1.718750cqw;font-weight:400;color:#526574;">Hai nguồn e-commerce công khai, có thể tái lập; khác cách ghi nhận và phạm vi quan sát.</div><div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:26.851852%;width:44.791667%;height:45.833333%;background:#F0F5F8;"></div><div class="text" style="left:5.729167%;top:29.166667%;width:41.666667%;font-size:1.406250cqw;font-weight:700;color:#087F82;">HÀNH VI NGƯỜI DÙNG</div><div class="text" style="left:5.729167%;top:34.259259%;width:41.666667%;font-size:2.239583cqw;font-weight:700;color:#132F46;">Cosmetics • USD</div><div class="text" style="left:5.729167%;top:42.129630%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Luồng sự kiện xem → giỏ → mua.</div><div class="text" style="left:5.729167%;top:48.333333%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Có product views và sessions.</div><div class="text" style="left:5.729167%;top:54.537037%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Kiểm thử chỉ số về người dùng và hành vi.</div><div class="text" style="left:5.729167%;top:60.740741%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Không có dữ liệu giao hàng / đánh giá.</div><div class="shape roundRect" aria-hidden="true" style="left:51.041667%;top:26.851852%;width:44.791667%;height:45.833333%;background:#F0F5F8;"></div><div class="text" style="left:52.604167%;top:29.166667%;width:41.666667%;font-size:1.406250cqw;font-weight:700;color:#087F82;">BỐI CẢNH GIAO DỊCH</div><div class="text" style="left:52.604167%;top:34.259259%;width:41.666667%;font-size:2.239583cqw;font-weight:700;color:#132F46;">Olist • BRL</div><div class="text" style="left:52.604167%;top:42.129630%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Dữ liệu quan hệ: đơn, item và lifecycle.</div><div class="text" style="left:52.604167%;top:48.333333%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Purchase được biểu diễn theo từng item.</div><div class="text" style="left:52.604167%;top:54.537037%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Kiểm thử ánh xạ event và phân biệt item / order.</div><div class="text" style="left:52.604167%;top:60.740741%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Không ghi nhận product views / sessions.</div><div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:76.851852%;width:91.666667%;height:14.814815%;background:#132F46;"></div><div class="text" style="left:5.729167%;top:78.703704%;width:88.541667%;font-size:1.666667cqw;font-weight:700;color:#FFFFFF;">BỔ SUNG TÌNH HUỐNG KIỂM CHỨNG, KHÔNG GHÉP HAI NGUỒN</div><div class="text" style="left:5.729167%;top:84.259259%;width:88.541667%;font-size:1.510417cqw;font-weight:400;color:#D4EBED;">Cùng domain nhưng khác dữ liệu: kiểm tra cả tính đúng và nhận biết điều không thể tính.<br>Mỗi truy vấn vẫn chỉ dùng một nguồn; có field trong warehouse không đồng nghĩa metric nằm trong scope.</div></div></section>
+<section class="slide" id="slide-05" aria-label="05. Vì sao chọn Cosmetics và Olist?" data-speaker="Người 2"><div class="canvas"><div class="text" style="left:4.166667%;top:5.555556%;width:91.666667%;font-size:1.145833cqw;font-weight:700;color:#087F82;">TEXA • BÁO CÁO FINAL</div><div class="text" style="left:4.166667%;top:10.648148%;width:91.666667%;font-size:3.125000cqw;font-weight:700;color:#132F46;">Vì sao chọn Cosmetics và Olist?</div><div class="text" style="left:4.166667%;top:18.981481%;width:91.666667%;font-size:1.718750cqw;font-weight:400;color:#526574;">Hai nguồn e-commerce công khai, có thể tái lập; khác cách ghi nhận và phạm vi quan sát.</div><div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:26.851852%;width:44.791667%;height:45.833333%;background:#F0F5F8;"></div><div class="text" style="left:5.729167%;top:29.166667%;width:41.666667%;font-size:1.406250cqw;font-weight:700;color:#087F82;">HÀNH VI NGƯỜI DÙNG</div><div class="text" style="left:5.729167%;top:34.259259%;width:41.666667%;font-size:2.239583cqw;font-weight:700;color:#132F46;">Cosmetics • USD</div><div class="text" style="left:5.729167%;top:42.129630%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Luồng sự kiện xem → giỏ → mua.</div><div class="text" style="left:5.729167%;top:48.333333%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Có product views và sessions.</div><div class="text" style="left:5.729167%;top:54.537037%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Kiểm thử chỉ số về người dùng và hành vi.</div><div class="text" style="left:5.729167%;top:60.740741%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Không có dữ liệu giao hàng / đánh giá.</div><div class="shape roundRect" aria-hidden="true" style="left:51.041667%;top:26.851852%;width:44.791667%;height:45.833333%;background:#F0F5F8;"></div><div class="text" style="left:52.604167%;top:29.166667%;width:41.666667%;font-size:1.406250cqw;font-weight:700;color:#087F82;">BỐI CẢNH GIAO DỊCH</div><div class="text" style="left:52.604167%;top:34.259259%;width:41.666667%;font-size:2.239583cqw;font-weight:700;color:#132F46;">Olist • BRL</div><div class="text" style="left:52.604167%;top:42.129630%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Dữ liệu quan hệ: đơn, item và lifecycle.</div><div class="text" style="left:52.604167%;top:48.333333%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Purchase được biểu diễn theo từng item.</div><div class="text" style="left:52.604167%;top:54.537037%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Kiểm thử ánh xạ event và phân biệt item / order.</div><div class="text" style="left:52.604167%;top:60.740741%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Không ghi nhận product views / sessions.</div><div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:76.851852%;width:91.666667%;height:14.814815%;background:#132F46;"></div><div class="text" style="left:5.729167%;top:78.703704%;width:88.541667%;font-size:1.666667cqw;font-weight:700;color:#FFFFFF;">BỔ SUNG TÌNH HUỐNG KIỂM CHỨNG, KHÔNG GHÉP HAI NGUỒN</div><div class="text" style="left:5.729167%;top:84.259259%;width:88.541667%;font-size:1.510417cqw;font-weight:400;color:#D4EBED;">Cùng domain nhưng khác dữ liệu: kiểm tra cả tính đúng và nhận biết điều không thể tính.<br>Mỗi truy vấn vẫn chỉ dùng một nguồn; có field trong warehouse không đồng nghĩa metric nằm trong scope.</div></div></section>
 
 <!-- ==================== SLIDE 06: Từ dữ liệu gốc đến event mart ==================== -->
-<section class="slide" id="slide-06" aria-label="06. Từ dữ liệu gốc đến event mart">
+<section class="slide" id="slide-06" aria-label="06. Từ dữ liệu gốc đến event mart" data-speaker="Người 2">
   <div class="canvas">
     <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:36.574074%;width:17.1875%;height:21.759259%;background:#F0F5F8;"></div>
     <div class="shape rect" aria-hidden="true" style="left:4.166667%;top:36.574074%;width:17.1875%;height:0.740741%;background:#087F82;"></div>
@@ -345,7 +345,7 @@
 </section>
 
 <!-- ==================== SLIDE 07: Ba lựa chọn thiết kế của TEXA ==================== -->
-<section class="slide" id="slide-07" aria-label="07. Ba lựa chọn thiết kế của TEXA">
+<section class="slide" id="slide-07" aria-label="07. Ba lựa chọn thiết kế của TEXA" data-speaker="Người 3">
   <div class="canvas">
     <div class="text" style="left:4.166667%;top:4.814815%;width:91.666667%;min-height:2.648148%;font-size:1.145833cqw;font-weight:700;color:#087F82;">TEXA  •  BÁO CÁO FINAL  •  07</div>
     <h2 class="text" style="left:4.166667%;top:10.185185%;width:91.666667%;min-height:7.222222%;font-size:3.125cqw;font-weight:700;color:#132F46;">Ba lựa chọn thiết kế của TEXA</h2>
@@ -394,7 +394,7 @@
 </section>
 
 <!-- ==================== SLIDE 08: Kiến trúc đã triển khai ==================== -->
-<section class="slide" id="slide-08" aria-label="08. Kiến trúc đã triển khai">
+<section class="slide" id="slide-08" aria-label="08. Kiến trúc đã triển khai" data-speaker="Người 3">
   <div class="canvas flow-canvas">
     <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 08</p><h2>Kiến trúc đã triển khai</h2><p class="subtitle">Câu hỏi → cách hiểu có cấu trúc → truy vấn → kết quả có thể đối chứng</p></header>
     <div class="flow-body">
@@ -413,7 +413,7 @@
 </section>
 
 <!-- ==================== SLIDE 09: Một câu hỏi đi qua hệ thống ==================== -->
-<section class="slide" id="slide-09" aria-label="09. Một câu hỏi đi qua hệ thống">
+<section class="slide" id="slide-09" aria-label="09. Một câu hỏi đi qua hệ thống" data-speaker="Người 3">
   <div class="canvas">
     <div class="shape rect" aria-hidden="true" style="left:4.166667%;top:26.851852%;width:42.1875%;height:50.925926%;background:#E5F1F2;"></div>
     <div class="shape rect" aria-hidden="true" style="left:52.083333%;top:26.851852%;width:43.75%;height:50.925926%;background:#F0F5F8;"></div>
@@ -445,7 +445,7 @@
 </section>
 
 <!-- ==================== SLIDE 10: Kiểm tra trước và sau truy vấn ==================== -->
-<section class="slide" id="slide-10" aria-label="10. Kiểm tra trước và sau truy vấn">
+<section class="slide" id="slide-10" aria-label="10. Kiểm tra trước và sau truy vấn" data-speaker="Người 3">
   <div class="canvas">
     <div class="text" style="left:4.166667%;top:4.814815%;width:91.666667%;min-height:2.648148%;font-size:1.145833cqw;font-weight:700;color:#087F82;">TEXA  •  BÁO CÁO FINAL  •  10</div>
     <h2 class="text" style="left:4.166667%;top:10.185185%;width:91.666667%;min-height:7.222222%;font-size:3.125cqw;font-weight:700;color:#132F46;">Kiểm tra trước và sau truy vấn</h2>
@@ -490,7 +490,7 @@
 </section>
 
 <!-- ==================== SLIDE 11: Structured memory cho hỏi tiếp ==================== -->
-<section class="slide" id="slide-11" aria-label="11. Structured memory cho hỏi tiếp">
+<section class="slide" id="slide-11" aria-label="11. Structured memory cho hỏi tiếp" data-speaker="Người 3">
   <div class="canvas">
     <div class="text" style="left:4.166667%;top:4.814815%;width:91.666667%;min-height:2.648148%;font-size:1.145833cqw;font-weight:700;color:#087F82;">TEXA  •  BÁO CÁO FINAL  •  11</div>
     <h2 class="text" style="left:4.166667%;top:10.185185%;width:91.666667%;min-height:7.222222%;font-size:3.125cqw;font-weight:700;color:#132F46;">Structured memory cho hỏi tiếp</h2>
@@ -529,10 +529,10 @@
 </section>
 
 <!-- ==================== SLIDE 12: Khi catalog thay đổi, TEXA xử lý thế nào? ==================== -->
-<section class="slide" id="slide-12" aria-label="12. Khi catalog thay đổi, TEXA xử lý thế nào?"><div class="canvas"><div class="text" style="left:4.166667%;top:5.555556%;width:91.666667%;font-size:1.145833cqw;font-weight:700;color:#087F82;">TEXA • BÁO CÁO FINAL</div><div class="text" style="left:4.166667%;top:10.648148%;width:91.666667%;font-size:3.125000cqw;font-weight:700;color:#132F46;">Khi catalog thay đổi, TEXA xử lý thế nào?</div><div class="text" style="left:4.166667%;top:18.981481%;width:91.666667%;font-size:1.718750cqw;font-weight:400;color:#526574;">Sửa file chưa thay định nghĩa đang dùng; cần kiểm tra và publish.</div><div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:25.925926%;width:44.270833%;height:56.481481%;background:#F0F5F8;"></div><div class="shape roundRect" aria-hidden="true" style="left:50.520833%;top:25.925926%;width:45.312500%;height:56.481481%;background:#E7F2F3;"></div><div class="text" style="left:5.729167%;top:28.703704%;width:41.145833%;font-size:1.666667cqw;font-weight:700;color:#087F82;">01  QUẢN TRỊ CATALOG</div><div class="text" style="left:5.729167%;top:35.648148%;width:41.145833%;font-size:1.614583cqw;font-weight:400;color:#132F46;">1. Sửa metric / dimension trong YAML.</div><div class="text" style="left:5.729167%;top:42.222222%;width:41.145833%;font-size:1.614583cqw;font-weight:400;color:#132F46;">2. Kiểm tra cấu trúc và các tham chiếu.</div><div class="text" style="left:5.729167%;top:48.796296%;width:41.145833%;font-size:1.614583cqw;font-weight:400;color:#132F46;">3. Đối chiếu event roles với metadata nguồn.</div><div class="text" style="left:5.729167%;top:55.370370%;width:41.145833%;font-size:1.614583cqw;font-weight:400;color:#132F46;">4. Publish catalog hợp lệ vào database.</div><div class="text" style="left:5.729167%;top:61.944444%;width:41.145833%;font-size:1.614583cqw;font-weight:400;color:#132F46;">5. Câu hỏi mới đọc bản publish mới nhất.</div><div class="text" style="left:5.729167%;top:72.685185%;width:41.145833%;font-size:1.510417cqw;font-weight:700;color:#132F46;">Không đổi nội dung → giữ version hiện tại.<br>Có thay đổi hợp lệ → lưu version mới.</div><div class="text" style="left:52.083333%;top:28.703704%;width:42.187500%;font-size:1.666667cqw;font-weight:700;color:#087F82;">02  YÊU CẦU &amp; NGỮ CẢNH CŨ</div><div class="text" style="left:52.083333%;top:36.111111%;width:42.187500%;font-size:1.666667cqw;font-weight:700;color:#132F46;">Đang chờ trả lời câu hỏi làm rõ</div><div class="text" style="left:52.083333%;top:41.203704%;width:42.187500%;font-size:1.562500cqw;font-weight:400;color:#132F46;">Phát hiện catalog đã đổi → chặn xử lý tiếp;<br>yêu cầu người dùng hỏi lại.</div><div class="text" style="left:52.083333%;top:50.000000%;width:42.187500%;font-size:1.666667cqw;font-weight:700;color:#132F46;">Tham chiếu kết quả / ngữ cảnh trước</div><div class="text" style="left:52.083333%;top:55.092593%;width:42.187500%;font-size:1.562500cqw;font-weight:400;color:#132F46;">Không tự kế thừa truy vấn khác version;<br>tham chiếu không tương thích bị chặn.</div><div class="text" style="left:52.083333%;top:63.888889%;width:42.187500%;font-size:1.666667cqw;font-weight:700;color:#132F46;">QuerySpec mang version cũ</div><div class="text" style="left:52.083333%;top:68.981481%;width:42.187500%;font-size:1.562500cqw;font-weight:400;color:#132F46;">Validation từ chối khi version không khớp.<br>Không tự đổi nghĩa của truy vấn cũ.</div><div class="text" style="left:4.166667%;top:86.111111%;width:91.666667%;font-size:1.614583cqw;font-weight:700;color:#087F82;">Catalog version = phiên bản định nghĩa  •  Dataset snapshot = phiên bản dữ liệu.</div><div class="text" style="left:4.166667%;top:91.203704%;width:91.666667%;font-size:1.458333cqw;font-weight:400;color:#526574;">Không tự bật hỏi lại cho mọi người sau publish; chỉ chặn yêu cầu/ngữ cảnh không còn tương thích.</div></div></section>
+<section class="slide" id="slide-12" aria-label="12. Khi catalog thay đổi, TEXA xử lý thế nào?" data-speaker="Người 3"><div class="canvas"><div class="text" style="left:4.166667%;top:5.555556%;width:91.666667%;font-size:1.145833cqw;font-weight:700;color:#087F82;">TEXA • BÁO CÁO FINAL</div><div class="text" style="left:4.166667%;top:10.648148%;width:91.666667%;font-size:3.125000cqw;font-weight:700;color:#132F46;">Khi catalog thay đổi, TEXA xử lý thế nào?</div><div class="text" style="left:4.166667%;top:18.981481%;width:91.666667%;font-size:1.718750cqw;font-weight:400;color:#526574;">Sửa file chưa thay định nghĩa đang dùng; cần kiểm tra và publish.</div><div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:25.925926%;width:44.270833%;height:56.481481%;background:#F0F5F8;"></div><div class="shape roundRect" aria-hidden="true" style="left:50.520833%;top:25.925926%;width:45.312500%;height:56.481481%;background:#E7F2F3;"></div><div class="text" style="left:5.729167%;top:28.703704%;width:41.145833%;font-size:1.666667cqw;font-weight:700;color:#087F82;">01  QUẢN TRỊ CATALOG</div><div class="text" style="left:5.729167%;top:35.648148%;width:41.145833%;font-size:1.614583cqw;font-weight:400;color:#132F46;">1. Sửa metric / dimension trong YAML.</div><div class="text" style="left:5.729167%;top:42.222222%;width:41.145833%;font-size:1.614583cqw;font-weight:400;color:#132F46;">2. Kiểm tra cấu trúc và các tham chiếu.</div><div class="text" style="left:5.729167%;top:48.796296%;width:41.145833%;font-size:1.614583cqw;font-weight:400;color:#132F46;">3. Đối chiếu event roles với metadata nguồn.</div><div class="text" style="left:5.729167%;top:55.370370%;width:41.145833%;font-size:1.614583cqw;font-weight:400;color:#132F46;">4. Publish catalog hợp lệ vào database.</div><div class="text" style="left:5.729167%;top:61.944444%;width:41.145833%;font-size:1.614583cqw;font-weight:400;color:#132F46;">5. Câu hỏi mới đọc bản publish mới nhất.</div><div class="text" style="left:5.729167%;top:72.685185%;width:41.145833%;font-size:1.510417cqw;font-weight:700;color:#132F46;">Không đổi nội dung → giữ version hiện tại.<br>Có thay đổi hợp lệ → lưu version mới.</div><div class="text" style="left:52.083333%;top:28.703704%;width:42.187500%;font-size:1.666667cqw;font-weight:700;color:#087F82;">02  YÊU CẦU &amp; NGỮ CẢNH CŨ</div><div class="text" style="left:52.083333%;top:36.111111%;width:42.187500%;font-size:1.666667cqw;font-weight:700;color:#132F46;">Đang chờ trả lời câu hỏi làm rõ</div><div class="text" style="left:52.083333%;top:41.203704%;width:42.187500%;font-size:1.562500cqw;font-weight:400;color:#132F46;">Phát hiện catalog đã đổi → chặn xử lý tiếp;<br>yêu cầu người dùng hỏi lại.</div><div class="text" style="left:52.083333%;top:50.000000%;width:42.187500%;font-size:1.666667cqw;font-weight:700;color:#132F46;">Tham chiếu kết quả / ngữ cảnh trước</div><div class="text" style="left:52.083333%;top:55.092593%;width:42.187500%;font-size:1.562500cqw;font-weight:400;color:#132F46;">Không tự kế thừa truy vấn khác version;<br>tham chiếu không tương thích bị chặn.</div><div class="text" style="left:52.083333%;top:63.888889%;width:42.187500%;font-size:1.666667cqw;font-weight:700;color:#132F46;">QuerySpec mang version cũ</div><div class="text" style="left:52.083333%;top:68.981481%;width:42.187500%;font-size:1.562500cqw;font-weight:400;color:#132F46;">Validation từ chối khi version không khớp.<br>Không tự đổi nghĩa của truy vấn cũ.</div><div class="text" style="left:4.166667%;top:86.111111%;width:91.666667%;font-size:1.614583cqw;font-weight:700;color:#087F82;">Catalog version = phiên bản định nghĩa  •  Dataset snapshot = phiên bản dữ liệu.</div><div class="text" style="left:4.166667%;top:91.203704%;width:91.666667%;font-size:1.458333cqw;font-weight:400;color:#526574;">Không tự bật hỏi lại cho mọi người sau publish; chỉ chặn yêu cầu/ngữ cảnh không còn tương thích.</div></div></section>
 
 <!-- ==================== SLIDE 13: Sản phẩm: xem và đối chứng ==================== -->
-<section class="slide" id="slide-13" aria-label="13. Sản phẩm: xem và đối chứng">
+<section class="slide" id="slide-13" aria-label="13. Sản phẩm: xem và đối chứng" data-speaker="Người 3">
 <div class="canvas flow-canvas">
 <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 13</p><h2>Sản phẩm: xem và đối chứng</h2></header>
 <div class="flow-body product-layout">
@@ -541,10 +541,10 @@
 </div></div></section>
 
 <!-- ==================== SLIDE 14: Thiết lập đánh giá và lý do chọn benchmark ==================== -->
-<section class="slide" id="slide-14" aria-label="14. Thiết lập đánh giá và lý do chọn benchmark"><div class="canvas"><div class="text" style="left:4.166667%;top:5.555556%;width:91.666667%;font-size:1.145833cqw;font-weight:700;color:#087F82;">TEXA • BÁO CÁO FINAL</div><div class="text" style="left:4.166667%;top:10.648148%;width:91.666667%;font-size:3.125000cqw;font-weight:700;color:#132F46;">Thiết lập đánh giá và lý do chọn benchmark</div><div class="text" style="left:4.166667%;top:18.981481%;width:91.666667%;font-size:1.718750cqw;font-weight:400;color:#526574;">Cùng model, các câu hỏi và fixture; baseline chỉ nhận schema vật lý, Texa có semantic catalog.</div><div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:26.388889%;width:44.791667%;height:23.148148%;background:#132F46;"></div><div class="text" style="left:5.729167%;top:28.703704%;width:41.666667%;font-size:1.666667cqw;font-weight:700;color:#FFFFFF;">LLM CHỈ NHẬN CẤU TRÚC BẢNG</div><div class="text" style="left:5.729167%;top:35.185185%;width:41.666667%;font-size:1.822917cqw;font-weight:400;color:#FFFFFF;">Câu hỏi + schema PostgreSQL<br>→ LLM viết SQL → thực thi.</div><div class="shape roundRect" aria-hidden="true" style="left:51.041667%;top:26.388889%;width:44.791667%;height:23.148148%;background:#E7F2F3;"></div><div class="text" style="left:52.604167%;top:28.703704%;width:41.666667%;font-size:1.666667cqw;font-weight:700;color:#087F82;">TEXA ĐẦY ĐỦ</div><div class="text" style="left:52.604167%;top:35.185185%;width:41.666667%;font-size:1.822917cqw;font-weight:400;color:#132F46;">Truy hồi ví dụ + kiểm tra nhất quán có chọn lọc<br>→ QuerySpec → compiler → thực thi.</div><div class="text" style="left:4.166667%;top:54.629630%;width:91.666667%;font-size:1.614583cqw;font-weight:700;color:#087F82;">VÌ SAO DÙNG DỮ LIỆU TỔNG HỢP?</div><div class="text" style="left:4.166667%;top:60.648148%;width:91.666667%;font-size:1.770833cqw;font-weight:400;color:#132F46;">• Kiểm soát fixture để kiểm tra đáp án chuẩn độc lập.</div><div class="text" style="left:4.166667%;top:66.759259%;width:91.666667%;font-size:1.770833cqw;font-weight:400;color:#132F46;">• Tạo chủ động các trường hợp NULL, dữ liệu thiếu, nested và hội thoại.</div><div class="text" style="left:4.166667%;top:72.870370%;width:91.666667%;font-size:1.770833cqw;font-weight:400;color:#132F46;">• So sánh công bằng trên cùng dữ liệu; không suy ra accuracy production.</div><div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:82.407407%;width:91.666667%;height:12.500000%;background:#F0F5F8;"></div><div class="text" style="left:5.729167%;top:84.259259%;width:88.541667%;font-size:1.770833cqw;font-weight:700;color:#132F46;">Bộ candidate hiện tại: synthetic e-commerce, chia dev/test; test chưa phải holdout độc lập.</div><div class="text" style="left:5.729167%;top:89.814815%;width:88.541667%;font-size:1.510417cqw;font-weight:400;color:#526574;">Hai lần chạy/cấu hình trên cùng test cases; chưa phải holdout độc lập.</div></div></section>
+<section class="slide" id="slide-14" aria-label="14. Thiết lập đánh giá và lý do chọn benchmark" data-speaker="Người 4"><div class="canvas"><div class="text" style="left:4.166667%;top:5.555556%;width:91.666667%;font-size:1.145833cqw;font-weight:700;color:#087F82;">TEXA • BÁO CÁO FINAL</div><div class="text" style="left:4.166667%;top:10.648148%;width:91.666667%;font-size:3.125000cqw;font-weight:700;color:#132F46;">Thiết lập đánh giá và lý do chọn benchmark</div><div class="text" style="left:4.166667%;top:18.981481%;width:91.666667%;font-size:1.718750cqw;font-weight:400;color:#526574;">Cùng model, các câu hỏi và fixture; baseline chỉ nhận schema vật lý, Texa có semantic catalog.</div><div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:26.388889%;width:44.791667%;height:23.148148%;background:#132F46;"></div><div class="text" style="left:5.729167%;top:28.703704%;width:41.666667%;font-size:1.666667cqw;font-weight:700;color:#FFFFFF;">LLM CHỈ NHẬN CẤU TRÚC BẢNG</div><div class="text" style="left:5.729167%;top:35.185185%;width:41.666667%;font-size:1.822917cqw;font-weight:400;color:#FFFFFF;">Câu hỏi + schema PostgreSQL<br>→ LLM viết SQL → thực thi.</div><div class="shape roundRect" aria-hidden="true" style="left:51.041667%;top:26.388889%;width:44.791667%;height:23.148148%;background:#E7F2F3;"></div><div class="text" style="left:52.604167%;top:28.703704%;width:41.666667%;font-size:1.666667cqw;font-weight:700;color:#087F82;">TEXA ĐẦY ĐỦ</div><div class="text" style="left:52.604167%;top:35.185185%;width:41.666667%;font-size:1.822917cqw;font-weight:400;color:#132F46;">Truy hồi ví dụ + kiểm tra nhất quán có chọn lọc<br>→ QuerySpec → compiler → thực thi.</div><div class="text" style="left:4.166667%;top:54.629630%;width:91.666667%;font-size:1.614583cqw;font-weight:700;color:#087F82;">VÌ SAO DÙNG DỮ LIỆU TỔNG HỢP?</div><div class="text" style="left:4.166667%;top:60.648148%;width:91.666667%;font-size:1.770833cqw;font-weight:400;color:#132F46;">• Kiểm soát fixture để kiểm tra đáp án chuẩn độc lập.</div><div class="text" style="left:4.166667%;top:66.759259%;width:91.666667%;font-size:1.770833cqw;font-weight:400;color:#132F46;">• Tạo chủ động các trường hợp NULL, dữ liệu thiếu, nested và hội thoại.</div><div class="text" style="left:4.166667%;top:72.870370%;width:91.666667%;font-size:1.770833cqw;font-weight:400;color:#132F46;">• So sánh công bằng trên cùng dữ liệu; không suy ra accuracy production.</div><div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:82.407407%;width:91.666667%;height:12.500000%;background:#F0F5F8;"></div><div class="text" style="left:5.729167%;top:84.259259%;width:88.541667%;font-size:1.770833cqw;font-weight:700;color:#132F46;">Bộ candidate hiện tại: synthetic e-commerce, chia dev/test; test chưa phải holdout độc lập.</div><div class="text" style="left:5.729167%;top:89.814815%;width:88.541667%;font-size:1.510417cqw;font-weight:400;color:#526574;">Hai lần chạy/cấu hình trên cùng test cases; chưa phải holdout độc lập.</div></div></section>
 
 <!-- ==================== SLIDE 15: Chấm kết quả, không chấm chuỗi SQL ==================== -->
-<section class="slide" id="slide-15" aria-label="15. Chấm kết quả, không chấm chuỗi SQL">
+<section class="slide" id="slide-15" aria-label="15. Chấm kết quả, không chấm chuỗi SQL" data-speaker="Người 4">
   <div class="canvas">
     <div class="shape rect" aria-hidden="true" style="left:4.166667%;top:27.777778%;width:29.166667%;height:14.814815%;background:#E5F1F2;"></div>
     <div class="shape rect" aria-hidden="true" style="left:34.895833%;top:27.777778%;width:29.166667%;height:14.814815%;background:#E5F1F2;"></div>
@@ -568,7 +568,7 @@
 </section>
 
 <!-- ==================== SLIDE 16: Kết quả chính và đánh đổi ==================== -->
-<section class="slide" id="slide-16" aria-label="16. Kết quả chính: câu hỏi đơn">
+<section class="slide" id="slide-16" aria-label="16. Kết quả chính: câu hỏi đơn" data-speaker="Người 4">
   <div class="canvas flow-canvas">
     <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 16</p><h2>Kết quả chính: câu hỏi đơn</h2><p class="subtitle">200 câu test × 2 lần chạy mỗi phiên bản · Chấm bảng kết quả, không chấm chuỗi SQL</p></header>
     <div class="flow-body">
@@ -584,7 +584,7 @@
 </section>
 
 <!-- ==================== SLIDE 17: Thiết kế đánh giá: thành phần nào có ích? ==================== -->
-<section class="slide" id="slide-17" aria-label="17. Hội thoại, hỏi lại và ngoài phạm vi">
+<section class="slide" id="slide-17" aria-label="17. Hội thoại, hỏi lại và ngoài phạm vi" data-speaker="Người 4">
   <div class="canvas flow-canvas">
     <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 17</p><h2>Hội thoại, hỏi lại và ngoài phạm vi</h2><p class="subtitle">Hai lần chạy mỗi phiên bản · Mỗi loại tác vụ có metric riêng</p></header>
     <div class="flow-body">
@@ -601,7 +601,7 @@
 </section>
 
 <!-- ==================== SLIDE 18: So sánh thành phần trên câu hỏi đơn ==================== -->
-<section class="slide" id="slide-18" aria-label="18. Ablation: thành phần nào giúp ích?">
+<section class="slide" id="slide-18" aria-label="18. Ablation: thành phần nào giúp ích?" data-speaker="Người 5">
   <div class="canvas flow-canvas">
     <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 18</p><h2>Ablation: thành phần nào giúp ích?</h2><p class="subtitle">Giữ cùng catalog và pipeline nền; chỉ bật / tắt retrieval và adaptive consistency</p></header>
     <div class="flow-body">
@@ -618,7 +618,7 @@
 
 <!-- ==================== SLIDE 19: Hỏi lại và hội thoại: Texa so với bản rút gọn ==================== -->
 <!-- ==================== SLIDE 19: Ablation memory và clarification ==================== -->
-<section class="slide" id="slide-19" aria-label="19. Ablation memory và clarification">
+<section class="slide" id="slide-19" aria-label="19. Ablation memory và clarification" data-speaker="Người 5">
   <div class="canvas flow-canvas">
     <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 19</p><h2>Ablation: memory và clarification</h2><p class="subtitle">Retrieval và consistency giữ bật; chỉ thay đúng một thành phần</p></header>
     <div class="flow-body">
@@ -635,7 +635,7 @@
   </div>
 </section>
 
-<section class="slide" id="slide-20" aria-label="20. Bộ đánh giá và giới hạn bằng chứng">
+<section class="slide" id="slide-20" aria-label="20. Bộ đánh giá và giới hạn bằng chứng" data-speaker="Người 5">
   <div class="canvas flow-canvas">
     <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 20</p><h2>Bộ đánh giá và giới hạn bằng chứng</h2><p class="subtitle">Test cân bằng Cosmetics / Olist · 40 basic + 100 compositional + 60 semantic</p></header>
     <div class="flow-body">
@@ -652,7 +652,7 @@
 </section>
 
 <!-- ==================== SLIDE 21: Kiểm thử thực tế và giới hạn ==================== -->
-<section class="slide" id="slide-21" aria-label="21. Kiểm thử thực tế và giới hạn">
+<section class="slide" id="slide-21" aria-label="21. Kiểm thử thực tế và giới hạn" data-speaker="Người 5">
   <div class="canvas flow-canvas">
     <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 21</p><h2>Kiểm thử thực tế và giới hạn</h2></header>
     <div class="flow-body">
@@ -665,13 +665,13 @@
 </section>
 
 <!-- ==================== SLIDE 22: Kết luận ==================== -->
-<section class="slide" id="slide-22" aria-label="22. Kết luận">
+<section class="slide" id="slide-22" aria-label="22. Kết luận" data-speaker="Người 5">
   <div class="canvas flow-canvas">
     <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 22</p><h2>Kết luận</h2><p class="subtitle">Trợ lý phân tích e-commerce trên PostgreSQL, với tám metric và phạm vi rõ ràng</p></header>
     <div class="flow-body">
 <div class="columns">
 <section><h3><span>01</span>ĐÃ XÂY DỰNG</h3><ul><li>E-commerce / PostgreSQL</li><li>8 metric, một nguồn mỗi truy vấn</li><li>Catalog → QuerySpec → compiler</li><li>Bảng, facts và SQL đối chứng</li></ul></section>
-<section><h3><span>02</span>ĐÃ ĐO LƯỜNG</h3><ul><li>Câu đơn: <strong>Texa 91,25%</strong>; baseline 22,50%</li><li>Hội thoại: Texa 94,81%; Texa with only retrieval 96,10%</li><li>Hỏi lại: 120/120 bảng đúng và 120/120 hành động đúng</li><li>Hai lần chạy; dữ liệu tổng hợp, chưa holdout độc lập</li></ul></section>
+<section><h3><span>02</span>ĐÃ ĐO LƯỜNG</h3><ul><li>Câu đơn: <strong>Texa 91,25%</strong>; baseline 22,50%</li><li>Hội thoại: Texa 94,81%; Texa with only retrieval 96,10%</li><li>Kết quả chính: 120/120 bảng đúng và 120/120 hành động đúng; ablation clarification riêng đạt 90/120 policy đúng</li><li>Hai lần chạy; dữ liệu tổng hợp, chưa holdout độc lập</li></ul></section>
 <section><h3><span>03</span>CẦN HOÀN THIỆN</h3><ul><li>Hiểu đúng ngữ nghĩa và breakdown</li><li>Tham chiếu trong hội thoại</li><li>Review gold độc lập, khóa test</li><li>E2E hiện tại và tải nhiều người dùng</li></ul></section>
 </div>
 <div class="takeaway"><strong>Texa: trợ lý phân tích trong phạm vi kiểm soát</strong><small>Kết quả có thể đối chứng; không cam kết đúng tuyệt đối.</small></div>
@@ -681,7 +681,7 @@
 </main>
 <nav class="slide-navigation" aria-label="Điều hướng slide">
   <button id="previous-slide" type="button" aria-label="Slide trước" title="Slide trước (←)">←</button>
-  <span id="slide-counter" role="status" aria-live="polite">1 / 21</span>
+  <span id="slide-counter" role="status" aria-live="polite">1 / 22</span>
   <button id="next-slide" type="button" aria-label="Slide tiếp" title="Slide tiếp (→)">→</button>
 </nav>
 <script>
