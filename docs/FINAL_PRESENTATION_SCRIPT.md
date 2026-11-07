@@ -6,9 +6,9 @@
 |---|---:|---|
 | Người 1 | 1–4 | Giới thiệu, vấn đề, người dùng và phạm vi |
 | Người 2 | 5–6 | Hai nguồn dữ liệu, metric và lớp semantic catalog |
-| Người 3 | 7–12 | Kiến trúc, workflow, memory và trải nghiệm sản phẩm |
-| Người 4 | 13–16 | Thiết kế đánh giá và kết quả chính |
-| Người 5 | 17–21 | Ablation studies, giới hạn và kết luận |
+| Người 3 | 7–11 | Kiến trúc, workflow, memory và trải nghiệm sản phẩm |
+| Người 4 | 12–15 | Thiết kế đánh giá và kết quả chính |
+| Người 5 | 16–19 | Ablation studies, giới hạn và kết luận |
 
 > Các con số benchmark dùng trong script là kết quả research-v3: cùng `gpt-6-luna`, cùng fixture, hai lần chạy cho mỗi phiên bản. Bộ dữ liệu do nhóm xây dựng, còn template/family overlap và chưa human-review hoặc sealed, nên đây là kết quả exploratory.
 
@@ -116,29 +116,21 @@
 
 “Semantic catalog cũng có version. Khi catalog hoặc dataset snapshot thay đổi, QuerySpec cũ không được tự động diễn giải lại theo nghĩa mới. Texa kiểm tra version và từ chối khi ngữ cảnh không còn tương thích. Cách làm này giúp tránh việc hệ thống âm thầm trả một con số khác chỉ vì định nghĩa metric đã thay đổi.”
 
-### Slide 12 — Sản phẩm: xem và đối chứng (0:55)
-
-**Ý chính trên slide:** Bảng, facts, SQL và phạm vi hiển thị.
-
-**Lời nói:**
-
-“Ở giao diện sản phẩm, người dùng nhìn thấy bảng kết quả và các facts giải thích con số. SQL và phạm vi nguồn, thời gian, metric được hiển thị để đối chứng. Mục tiêu của giao diện là để một người không chuyên SQL vẫn hiểu con số được tính từ đâu, đồng thời có đủ thông tin để trao đổi lại với đội dữ liệu khi cần.”
-
 **Chuyển ý:** “Tiếp theo, [Người 4] sẽ trình bày cách nhóm đánh giá Texa và kết quả chính.”
 
 ---
 
 ## Người 4 — Đánh giá chính
 
-### Slide 13 — Thiết lập đánh giá và lý do chọn benchmark (0:55)
+### Slide 12 — Đánh giá: baseline, Texa và bộ benchmark (0:55)
 
-**Ý chính trên slide:** Cùng model và dữ liệu; baseline chỉ nhận schema.
+**Ý chính trên slide:** Hai hệ thống được so sánh trên cùng model, câu hỏi, fixture và cách chấm; khác nhau ở thông tin và workflow được phép dùng.
 
 **Lời nói:**
 
-“Để so sánh, các phiên bản dùng cùng model gpt-6-luna, cùng câu hỏi và cùng fixture. Baseline được thiết kế như LLM sinh SQL trực tiếp: nó chỉ nhận câu hỏi, schema PostgreSQL vật lý và nguồn được chọn trên giao diện. Baseline không nhận semantic catalog, định nghĩa nghiệp vụ, source-value mapping hay verified examples. Texa nhận thêm các thành phần semantic và workflow của sản phẩm. Vì vậy kết quả đo là so sánh giữa hai hệ thống với thông tin đầu vào khác nhau, không phải bảng xếp hạng giữa các model.”
+“Slide này giải thích cách nhóm so sánh công bằng. Baseline là LLM sinh SQL trực tiếp, dùng cùng gpt-6-luna nhưng chỉ nhận câu hỏi, schema PostgreSQL và source được chọn; baseline không nhận semantic catalog, định nghĩa nghiệp vụ, verified examples hay QuerySpec workflow. Texa đầy đủ cũng dùng model đó, nhưng có thêm semantic catalog, memory, retrieval, consistency khi cần, QuerySpec, compiler và validation. Hai bên cùng chạy trên một bộ benchmark gồm 300 câu đơn, 60 tình huống clarification, 40 hội thoại và 40 câu ngoài phạm vi, với dữ liệu Cosmetics và Olist, fixture cố định. Mỗi cấu hình chạy hai lần; câu trả lời được chấm bằng cách so bảng kết quả với gold, không yêu cầu chuỗi SQL giống nhau. Bộ test vẫn còn template overlap và chưa có holdout độc lập, nên kết quả dùng để kiểm tra hướng thiết kế trong scope hiện tại, chưa suy ra accuracy production.”
 
-### Slide 14 — Chấm kết quả, không chấm chuỗi SQL (0:50)
+### Slide 13 — Chấm kết quả, không chấm chuỗi SQL (0:50)
 
 **Ý chính trên slide:** Business accuracy dựa trên bảng kết quả.
 
@@ -146,7 +138,7 @@
 
 “Metric chính không yêu cầu hai câu SQL phải giống từng ký tự. Một câu trả lời được tính là đúng khi bảng kết quả khớp với đáp án gold và thỏa business contract. Với hội thoại, nhóm chấm theo từng answer slot. Clarification được chấm thêm ở hai mặt: bảng cuối cùng có đúng không và hệ thống có hỏi lại đúng lúc không. Cách chấm này phản ánh kết quả mà người dùng thực sự nhìn thấy.”
 
-### Slide 15 — Kết quả chính: câu hỏi đơn (1:00)
+### Slide 14 — Kết quả chính: câu hỏi đơn (1:00)
 
 **Ý chính trên slide:** Texa 91,25%, baseline schema-only 22,50%.
 
@@ -154,7 +146,7 @@
 
 “Trên 200 câu test được chạy hai lần, baseline chỉ nhận schema đạt 22,50% business accuracy. Texa đạt 91,25%. Các biến thể Texa có retrieval hoặc consistency đạt từ 87,00% đến 90,25%. Khoảng cách lớn cho thấy semantic catalog và workflow có giá trị trong bộ candidate này. Tuy nhiên, vì baseline không có định nghĩa nghiệp vụ giống Texa, chúng ta không được nói rằng toàn bộ mức tăng chỉ đến từ một component riêng lẻ.”
 
-### Slide 16 — Hội thoại, hỏi lại và ngoài phạm vi (1:00)
+### Slide 15 — Hội thoại, hỏi lại và ngoài phạm vi (1:00)
 
 **Ý chính trên slide:** Mỗi loại tác vụ có metric riêng.
 
@@ -168,7 +160,7 @@
 
 ## Người 5 — Ablation studies và kết luận
 
-### Slide 17 — Ablation: thành phần nào giúp ích? (0:55)
+### Slide 16 — Ablation: thành phần nào giúp ích? (0:55)
 
 **Ý chính trên slide:** Retrieval và consistency được bật/tắt riêng.
 
@@ -176,7 +168,7 @@
 
 “Ở ablation đầu tiên, nhóm giữ catalog và pipeline nền, sau đó bật hoặc tắt retrieval và consistency. Kết quả cho thấy Texa đạt 91,25% ở câu đơn, retrieval-only đạt 90,25%, còn consistency-only đạt 87,00%. Ở hội thoại, retrieval-only đạt 96,10%, cao hơn Texa đầy đủ 94,81%. Điều này cho thấy không có component nào cải thiện đồng đều mọi suite; cần đọc kết quả theo từng loại tác vụ.”
 
-### Slide 18 — Ablation: memory và clarification (1:05)
+### Slide 17 — Ablation: memory và clarification (1:05)
 
 **Ý chính trên slide:** Ablation mới, giữ retrieval và consistency bật.
 
@@ -184,15 +176,7 @@
 
 “Bảng này là một ablation khác. Retrieval và consistency được giữ bật; nhóm chỉ thay memory hoặc clarification. Structured memory đạt 84,58%, window-6 đạt 85,55% và without memory đạt 83,93% trên 616 answer slots. Chênh lệch memory còn nhỏ nên chưa đủ để kết luận window-6 hay structured memory tốt hơn một cách ổn định. Clarification có tác động rõ hơn: bật clarification đạt 86,67% so với 62,50% khi tắt; policy accuracy lần lượt là 75% và 50%. Đây vẫn là kết quả exploratory trên dữ liệu tổng hợp.”
 
-### Slide 19 — Bộ đánh giá và giới hạn bằng chứng (0:55)
-
-**Ý chính trên slide:** Quy mô benchmark và các giới hạn cần nói rõ.
-
-**Lời nói:**
-
-“Bộ research-v3 gồm 300 câu đơn, 60 clarification cases, 40 hội thoại và 40 câu ngoài phạm vi. Hai nguồn là Cosmetics Shop và Olist, với nested extension được kiểm soát trong fixture. Điểm giới hạn là test còn template overlap, nhãn đã được người xây biết trước và chưa có hai reviewer độc lập khóa holdout. Vì vậy đây là bằng chứng để kiểm tra hướng thiết kế trong scope hiện tại, chưa phải lời khẳng định về mọi doanh nghiệp.”
-
-### Slide 20 — Kiểm thử thực tế và giới hạn (0:50)
+### Slide 18 — Kiểm thử thực tế và giới hạn (0:50)
 
 **Ý chính trên slide:** Kết quả test phần mềm và browser cần được phân biệt với benchmark.
 
@@ -200,7 +184,7 @@
 
 “Các test backend và Playwright kiểm tra chức năng của sản phẩm; chúng không thay thế benchmark accuracy. Một số browser observation trên slide là kết quả lịch sử với cấu hình cũ, nên không dùng để khẳng định chất lượng research-v3 hiện tại. Trước khi demo cho nhiều người dùng đồng thời, nhóm vẫn cần chạy lại browser E2E trên Texa đầy đủ và kiểm tra tải.”
 
-### Slide 21 — Kết luận (0:55)
+### Slide 19 — Kết luận (0:55)
 
 **Ý chính trên slide:** Scope rõ, có bằng chứng ban đầu, còn bước kiểm chứng tiếp theo.
 
@@ -216,4 +200,4 @@
 - Baseline và Texa dùng cùng model, nhưng baseline chỉ nhận schema; Texa có semantic catalog và workflow. Vì vậy đây là so sánh hệ thống với thông tin đầu vào khác nhau.
 - Không nói “Texa đúng trong mọi trường hợp” hoặc “đã chứng minh tổng quát cho mọi database”. Scope chỉ là event e-commerce, PostgreSQL, hai nguồn Cosmetics/Olist.
 - Hai nguồn và nested extension là dữ liệu synthetic. Các con số benchmark là exploratory, chưa phải holdout độc lập.
-- Các slide 18–19 là hai nhóm ablation khác nhau: slide 18 kiểm tra retrieval/consistency; slide 19 kiểm tra memory/clarification.
+- Các slide 16–17 là hai nhóm ablation khác nhau: slide 18 kiểm tra retrieval/consistency; slide 19 kiểm tra memory/clarification.
