@@ -58,6 +58,12 @@ Metric chính cho câu hỏi đơn và các lượt có đáp án trong hội th
 
 Clarification có thêm metric hành động “có hỏi lại khi thiếu thông tin không”: baseline đạt 81/120 (67,5%); Texa without retrieval and consistency và Texa with only consistency đạt 120/120; Texa with only retrieval đạt 119/120 (99,2%); Texa đạt 120/120. Đây là bộ thay thế đã chạy; các kết quả clarification cũ có lỗi chú giải và không được dùng. Texa đạt business accuracy single cao nhất (91,25%); Texa with only retrieval đạt 90,25%, Texa with only consistency 87%, Texa without retrieval and consistency 87,5%, còn baseline schema-only đạt 22,5%. Trên hội thoại, Texa đạt 94,8%; Texa with only retrieval cao nhất với 96,1%. Kết quả này cho thấy thành phần không cải thiện đồng đều mọi suite. Kiểm tra consistency được gọi có điều kiện, không áp dụng cho mọi câu. Xem [báo cáo benchmark đầy đủ](../data/benchmark/results/research-v3-20261106/REPORT.md) và raw summary tại `data/benchmark/results/research-v3-20261106/summary.json`.
 
+### Ablation riêng cho memory và clarification
+
+Đây là phép đo mới trên cùng research-v3, với retrieval và consistency được giữ bật cho tất cả biến thể; mỗi bảng có hai repeat. Kết quả hội thoại tính trên 308 answer slots mỗi repeat (616 slots tổng): **Texa with structured memory 84,58% (521/616)**, **Texa with only window-6 memory 85,55% (527/616)** và **Texa without memory 83,93% (517/616)**. Kết quả này chỉ cho thấy memory có ảnh hưởng nhưng window-6 chưa bị chứng minh kém hơn structured memory trên bộ hiện tại; cần bộ hội thoại lớn hơn để kết luận chắc chắn.
+
+Clarification gồm 60 tình huống × 2 repeat (120 answer slots): **Texa with clarification 86,67% (104/120)** và **Texa without clarification 62,50% (75/120)**. Nếu chỉ xét việc hỏi đúng lúc, lần lượt là **75,00% (90/120)** và **50,00% (60/120)**. Đây là ablation exploratory trên dữ liệu tổng hợp; không dùng các con số ablation cũ vì chúng chạy sai cấu hình hoặc dùng rubric legacy.
+
 ## Kiểm thử runtime và giới hạn
 
 - Backend **398 passed, 36 skipped**; DB integration **30 passed**; Playwright **15 passed** với provider mô phỏng và 8 session. Các test xác nhận chức năng, không đo accuracy LLM.

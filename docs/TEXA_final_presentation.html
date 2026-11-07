@@ -617,9 +617,27 @@
 </section>
 
 <!-- ==================== SLIDE 19: Hỏi lại và hội thoại: Texa so với bản rút gọn ==================== -->
-<section class="slide" id="slide-19" aria-label="19. Bộ đánh giá và giới hạn bằng chứng">
+<!-- ==================== SLIDE 19: Ablation memory và clarification ==================== -->
+<section class="slide" id="slide-19" aria-label="19. Ablation memory và clarification">
   <div class="canvas flow-canvas">
-    <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 19</p><h2>Bộ đánh giá và giới hạn bằng chứng</h2><p class="subtitle">Test cân bằng Cosmetics / Olist · 40 basic + 100 compositional + 60 semantic</p></header>
+    <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 19</p><h2>Ablation: memory và clarification</h2><p class="subtitle">Retrieval và consistency giữ bật; chỉ thay đúng một thành phần</p></header>
+    <div class="flow-body">
+      <table class="evidence-table compact"><thead><tr><th>Phiên bản</th><th class="numeric">Hội thoại</th><th class="numeric">Clarification</th><th class="numeric">Hỏi lại đúng</th></tr></thead><tbody>
+        <tr><td>Texa with structured memory</td><td class="numeric">84,58%<br><small>521/616</small></td><td class="numeric">—</td><td class="numeric">—</td></tr>
+        <tr><td>Texa with only window-6 memory</td><td class="numeric">85,55%<br><small>527/616</small></td><td class="numeric">—</td><td class="numeric">—</td></tr>
+        <tr><td>Texa without memory</td><td class="numeric">83,93%<br><small>517/616</small></td><td class="numeric">—</td><td class="numeric">—</td></tr>
+        <tr><td>Texa with clarification</td><td class="numeric">—</td><td class="numeric">86,67%<br><small>104/120</small></td><td class="numeric">75,00%</td></tr>
+        <tr class="highlight"><td>Texa without clarification</td><td class="numeric">—</td><td class="numeric">62,50%<br><small>75/120</small></td><td class="numeric">50,00%</td></tr>
+      </tbody></table>
+      <ul class="flow-list"><li>Structured memory cao hơn without memory 0,65 điểm phần trăm; window-6 đạt cao hơn trên bộ này nhưng chưa đủ để kết luận ổn định.</li><li>Bật clarification tạo chênh lệch rõ: +24,17 điểm ở final-table accuracy và +25 điểm ở policy accuracy.</li></ul>
+      <p class="note">Hai repeat · 40 hội thoại · 308 answer slots mỗi repeat · 60 clarification cases × 2. Đây là kết quả exploratory trên dữ liệu tổng hợp.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" id="slide-20" aria-label="20. Bộ đánh giá và giới hạn bằng chứng">
+  <div class="canvas flow-canvas">
+    <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 20</p><h2>Bộ đánh giá và giới hạn bằng chứng</h2><p class="subtitle">Test cân bằng Cosmetics / Olist · 40 basic + 100 compositional + 60 semantic</p></header>
     <div class="flow-body">
 <div class="facts-line"><p><strong>300 câu đơn</strong><br>100 dev / 200 test</p><p><strong>60 tình huống</strong><br>Hỏi lại + đối chứng rõ ý</p><p><strong>40 hội thoại</strong><br>6–12 lượt / hội thoại</p><p><strong>40 câu</strong><br>Ngoài phạm vi</p></div>
 <ul class="flow-list">
@@ -633,10 +651,10 @@
   </div>
 </section>
 
-<!-- ==================== SLIDE 20: Kiểm thử thực tế và giới hạn ==================== -->
-<section class="slide" id="slide-20" aria-label="20. Kiểm thử thực tế và giới hạn">
+<!-- ==================== SLIDE 21: Kiểm thử thực tế và giới hạn ==================== -->
+<section class="slide" id="slide-21" aria-label="21. Kiểm thử thực tế và giới hạn">
   <div class="canvas flow-canvas">
-    <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 20</p><h2>Kiểm thử thực tế và giới hạn</h2></header>
+    <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 21</p><h2>Kiểm thử thực tế và giới hạn</h2></header>
     <div class="flow-body">
 <p class="qa-band"><strong>Backend hiện tại: 398 passed, 36 skipped.</strong><br>DB integration 30 passed; Playwright 15 passed với provider giả lập là kết quả kiểm thử trước đây.</p>
 <div><p><strong>Browser thật trước đây</strong> · Texa without retrieval and consistency</p><p class="subtitle">5/6 câu khớp; bộ đếm views trả 12 thay vì 24. Quan sát này không thuộc benchmark research-v3 và không xác nhận Texa hiện tại.</p></div>
@@ -646,10 +664,10 @@
   </div>
 </section>
 
-<!-- ==================== SLIDE 21: Kết luận ==================== -->
-<section class="slide" id="slide-21" aria-label="21. Kết luận">
+<!-- ==================== SLIDE 22: Kết luận ==================== -->
+<section class="slide" id="slide-22" aria-label="22. Kết luận">
   <div class="canvas flow-canvas">
-    <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 21</p><h2>Kết luận</h2><p class="subtitle">Trợ lý phân tích e-commerce trên PostgreSQL, với tám metric và phạm vi rõ ràng</p></header>
+    <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 22</p><h2>Kết luận</h2><p class="subtitle">Trợ lý phân tích e-commerce trên PostgreSQL, với tám metric và phạm vi rõ ràng</p></header>
     <div class="flow-body">
 <div class="columns">
 <section><h3><span>01</span>ĐÃ XÂY DỰNG</h3><ul><li>E-commerce / PostgreSQL</li><li>8 metric, một nguồn mỗi truy vấn</li><li>Catalog → QuerySpec → compiler</li><li>Bảng, facts và SQL đối chứng</li></ul></section>

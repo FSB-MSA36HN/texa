@@ -109,6 +109,18 @@ Metric chính là tỷ lệ khớp **toàn bộ bảng kết quả**; khác alia
 
 **Lời nói:** Kết quả hội thoại khác câu hỏi đơn: Texa with only retrieval đạt 96,1%, cao nhất suite này, còn Texa đạt 94,8%. Clarification mới có final-table accuracy 100% cho Texa; baseline đạt 27,5%. Tỷ lệ hỏi lại đúng là 100% với Texa và hai cấu hình Texa without retrieval and consistency, Texa with only consistency; Texa with only retrieval đạt 99,2%, baseline 67,5%. Các thành phần không cải thiện mọi loại yêu cầu đồng đều. Ngoài phạm vi, Texa đạt 95% action accuracy. Kết quả còn exploratory vì test chưa được rà soát độc lập và còn family overlap.
 
+### Ablation bổ sung: memory và clarification
+
+| Phiên bản | Hội thoại, business accuracy | Clarification, business accuracy | Hỏi lại đúng |
+|---|---:|---:|---:|
+| Texa with structured memory | 84,58% (521/616) | — | — |
+| Texa with only window-6 memory | 85,55% (527/616) | — | — |
+| Texa without memory | 83,93% (517/616) | — | — |
+| Texa with clarification | — | 86,67% (104/120) | 75,00% (90/120) |
+| Texa without clarification | — | 62,50% (75/120) | 50,00% (60/120) |
+
+**Lời nói:** Bảng này là một ablation khác với retrieval/consistency. Tất cả biến thể vẫn giữ retrieval và consistency; chỉ thay memory hoặc clarification. Structured memory cao hơn without memory khoảng 0,65 điểm phần trăm, còn window-6 đạt 85,55% trên bộ này. Clarification tạo chênh lệch rõ hơn: bật hỏi lại đạt 86,67% so với 62,50% khi tắt. Đây là kết quả exploratory, cần mở rộng hội thoại trước khi kết luận window-6 hay structured memory khác nhau ổn định.
+
 ## Slide 12 — Chi phí, độ trễ và kiểm thử sản phẩm (1:15)
 
 - Median latency trên 400 lần chạy: LLM chỉ nhận schema **7,7 giây**; Texa **13,8 giây**

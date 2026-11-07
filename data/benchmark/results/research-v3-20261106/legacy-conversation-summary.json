@@ -1,0 +1,156 @@
+{
+  "suite": "conversation",
+  "split": "test",
+  "variants": {
+    "F": {
+      "runs": 2,
+      "answer_count": 616,
+      "business_accuracy": 0.8457792207792207,
+      "latency_ms_p50": 256443.0,
+      "latency_ms_p95": 500437.0,
+      "tokens": 5021043.0,
+      "cost_estimated_usd": 0.6589007,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 22,
+      "retrieval_activated_scenarios": 77,
+      "retrieval_activated_decisions": 540,
+      "component_decision_count": 624,
+      "consistency_scheduled_decisions": 29,
+      "consistency_completed_decisions": 29,
+      "consistency_scheduled_samples": 682,
+      "consistency_completed_samples": 682,
+      "consistency_scheduled_scenarios": 24,
+      "consistency_completed_scenarios": 24,
+      "unsupported_diagnostics": 0
+    },
+    "M6": {
+      "runs": 2,
+      "answer_count": 616,
+      "business_accuracy": 0.8555194805194806,
+      "latency_ms_p50": 247256.0,
+      "latency_ms_p95": 496572.0,
+      "tokens": 4312623.0,
+      "cost_estimated_usd": 0.5583475,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 18,
+      "retrieval_activated_scenarios": 77,
+      "retrieval_activated_decisions": 563,
+      "component_decision_count": 649,
+      "consistency_scheduled_decisions": 1,
+      "consistency_completed_decisions": 1,
+      "consistency_scheduled_samples": 650,
+      "consistency_completed_samples": 650,
+      "consistency_scheduled_scenarios": 1,
+      "consistency_completed_scenarios": 1,
+      "unsupported_diagnostics": 0
+    },
+    "M0": {
+      "runs": 2,
+      "answer_count": 616,
+      "business_accuracy": 0.8392857142857143,
+      "latency_ms_p50": 185608.0,
+      "latency_ms_p95": 333898.0,
+      "tokens": 4209164.0,
+      "cost_estimated_usd": 0.549546,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 0,
+      "retrieval_activated_scenarios": 80,
+      "retrieval_activated_decisions": 616,
+      "component_decision_count": 710,
+      "consistency_scheduled_decisions": 2,
+      "consistency_completed_decisions": 2,
+      "consistency_scheduled_samples": 711,
+      "consistency_completed_samples": 711,
+      "consistency_scheduled_scenarios": 2,
+      "consistency_completed_scenarios": 2,
+      "unsupported_diagnostics": 0
+    }
+  },
+  "paired_comparisons": {
+    "F_vs_M0": {
+      "paired_accuracy_delta_right_minus_left": -0.022977543290043295,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 9.313225746154785e-10,
+      "cluster_bootstrap_ci95": [
+        -0.08160804473304474,
+        0.039320887445887444
+      ],
+      "clusters": 40,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 31,
+      "mcnemar_discordant_right_only": 0
+    },
+    "F_vs_M6": {
+      "paired_accuracy_delta_right_minus_left": 0.0032242063492063434,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 1.0,
+      "cluster_bootstrap_ci95": [
+        -0.053912337662337675,
+        0.05591405122655122
+      ],
+      "clusters": 40,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 14,
+      "mcnemar_discordant_right_only": 14
+    },
+    "M0_vs_M6": {
+      "paired_accuracy_delta_right_minus_left": 0.02620174963924964,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 9.313225746154785e-10,
+      "cluster_bootstrap_ci95": [
+        -0.02948638167388168,
+        0.07740169552669553
+      ],
+      "clusters": 40,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 31
+    }
+  },
+  "factorial_effects": null,
+  "interpretation": "diagnostic exploratory candidate results; not confirmatory human-reviewed holdout evidence",
+  "legacy_ablation_protocol": {
+    "suite": "conversation",
+    "variants": [
+      "F",
+      "M6",
+      "M0"
+    ],
+    "dataset": "research_v3",
+    "repeats": [
+      1,
+      2
+    ],
+    "fixture_world": "base",
+    "metric": "business result per answer slot; clarification policy separately",
+    "retrieval_and_consistency": "enabled for all variants; only memory or clarification differs",
+    "answer_slots_per_repeat": 308
+  }
+}

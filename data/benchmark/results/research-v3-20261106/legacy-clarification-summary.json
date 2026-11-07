@@ -1,0 +1,106 @@
+{
+  "suite": "clarification",
+  "split": "test",
+  "variants": {
+    "F": {
+      "runs": 2,
+      "answer_count": 120,
+      "business_accuracy": 0.8666666666666667,
+      "latency_ms_p50": 25750.0,
+      "latency_ms_p95": 32031.0,
+      "tokens": 836420.0,
+      "cost_estimated_usd": 0.10889320000000001,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 1,
+      "retrieval_activated_scenarios": 120,
+      "retrieval_activated_decisions": 150,
+      "component_decision_count": 150,
+      "consistency_scheduled_decisions": 0,
+      "consistency_completed_decisions": 0,
+      "consistency_scheduled_samples": 150,
+      "consistency_completed_samples": 150,
+      "consistency_scheduled_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 0,
+      "clarification_policy_accuracy": 0.75,
+      "clarification_policy_correct_count": 90,
+      "clarification_policy_case_count": 120,
+      "clarification_counts": {
+        "tp": 30,
+        "fp": 0,
+        "fn": 30
+      }
+    },
+    "C0": {
+      "runs": 2,
+      "answer_count": 120,
+      "business_accuracy": 0.625,
+      "latency_ms_p50": 25082.5,
+      "latency_ms_p95": 38259.0,
+      "tokens": 794494.0,
+      "cost_estimated_usd": 0.1027334,
+      "diagnostic_action_accuracy": null,
+      "usage_incomplete_scenarios": 3,
+      "retrieval_activated_scenarios": 117,
+      "retrieval_activated_decisions": 117,
+      "component_decision_count": 117,
+      "consistency_scheduled_decisions": 0,
+      "consistency_completed_decisions": 0,
+      "consistency_scheduled_samples": 117,
+      "consistency_completed_samples": 117,
+      "consistency_scheduled_scenarios": 0,
+      "consistency_completed_scenarios": 0,
+      "unsupported_diagnostics": 0,
+      "clarification_policy_accuracy": 0.5,
+      "clarification_policy_correct_count": 60,
+      "clarification_policy_case_count": 120,
+      "clarification_counts": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 60
+      }
+    }
+  },
+  "paired_comparisons": {
+    "C0_vs_F": {
+      "paired_accuracy_delta_right_minus_left": 0.24166666666666667,
+      "estimand": "mean scenario answer fraction; cluster-resampled families",
+      "mcnemar_exact_p_diagnostic": 9.313225746154785e-10,
+      "cluster_bootstrap_ci95": [
+        0.15833333333333333,
+        0.3333333333333333
+      ],
+      "clusters": 30,
+      "matched_run_blocks": [
+        [
+          1,
+          "base"
+        ],
+        [
+          2,
+          "base"
+        ]
+      ],
+      "mcnemar_discordant_left_only": 0,
+      "mcnemar_discordant_right_only": 31
+    }
+  },
+  "factorial_effects": null,
+  "interpretation": "diagnostic exploratory candidate results; not confirmatory human-reviewed holdout evidence",
+  "legacy_ablation_protocol": {
+    "suite": "clarification",
+    "variants": [
+      "F",
+      "C0"
+    ],
+    "dataset": "research_v3",
+    "repeats": [
+      1,
+      2
+    ],
+    "fixture_world": "base",
+    "metric": "business result per answer slot; clarification policy separately",
+    "retrieval_and_consistency": "enabled for all variants; only memory or clarification differs",
+    "answer_slots_per_repeat": null
+  }
+}
