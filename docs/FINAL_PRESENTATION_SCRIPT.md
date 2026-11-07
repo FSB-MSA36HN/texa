@@ -78,11 +78,11 @@
 
 ### Slide 7 — Ba lựa chọn thiết kế của TEXA (0:55)
 
-**Ý chính trên slide:** Scope rõ, semantic layer rõ, kết quả có thể kiểm tra.
+**Ý chính trên slide:** Texa kiểm soát cách hiểu, cách tính và ngữ cảnh hội thoại.
 
 **Lời nói:**
 
-“Có ba quyết định thiết kế chính. Thứ nhất, Texa chỉ làm trong một domain và một engine để kiểm soát chất lượng. Thứ hai, semantic catalog giữ định nghĩa metric và mapping của từng nguồn, thay vì để LLM tự đoán. Thứ ba, kết quả luôn đi kèm facts và SQL để người dùng có thể kiểm tra. Ba lựa chọn này giúp sản phẩm dễ giải thích và dễ đánh giá hơn.”
+“Texa đưa ra ba lựa chọn thiết kế để giảm việc LLM tự đoán. Thứ nhất, câu hỏi được chuẩn hóa thành QuerySpec gồm metric, nguồn, thời gian, filter và breakdown; nhờ vậy nhóm có thể kiểm tra Texa đang hiểu yêu cầu như thế nào trước khi sinh SQL. Thứ hai, semantic catalog giữ định nghĩa metric, mapping và schema; compiler kiểm tra các thông tin đó rồi tạo SQL tham số hóa, nên cách tính nhất quán trong phạm vi đã khai báo. Thứ ba, memory lưu các slot và kết quả đã xác nhận, còn hệ thống hỏi lại khi thông tin thiếu hoặc mơ hồ thay vì tự nối sai ngữ cảnh. Ba lựa chọn này giúp Texa dễ giải thích, dễ kiểm chứng và an toàn hơn khi dùng trong hội thoại.”
 
 ### Slide 8 — Kiến trúc đã triển khai (1:10)
 
