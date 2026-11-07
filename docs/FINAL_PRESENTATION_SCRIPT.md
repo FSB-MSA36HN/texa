@@ -60,7 +60,7 @@
 
 **Lời nói:**
 
-“Cosmetics và Olist đều thuộc domain thương mại điện tử nhưng ghi nhận dữ liệu khác nhau. Cosmetics có các event như xem sản phẩm, thêm vào giỏ và mua hàng; Olist tập trung vào đơn hàng, item và vòng đời xử lý đơn. Sự khác nhau này giúp nhóm kiểm tra xem hệ thống có thật sự hiểu nguồn dữ liệu hay chỉ học thuộc một cấu trúc. Mỗi truy vấn vẫn chỉ dùng một nguồn, không gộp hai nguồn thành một bảng chung.”
+“Nhóm chọn cả Cosmetics và Olist vì hai nguồn cùng thuộc e-commerce nhưng bổ sung cho nhau về góc nhìn dữ liệu. Cosmetics cho phép kiểm tra hành vi trước mua, như xem sản phẩm, thêm vào giỏ và mua hàng. Olist cho phép kiểm tra giao dịch và vòng đời đơn, như item, order và trạng thái xử lý. Nhờ vậy, nhóm đánh giá được semantic layer trên hai kiểu dữ liệu khác nhau, thay vì chỉ kiểm tra Texa trên một schema.”
 
 ### Slide 6 — Từ dữ liệu gốc đến event mart (1:10)
 
