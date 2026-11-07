@@ -108,13 +108,13 @@
 
 “Memory của Texa không chỉ lấy sáu lượt chat gần nhất. Sau mỗi truy vấn thành công, hệ thống lưu các slot của QuerySpec và mã tham chiếu kết quả. Khi người dùng nói ‘đổi sang desktop’ hoặc ‘giữ nguyên các điều kiện khác’, server chỉ cập nhật đúng slot được nêu, giữ các slot còn lại và kiểm tra lại trước khi chạy. Nếu câu hỏi không rõ đang tham chiếu kết quả nào, Texa phải hỏi lại thay vì tự đoán.”
 
-### Slide 11 — Khi catalog thay đổi, TEXA xử lý thế nào? (0:55)
+### Slide 11 — Catalog thay đổi: quy trình và tác động (0:55)
 
-**Ý chính trên slide:** Versioning và kiểm tra tương thích.
+**Ý chính trên slide:** Thay đổi catalog theo quy trình rõ ràng và không làm đổi nghĩa các truy vấn cũ một cách âm thầm.
 
 **Lời nói:**
 
-“Semantic catalog cũng có version. Khi catalog hoặc dataset snapshot thay đổi, QuerySpec cũ không được tự động diễn giải lại theo nghĩa mới. Texa kiểm tra version và từ chối khi ngữ cảnh không còn tương thích. Cách làm này giúp tránh việc hệ thống âm thầm trả một con số khác chỉ vì định nghĩa metric đã thay đổi.”
+“Khi cần đổi catalog, nhóm sửa metric, dimension hoặc mapping trong YAML; sau đó hệ thống validate cấu trúc, các liên kết và coverage với source trước khi publish thành một version mới. Câu hỏi mới sẽ dùng version mới. Nếu một truy vấn đang chạy, nó tiếp tục dùng version đã được đọc lúc bắt đầu, không đổi nghĩa giữa chừng. Nếu schema hoặc source thay đổi làm thiếu field, validation sẽ chặn truy vấn thay vì cố chạy. Với hội thoại hoặc QuerySpec cũ khác version, Texa không tự kế thừa theo định nghĩa mới mà yêu cầu người dùng hỏi lại. Như vậy thay đổi được kiểm soát và có thể truy vết.”
 
 **Chuyển ý:** “Tiếp theo, [Người 4] sẽ trình bày cách nhóm đánh giá Texa và kết quả chính.”
 
