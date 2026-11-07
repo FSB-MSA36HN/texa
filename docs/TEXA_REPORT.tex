@@ -1,10 +1,17 @@
 \documentclass[11pt,a4paper]{article}
-\usepackage{fontspec}
-\usepackage{polyglossia}
-\setdefaultlanguage{vietnamese}
-\setotherlanguage{english}
-\setmainfont{Noto Serif}
-\setsansfont{Noto Sans}
+\usepackage{iftex}
+\ifXeTeX
+  \usepackage{fontspec}
+  \usepackage{polyglossia}
+  \setdefaultlanguage{vietnamese}
+  \setotherlanguage{english}
+  \setmainfont{Noto Serif}
+  \setsansfont{Noto Sans}
+\else
+  \usepackage[utf8]{inputenc}
+  \usepackage[T5]{fontenc}
+  \usepackage[vietnamese,english]{babel}
+\fi
 \usepackage[a4paper,margin=2.4cm,top=2.2cm,bottom=2.3cm]{geometry}
 \usepackage{microtype}
 \usepackage{amsmath,amssymb}
