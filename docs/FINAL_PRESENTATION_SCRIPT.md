@@ -4,17 +4,17 @@
 
 | Người nói | Slide | Nội dung |
 |---|---:|---|
-| Người 1 | 1–4 | Giới thiệu, vấn đề, người dùng và phạm vi |
-| Người 2 | 5–6 | Hai nguồn dữ liệu, metric và lớp semantic catalog |
-| Người 3 | 7–11 | Kiến trúc, workflow, memory và trải nghiệm sản phẩm |
-| Người 4 | 12–15 | Thiết kế đánh giá và kết quả chính |
-| Người 5 | 16–18 | Ablation studies, giới hạn và kết luận |
+| Hoà | 1–4 | Giới thiệu, vấn đề, người dùng và phạm vi |
+| Dương | 5–6 | Hai nguồn dữ liệu, metric và lớp semantic catalog |
+| Hải | 7–11 | Kiến trúc, workflow, memory và trải nghiệm sản phẩm |
+| Hiệp | 12–15 | Thiết kế đánh giá và kết quả chính |
+| Đức | 16–18 | Ablation studies, giới hạn và kết luận |
 
-> Các con số benchmark dùng trong script là kết quả research-v3: cùng `gpt-6-luna`, cùng fixture, hai lần chạy cho mỗi phiên bản. Bộ dữ liệu do nhóm xây dựng, còn template/family overlap và chưa human-review hoặc sealed, nên đây là kết quả exploratory.
+> Các con số benchmark dùng trong script là kết quả research-v3: cùng `gpt-6-luna`, cùng snapshot dữ liệu cố định và hai lần chạy cho mỗi phiên bản. Bộ dữ liệu do nhóm xây dựng; vì vẫn còn các câu cùng dạng và chưa có holdout độc lập, đây là kết quả thăm dò.
 
 ---
 
-## Người 1 — Giới thiệu và bài toán
+## Hoà — Giới thiệu và bài toán
 
 ### Slide 1 — Texa: hỏi dữ liệu thương mại điện tử bằng ngôn ngữ tự nhiên (0:40)
 
@@ -30,7 +30,7 @@
 
 **Lời nói:**
 
-“Điểm khác biệt của Texa không nằm ở việc biến một câu hỏi thành SQL, vì LLM thông thường cũng có thể làm được điều đó. Điểm quan trọng là sau khi hỏi ‘doanh thu tháng trước’, người dùng có thể kiểm tra Texa đã hiểu câu hỏi theo metric nào, nguồn nào, kỳ nào và filter nào. Những thông tin này được giữ trong QuerySpec và semantic catalog, rồi mới dùng để tạo SQL. Như vậy người dùng không chỉ nhận một con số, mà còn biết con số đó được tính dựa trên căn cứ nào.”
+“Điểm khác biệt của Texa không nằm ở việc biến một câu hỏi thành SQL, vì LLM thông thường cũng có thể làm được điều đó. Điểm quan trọng là sau khi hỏi ‘doanh thu tháng trước’, người dùng có thể kiểm tra Texa đã hiểu câu hỏi theo chỉ số nào, nguồn nào, khoảng thời gian nào và điều kiện lọc nào. Những thông tin này được giữ trong QuerySpec và semantic catalog, rồi mới dùng để tạo SQL. Như vậy người dùng không chỉ nhận một con số, mà còn biết con số đó được tính dựa trên căn cứ nào.”
 
 ### Slide 3 — Phạm vi thực hiện (0:55)
 
@@ -46,13 +46,13 @@
 
 **Lời nói:**
 
-“Tám metric trên slide là tám phép đo gốc được định nghĩa trong semantic catalog, không phải toàn bộ số loại câu hỏi mà Texa trả lời. Từ mỗi metric, người dùng có thể kết hợp thời gian, filter và breakdown để tạo ra nhiều truy vấn và insight khác nhau trong phạm vi cho phép. Catalog còn quản lý dimensions, event roles và mapping. Một chi tiết cần nhớ là purchases đếm event mua item, không mặc định là số đơn hàng; còn buyer conversion của Olist dựa trên observed users, không phải toàn bộ visitors.”
+“Tám metric trên slide là tám phép đo gốc được định nghĩa trong semantic catalog, không phải toàn bộ số loại câu hỏi mà Texa trả lời. Từ mỗi metric, người dùng có thể kết hợp thời gian, filter và breakdown để tạo ra nhiều truy vấn và nhận định khác nhau trong phạm vi cho phép. Catalog còn quản lý chiều phân tích, vai trò sự kiện và mapping giữa các nguồn. Một chi tiết cần nhớ là purchases đếm event mua item, không mặc định là số đơn hàng; còn buyer conversion của Olist dựa trên số người dùng quan sát được, không phải toàn bộ người truy cập.”
 
-**Chuyển ý:** “Tiếp theo, bạn [Người 2] sẽ nói rõ dữ liệu và semantic catalog mà Texa sử dụng.”
+**Chuyển ý:** “Phần đầu đã giới thiệu bài toán và phạm vi. Tiếp theo, Dương sẽ trình bày hai nguồn dữ liệu và cách nhóm đưa dữ liệu về semantic layer.”
 
 ---
 
-## Người 2 — Dữ liệu và lớp ngữ nghĩa
+## Dương — Dữ liệu và lớp ngữ nghĩa
 
 ### Slide 5 — Vì sao chọn Cosmetics và Olist? (0:55)
 
@@ -70,11 +70,11 @@
 
 “Slide này mô tả quy trình ELT của Texa. Đầu tiên, hệ thống lấy dữ liệu gốc từ Cosmetics và Olist. Tiếp theo, dữ liệu được nạp vào PostgreSQL để giữ bản ghi theo từng nguồn. Sau đó, lớp transform chuẩn hóa kiểu dữ liệu, ngày, field và event role thành event rows. Cuối cùng, semantic catalog gắn định nghĩa metric, mapping và coverage. Kết quả là một lớp event thống nhất để Texa xử lý, nhưng vẫn giữ được ngữ nghĩa riêng của từng nguồn.”
 
-**Chuyển ý:** “Phần tiếp theo sẽ trình bày cách các thành phần đó phối hợp thành workflow của Texa.”
+**Chuyển ý:** “Khi dữ liệu đã được chuẩn hóa, Hải sẽ trình bày kiến trúc và cách Texa xử lý một câu hỏi.”
 
 ---
 
-## Người 3 — Kiến trúc và workflow sản phẩm
+## Hải — Kiến trúc và workflow sản phẩm
 
 ### Slide 7 — Kiến trúc đã triển khai (1:15)
 
@@ -82,7 +82,7 @@
 
 **Lời nói:**
 
-“Đây là kiến trúc triển khai đầy đủ của Texa. Đầu tiên, hệ thống nhận câu hỏi mới cùng memory có cấu trúc, gồm các slot và kết quả đã xác nhận. Nếu phù hợp, retrieval lấy các ví dụ đã xác minh và các mục catalog liên quan để đưa vào ngữ cảnh. Tiếp theo, LLM gọi để đề xuất candidate về intent, metric, nguồn và các điều kiện; consistency có thể gọi thêm các mẫu song song để chọn cách hiểu ổn định hơn. Phần code sau đó bind candidate vào QuerySpec, kiểm tra metric, source, thời gian, filter, breakdown và coverage; nếu thiếu hoặc mơ hồ thì hỏi lại. Compiler tạo SQL tham số hóa, còn sqlglot AST và sandbox read-only kiểm tra khả năng thực thi và tự sửa trong giới hạn. Cuối cùng PostgreSQL chạy truy vấn chỉ đọc, server tính facts và hiển thị SQL; LLM chỉ diễn giải các facts đã kiểm chứng thành nhận xét cho người dùng.”
+“Đây là sơ đồ đầy đủ của Texa. Hệ thống bắt đầu từ câu hỏi mới và phần memory đã được xác nhận. Nếu có ví dụ phù hợp, retrieval đưa ví dụ và các mục catalog liên quan vào ngữ cảnh. Sau đó LLM đề xuất cách hiểu gồm metric, nguồn và điều kiện lọc; khi cần, consistency gọi thêm mẫu song song để kiểm tra cách hiểu đó. Phần code chuyển đề xuất thành QuerySpec, kiểm tra lại với catalog và hỏi người dùng nếu thiếu hoặc mơ hồ. Compiler tạo SQL có tham số; sqlglot và sandbox read-only kiểm tra cấu trúc và khả năng chạy. Cuối cùng PostgreSQL thực thi, server tính facts, còn LLM chỉ viết nhận xét dựa trên facts đã kiểm chứng.”
 
 ### Slide 8 — Ví dụ về một câu hỏi đi qua hệ thống (1:00)
 
@@ -102,7 +102,7 @@
 
 ### Slide 10 — Structured memory cho hỏi tiếp (1:00)
 
-**Ý chính trên slide:** Memory lưu QuerySpec và result reference có cấu trúc.
+**Ý chính trên slide:** Memory lưu QuerySpec và mã tham chiếu kết quả theo cấu trúc.
 
 **Lời nói:**
 
@@ -116,19 +116,19 @@
 
 “Khi cần đổi catalog, nhóm sửa metric, dimension hoặc mapping trong YAML; sau đó hệ thống validate cấu trúc, các liên kết và coverage với source trước khi publish thành một version mới. Câu hỏi mới sẽ dùng version mới. Nếu một truy vấn đang chạy, nó tiếp tục dùng version đã được đọc lúc bắt đầu, không đổi nghĩa giữa chừng. Nếu schema hoặc source thay đổi làm thiếu field, validation sẽ chặn truy vấn thay vì cố chạy. Với hội thoại hoặc QuerySpec cũ khác version, Texa không tự kế thừa theo định nghĩa mới mà yêu cầu người dùng hỏi lại. Như vậy thay đổi được kiểm soát và có thể truy vết.”
 
-**Chuyển ý:** “Tiếp theo, [Người 4] sẽ trình bày cách nhóm đánh giá Texa và kết quả chính.”
+**Chuyển ý:** “Như vậy, catalog có version và mọi thay đổi đều được kiểm soát. Tiếp theo, Hiệp sẽ trình bày cách nhóm benchmark và đọc kết quả.”
 
 ---
 
-## Người 4 — Đánh giá chính
+## Hiệp — Đánh giá chính
 
 ### Slide 12 — Đánh giá: baseline, Texa và bộ benchmark (0:55)
 
-**Ý chính trên slide:** Hai hệ thống được so sánh trên cùng model, câu hỏi, fixture và cách chấm; khác nhau ở thông tin và workflow được phép dùng.
+**Ý chính trên slide:** Hai hệ thống dùng cùng model, câu hỏi, snapshot dữ liệu và cách chấm; khác nhau ở thông tin và workflow được phép dùng.
 
 **Lời nói:**
 
-“Slide này giải thích cách nhóm so sánh công bằng. Baseline là LLM sinh SQL trực tiếp, dùng cùng gpt-6-luna nhưng chỉ nhận câu hỏi, schema PostgreSQL và source được chọn; baseline không nhận semantic catalog, định nghĩa nghiệp vụ, verified examples hay QuerySpec workflow. Texa đầy đủ cũng dùng model đó, nhưng có thêm semantic catalog, memory, retrieval, consistency khi cần, QuerySpec, compiler và validation. Hai bên cùng chạy trên một bộ benchmark gồm 300 câu đơn, 60 tình huống clarification, 40 hội thoại và 40 câu ngoài phạm vi, với dữ liệu Cosmetics và Olist, fixture cố định. Mỗi cấu hình chạy hai lần; câu trả lời được chấm bằng cách so bảng kết quả với gold, không yêu cầu chuỗi SQL giống nhau. Bộ test vẫn còn template overlap và chưa có holdout độc lập, nên kết quả dùng để kiểm tra hướng thiết kế trong scope hiện tại, chưa suy ra accuracy production.”
+“Slide này giải thích cách nhóm so sánh công bằng. Baseline là LLM sinh SQL trực tiếp, dùng cùng gpt-6-luna nhưng chỉ nhận câu hỏi, schema PostgreSQL và nguồn được chọn; baseline không nhận semantic catalog, định nghĩa nghiệp vụ, ví dụ đã xác minh hay workflow QuerySpec. Texa đầy đủ dùng đúng model đó nhưng có thêm semantic catalog, memory, retrieval, consistency khi cần, QuerySpec, compiler và validation. Hai bên cùng chạy trên một bộ test gồm 300 câu đơn, 60 tình huống hỏi lại, 40 hội thoại và 40 câu ngoài phạm vi, trên dữ liệu Cosmetics và Olist với điều kiện chạy cố định. Mỗi cấu hình chạy hai lần; kết quả được so với bảng gold, không yêu cầu câu SQL phải giống nhau. Bộ test vẫn còn một số câu cùng dạng và chưa có holdout độc lập, nên đây là bằng chứng trong scope hiện tại, chưa phải độ chính xác khi triển khai thực tế.”
 
 ### Slide 13 — QUY TẮC ĐÁNH GIÁ (0:55)
 
@@ -136,7 +136,7 @@
 
 **Lời nói:**
 
-“Phần này gồm hai lớp. Thứ nhất là quy tắc đánh giá: hai câu SQL không cần giống nhau; chỉ cần chạy trên cùng snapshot và trả về cùng bảng gold theo rubric. Bảng phải khớp cột, dòng, NULL và duplicate; thứ tự dòng chỉ quan trọng khi đề bài yêu cầu. Sai số số học cho phép là 1e-6, còn lỗi hoặc timeout vẫn tính là sai. Thứ hai là metric: câu hỏi đơn dùng business accuracy; clarification chấm cả bảng cuối và việc hỏi lại đúng lúc; hội thoại chấm từng answer slot, action và tham chiếu. Thời gian, số lần gọi model và token chỉ là các chỉ số bổ sung.”
+“Phần này gồm hai lớp. Thứ nhất là quy tắc: hai câu SQL không cần giống nhau; chỉ cần chạy trên cùng snapshot và trả về cùng bảng gold. Bảng phải khớp cột, dòng, NULL và duplicate; thứ tự dòng chỉ quan trọng khi câu hỏi yêu cầu. Sai số số học cho phép là 1e-6, còn lỗi hoặc timeout vẫn tính là sai. Thứ hai là metric: câu hỏi đơn dùng tỷ lệ bảng đúng; clarification chấm cả bảng cuối và việc hệ thống có hỏi lại đúng lúc; hội thoại chấm từng lượt có đáp án, cùng với hành động và việc tham chiếu đúng kết quả trước. Thời gian, số lần gọi model và token là các chỉ số bổ sung.”
 
 ### Slide 14 — Kết quả benchmark — câu hỏi đơn (0:55)
 
@@ -154,11 +154,11 @@
 
 “Các kết quả không nên gộp thành một điểm duy nhất. Hội thoại đo khả năng giữ và cập nhật ngữ cảnh; clarification đo khả năng nhận ra khi nào cần hỏi lại; ngoài scope đo khả năng từ chối hoặc hướng người dùng về phạm vi hỗ trợ. Texa tốt hơn rõ rệt ở việc hỏi lại và xử lý ngoài phạm vi, còn retrieval-only có thể nổi bật ở một số hội thoại. Điều này cho thấy hiệu quả của component phụ thuộc vào loại tác vụ.”
 
-**Chuyển ý:** “Phần cuối sẽ đi sâu vào ablation studies, giới hạn của kết quả và kết luận của nhóm.”
+**Chuyển ý:** “Sau khi xem kết quả chính, Đức sẽ trình bày các ablation và những nhận định nhóm rút ra.”
 
 ---
 
-## Người 5 — Ablation studies và kết luận
+## Đức — Ablation studies và kết luận
 
 ### Slide 16 — Ablation — retrieval và consistency (0:50)
 
@@ -174,7 +174,7 @@
 
 **Lời nói:**
 
-“Memory có ảnh hưởng nhỏ trong bộ test này, nên chưa đủ để khẳng định một cách lưu ngữ cảnh nào luôn tốt hơn. Clarification tạo khác biệt rõ hơn vì nó ngăn hệ thống tự đoán khi câu hỏi thiếu hoặc mơ hồ. Đây là lý do Texa ưu tiên giữ state có cấu trúc và hỏi lại đúng lúc thay vì chỉ kéo dài cửa sổ hội thoại.”
+“Trong bộ test này, memory có ảnh hưởng nhỏ nên chưa đủ để khẳng định một cách lưu ngữ cảnh nào luôn tốt hơn. Clarification tạo khác biệt rõ hơn vì nó ngăn hệ thống tự đoán khi câu hỏi thiếu hoặc mơ hồ. Vì vậy Texa ưu tiên giữ trạng thái có cấu trúc và hỏi lại đúng lúc, thay vì chỉ kéo dài cửa sổ hội thoại.”
 
 ### Slide 18 — Kết luận (0:45)
 
@@ -182,7 +182,7 @@
 
 **Lời nói:**
 
-“Qua kết quả đánh giá, nhóm rút ra ba insight. Thứ nhất, semantic layer và workflow kiểm soát giúp LLM trả lời có căn cứ hơn so với việc sinh SQL trực tiếp từ schema. Thứ hai, clarification có vai trò rõ ràng trong việc tránh đoán sai; memory có cấu trúc là nền tảng để xử lý câu hỏi nối tiếp. Thứ ba, retrieval và consistency không phải lúc nào cũng cùng tăng chất lượng, nên cần chọn theo tác vụ và đo bằng ablation. Bước tiếp theo là review gold độc lập và khóa holdout trước khi mở rộng scope.”
+“Qua kết quả đánh giá, nhóm rút ra ba nhận định. Thứ nhất, semantic layer và workflow kiểm soát giúp LLM trả lời có căn cứ hơn so với việc sinh SQL trực tiếp từ schema. Thứ hai, clarification có vai trò rõ ràng trong việc tránh đoán sai; memory có cấu trúc là nền tảng để xử lý câu hỏi nối tiếp. Thứ ba, retrieval và consistency không phải lúc nào cũng cùng tăng chất lượng, nên cần chọn theo tác vụ và đo bằng ablation. Bước tiếp theo là review đáp án gold độc lập và khóa một bộ holdout mới trước khi mở rộng scope. Cảm ơn cô và mọi người đã lắng nghe.”
 
 ---
 
@@ -191,5 +191,5 @@
 - Nói “business accuracy” là **tỷ lệ bảng kết quả khớp đáp án chuẩn**, không phải tỷ lệ chuỗi SQL giống nhau.
 - Baseline và Texa dùng cùng model, nhưng baseline chỉ nhận schema; Texa có semantic catalog và workflow. Vì vậy đây là so sánh hệ thống với thông tin đầu vào khác nhau.
 - Không nói “Texa đúng trong mọi trường hợp” hoặc “đã chứng minh tổng quát cho mọi database”. Scope chỉ là event e-commerce, PostgreSQL, hai nguồn Cosmetics/Olist.
-- Hai nguồn và nested extension là dữ liệu synthetic. Các con số benchmark là exploratory, chưa phải holdout độc lập.
+- Hai nguồn và nested extension là dữ liệu tổng hợp. Các con số benchmark là mang tính thăm dò, chưa phải holdout độc lập.
 - Các slide 16–17 là hai nhóm ablation khác nhau: slide 16 kiểm tra retrieval/consistency; slide 17 kiểm tra memory/clarification.
