@@ -84,21 +84,21 @@
 
 “Đây là kiến trúc triển khai đầy đủ của Texa. Đầu tiên, hệ thống nhận câu hỏi mới cùng memory có cấu trúc, gồm các slot và kết quả đã xác nhận. Nếu phù hợp, retrieval lấy các ví dụ đã xác minh và các mục catalog liên quan để đưa vào ngữ cảnh. Tiếp theo, LLM gọi để đề xuất candidate về intent, metric, nguồn và các điều kiện; consistency có thể gọi thêm các mẫu song song để chọn cách hiểu ổn định hơn. Phần code sau đó bind candidate vào QuerySpec, kiểm tra metric, source, thời gian, filter, breakdown và coverage; nếu thiếu hoặc mơ hồ thì hỏi lại. Compiler tạo SQL tham số hóa, còn sqlglot AST và sandbox read-only kiểm tra khả năng thực thi và tự sửa trong giới hạn. Cuối cùng PostgreSQL chạy truy vấn chỉ đọc, server tính facts và hiển thị SQL; LLM chỉ diễn giải các facts đã kiểm chứng thành nhận xét cho người dùng.”
 
-### Slide 8 — Một câu hỏi đi qua hệ thống (1:00)
+### Slide 8 — Ví dụ về một câu hỏi đi qua hệ thống (1:00)
 
-**Ý chính trên slide:** Ví dụ cụ thể từ câu hỏi đến bảng kết quả.
-
-**Lời nói:**
-
-“Ở slide này, ta nhìn một câu hỏi cụ thể thay vì chỉ nhìn sơ đồ. Texa xác định người dùng đang hỏi metric nào, trong khoảng thời gian nào và trên nguồn nào. Các giá trị như event role hoặc trạng thái mua hàng được lấy từ catalog, không tự dịch theo cảm tính. Cuối cùng hệ thống trả về bảng kết quả, các facts chính và câu SQL tương ứng để người dùng có thể xem lại.”
-
-### Slide 9 — Kiểm tra trước và sau truy vấn (0:55)
-
-**Ý chính trên slide:** Kiểm tra semantic, schema, AST và kết quả.
+**Ý chính trên slide:** Một câu hỏi cụ thể được chuyển thành QuerySpec rồi thành kết quả có thể đối chứng.
 
 **Lời nói:**
 
-“Texa kiểm tra ở cả trước và sau khi chạy SQL. Trước khi chạy, QuerySpec phải hợp lệ với catalog, nguồn và schema hiện tại. Sau khi model sinh SQL, AST validator kiểm tra cấu trúc truy vấn, sandbox kiểm tra khả năng thực thi và lớp kết quả kiểm tra các điều kiện business contract. Nếu thiếu dữ liệu thì hệ thống không biến nó thành số 0. Nếu nguồn không có field cần thiết, Texa phải nói rõ là không hỗ trợ.”
+“Sau khi xem kiến trúc tổng quát, ta đi qua một ví dụ cụ thể. Người dùng hỏi doanh thu theo danh mục của Cosmetics trong tháng 12 năm 2019. Texa lấy đúng nguồn, metric, breakdown và khoảng thời gian để tạo QuerySpec. Sau đó compiler tạo SQL tham số hóa và PostgreSQL chạy ở chế độ chỉ đọc. Kết quả trả về gồm bảng dữ liệu, các facts chính và SQL tương ứng, nên người dùng có thể kiểm tra cả câu hỏi đã được hiểu như thế nào lẫn con số được tính ra sao.”
+
+### Slide 9 — Các lớp kiểm tra để bảo đảm câu trả lời có căn cứ (0:55)
+
+**Ý chính trên slide:** Mỗi cổng kiểm tra chặn một loại sai khác nhau.
+
+**Lời nói:**
+
+“Slide này trả lời câu hỏi: vì sao Texa không chỉ cần sinh ra một câu SQL chạy được? Trước khi chạy, hệ thống kiểm tra QuerySpec, định nghĩa metric, source coverage và các field cần thiết; nếu thiếu hoặc mơ hồ thì hỏi lại, không tự đoán. Trong khi chạy, SQL được tham số hóa, chỉ đọc và bị giới hạn thời gian, số dòng. Sau khi chạy, server tính facts từ kết quả thật để đối chiếu; LLM chỉ được diễn giải các facts đó. Vì vậy slide 7 cho thấy pipeline gồm những thành phần nào, còn slide 9 cho thấy mỗi lớp bảo vệ chất lượng ở điểm nào.”
 
 ### Slide 10 — Structured memory cho hỏi tiếp (1:00)
 
