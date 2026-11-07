@@ -8,7 +8,7 @@
 | Người 2 | 5–6 | Hai nguồn dữ liệu, metric và lớp semantic catalog |
 | Người 3 | 7–11 | Kiến trúc, workflow, memory và trải nghiệm sản phẩm |
 | Người 4 | 12–15 | Thiết kế đánh giá và kết quả chính |
-| Người 5 | 16–19 | Ablation studies, giới hạn và kết luận |
+| Người 5 | 16–18 | Ablation studies, giới hạn và kết luận |
 
 > Các con số benchmark dùng trong script là kết quả research-v3: cùng `gpt-6-luna`, cùng fixture, hai lần chạy cho mỗi phiên bản. Bộ dữ liệu do nhóm xây dựng, còn template/family overlap và chưa human-review hoặc sealed, nên đây là kết quả exploratory.
 
@@ -130,29 +130,29 @@
 
 “Slide này giải thích cách nhóm so sánh công bằng. Baseline là LLM sinh SQL trực tiếp, dùng cùng gpt-6-luna nhưng chỉ nhận câu hỏi, schema PostgreSQL và source được chọn; baseline không nhận semantic catalog, định nghĩa nghiệp vụ, verified examples hay QuerySpec workflow. Texa đầy đủ cũng dùng model đó, nhưng có thêm semantic catalog, memory, retrieval, consistency khi cần, QuerySpec, compiler và validation. Hai bên cùng chạy trên một bộ benchmark gồm 300 câu đơn, 60 tình huống clarification, 40 hội thoại và 40 câu ngoài phạm vi, với dữ liệu Cosmetics và Olist, fixture cố định. Mỗi cấu hình chạy hai lần; câu trả lời được chấm bằng cách so bảng kết quả với gold, không yêu cầu chuỗi SQL giống nhau. Bộ test vẫn còn template overlap và chưa có holdout độc lập, nên kết quả dùng để kiểm tra hướng thiết kế trong scope hiện tại, chưa suy ra accuracy production.”
 
-### Slide 13 — Chấm kết quả, không chấm chuỗi SQL (0:50)
+### Slide 13 — QUY TẮC ĐÁNH GIÁ (0:55)
 
-**Ý chính trên slide:** Business accuracy dựa trên bảng kết quả.
-
-**Lời nói:**
-
-“Metric chính không yêu cầu hai câu SQL phải giống từng ký tự. Một câu trả lời được tính là đúng khi bảng kết quả khớp với đáp án gold và thỏa business contract. Với hội thoại, nhóm chấm theo từng answer slot. Clarification được chấm thêm ở hai mặt: bảng cuối cùng có đúng không và hệ thống có hỏi lại đúng lúc không. Cách chấm này phản ánh kết quả mà người dùng thực sự nhìn thấy.”
-
-### Slide 14 — Kết quả chính: câu hỏi đơn (1:00)
-
-**Ý chính trên slide:** Texa 91,25%, baseline schema-only 22,50%.
+**Ý chính trên slide:** Tách rõ cách xác định một kết quả đúng và các metric dùng để đo.
 
 **Lời nói:**
 
-“Trên 200 câu test được chạy hai lần, baseline chỉ nhận schema đạt 22,50% business accuracy. Texa đạt 91,25%. Các biến thể Texa có retrieval hoặc consistency đạt từ 87,00% đến 90,25%. Khoảng cách lớn cho thấy semantic catalog và workflow có giá trị trong bộ candidate này. Tuy nhiên, vì baseline không có định nghĩa nghiệp vụ giống Texa, chúng ta không được nói rằng toàn bộ mức tăng chỉ đến từ một component riêng lẻ.”
+“Phần này gồm hai lớp. Thứ nhất là quy tắc đánh giá: hai câu SQL không cần giống nhau; chỉ cần chạy trên cùng snapshot và trả về cùng bảng gold theo rubric. Bảng phải khớp cột, dòng, NULL và duplicate; thứ tự dòng chỉ quan trọng khi đề bài yêu cầu. Sai số số học cho phép là 1e-6, còn lỗi hoặc timeout vẫn tính là sai. Thứ hai là metric: câu hỏi đơn dùng business accuracy; clarification chấm cả bảng cuối và việc hỏi lại đúng lúc; hội thoại chấm từng answer slot, action và tham chiếu. Thời gian, số lần gọi model và token chỉ là các chỉ số bổ sung.”
 
-### Slide 15 — Hội thoại, hỏi lại và ngoài phạm vi (1:00)
+### Slide 14 — Kết quả benchmark — câu hỏi đơn (0:55)
 
-**Ý chính trên slide:** Mỗi loại tác vụ có metric riêng.
+**Ý chính trên slide:** Semantic workflow tạo khác biệt lớn trên các câu hỏi đơn trong scope đã chọn.
 
 **Lời nói:**
 
-“Với hội thoại, Texa đạt 94,81% trên 616 answer slots; retrieval-only đạt 96,10% trong suite này. Với clarification, bảng kết quả cuối của Texa đạt 100% trong bộ revision1 và hành động hỏi lại cũng đạt 100% ở phép đo chính trước đó. Ngoài scope, Texa đạt 95% action accuracy. Các con số này không được gộp thành một điểm overall, vì chúng đo các năng lực khác nhau.”
+“Kết quả chính cho thấy khoảng cách lớn giữa baseline schema-only và Texa. Điều này gợi ý rằng định nghĩa nghiệp vụ, QuerySpec, compiler và validation đang giải quyết đúng điểm yếu của việc để LLM tự đoán từ schema. Retrieval có đóng góp tích cực, còn consistency chưa cho thấy hiệu quả ổn định ở mọi cấu hình. Đây là bằng chứng trong benchmark hiện tại, chưa phải kết luận cho mọi database.”
+
+### Slide 15 — Kết quả theo loại tác vụ (0:55)
+
+**Ý chính trên slide:** Mỗi loại tác vụ cho thấy một khía cạnh khác nhau của hệ thống.
+
+**Lời nói:**
+
+“Các kết quả không nên gộp thành một điểm duy nhất. Hội thoại đo khả năng giữ và cập nhật ngữ cảnh; clarification đo khả năng nhận ra khi nào cần hỏi lại; ngoài scope đo khả năng từ chối hoặc hướng người dùng về phạm vi hỗ trợ. Texa tốt hơn rõ rệt ở việc hỏi lại và xử lý ngoài phạm vi, còn retrieval-only có thể nổi bật ở một số hội thoại. Điều này cho thấy hiệu quả của component phụ thuộc vào loại tác vụ.”
 
 **Chuyển ý:** “Phần cuối sẽ đi sâu vào ablation studies, giới hạn của kết quả và kết luận của nhóm.”
 
@@ -160,37 +160,29 @@
 
 ## Người 5 — Ablation studies và kết luận
 
-### Slide 16 — Ablation: thành phần nào giúp ích? (0:55)
+### Slide 16 — Ablation — retrieval và consistency (0:50)
 
-**Ý chính trên slide:** Retrieval và consistency được bật/tắt riêng.
-
-**Lời nói:**
-
-“Ở ablation đầu tiên, nhóm giữ catalog và pipeline nền, sau đó bật hoặc tắt retrieval và consistency. Kết quả cho thấy Texa đạt 91,25% ở câu đơn, retrieval-only đạt 90,25%, còn consistency-only đạt 87,00%. Ở hội thoại, retrieval-only đạt 96,10%, cao hơn Texa đầy đủ 94,81%. Điều này cho thấy không có component nào cải thiện đồng đều mọi suite; cần đọc kết quả theo từng loại tác vụ.”
-
-### Slide 17 — Ablation: memory và clarification (1:05)
-
-**Ý chính trên slide:** Ablation mới, giữ retrieval và consistency bật.
+**Ý chính trên slide:** Kiểm tra riêng đóng góp của retrieval và consistency.
 
 **Lời nói:**
 
-“Bảng này là một ablation khác. Retrieval và consistency được giữ bật; nhóm chỉ thay memory hoặc clarification. Structured memory đạt 84,58%, window-6 đạt 85,55% và without memory đạt 83,93% trên 616 answer slots. Chênh lệch memory còn nhỏ nên chưa đủ để kết luận window-6 hay structured memory tốt hơn một cách ổn định. Clarification có tác động rõ hơn: bật clarification đạt 86,67% so với 62,50% khi tắt; policy accuracy lần lượt là 75% và 50%. Đây vẫn là kết quả exploratory trên dữ liệu tổng hợp.”
+“Ablation này giữ nguyên catalog và pipeline, chỉ thay retrieval và consistency. Insight chính là retrieval giúp ích rõ hơn trên bộ test này, trong khi consistency không cải thiện ổn định ở mọi loại tác vụ. Vì vậy không nên mặc định thêm mọi component sẽ luôn làm hệ thống tốt hơn; mỗi component cần được kích hoạt theo đúng tình huống và được kiểm chứng bằng benchmark riêng.”
 
-### Slide 18 — Kiểm thử thực tế và giới hạn (0:50)
+### Slide 17 — Ablation — memory và clarification (0:55)
 
-**Ý chính trên slide:** Kết quả test phần mềm và browser cần được phân biệt với benchmark.
-
-**Lời nói:**
-
-“Các test backend và Playwright kiểm tra chức năng của sản phẩm; chúng không thay thế benchmark accuracy. Một số browser observation trên slide là kết quả lịch sử với cấu hình cũ, nên không dùng để khẳng định chất lượng research-v3 hiện tại. Trước khi demo cho nhiều người dùng đồng thời, nhóm vẫn cần chạy lại browser E2E trên Texa đầy đủ và kiểm tra tải.”
-
-### Slide 19 — Kết luận (0:55)
-
-**Ý chính trên slide:** Scope rõ, có bằng chứng ban đầu, còn bước kiểm chứng tiếp theo.
+**Ý chính trên slide:** Memory và clarification giải quyết hai vấn đề khác nhau trong hội thoại.
 
 **Lời nói:**
 
-“Texa hiện là một trợ lý phân tích event e-commerce trên PostgreSQL, dành cho PM, PO và quản lý không chuyên SQL. Trong scope đã chọn, Texa đạt 91,25% ở câu hỏi đơn so với 22,50% của baseline schema-only; các ablation cho thấy semantic workflow, retrieval và clarification đều có vai trò, nhưng hiệu quả thay đổi theo loại tác vụ. Bước tiếp theo là review gold độc lập, khóa một holdout mới, mở rộng test hội thoại và chạy lại browser E2E trước khi đưa ra kết luận rộng hơn. Cảm ơn cô và mọi người đã lắng nghe.”
+“Memory có ảnh hưởng nhỏ trong bộ test này, nên chưa đủ để khẳng định một cách lưu ngữ cảnh nào luôn tốt hơn. Clarification tạo khác biệt rõ hơn vì nó ngăn hệ thống tự đoán khi câu hỏi thiếu hoặc mơ hồ. Đây là lý do Texa ưu tiên giữ state có cấu trúc và hỏi lại đúng lúc thay vì chỉ kéo dài cửa sổ hội thoại.”
+
+### Slide 18 — Kết luận (0:45)
+
+**Ý chính trên slide:** Texa có giá trị khi semantic layer, compiler, memory và clarification phối hợp đúng phạm vi.
+
+**Lời nói:**
+
+“Qua kết quả đánh giá, nhóm rút ra ba insight. Thứ nhất, semantic layer và workflow kiểm soát giúp LLM trả lời có căn cứ hơn so với việc sinh SQL trực tiếp từ schema. Thứ hai, clarification có vai trò rõ ràng trong việc tránh đoán sai; memory có cấu trúc là nền tảng để xử lý câu hỏi nối tiếp. Thứ ba, retrieval và consistency không phải lúc nào cũng cùng tăng chất lượng, nên cần chọn theo tác vụ và đo bằng ablation. Bước tiếp theo là review gold độc lập và khóa holdout trước khi mở rộng scope.”
 
 ---
 
@@ -200,4 +192,4 @@
 - Baseline và Texa dùng cùng model, nhưng baseline chỉ nhận schema; Texa có semantic catalog và workflow. Vì vậy đây là so sánh hệ thống với thông tin đầu vào khác nhau.
 - Không nói “Texa đúng trong mọi trường hợp” hoặc “đã chứng minh tổng quát cho mọi database”. Scope chỉ là event e-commerce, PostgreSQL, hai nguồn Cosmetics/Olist.
 - Hai nguồn và nested extension là dữ liệu synthetic. Các con số benchmark là exploratory, chưa phải holdout độc lập.
-- Các slide 16–17 là hai nhóm ablation khác nhau: slide 18 kiểm tra retrieval/consistency; slide 19 kiểm tra memory/clarification.
+- Các slide 16–17 là hai nhóm ablation khác nhau: slide 16 kiểm tra retrieval/consistency; slide 17 kiểm tra memory/clarification.
