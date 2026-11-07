@@ -62,13 +62,13 @@
 
 “Nhóm chọn cả Cosmetics và Olist vì hai nguồn cùng thuộc e-commerce nhưng bổ sung cho nhau về góc nhìn dữ liệu. Cosmetics cho phép kiểm tra hành vi trước mua, như xem sản phẩm, thêm vào giỏ và mua hàng. Olist cho phép kiểm tra giao dịch và vòng đời đơn, như item, order và trạng thái xử lý. Nhờ vậy, nhóm đánh giá được semantic layer trên hai kiểu dữ liệu khác nhau, thay vì chỉ kiểm tra Texa trên một schema.”
 
-### Slide 6 — Từ dữ liệu gốc đến event mart (1:10)
+### Slide 6 — ELT: từ dữ liệu nguồn đến semantic layer (0:55)
 
-**Ý chính trên slide:** Adapter, event rows và semantic contract.
+**Ý chính trên slide:** Extract → Load → Transform → Semantic layer.
 
 **Lời nói:**
 
-“Mỗi nguồn có adapter riêng để đưa dữ liệu về dạng event rows trong PostgreSQL. Bên trên lớp dữ liệu đó là semantic catalog: catalog mô tả metric, event role, field, mapping và độ bao phủ của từng nguồn. Nhờ vậy hệ thống biết một metric được tính thế nào, event nào được dùng và nguồn nào có hoặc không có trường cần thiết. Bộ đánh giá gồm 300 câu đơn, 60 tình huống clarification, 40 hội thoại dài và 40 câu ngoài phạm vi. Dữ liệu và nested extension là synthetic, còn đáp án gold được kiểm tra độc lập trên ba fixture worlds.”
+“Slide này mô tả quy trình ELT của Texa. Đầu tiên, hệ thống lấy dữ liệu gốc từ Cosmetics và Olist. Tiếp theo, dữ liệu được nạp vào PostgreSQL để giữ bản ghi theo từng nguồn. Sau đó, lớp transform chuẩn hóa kiểu dữ liệu, ngày, field và event role thành event rows. Cuối cùng, semantic catalog gắn định nghĩa metric, mapping và coverage. Kết quả là một lớp event thống nhất để Texa xử lý, nhưng vẫn giữ được ngữ nghĩa riêng của từng nguồn.”
 
 **Chuyển ý:** “Phần tiếp theo sẽ trình bày cách các thành phần đó phối hợp thành workflow của Texa.”
 

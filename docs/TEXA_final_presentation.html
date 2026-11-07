@@ -304,62 +304,34 @@
 <!-- ==================== SLIDE 05: Vì sao chọn Cosmetics và Olist? ==================== -->
 <section class="slide" id="slide-05" aria-label="05. Vì sao chọn Cosmetics và Olist?" data-speaker="Người 2"><div class="canvas"><div class="text" style="left:4.166667%;top:5.555556%;width:91.666667%;font-size:1.145833cqw;font-weight:700;color:#087F82;">TEXA • BÁO CÁO FINAL</div><div class="text" style="left:4.166667%;top:10.648148%;width:91.666667%;font-size:3.125000cqw;font-weight:700;color:#132F46;">Vì sao chọn Cosmetics và Olist?</div><div class="text" style="left:4.166667%;top:18.981481%;width:91.666667%;font-size:1.718750cqw;font-weight:400;color:#526574;">Hai nguồn cùng domain nhưng khác góc nhìn dữ liệu; bổ sung cho nhau để kiểm tra semantic layer.</div><div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:26.851852%;width:44.791667%;height:45.833333%;background:#F0F5F8;"></div><div class="text" style="left:5.729167%;top:29.166667%;width:41.666667%;font-size:1.406250cqw;font-weight:700;color:#087F82;">HÀNH VI NGƯỜI DÙNG</div><div class="text" style="left:5.729167%;top:34.259259%;width:41.666667%;font-size:2.239583cqw;font-weight:700;color:#132F46;">Cosmetics • USD</div><div class="text" style="left:5.729167%;top:42.129630%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Luồng sự kiện xem → giỏ → mua.</div><div class="text" style="left:5.729167%;top:48.333333%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Có product views và sessions.</div><div class="text" style="left:5.729167%;top:54.537037%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Kiểm thử chỉ số về người dùng và hành vi.</div><div class="text" style="left:5.729167%;top:60.740741%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Không có dữ liệu giao hàng / đánh giá.</div><div class="shape roundRect" aria-hidden="true" style="left:51.041667%;top:26.851852%;width:44.791667%;height:45.833333%;background:#F0F5F8;"></div><div class="text" style="left:52.604167%;top:29.166667%;width:41.666667%;font-size:1.406250cqw;font-weight:700;color:#087F82;">BỐI CẢNH GIAO DỊCH</div><div class="text" style="left:52.604167%;top:34.259259%;width:41.666667%;font-size:2.239583cqw;font-weight:700;color:#132F46;">Olist • BRL</div><div class="text" style="left:52.604167%;top:42.129630%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Dữ liệu quan hệ: đơn, item và lifecycle.</div><div class="text" style="left:52.604167%;top:48.333333%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Purchase được biểu diễn theo từng item.</div><div class="text" style="left:52.604167%;top:54.537037%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Kiểm thử ánh xạ event và phân biệt item / order.</div><div class="text" style="left:52.604167%;top:60.740741%;width:41.666667%;font-size:1.614583cqw;font-weight:400;color:#132F46;">• Không ghi nhận product views / sessions.</div><div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:76.851852%;width:91.666667%;height:14.814815%;background:#132F46;"></div><div class="text" style="left:5.729167%;top:78.703704%;width:88.541667%;font-size:1.666667cqw;font-weight:700;color:#FFFFFF;">VÌ SAO CHỌN CẢ HAI?</div><div class="text" style="left:5.729167%;top:84.259259%;width:88.541667%;font-size:1.510417cqw;font-weight:400;color:#D4EBED;">Cosmetics kiểm tra hành vi trước mua; Olist kiểm tra giao dịch và vòng đời đơn.<br>Hai nguồn khác nhau nhưng bổ sung cho nhau: một bên thử funnel/event, một bên thử item/order/lifecycle.</div></div></section>
 
-<!-- ==================== SLIDE 06: Từ dữ liệu gốc đến event mart ==================== -->
-<section class="slide" id="slide-06" aria-label="06. Từ dữ liệu gốc đến event mart" data-speaker="Người 2">
+<!-- ==================== SLIDE 06: ELT: từ dữ liệu nguồn đến semantic layer ==================== -->
+<section class="slide" id="slide-06" aria-label="06. ELT: từ dữ liệu nguồn đến semantic layer" data-speaker="Người 2">
   <div class="canvas">
-    <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:36.574074%;width:17.1875%;height:21.759259%;background:#F0F5F8;"></div>
-    <div class="shape rect" aria-hidden="true" style="left:4.166667%;top:36.574074%;width:17.1875%;height:0.740741%;background:#087F82;"></div>
-    <div class="shape rect" aria-hidden="true" style="left:21.510417%;top:47.222222%;width:0.885417%;height:0.462963%;background:#087F82;"></div>
-    <div class="shape arrow" aria-hidden="true" style="left:21.614583%;top:46.296296%;width:0.78125%;height:1.851852%;background:#087F82;"></div>
-    <div class="shape roundRect" aria-hidden="true" style="left:22.65625%;top:36.574074%;width:17.1875%;height:21.759259%;background:#F0F5F8;"></div>
-    <div class="shape rect" aria-hidden="true" style="left:22.65625%;top:36.574074%;width:17.1875%;height:0.740741%;background:#087F82;"></div>
-    <div class="shape rect" aria-hidden="true" style="left:40%;top:47.222222%;width:0.885417%;height:0.462963%;background:#087F82;"></div>
-    <div class="shape arrow" aria-hidden="true" style="left:40.104167%;top:46.296296%;width:0.78125%;height:1.851852%;background:#087F82;"></div>
-    <div class="shape roundRect" aria-hidden="true" style="left:41.145833%;top:36.574074%;width:17.1875%;height:21.759259%;background:#F0F5F8;"></div>
-    <div class="shape rect" aria-hidden="true" style="left:41.145833%;top:36.574074%;width:17.1875%;height:0.740741%;background:#087F82;"></div>
-    <div class="shape rect" aria-hidden="true" style="left:58.489583%;top:47.222222%;width:0.885417%;height:0.462963%;background:#087F82;"></div>
-    <div class="shape arrow" aria-hidden="true" style="left:58.59375%;top:46.296296%;width:0.78125%;height:1.851852%;background:#087F82;"></div>
-    <div class="shape roundRect" aria-hidden="true" style="left:59.635417%;top:36.574074%;width:17.1875%;height:21.759259%;background:#F0F5F8;"></div>
-    <div class="shape rect" aria-hidden="true" style="left:59.635417%;top:36.574074%;width:17.1875%;height:0.740741%;background:#087F82;"></div>
-    <div class="shape rect" aria-hidden="true" style="left:76.979167%;top:47.222222%;width:0.885417%;height:0.462963%;background:#087F82;"></div>
-    <div class="shape arrow" aria-hidden="true" style="left:77.083333%;top:46.296296%;width:0.78125%;height:1.851852%;background:#087F82;"></div>
-    <div class="shape roundRect" aria-hidden="true" style="left:78.125%;top:36.574074%;width:17.1875%;height:21.759259%;background:#F0F5F8;"></div>
-    <div class="shape rect" aria-hidden="true" style="left:78.125%;top:36.574074%;width:17.1875%;height:0.740741%;background:#087F82;"></div>
-    <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:63.888889%;width:91.666667%;height:11.574074%;background:#132F46;"></div>
-    <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:84.259259%;width:34.375%;height:9.259259%;background:#E7F2F3;"></div>
-    <div class="shape rect" aria-hidden="true" style="left:40.104167%;top:88.796296%;width:17.1875%;height:0.462963%;background:#087F82;"></div>
-    <div class="shape arrow" aria-hidden="true" style="left:56.510417%;top:87.87037%;width:0.78125%;height:1.851852%;background:#087F82;"></div>
-    <div class="shape roundRect" aria-hidden="true" style="left:59.375%;top:84.259259%;width:36.458333%;height:9.259259%;background:#E7F2F3;"></div>
-    <h2 class="text" style="left:4.666667%;top:9.703704%;width:90.666667%;min-height:8.282407%;font-size:3.125cqw;font-weight:700;color:#132F46;">Từ dữ liệu gốc đến event mart</h2>
-    <div class="text" style="left:4.666667%;top:19.425926%;width:90.666667%;min-height:5.12963%;font-size:1.875cqw;font-weight:400;color:#132F46;">Adapter riêng chuẩn hóa dữ liệu; semantic catalog quy định cách tính.</div>
-    <div class="text" style="left:4.666667%;top:28.222222%;width:91.1875%;min-height:3.875%;font-size:1.614583cqw;font-weight:700;color:#087F82;">HAI NGUỒN • MỘT CẤU TRÚC EVENT • GIỮ NGUYÊN NGỮ NGHĨA</div>
-    <div class="text" style="left:5.8125%;top:39.796296%;width:14.916667%;min-height:3.75%;font-size:1.5625cqw;font-weight:700;color:#087F82;">01</div>
-    <div class="text" style="left:5.8125%;top:44.888889%;width:14.916667%;min-height:4.25%;font-size:1.770833cqw;font-weight:700;color:#132F46;">CSV</div>
-    <div class="text" style="left:5.8125%;top:50.444444%;width:14.916667%;min-height:3.25%;font-size:1.354167cqw;font-weight:400;color:#132F46;">Cosmetics / Olist</div>
-    <div class="text" style="left:5.8125%;top:54.148148%;width:14.916667%;min-height:3.25%;font-size:1.354167cqw;font-weight:400;color:#526574;">Dữ liệu đầu vào</div>
-    <div class="text" style="left:24.302083%;top:39.796296%;width:14.916667%;min-height:3.75%;font-size:1.5625cqw;font-weight:700;color:#087F82;">02</div>
-    <div class="text" style="left:24.302083%;top:44.888889%;width:14.916667%;min-height:4.25%;font-size:1.770833cqw;font-weight:700;color:#132F46;">RAW</div>
-    <div class="text" style="left:24.302083%;top:50.444444%;width:14.916667%;min-height:3.25%;font-size:1.354167cqw;font-weight:400;color:#132F46;">Giữ dữ liệu gốc</div>
-    <div class="text" style="left:24.302083%;top:54.148148%;width:14.916667%;min-height:3.25%;font-size:1.354167cqw;font-weight:400;color:#526574;">Theo từng nguồn</div>
-    <div class="text" style="left:42.791667%;top:39.796296%;width:14.916667%;min-height:3.75%;font-size:1.5625cqw;font-weight:700;color:#087F82;">03</div>
-    <div class="text" style="left:42.791667%;top:44.888889%;width:14.916667%;min-height:4.25%;font-size:1.770833cqw;font-weight:700;color:#132F46;">STAGING</div>
-    <div class="text" style="left:42.791667%;top:50.444444%;width:14.916667%;min-height:3.25%;font-size:1.354167cqw;font-weight:400;color:#132F46;">Chuẩn hóa kiểu</div>
-    <div class="text" style="left:42.791667%;top:54.148148%;width:14.916667%;min-height:3.25%;font-size:1.354167cqw;font-weight:400;color:#526574;">Làm sạch dữ liệu</div>
-    <div class="text" style="left:61.28125%;top:39.796296%;width:14.916667%;min-height:3.75%;font-size:1.5625cqw;font-weight:700;color:#087F82;">04</div>
-    <div class="text" style="left:61.28125%;top:44.888889%;width:14.916667%;min-height:4.25%;font-size:1.770833cqw;font-weight:700;color:#132F46;">EVENT MART</div>
-    <div class="text" style="left:61.28125%;top:50.444444%;width:14.916667%;min-height:3.25%;font-size:1.354167cqw;font-weight:400;color:#132F46;">Event rows thống nhất</div>
-    <div class="text" style="left:61.28125%;top:54.148148%;width:14.916667%;min-height:3.25%;font-size:1.354167cqw;font-weight:400;color:#526574;">PostgreSQL</div>
-    <div class="text" style="left:79.770833%;top:39.796296%;width:14.916667%;min-height:3.75%;font-size:1.5625cqw;font-weight:700;color:#087F82;">05</div>
-    <div class="text" style="left:79.770833%;top:44.888889%;width:14.916667%;min-height:4.25%;font-size:1.770833cqw;font-weight:700;color:#132F46;">METADATA</div>
-    <div class="text" style="left:79.770833%;top:50.444444%;width:14.916667%;min-height:3.25%;font-size:1.354167cqw;font-weight:400;color:#132F46;">Kỳ, event, field</div>
-    <div class="text" style="left:79.770833%;top:54.148148%;width:14.916667%;min-height:3.25%;font-size:1.354167cqw;font-weight:400;color:#526574;">Coverage / vocabulary</div>
-    <div class="text" style="left:6.229167%;top:66.185185%;width:22%;min-height:4%;font-size:1.666667cqw;font-weight:700;color:white;">SEMANTIC CATALOG</div>
-    <div class="text" style="left:29.145833%;top:66.092593%;width:66.0625%;min-height:4.25%;font-size:1.770833cqw;font-weight:400;color:white;">Định nghĩa metric • đơn vị • ánh xạ event</div>
-    <div class="text" style="left:29.145833%;top:70.62963%;width:66.0625%;min-height:3.625%;font-size:1.510417cqw;font-weight:400;color:#CDE9E9;">Adapter chuẩn hóa dữ liệu; catalog xác lập cách tính.</div>
-    <div class="text" style="left:4.666667%;top:80.074074%;width:91.1875%;min-height:3.625%;font-size:1.510417cqw;font-weight:700;color:#087F82;">VÍ DỤ ÁNH XẠ VAI TRÒ MUA ITEM</div>
-    <div class="text" style="left:5.916667%;top:87.018519%;width:32%;min-height:4.25%;font-size:1.770833cqw;font-weight:700;color:#132F46;">Cosmetics: purchase  •  USD</div>
-    <div class="text" style="left:42.6875%;top:84.240741%;width:18%;min-height:3.625%;font-size:1.510417cqw;font-weight:400;color:#087F82;">Cùng vai trò</div>
-    <div class="text" style="left:61.125%;top:87.018519%;width:34.083333%;min-height:4.125%;font-size:1.71875cqw;font-weight:700;color:#132F46;">Olist: order_purchased  •  BRL</div>
+    <div class="text" style="left:4.666667%;top:5.259259%;width:90.666667%;min-height:5.12963%;font-size:1.145833cqw;font-weight:700;color:#087F82;">TEXA  •  BÁO CÁO FINAL  •  06</div>
+    <h2 class="text" style="left:4.666667%;top:10.62963%;width:90.666667%;min-height:8.282407%;font-size:3.125cqw;font-weight:700;color:#132F46;">ELT: từ dữ liệu nguồn đến semantic layer</h2>
+    <div class="text" style="left:4.666667%;top:19.425926%;width:90.666667%;min-height:5.12963%;font-size:1.875cqw;font-weight:400;color:#526574;">Giữ dữ liệu gốc, chuẩn hóa trong PostgreSQL, rồi gắn định nghĩa nghiệp vụ.</div>
+    <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:33%;width:20.5%;height:28%;background:#E7F2F3;"></div>
+    <div class="shape roundRect" aria-hidden="true" style="left:27%;top:33%;width:20.5%;height:28%;background:#F0F5F8;"></div>
+    <div class="shape roundRect" aria-hidden="true" style="left:49.833333%;top:33%;width:20.5%;height:28%;background:#E7F2F3;"></div>
+    <div class="shape roundRect" aria-hidden="true" style="left:72.666667%;top:33%;width:23.166667%;height:28%;background:#F0F5F8;"></div>
+    <div class="shape arrow" aria-hidden="true" style="left:24.9%;top:46.4%;width:1.2%;height:2.2%;background:#087F82;"></div>
+    <div class="shape arrow" aria-hidden="true" style="left:47.75%;top:46.4%;width:1.2%;height:2.2%;background:#087F82;"></div>
+    <div class="shape arrow" aria-hidden="true" style="left:70.6%;top:46.4%;width:1.2%;height:2.2%;background:#087F82;"></div>
+    <div class="text" style="left:5.5%;top:37%;width:18%;font-size:1.35cqw;font-weight:700;color:#087F82;">01 · EXTRACT</div>
+    <div class="text" style="left:5.5%;top:43%;width:18%;font-size:1.9cqw;font-weight:700;color:#132F46;">Dữ liệu nguồn</div>
+    <div class="text" style="left:5.5%;top:51%;width:18%;font-size:1.45cqw;color:#526574;">Cosmetics / Olist<br>CSV và records gốc</div>
+    <div class="text" style="left:28.333333%;top:37%;width:18%;font-size:1.35cqw;font-weight:700;color:#087F82;">02 · LOAD</div>
+    <div class="text" style="left:28.333333%;top:43%;width:18%;font-size:1.9cqw;font-weight:700;color:#132F46;">Nạp vào PostgreSQL</div>
+    <div class="text" style="left:28.333333%;top:51%;width:18%;font-size:1.45cqw;color:#526574;">Giữ bản ghi gốc<br>theo từng nguồn</div>
+    <div class="text" style="left:51.166667%;top:37%;width:18%;font-size:1.35cqw;font-weight:700;color:#087F82;">03 · TRANSFORM</div>
+    <div class="text" style="left:51.166667%;top:43%;width:18%;font-size:1.9cqw;font-weight:700;color:#132F46;">Chuẩn hóa event</div>
+    <div class="text" style="left:51.166667%;top:51%;width:18%;font-size:1.45cqw;color:#526574;">Kiểu dữ liệu, ngày, field<br>và event role</div>
+    <div class="text" style="left:74%;top:37%;width:20%;font-size:1.35cqw;font-weight:700;color:#087F82;">04 · SEMANTIC LAYER</div>
+    <div class="text" style="left:74%;top:43%;width:20%;font-size:1.9cqw;font-weight:700;color:#132F46;">Event mart + catalog</div>
+    <div class="text" style="left:74%;top:51%;width:20%;font-size:1.45cqw;color:#526574;">Metric, mapping, coverage<br>sẵn sàng cho Texa</div>
+    <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:69%;width:91.666667%;height:15%;background:#132F46;"></div>
+    <div class="text" style="left:6%;top:72%;width:87.5%;font-size:1.75cqw;font-weight:700;color:white;">Kết quả của ELT: một lớp event thống nhất, nhưng vẫn giữ ngữ nghĩa riêng của từng nguồn.</div>
+    <div class="text" style="left:6%;top:77.5%;width:87.5%;font-size:1.45cqw;color:#D4EBED;">Texa dùng event mart và semantic catalog để xác định metric, nguồn và cách tính trước khi sinh QuerySpec.</div>
   </div>
 </section>
 
