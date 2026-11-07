@@ -24,29 +24,29 @@
 
 “Texa là một trợ lý phân tích dữ liệu cho PM, PO và quản lý không chuyên SQL. Người dùng có thể hỏi bằng ngôn ngữ tự nhiên, xem kết quả dưới dạng bảng và xem cả câu SQL để đối chiếu. Texa hỗ trợ người dùng ra quyết định nhanh hơn trong phạm vi dữ liệu đã định nghĩa; hệ thống không thay thế chuyên viên dữ liệu và cũng không giả định rằng LLM luôn đúng.”
 
-### Slide 2 — Một câu hỏi ngắn, nhiều lựa chọn (0:55)
+### Slide 2 — Một câu hỏi cần một căn cứ rõ ràng (0:55)
 
-**Ý chính trên slide:** Cùng một câu hỏi có thể có nhiều cách hiểu.
-
-**Lời nói:**
-
-“Vấn đề của bài toán không chỉ là viết được một câu SQL chạy được. Ví dụ, câu ‘doanh thu tháng trước’ vẫn còn thiếu nhiều thông tin: doanh thu được tính theo tiền hàng hay tiền thanh toán, tháng trước tính theo mốc nào, và dùng nguồn dữ liệu nào. Nếu không làm rõ, hệ thống có thể trả về một con số hợp lệ về cú pháp nhưng sai ý nghĩa nghiệp vụ. Vì vậy Texa cần nhận biết chỗ mơ hồ và hỏi lại người dùng.”
-
-### Slide 3 — Phạm vi sau proposal (0:55)
-
-**Ý chính trên slide:** Persona mục tiêu và mục tiêu sản phẩm.
+**Ý chính trên slide:** Câu trả lời cần đi kèm các thông tin để kiểm tra cách hệ thống hiểu câu hỏi.
 
 **Lời nói:**
 
-“Sau khi thu hẹp bài toán, nhóm định hướng Texa cho PM, PO và quản lý sản phẩm hoặc kinh doanh. Đây vẫn là giả thuyết sản phẩm cần được kiểm chứng thêm bằng user study. Mục tiêu hiện tại là giúp người dùng tự xem các chỉ số quen thuộc, lọc hoặc chia nhóm dữ liệu và hỏi tiếp mà vẫn giữ được định nghĩa metric, nguồn dữ liệu và phạm vi xử lý rõ ràng.”
+“Điểm khác biệt của Texa không nằm ở việc biến một câu hỏi thành SQL, vì LLM thông thường cũng có thể làm được điều đó. Điểm quan trọng là sau khi hỏi ‘doanh thu tháng trước’, người dùng có thể kiểm tra Texa đã hiểu câu hỏi theo metric nào, nguồn nào, kỳ nào và filter nào. Những thông tin này được giữ trong QuerySpec và semantic catalog, rồi mới dùng để tạo SQL. Như vậy người dùng không chỉ nhận một con số, mà còn biết con số đó được tính dựa trên căn cứ nào.”
 
-### Slide 4 — Tám chỉ số, nhiều cách đặt câu hỏi (1:05)
+### Slide 3 — Phạm vi thực hiện (0:55)
 
-**Ý chính trên slide:** Một domain, một engine, hai nguồn đã cấu hình.
+**Ý chính trên slide:** Bốn giới hạn giúp hệ thống kiểm soát được chất lượng.
 
 **Lời nói:**
 
-“Nhóm không cố giải quyết mọi database của mọi doanh nghiệp. Scope hiện tại chỉ gồm event thương mại điện tử trên PostgreSQL, với hai nguồn đã cấu hình là Cosmetics Shop và Brazilian Olist. Một truy vấn chỉ dùng một nguồn, vì hai nguồn có cấu trúc và tiền tệ khác nhau. Texa hỗ trợ tám metric, các filter và breakdown đã khai báo, cùng nested scalar theo path đã biết. Những phần như join hai nguồn, arrays, order hoặc AOV, delivery, review và quy đổi tiền tệ chưa nằm trong scope.”
+“Để kiểm soát chất lượng, nhóm chốt bốn điều kiện. Người dùng mục tiêu là PM, PO và quản lý e-commerce. Bài toán chỉ làm trên event e-commerce và PostgreSQL, mỗi truy vấn dùng một nguồn. Semantic catalog có tám metric đã định nghĩa; nested chỉ xử lý scalar đã khai báo, tối đa hai key. Scope được giữ nhỏ để mỗi câu trả lời có thể kiểm tra và giải thích được.”
+
+### Slide 4 — Tám metric trong semantic catalog (1:05)
+
+**Ý chính trên slide:** Tám metric có định nghĩa cụ thể, không phải tám câu hỏi cố định.
+
+**Lời nói:**
+
+“Tám metric trên slide là tám phép đo được định nghĩa trong semantic catalog. Bốn metric đầu mô tả event và người dùng; bốn metric sau tập trung vào mua hàng, doanh thu và tỷ lệ người mua. Người dùng vẫn có thể kết hợp kỳ, filter và breakdown trong giới hạn catalog. Một chi tiết cần nhớ là purchases đếm event mua item, không mặc định là số đơn hàng; còn buyer conversion của Olist dựa trên observed users, không phải toàn bộ visitors.”
 
 **Chuyển ý:** “Tiếp theo, bạn [Người 2] sẽ nói rõ dữ liệu và semantic catalog mà Texa sử dụng.”
 
