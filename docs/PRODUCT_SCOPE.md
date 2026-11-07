@@ -25,7 +25,7 @@ Texa hỗ trợ PM/PO và người quản lý không chuyên SQL tự xem số l
 | Revenue | Tổng giá trị item purchase theo tiền tệ nguồn | USD | BRL; không cộng payment/freight |
 | Buyer conversion rate | Buyers/users quan sát trong kỳ; không phải funnel tuần tự | Có | Không phải visitor conversion |
 
-Đây là tám metric, không phải tám câu hỏi: có thể kết hợp kỳ, filter và breakdown. Chưa chứng minh độ bao phủ đủ mọi công việc PM/PO. Ngoài scope: delivery/review, order/AOV, retention, FX, causal claims và các truy vấn tự do.
+Đây là tám metric gốc, không phải tám câu hỏi cố định: mỗi metric có thể kết hợp kỳ, filter và breakdown; catalog còn quản lý dimensions, event roles và mapping. Chưa chứng minh độ bao phủ đủ mọi công việc PM/PO. Ngoài scope: delivery/review, order/AOV, retention, FX, causal claims và các truy vấn tự do.
 
 ## Cách Texa xử lý yêu cầu
 

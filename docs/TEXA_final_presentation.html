@@ -254,7 +254,7 @@
     <div class="text" style="left:52.84375%;top:38.222222%;width:42.364583%;min-height:3.5%;font-size:1.458333cqw;font-weight:400;color:#526574;">Mỗi truy vấn dùng một nguồn</div>
     <div class="text" style="left:5.96875%;top:49.148148%;width:3.5%;min-height:5.5%;font-size:2.291667cqw;font-weight:700;color:#087F82;">03</div>
     <div class="text" style="left:10.135417%;top:50.074074%;width:38.197917%;min-height:3.375%;font-size:1.40625cqw;font-weight:700;color:#087F82;">METRIC</div>
-    <div class="text" style="left:5.96875%;top:56%;width:42.364583%;min-height:4.25%;font-size:1.770833cqw;font-weight:700;color:#132F46;">8 metric trong semantic catalog</div>
+    <div class="text" style="left:5.96875%;top:56%;width:42.364583%;min-height:4.25%;font-size:1.770833cqw;font-weight:700;color:#132F46;">8 metric gốc trong semantic catalog</div>
     <div class="text" style="left:5.96875%;top:61.833333%;width:42.364583%;min-height:3.5%;font-size:1.458333cqw;font-weight:400;color:#526574;">Thời gian, filter, breakdown, top-k hợp lệ</div>
     <div class="text" style="left:52.84375%;top:49.148148%;width:3.5%;min-height:5.5%;font-size:2.291667cqw;font-weight:700;color:#087F82;">04</div>
     <div class="text" style="left:57.010417%;top:50.074074%;width:38.197917%;min-height:3.375%;font-size:1.40625cqw;font-weight:700;color:#087F82;">NESTED CÓ GIỚI HẠN</div>
@@ -265,11 +265,11 @@
   </div>
 </section>
 
-<!-- ==================== SLIDE 04: Tám metric trong semantic catalog ==================== -->
-<section class="slide" id="slide-04" aria-label="04. Tám metric trong semantic catalog" data-speaker="Người 1">
+<!-- ==================== SLIDE 04: Tám metric gốc, nhiều cách kết hợp ==================== -->
+<section class="slide" id="slide-04" aria-label="04. Tám metric gốc, nhiều cách kết hợp" data-speaker="Người 1">
   <div class="canvas">
     <div class="text" style="left:4.166667%;top:4.814815%;width:91.666667%;min-height:2.648148%;font-size:1.145833cqw;font-weight:700;color:#087F82;">TEXA  •  BÁO CÁO FINAL  •  04</div>
-    <h2 class="text" style="left:4.166667%;top:10.185185%;width:91.666667%;min-height:7.222222%;font-size:3.125cqw;font-weight:700;color:#132F46;">Tám metric trong semantic catalog</h2>
+    <h2 class="text" style="left:4.166667%;top:10.185185%;width:91.666667%;min-height:7.222222%;font-size:3.125cqw;font-weight:700;color:#132F46;">Tám metric gốc, nhiều cách kết hợp</h2>
     <div class="text" style="left:4.166667%;top:18.5%;width:91.666667%;min-height:4%;font-size:1.65cqw;font-weight:400;color:#526574;">Mỗi metric có định nghĩa, nguồn dữ liệu và cách kiểm tra riêng.</div>
     <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:27%;width:21.5%;height:18%;background:#E7F2F3;"></div>
     <div class="shape roundRect" aria-hidden="true" style="left:26.5%;top:27%;width:21.5%;height:18%;background:#E7F2F3;"></div>
@@ -296,8 +296,8 @@
     <div class="text" style="left:49.8%;top:58.5%;width:18.8%;font-size:1.45cqw;color:#526574;">Theo tiền tệ nguồn</div>
     <div class="text" style="left:71.8%;top:58.5%;width:22%;font-size:1.45cqw;color:#526574;">Buyers / observed users</div>
     <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:74%;width:91.666667%;height:13%;background:#132F46;"></div>
-    <div class="text" style="left:6%;top:77%;width:87.5%;font-size:1.7cqw;font-weight:700;color:white;">Có thể kết hợp kỳ, filter và breakdown trong giới hạn catalog.</div>
-    <div class="text" style="left:6%;top:81.5%;width:87.5%;font-size:1.45cqw;color:#D4EBED;">Purchases đếm event mua item, không mặc định là số đơn hàng; Olist conversion không phải visitor-to-buyer conversion.</div>
+    <div class="text" style="left:6%;top:77%;width:87.5%;font-size:1.7cqw;font-weight:700;color:white;">8 metric gốc × thời gian × filter × breakdown = nhiều truy vấn và insight hợp lệ.</div>
+    <div class="text" style="left:6%;top:81.5%;width:87.5%;font-size:1.45cqw;color:#D4EBED;">Catalog còn quản lý dimensions, event roles và mapping; không phải mỗi dòng trong catalog là một metric.</div>
   </div>
 </section>
 
@@ -686,10 +686,10 @@
 <!-- ==================== SLIDE 22: Kết luận ==================== -->
 <section class="slide" id="slide-22" aria-label="22. Kết luận" data-speaker="Người 5">
   <div class="canvas flow-canvas">
-    <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 22</p><h2>Kết luận</h2><p class="subtitle">Trợ lý phân tích e-commerce trên PostgreSQL, với tám metric và phạm vi rõ ràng</p></header>
+    <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 22</p><h2>Kết luận</h2><p class="subtitle">Trợ lý phân tích e-commerce trên PostgreSQL, với tám metric gốc, nhiều cách kết hợp và phạm vi rõ ràng</p></header>
     <div class="flow-body">
 <div class="columns">
-<section><h3><span>01</span>ĐÃ XÂY DỰNG</h3><ul><li>E-commerce / PostgreSQL</li><li>8 metric, một nguồn mỗi truy vấn</li><li>Catalog → QuerySpec → compiler</li><li>Bảng, facts và SQL đối chứng</li></ul></section>
+<section><h3><span>01</span>ĐÃ XÂY DỰNG</h3><ul><li>E-commerce / PostgreSQL</li><li>8 metric gốc, kết hợp với thời gian, filter và breakdown</li><li>Catalog → QuerySpec → compiler</li><li>Bảng, facts và SQL đối chứng</li></ul></section>
 <section><h3><span>02</span>ĐÃ ĐO LƯỜNG</h3><ul><li>Câu đơn: <strong>Texa 91,25%</strong>; baseline 22,50%</li><li>Hội thoại: Texa 94,81%; Texa with only retrieval 96,10%</li><li>Kết quả chính: 120/120 bảng đúng và 120/120 hành động đúng; ablation clarification riêng đạt 90/120 policy đúng</li><li>Hai lần chạy; dữ liệu tổng hợp, chưa holdout độc lập</li></ul></section>
 <section><h3><span>03</span>CẦN HOÀN THIỆN</h3><ul><li>Hiểu đúng ngữ nghĩa và breakdown</li><li>Tham chiếu trong hội thoại</li><li>Review gold độc lập, khóa test</li><li>E2E hiện tại và tải nhiều người dùng</li></ul></section>
 </div>

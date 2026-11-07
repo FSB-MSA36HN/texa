@@ -38,15 +38,15 @@
 
 **Lời nói:**
 
-“Để kiểm soát chất lượng, nhóm chốt bốn điều kiện. Người dùng mục tiêu là PM, PO và quản lý e-commerce. Bài toán chỉ làm trên event e-commerce và PostgreSQL, mỗi truy vấn dùng một nguồn. Semantic catalog có tám metric đã định nghĩa; nested chỉ xử lý scalar đã khai báo, tối đa hai key. Scope được giữ nhỏ để mỗi câu trả lời có thể kiểm tra và giải thích được.”
+“Để kiểm soát chất lượng, nhóm chốt bốn điều kiện. Người dùng mục tiêu là PM, PO và quản lý e-commerce. Bài toán chỉ làm trên event e-commerce và PostgreSQL, mỗi truy vấn dùng một nguồn. Semantic catalog có tám metric gốc đã định nghĩa; ngoài ra catalog còn chứa dimensions, event roles và mapping; nested chỉ xử lý scalar đã khai báo, tối đa hai key. Scope được giữ nhỏ để mỗi câu trả lời có thể kiểm tra và giải thích được.”
 
-### Slide 4 — Tám metric trong semantic catalog (1:05)
+### Slide 4 — Tám metric gốc, nhiều cách kết hợp (1:05)
 
-**Ý chính trên slide:** Tám metric có định nghĩa cụ thể, không phải tám câu hỏi cố định.
+**Ý chính trên slide:** Tám metric gốc được kết hợp với thời gian, filter và breakdown để tạo nhiều truy vấn hợp lệ.
 
 **Lời nói:**
 
-“Tám metric trên slide là tám phép đo được định nghĩa trong semantic catalog. Bốn metric đầu mô tả event và người dùng; bốn metric sau tập trung vào mua hàng, doanh thu và tỷ lệ người mua. Người dùng vẫn có thể kết hợp kỳ, filter và breakdown trong giới hạn catalog. Một chi tiết cần nhớ là purchases đếm event mua item, không mặc định là số đơn hàng; còn buyer conversion của Olist dựa trên observed users, không phải toàn bộ visitors.”
+“Tám metric trên slide là tám phép đo gốc được định nghĩa trong semantic catalog, không phải toàn bộ số loại câu hỏi mà Texa trả lời. Từ mỗi metric, người dùng có thể kết hợp thời gian, filter và breakdown để tạo ra nhiều truy vấn và insight khác nhau trong phạm vi cho phép. Catalog còn quản lý dimensions, event roles và mapping. Một chi tiết cần nhớ là purchases đếm event mua item, không mặc định là số đơn hàng; còn buyer conversion của Olist dựa trên observed users, không phải toàn bộ visitors.”
 
 **Chuyển ý:** “Tiếp theo, bạn [Người 2] sẽ nói rõ dữ liệu và semantic catalog mà Texa sử dụng.”
 
