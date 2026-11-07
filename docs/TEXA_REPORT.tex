@@ -1,0 +1,186 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setdefaultlanguage{vietnamese}
+\setotherlanguage{english}
+\setmainfont{Noto Serif}
+\setsansfont{Noto Sans}
+\usepackage[a4paper,margin=2.4cm,top=2.2cm,bottom=2.3cm]{geometry}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,longtable,tabularx,array,multirow}
+\usepackage{graphicx,xcolor,colortbl}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{siunitx}
+\usepackage[backend=biber,style=ieee,sorting=nyt]{biblatex}
+\addbibresource{TEXA_REPORT.bib}
+\definecolor{navy}{HTML}{12334B}\definecolor{teal}{HTML}{0B8F8F}\definecolor{pale}{HTML}{EAF3F4}\definecolor{lightnavy}{HTML}{DDEAF0}\definecolor{codebg}{HTML}{F5F7F8}
+\hypersetup{colorlinks=true,linkcolor=navy,citecolor=teal,urlcolor=teal,pdftitle={Texa: Semantic-layered Text-to-SQL for Event Commerce}}
+\pagestyle{fancy}\fancyhf{}\lhead{Texa -- Báo cáo dự án}\rhead{\thepage}
+\setlength{\parindent}{0pt}\setlength{\parskip}{5pt}
+\setlist{itemsep=2pt,topsep=3pt}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\texa}{\textsf{Texa}}\newcommand{\code}[1]{\texttt{#1}}
+\lstset{basicstyle=\ttfamily\small,backgroundcolor=\color{codebg},frame=single,rulecolor=\color{lightnavy},breaklines=true,columns=fullflexible}
+\title{\textbf{Texa: Trợ lý phân tích thương mại điện tử\\ dựa trên Semantic Layer và Text-to-SQL có kiểm soát}}
+\author{Nhóm thực hiện Texa}\date{Tháng 11 năm 2026}
+\begin{document}\maketitle
+\begin{abstract}
+\texa{} là một hệ thống hỏi--đáp dữ liệu dành cho PM, PO và cấp quản lý cần xem số liệu thương mại điện tử mà không phải tự viết SQL. Đóng góp chính của dự án không phải là để một mô hình ngôn ngữ tự đoán câu SQL từ schema, mà là xây dựng một lớp ngữ nghĩa được quản trị: câu hỏi được ánh xạ thành metric, nguồn, kỳ, bộ lọc và breakdown; sau đó hệ thống biên dịch một \emph{QuerySpec} có kiểu, kiểm tra capability và chỉ thực thi truy vấn tham số hóa đã được kiểm soát. Scope được giới hạn vào event commerce trên PostgreSQL với hai nguồn Cosmetics Shop và Olist, nhằm làm rõ bằng chứng thay vì hứa chuẩn hóa mọi database.
+
+Benchmark nghiên cứu-v3 sử dụng cùng model \code{gpt-6-luna}, cùng fixture và cùng protocol cho mọi phiên bản. Trên 400 lượt câu đơn, LLM baseline chỉ có schema đạt 22.50\%, còn Texa đạt 91.25\%. Với 616 answer slots trong hội thoại, baseline đạt 14.77\% và Texa đạt 94.81\%. Kết quả này là bằng chứng thăm dò trong scope đã chọn, chưa phải chứng minh tổng quát cho mọi doanh nghiệp. Report trình bày kiến trúc, semantic catalog, memory, giao thức benchmark, ablation, giới hạn và hướng phát triển của hệ thống.
+\end{abstract}
+\textbf{Từ khóa:} Text-to-SQL, semantic layer, metric store, QuerySpec, schema linking, structured memory, clarification, PostgreSQL, e-commerce analytics.
+\tableofcontents\newpage
+
+\section{Giới thiệu}
+\subsection{Bối cảnh}
+Các nhóm kinh doanh thường cần trả lời những câu hỏi như ``doanh thu tháng trước là bao nhiêu?'', ``nhóm sản phẩm nào có nhiều người mua nhất?'' hoặc ``kết quả vừa rồi nếu chỉ xem nhóm phụ kiện thì thế nào?''. Những câu hỏi này có vẻ ngắn nhưng chứa nhiều quyết định ngầm: doanh thu được tính trên event nào, nguồn nào được dùng, kỳ thời gian tính ra sao, có group theo danh mục hay không và hệ thống có đủ dữ liệu để trả lời hay không.
+
+Một LLM có thể sinh SQL trực tiếp từ câu hỏi và schema, nhưng cách làm đó buộc mô hình phải tự khôi phục định nghĩa nghiệp vụ từ tên bảng/cột. Khi schema có nhiều event, nhiều nguồn và các trường nested, một truy vấn chạy được vẫn có thể sai về metric hoặc grain. Đây là khoảng trống mà Texa tập trung giải quyết.
+
+\subsection{Vấn đề cần giải quyết}
+Bài toán của Texa là chuyển một câu hỏi phân tích tự nhiên thành một kết quả có thể kiểm tra được theo bốn câu hỏi: hệ thống đang đo metric nào, lấy từ nguồn nào, trên kỳ và bộ lọc nào, và vì sao truy vấn được phép chạy. Sản phẩm hướng tới người dùng không chuyên SQL; độ chính xác tuyệt đối không được giả định và mọi kết quả đều phải nằm trong catalog và scope đã công bố.
+
+\subsection{Đóng góp của dự án}
+\begin{enumerate}
+\item Thiết kế semantic catalog cho metric, dimension, event role, coverage và mapping giữa hai nguồn có schema khác nhau.
+\item Tách pipeline thành các bước có trách nhiệm rõ: intent, retrieval ví dụ đã xác minh, consistency chọn lọc, binder/clarification, QuerySpec, compiler, validation và execution.
+\item Thiết kế structured memory lưu các slot ngữ nghĩa và ID của kết quả thay vì chỉ lấy sáu lượt chat gần nhất.
+\item Xây dựng benchmark nhiều loại tác vụ và ablation để đo riêng câu đơn, hỏi lại, hội thoại, ngoài scope, retrieval, consistency, memory và clarification.
+\end{enumerate}
+
+\section{Bài toán, người dùng và phạm vi}
+\subsection{Đối tượng sử dụng}
+Texa được định hướng cho PM, PO và cấp quản lý cần kiểm tra xu hướng, so sánh nhóm và theo dõi chỉ số mà không có chuyên môn SQL sâu. Hệ thống hỗ trợ ra quyết định sơ bộ; nó không thay thế review nghiệp vụ, BI chính thức hoặc phân tích nhân quả.
+\subsection{Phạm vi thực hiện}
+\begin{itemize}
+\item Một domain: event commerce.
+\item Một engine: PostgreSQL.
+\item Hai nguồn cấu hình sẵn: Cosmetics Shop và Olist; mỗi truy vấn chỉ dùng một nguồn, không join hoặc cộng gộp hai nguồn.
+\item Tám metric gốc: Events, Users, Sessions, Viewers, Purchases, Buyers, Revenue và Buyer conversion rate.
+\item Metric không phải tám câu hỏi cố định: mỗi metric có thể kết hợp kỳ, filter, breakdown và top-$k$ trong capability đã khai báo.
+\item Nested scalar chỉ dùng path được catalog khai báo, sâu tối đa hai key dưới \code{ep}/\code{up}; không bung array.
+\end{itemize}
+\subsection{Các giới hạn đã công bố}
+Texa không tuyên bố chuẩn hóa mọi database của mọi công ty. Ngoài scope gồm delivery/review, order/AOV, retention, FX, causal claims, truy vấn tự do và truy vấn kết hợp hai nguồn. Khi field/event không có trong coverage, hệ thống phải trả ``unavailable'' hoặc hỏi lại; không được biến dữ liệu thiếu thành số 0.
+
+\section{Tổng quan nghiên cứu liên quan}
+\subsection{Schema linking và độ khó của Text-to-SQL}
+Spider cho thấy Text-to-SQL trở nên khó khi schema đa dạng và câu hỏi yêu cầu compositional reasoning xuyên domain \cite{yu2018spider}. RAT-SQL nhấn mạnh việc mã hóa quan hệ giữa câu hỏi và schema thay vì chỉ so khớp tên \cite{wang2020ratsql}. BIRD đưa thêm thách thức nội dung database và kiến thức nghiệp vụ ở quy mô lớn \cite{li2023bird}; Spider 2.0 mở rộng sang workflow enterprise và thao tác nhiều bước \cite{lei2024spider2}.
+
+Texa học từ các kết quả này bằng cách đưa quan hệ metric--event role--dimension vào catalog và thu hẹp scope. Thay vì kỳ vọng LLM tự suy luận mọi quan hệ raw schema, binder chỉ cho phép các combination đã được catalog xác nhận. Đây là một lựa chọn kỹ thuật để tăng khả năng kiểm chứng, đồng thời chấp nhận rằng hệ thống chưa bao phủ mọi database.
+\subsection{Decomposition, few-shot và self-correction}
+DIN-SQL phân rã Text-to-SQL thành các bước và dùng self-correction \cite{pourreza2023dinsql}. DAIL-SQL nghiên cứu cách chọn và tổ chức demonstrations cho in-context learning \cite{gao2024dailsql}. Texa kế thừa hai ý tưởng: câu hỏi không đi thẳng từ text sang SQL, và ví dụ chỉ nên được dùng khi có liên quan. Tuy nhiên Texa không đưa SQL do LLM viết vào runtime cuối; LLM xuất intent/QuerySpec có cấu trúc, còn compiler sinh SQL từ các phần tử đã được kiểm soát.
+\subsection{Constrained decoding và kiểm tra thực thi}
+PICARD cho thấy ràng buộc sinh token bằng parser có thể giảm truy vấn SQL không hợp lệ \cite{scholak2021picard}. SQL-PaLM cũng kết hợp nhiều candidate với execution-error filtering \cite{sqlpalm2023}. Texa áp dụng cùng nguyên lý ở mức pipeline: kiểm tra AST bằng sqlglot, kiểm tra capability/contract, chạy sandbox read-only và chỉ self-correct trong giới hạn. Một truy vấn ``chạy được'' vẫn chưa đủ; kết quả phải phù hợp metric và grain trong semantic catalog.
+\subsection{Consistency và hội thoại}
+Self-consistency chọn đáp án từ nhiều đường suy luận thay vì phụ thuộc một lần gọi \cite{wang2023selfconsistency}. Texa dùng consistency có điều kiện, vote trên intent/QuerySpec và chỉ bật khi câu hỏi khó hoặc các candidate mâu thuẫn để kiểm soát cost. Với hội thoại, SParC và CoSQL cho thấy việc hiểu câu hỏi phụ thuộc context và reference resolution là thách thức riêng \cite{yu2019sparc,yu2019cosql}. Texa dùng structured memory của QuerySpec/result registry và clarification, thay vì xem sáu message gần nhất là bộ nhớ duy nhất.
+\subsection{Semantic layer và governance}
+Các semantic layer thực tế thường quản lý metric, dimension, entity và quy tắc join ở một lớp dùng chung \cite{dbtsemantic,cubesemantic}. Texa áp dụng mô hình này ở quy mô nhỏ: catalog là contract giữa ngôn ngữ người dùng và dữ liệu vật lý, có version, coverage và trạng thái review. Đây là tài liệu kiến trúc sản phẩm, không phải bằng chứng khoa học về accuracy; bằng chứng của Texa đến từ benchmark và regression tests của chính dự án.
+\begin{table}[H]\centering\small\caption{Bài học từ literature và cách Texa áp dụng trong scope hiện tại.}\begin{tabularx}{\textwidth}{p{3.0cm}YY}\toprule Vấn đề & Bài học & Cách Texa xử lý \\\midrule Raw schema linking & Tên cột không đủ để khôi phục ngữ nghĩa & Catalog khai báo metric, role, dimension, mapping và coverage \\\nSQL invalid & Cần parser/validator trước execution & QuerySpec có kiểu, compiler Python, AST check và sandbox \\\nSQL chạy được nhưng sai nghiệp vụ & Execution accuracy đơn thuần chưa đủ & Gold table được tính theo metric/grain và business contract \\\nFew-shot và consistency & Ví dụ liên quan và nhiều candidate có thể giúp & Verified example retrieval và adaptive consistency, đo cost riêng \\\nHội thoại & Reference resolution cần trạng thái có cấu trúc & Memory lưu slot + result ID; clarification khi mơ hồ \\\bottomrule\end{tabularx}\end{table}
+
+\section{Yêu cầu và nguyên tắc thiết kế}
+\begin{enumerate}
+\item \textbf{Có căn cứ:} mọi câu trả lời phải truy nguyên được metric, source, time range, filter, breakdown và SQL.
+\item \textbf{Có giới hạn:} chỉ cho phép capability mà catalog và source coverage xác nhận.
+\item \textbf{Hỏi lại khi thiếu thông tin:} không đoán nguồn, kỳ, metric hoặc target của một tham chiếu mơ hồ.
+\item \textbf{Tách ý định khỏi SQL:} LLM chịu trách nhiệm hiểu ngôn ngữ; compiler chịu trách nhiệm tạo SQL.
+\item \textbf{Đánh giá theo kết quả:} so sánh bảng kết quả với gold, không so chuỗi SQL.
+\item \textbf{Có thể tái lập:} protocol, dataset, variant, repeat và raw trace phải được lưu lại.
+\end{enumerate}
+
+\section{Kiến trúc và workflow của Texa}
+\subsection{Kiến trúc tổng thể}
+Hình~\ref{fig:architecture} mô tả luồng chính. ETL đưa các nguồn về event rows với adapter tương ứng; semantic catalog giữ các quy tắc diễn giải. Runtime nhận câu hỏi và nguồn do UI cung cấp, sau đó đi qua các lớp hiểu, kiểm tra và thực thi.
+\begin{figure}[H]\centering
+\begin{tikzpicture}[node distance=5mm and 4mm,font=\small,every node/.style={align=center},box/.style={draw=navy,rounded corners,fill=pale,minimum height=9mm,text width=2.45cm},arrow/.style={-{Latex[length=2mm]},thick,draw=teal}]
+\node[box](q){Câu hỏi + source\\từ UI};\node[box,right=of q](ret){Verified examples\\+ catalog shortlist};\node[box,right=of ret](int){LLM hiểu ý định\\+ consistency khi cần};\node[box,right=of int](bind){Binder / clarification\\+ semantic values};\node[box,below=of bind](spec){QuerySpec có kiểu\\metric, time, filter, grain};\node[box,left=of spec](comp){Compiler\\SQL tham số hóa};\node[box,left=of comp](val){AST / capability\\/ read-only check};\node[box,left=of val](db){PostgreSQL\\facts + provenance};
+\draw[arrow](q)--(ret)--(int)--(bind)--(spec)--(comp)--(val)--(db);\node[box,below=of int,text width=3.1cm](mem){Structured memory:\\slot QuerySpec + result registry};\draw[arrow](mem)--(int);\draw[arrow](val.north)|-(int.south);\node[draw=navy,dashed,rounded corners,fit=(ret)(int)(bind)(spec)(comp)(val),inner sep=4mm,label={[navy]above:Semantic-controlled runtime}] {};
+\end{tikzpicture}\caption{Kiến trúc triển khai của Texa.}\label{fig:architecture}\end{figure}
+\subsection{Semantic catalog}
+Catalog hiện có các nhóm thông tin: metric definition và aggregation recipe; event role, event name và mapping sang field vật lý; dimensions, scalar nested paths, source coverage và supported combinations; vocabulary business label sang raw value theo từng source; verified examples và metadata review/version.
+
+Tám metric gốc có thể tạo nhiều truy vấn có giá trị vì chúng kết hợp với kỳ, filter và breakdown. Ví dụ, ``Revenue theo item category trong tháng trước'' và ``Top 3 category theo Revenue'' dùng cùng metric nhưng khác shape và selection. Do đó số metric không phải số lượng câu hỏi mà sản phẩm có thể nhận.
+\subsection{Intent, retrieval và consistency}
+Bước LLM đầu tiên xuất ra candidate có cấu trúc gồm outcome, metric, source, time range, filters, dimensions và grain. Verified example retrieval cung cấp những pattern đã được review theo source và family. Consistency không chạy mù cho mọi câu hỏi; runtime có thể lấy nhiều candidate khi uncertainty hoặc xung đột cao, sau đó chọn candidate có đa số và qua semantic checks.
+\subsection{Binder, QuerySpec và compiler}
+Binder resolve metric ID, source coverage, business value, date range và dimensions. Nếu thiếu thông tin bắt buộc, hệ thống tạo clarification thay vì đoán. QuerySpec là intermediate representation có kiểu; compiler Python sinh SQL tham số hóa từ recipe đã đăng ký. LLM không tự viết SQL trong pipeline sản phẩm.
+\subsection{Validation, execution và provenance}
+SQL được kiểm tra AST, capability và read-only policy; candidate lỗi có thể được sửa trong giới hạn rồi kiểm tra lại. PostgreSQL reader trả facts cùng provenance để phần trả lời hiển thị metric, source, kỳ và cách tính. Một SQL hợp lệ nhưng dùng sai event role hoặc sai grain vẫn bị loại bởi semantic contract.
+\subsection{Structured memory}
+Memory lưu các slot QuerySpec và result registry, ví dụ ID của bảng vừa trả về, metric, source, time range và breakdown. Follow-up như ``còn nhóm phụ kiện thì sao?'' được resolve vào result/slot đã tồn tại. Khi catalog hoặc snapshot không còn phù hợp, hệ thống hỏi lại hoặc yêu cầu chạy lại; không kế thừa mù theo vị trí trong cửa sổ trượt. Window-6 chỉ là một ablation để so sánh, không phải thiết kế mặc định của Texa.
+
+\section{Dữ liệu và semantic catalog}
+\subsection{Hai nguồn bổ sung cho nhau}
+Cosmetics Shop có event phong phú như product view, session và device/category, phù hợp kiểm tra funnel quan sát và nested attributes. Olist có các item/order/purchase và thông tin marketplace, phù hợp kiểm tra revenue/purchase/buyer trên một schema nghiệp vụ khác. Hai nguồn khác nhau đủ để kiểm tra mapping và coverage; chúng không bị join với nhau, nên không làm tăng scope ngoài khả năng kiểm soát.
+\subsection{ETL đến semantic layer}
+Quy trình gồm bốn bước: Extract từ fixture/source adapter; Load vào PostgreSQL theo event contract; Transform/chuẩn hóa event date, role và nested scalar; Publish semantic catalog cùng coverage. Thay đổi catalog phải qua sửa definition, validate schema/coverage, tăng version và publish atomically. Runtime đang chạy giữ version cũ; request mới dùng version mới và yêu cầu người dùng xác nhận lại nếu QuerySpec cũ không còn hợp lệ.
+
+\section{Thiết kế benchmark và metric}
+\subsection{So sánh baseline}
+Mọi biến thể dùng cùng model \code{gpt-6-luna}, cùng fixture, cùng câu hỏi và cùng giới hạn protocol. LLM baseline chính chỉ nhận câu hỏi, schema PostgreSQL vật lý và source UI; không nhận semantic catalog, business definitions, enum/source mapping hay verified examples. Baseline hội thoại nhận thêm history và protocol hỏi lại/thử lại theo suite. Texa có catalog và toàn bộ workflow. Vì vậy chênh lệch phản ánh giá trị của thông tin semantic cùng cơ chế xử lý, không phải so sánh hai model khác nhau.
+\subsection{Bộ test}
+\begin{itemize}
+\item 300 câu đơn: 100 dev và 200 test; test gồm 40 basic, 100 compositional và 60 semantic; cân bằng 100 Cosmetics/100 Olist, 140 tiếng Việt/60 tiếng Anh.
+\item 60 trường hợp clarification: 30 mơ hồ và 30 câu rõ ràng đối chứng, chạy hai lần.
+\item 40 hội thoại dài 6--12 lượt, tổng 355 lượt; 308 answer slots có gold table.
+\item 40 câu ngoài scope, chấm hành động xử lý đúng riêng với SQL accuracy.
+\item Gold gồm Python oracle và SQL; 2{,}004 kiểm tra SQL/world đã qua trước khi chạy model.
+\end{itemize}
+Hai repeat giúp quan sát dao động model, nhưng không được hiểu là tăng gấp đôi số câu độc lập. Dataset tổng hợp có các family compositional, semantic, nested và coverage counterexample; chưa phải sealed holdout được người độc lập adjudicate.
+\subsection{Metric}
+Business accuracy cho câu đơn và answer slot là tỷ lệ bảng kết quả khớp toàn bộ với gold: đúng cột theo vai trò/thứ tự và đúng toàn bộ hàng/giá trị; alias SQL khác nhau vẫn được chấp nhận. Truy vấn sai, từ chối sai, timeout hoặc không có kết quả khi gold có kết quả đều tính sai. Clarification có hai metric: hỏi lại đúng policy và bảng kết quả cuối đúng. Ngoài scope chấm hành động đúng. Latency và cost được báo riêng, không cộng vào accuracy.
+
+\section{Kết quả thực nghiệm}
+\subsection{Kết quả chính}
+\begin{table}[H]\centering\small\caption{Kết quả gộp hai repeat của research-v3.}\begin{tabular}{lrrr}\toprule Phiên bản & Câu đơn (400) & Hội thoại (616 slots) & Ngoài scope (80)\\\midrule LLM baseline & 22.50\% & 14.77\% & 5.00\%\\ Texa without retrieval and consistency & 87.50\% & 91.40\% & 83.75\%\\ Texa with only consistency & 87.00\% & 92.05\% & 93.75\%\\ Texa with only retrieval & 90.25\% & 96.10\% & 86.25\%\\\rowcolor{pale} Texa & \textbf{91.25\%} & 94.81\% & \textbf{95.00\%}\\\bottomrule\end{tabular}\end{table}
+Texa cao hơn baseline 68.75 điểm phần trăm ở câu đơn. Đây là mức chênh lệch giữa schema-only và hệ thống semantic-controlled; không được diễn giải thành lợi ích riêng của một component. Retrieval-only đạt cao hơn Texa ở hội thoại, cho thấy không có component nào thắng mọi suite.
+\subsection{Clarification}
+\begin{table}[H]\centering\small\caption{Clarification revision1, 60 cases $\times$ 2 repeats.}\begin{tabular}{lrr}\toprule Phiên bản & Policy đúng & Bảng cuối đúng\\\midrule LLM baseline & 81/120 (67.50\%) & 33/120 (27.50\%)\\ Texa without retrieval and consistency & 120/120 (100\%) & 119/120 (99.17\%)\\ Texa with only consistency & 120/120 (100\%) & 120/120 (100\%)\\ Texa with only retrieval & 119/120 (99.17\%) & 119/120 (99.17\%)\\\rowcolor{pale} Texa & \textbf{120/120 (100\%)} & \textbf{120/120 (100\%)}\\\bottomrule\end{tabular}\end{table}
+Clarification tạo chênh lệch 24.17 điểm phần trăm ở final-table accuracy và 25 điểm ở policy accuracy giữa bật và tắt clarification trong ablation tương ứng.
+\subsection{Ablation memory và clarification}
+\begin{table}[H]\centering\small\caption{Ablation giữ retrieval và consistency bật.}\begin{tabular}{lrrr}\toprule Phiên bản & Hội thoại (616) & Clarification table (120) & Clarification policy (120)\\\midrule Texa with structured memory & 521/616 (84.58\%) & -- & --\\ Texa with only window-6 memory & 527/616 (85.55\%) & -- & --\\ Texa without memory & 517/616 (83.93\%) & -- & --\\ Texa with clarification & -- & 104/120 (86.67\%) & 90/120 (75.00\%)\\ Texa without clarification & -- & 75/120 (62.50\%) & 60/120 (50.00\%)\\\bottomrule\end{tabular}\end{table}
+Chênh lệch structured memory và window-6 nhỏ trong bộ hiện tại, nên chưa đủ kết luận cách memory nào luôn tốt hơn. Clarification có tác động rõ hơn. Đây là kết quả exploratory và cần holdout độc lập để xác nhận.
+\subsection{Độ khó và lỗi còn lại}
+Theo hai repeat, baseline/Texa lần lượt đúng 30/80 và 80/80 câu basic; 27/200 và 177/200 câu compositional; 33/120 và 108/120 câu semantic. Lỗi còn lại của Texa tập trung ở từ chối compositional hợp lệ, bỏ sót group-by và hiểu sai một số metric/grain. Những lỗi này cho thấy semantic catalog và compiler làm giảm lỗi raw schema, nhưng không loại bỏ ambiguity và giới hạn coverage.
+\subsection{Chi phí và vận hành}
+Median latency câu đơn là 7.69 giây cho baseline, 13.79 giây cho Texa và 14.40 giây cho retrieval-only. Chi phí ước tính cho 400 lượt là 0.0737 USD, 0.4014 USD và 0.3433 USD tương ứng. Regression suite sau đo có 398 passed và 36 skipped. Các số cost là ước tính theo gateway ledger của lần chạy, không phải hóa đơn provider.
+
+\section{Thảo luận và giới hạn}
+\subsection{Texa giải quyết được gì}
+Kết quả ủng hộ ba nhận định trong scope: (i) catalog làm rõ metric/source/grain mà schema không thể hiện đầy đủ; (ii) QuerySpec và compiler tách hiểu ngôn ngữ khỏi tạo SQL, giúp dễ kiểm tra; (iii) clarification và memory có cấu trúc phù hợp hơn việc chỉ kéo dài cửa sổ hội thoại khi câu hỏi tham chiếu kết quả trước.
+\subsection{Điều chưa thể kết luận}
+Dataset tổng hợp, domain hẹp, fixture có family liên quan giữa dev/test, chưa có human-reviewed sealed holdout và hai repeat không phải các câu độc lập. Do đó chưa thể kết luận Texa tổng quát cho database doanh nghiệp khác, chưa thể quy chênh lệch hoàn toàn cho retrieval/consistency, và chưa thể dùng accuracy hiện tại làm cam kết production.
+\subsection{Trade-off}
+Semantic governance và nhiều lớp kiểm tra làm latency/cost tăng so với baseline. Đổi lại, hệ thống có thể giải thích metric, phát hiện thiếu capability, hỏi lại và giữ contract khi catalog thay đổi. Với đối tượng PM/PO, đây là trade-off có chủ đích: giảm việc trả lời nhanh nhưng sai mà người dùng khó phát hiện.
+
+\section{Kết luận và hướng phát triển}
+Texa là một semantic-controlled Text-to-SQL assistant trong phạm vi event commerce trên PostgreSQL. Hệ thống không cố giải bài toán ``mọi database'', mà dùng catalog và QuerySpec để biến một câu hỏi thành một truy vấn có thể truy nguyên và kiểm tra. Benchmark research-v3 cho thấy Texa vượt schema-only baseline trên câu đơn, hội thoại và ngoài scope trong fixture đã chọn, đồng thời ablation chỉ ra retrieval và clarification có đóng góp rõ hơn consistency và memory trong một số suite.
+\begin{enumerate}
+\item khóa một sealed holdout do người độc lập review và bổ sung câu hỏi từ PM/PO thật;
+\item mở rộng coverage trong cùng domain trước khi mở thêm engine/database;
+\item dùng adaptive consistency theo uncertainty và ngân sách latency;
+\item theo dõi catalog version, provenance, acceptance/rejection và correction trong production-like shadow mode;
+\item đo tải nhiều người dùng và kiểm tra isolation của memory theo session;
+\item đánh giá confidence calibration và abstention thay vì chỉ accuracy;
+\item chỉ mở rộng sang join/multi-source sau khi có semantic contract và benchmark tương ứng.
+\end{enumerate}
+
+\appendix\section{Tái lập và cấu trúc repository}
+Artifacts benchmark nằm tại \code{data/benchmark/results/research-v3-20261106/}, gồm summary, raw shards, repeat và report máy sinh. Catalog nằm tại \code{catalog/product_events.yaml}; verified examples tại \code{catalog/verified_examples.yaml}. Các module chính gồm \code{backend/texa/interpret.py}, \code{memory.py}, \code{examples.py}, \code{consistency.py}, \code{answer.py}. Cần gateway credentials riêng và PostgreSQL fixture để chạy lại; credential không được lưu trong report hoặc artifacts.
+\begin{lstlisting}
+backend/.venv/bin/python backend/eval/run_research_matrix.py \\
+  --output backend/eval/results/new-study/r1 \\
+  --repeat 1 --workers 20 --shards 4
+\end{lstlisting}
+\section{Thuật ngữ}
+\begin{longtable}{p{3.5cm}p{11cm}}\toprule Thuật ngữ & Ý nghĩa\\\midrule Semantic catalog & Lớp quản trị metric, dimension, event role, mapping, coverage và business vocabulary.\\ QuerySpec & Biểu diễn trung gian có kiểu của metric, source, time range, filter, selection và grain.\\ Business accuracy & Tỷ lệ bảng kết quả khớp gold; không phải tỷ lệ chuỗi SQL giống nhau.\\ Clarification & Câu hỏi lại có chủ đích khi metric, source, kỳ hoặc target chưa đủ rõ.\\ Structured memory & Trạng thái gồm slot ngữ nghĩa và result registry có ID.\\ Ablation & Thử nghiệm tắt/bật một component để đo đóng góp riêng trong cùng protocol.\\\bottomrule\end{longtable}
+\printbibliography\end{document}
