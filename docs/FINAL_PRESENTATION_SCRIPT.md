@@ -128,8 +128,7 @@
 
 **Lời nói:**
 
-Baseline là LLM sinh SQL trực tiếp, dùng cùng gpt-6-luna nhưng chỉ nhận câu hỏi, schema PostgreSQL và nguồn được chọn; baseline không nhận semantic catalog, định nghĩa nghiệp vụ, ví dụ đã xác minh hay workflow QuerySpec. Texa đầy đủ dùng đúng model đó nhưng có thêm semantic catalog, memory, retrieval, consistency khi cần, QuerySpec, compiler và validation. Hai bên cùng chạy trên một bộ test gồm 300 câu đơn, 60 tình huống hỏi lại, 40 hội thoại và 40 câu ngoài phạm vi, trên dữ liệu Cosmetics và Olist với điều kiện chạy cố định. Mỗi cấu hình chạy hai lần; kết quả được so với bảng gold, không yêu cầu câu SQL phải giống nhau 
-Bộ test vẫn còn một số câu cùng dạng và chưa có holdout độc lập
+“Baseline là LLM sinh SQL trực tiếp, dùng cùng gpt-6-luna nhưng chỉ nhận câu hỏi, schema PostgreSQL và nguồn được chọn; baseline không nhận semantic catalog, định nghĩa nghiệp vụ, ví dụ đã xác minh hay workflow QuerySpec. Texa đầy đủ dùng đúng model đó nhưng có thêm semantic catalog, memory, retrieval, consistency khi cần, QuerySpec, compiler và validation. Hai bên cùng chạy trên dữ liệu Cosmetics và Olist với điều kiện chạy cố định, gồm bốn nhóm. Thứ nhất, 300 câu đơn đo độ chính xác: 100 câu dev để phát triển, 200 câu test để đánh giá, chia theo ba mức basic, compositional và semantic. Thứ hai, 60 tình huống clarification gồm 30 câu mơ hồ và 30 câu rõ ràng đối chứng, để đo việc hỏi lại đúng lúc chứ không phải câu nào cũng hỏi. Thứ ba, 40 hội thoại dài 6 đến 12 lượt đo khả năng giữ và cập nhật ngữ cảnh. Thứ tư, 40 câu ngoài scope đo khả năng từ chối thay vì bịa ra câu trả lời. Mỗi cấu hình chạy hai lần; kết quả được so với bảng gold, không yêu cầu câu SQL phải giống nhau. Bộ test vẫn còn một số câu cùng dạng với dev và chưa có holdout độc lập, nên đây là kết quả thăm dò.”
 
 ### Slide 13 — QUY TẮC ĐÁNH GIÁ (0:55)
 
