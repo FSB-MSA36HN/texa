@@ -128,7 +128,8 @@
 
 **Lời nói:**
 
-“Slide này giải thích cách nhóm so sánh công bằng. Baseline là LLM sinh SQL trực tiếp, dùng cùng gpt-6-luna nhưng chỉ nhận câu hỏi, schema PostgreSQL và nguồn được chọn; baseline không nhận semantic catalog, định nghĩa nghiệp vụ, ví dụ đã xác minh hay workflow QuerySpec. Texa đầy đủ dùng đúng model đó nhưng có thêm semantic catalog, memory, retrieval, consistency khi cần, QuerySpec, compiler và validation. Hai bên cùng chạy trên một bộ test gồm 300 câu đơn, 60 tình huống hỏi lại, 40 hội thoại và 40 câu ngoài phạm vi, trên dữ liệu Cosmetics và Olist với điều kiện chạy cố định. Mỗi cấu hình chạy hai lần; kết quả được so với bảng gold, không yêu cầu câu SQL phải giống nhau. Bộ test vẫn còn một số câu cùng dạng và chưa có holdout độc lập, nên đây là bằng chứng trong scope hiện tại, chưa phải độ chính xác khi triển khai thực tế.”
+Baseline là LLM sinh SQL trực tiếp, dùng cùng gpt-6-luna nhưng chỉ nhận câu hỏi, schema PostgreSQL và nguồn được chọn; baseline không nhận semantic catalog, định nghĩa nghiệp vụ, ví dụ đã xác minh hay workflow QuerySpec. Texa đầy đủ dùng đúng model đó nhưng có thêm semantic catalog, memory, retrieval, consistency khi cần, QuerySpec, compiler và validation. Hai bên cùng chạy trên một bộ test gồm 300 câu đơn, 60 tình huống hỏi lại, 40 hội thoại và 40 câu ngoài phạm vi, trên dữ liệu Cosmetics và Olist với điều kiện chạy cố định. Mỗi cấu hình chạy hai lần; kết quả được so với bảng gold, không yêu cầu câu SQL phải giống nhau 
+Bộ test vẫn còn một số câu cùng dạng và chưa có holdout độc lập
 
 ### Slide 13 — QUY TẮC ĐÁNH GIÁ (0:55)
 
@@ -136,7 +137,7 @@
 
 **Lời nói:**
 
-“Phần này gồm hai lớp. Thứ nhất là quy tắc: hai câu SQL không cần giống nhau; chỉ cần chạy trên cùng snapshot và trả về cùng bảng gold. Bảng phải khớp cột, dòng, NULL và duplicate; thứ tự dòng chỉ quan trọng khi câu hỏi yêu cầu. Sai số số học cho phép là 1e-6, còn lỗi hoặc timeout vẫn tính là sai. Thứ hai là metric: câu hỏi đơn dùng tỷ lệ bảng đúng; clarification chấm cả bảng cuối và việc hệ thống có hỏi lại đúng lúc; hội thoại chấm từng lượt có đáp án, cùng với hành động và việc tham chiếu đúng kết quả trước. Thời gian, số lần gọi model và token là các chỉ số bổ sung.”
+“Thứ nhất là quy tắc: hai câu SQL không cần giống nhau; chỉ cần chạy trên cùng snapshot và trả về cùng bảng gold. Bảng phải khớp cột, dòng, NULL và duplicate; thứ tự dòng chỉ quan trọng khi câu hỏi yêu cầu. Sai số số học cho phép là 1e-6 (1x 10 mu -6), còn lỗi hoặc timeout vẫn tính là sai. Thứ hai là metric: câu hỏi đơn dùng tỷ lệ bảng đúng; clarification chấm cả bảng cuối và việc hệ thống có hỏi lại đúng lúc; hội thoại chấm từng lượt có đáp án, cùng với hành động và việc tham chiếu đúng kết quả trước. Thời gian, số lần gọi model và token là các chỉ số bổ sung.”
 
 ### Slide 14 — Kết quả benchmark — câu hỏi đơn (0:55)
 
@@ -144,7 +145,7 @@
 
 **Lời nói:**
 
-“Kết quả chính cho thấy khoảng cách lớn giữa baseline schema-only và Texa. Điều này gợi ý rằng định nghĩa nghiệp vụ, QuerySpec, compiler và validation đang giải quyết đúng điểm yếu của việc để LLM tự đoán từ schema. Retrieval có đóng góp tích cực, còn consistency chưa cho thấy hiệu quả ổn định ở mọi cấu hình. Đây là bằng chứng trong benchmark hiện tại, chưa phải kết luận cho mọi database.”
+“Kết quả chính cho thấy khoảng cách lớn giữa baseline schema-only và Texa. Điều này gợi ý rằng định nghĩa nghiệp vụ, QuerySpec, compiler và validation đang giải quyết đúng điểm yếu của việc để LLM tự đoán từ schema. Retrieval có đóng góp tích cực, còn consistency chưa cho thấy hiệu quả ổn định ở mọi cấu hình. 
 
 ### Slide 15 — Kết quả theo loại tác vụ (0:55)
 
@@ -152,7 +153,7 @@
 
 **Lời nói:**
 
-“Các kết quả không nên gộp thành một điểm duy nhất. Hội thoại đo khả năng giữ và cập nhật ngữ cảnh; clarification đo khả năng nhận ra khi nào cần hỏi lại; ngoài scope đo khả năng từ chối hoặc hướng người dùng về phạm vi hỗ trợ. Texa tốt hơn rõ rệt ở việc hỏi lại và xử lý ngoài phạm vi, còn retrieval-only có thể nổi bật ở một số hội thoại. Điều này cho thấy hiệu quả của component phụ thuộc vào loại tác vụ.”
+“ Hội thoại đo khả năng giữ và cập nhật ngữ cảnh; clarification đo khả năng nhận ra khi nào cần hỏi lại; ngoài scope đo khả năng từ chối hoặc hướng người dùng về phạm vi hỗ trợ. Texa tốt hơn rõ rệt ở việc hỏi lại và xử lý ngoài phạm vi, còn retrieval-only có thể nổi bật ở một số hội thoại. Điều này cho thấy hiệu quả của component phụ thuộc vào loại tác vụ.”
 
 **Chuyển ý:** “Sau khi xem kết quả chính, Đức sẽ trình bày các ablation và những nhận định nhóm rút ra.”
 
