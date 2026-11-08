@@ -49,6 +49,22 @@ services:
       timeout: 5s
       retries: 12
 
+  etl:
+    profiles: ["etl"]
+    build:
+      context: ./pipeline
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      TEXA_DW_DSN: postgresql://${POSTGRES_USER:-texa}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-texa}
+      TEXA_LANDING_DIR: /opt/texa/data/landing
+      TEXA_SQL_DIR: /opt/texa/pipeline/sql
+      REES46_MONTHS: ${REES46_MONTHS:-2019-Dec,2020-Jan}
+    volumes:
+      - ./data:/opt/texa/data
+
   web:
     build:
       context: ./web
