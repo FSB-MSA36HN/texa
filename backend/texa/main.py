@@ -36,7 +36,15 @@ async def lifespan(app):
 
 
 app = FastAPI(title="Texa", lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:15173", "http://127.0.0.1:15173"],
+
+def _cors_origins() -> list[str]:
+    configured = os.getenv("TEXA_CORS_ORIGINS", "")
+    origins = [item.strip().rstrip("/") for item in configured.split(",") if item.strip()]
+    # Local development remains available when no deployment origin is configured.
+    return origins or ["http://localhost:15173", "http://127.0.0.1:15173"]
+
+
+app.add_middleware(CORSMiddleware, allow_origins=_cors_origins(),
                    allow_methods=["*"], allow_headers=["*"])
 
 
