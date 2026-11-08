@@ -186,7 +186,7 @@
 </head>
 <body>
 <!--
-  TEXA — 22 SLIDE
+  TEXA — 18 SLIDE
   Mở file này trực tiếp bằng Chrome / Edge để xem.
   Sửa mã HTML/CSS bằng trình soạn thảo bất kỳ.
   Ctrl+F "SLIDE 06" để tìm nhanh slide 6, tương tự cho các trang khác.
@@ -329,6 +329,7 @@
     <div class="text" style="left:74%;top:37%;width:20%;font-size:1.35cqw;font-weight:700;color:#087F82;">04 · SEMANTIC LAYER</div>
     <div class="text" style="left:74%;top:43%;width:20%;font-size:1.9cqw;font-weight:700;color:#132F46;">Event mart + catalog</div>
     <div class="text" style="left:74%;top:51%;width:20%;font-size:1.45cqw;color:#526574;">Metric, mapping, coverage<br>sẵn sàng cho Texa</div>
+    <div class="text" style="left:4.166667%;top:62.6%;width:91.666667%;font-size:1.3cqw;line-height:1.3;color:#132F46;"><strong style="color:#087F82;">Khó khăn khi mapping:</strong> Olist là vòng đời đơn, Cosmetics là luồng hành vi nên user_id, giờ, purchase và revenue khác nghĩa (Olist: không có session, giờ Brazil lưu như UTC, purchases/revenue gồm cả đơn hủy). Đã thêm ghi chú theo nguồn hiện cùng kết quả và 2 quality check ở bước ETL.</div>
     <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:69%;width:91.666667%;height:15%;background:#132F46;"></div>
     <div class="text" style="left:6%;top:72%;width:87.5%;font-size:1.75cqw;font-weight:700;color:white;">Kết quả của ELT: một lớp event thống nhất, nhưng vẫn giữ ngữ nghĩa riêng của từng nguồn.</div>
     <div class="text" style="left:6%;top:77.5%;width:87.5%;font-size:1.45cqw;color:#D4EBED;">Texa dùng event mart và semantic catalog để xác định metric, nguồn và cách tính trước khi sinh QuerySpec.</div>
@@ -547,11 +548,12 @@
     <div class="text" style="left:52.604167%;top:29%;width:41.666667%;font-size:1.52cqw;font-weight:700;color:#087F82;">TEXA ĐẦY ĐỦ</div>
     <div class="text" style="left:52.604167%;top:35%;width:41.666667%;font-size:1.52cqw;font-weight:400;color:#132F46;">Cùng gpt-6-luna<br>Nhận thêm: semantic catalog + memory<br>Retrieval + consistency khi cần<br>→ QuerySpec → compiler → validation → thực thi</div>
 
-    <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:61%;width:91.666667%;height:25.5%;background:#F0F5F8;"></div>
+    <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:61%;width:91.666667%;height:31%;background:#F0F5F8;"></div>
     <div class="text" style="left:5.729167%;top:64%;width:88.541667%;font-size:1.52cqw;font-weight:700;color:#087F82;">BỘ BENCHMARK DÙNG CHUNG</div>
     <div class="text" style="left:5.729167%;top:68.8%;width:88.541667%;font-size:1.48cqw;font-weight:400;color:#132F46;">300 câu đơn (100 dev / 200 test) • 60 clarification • 40 hội thoại • 40 ngoài scope</div>
     <div class="text" style="left:5.729167%;top:74.2%;width:88.541667%;font-size:1.48cqw;font-weight:400;color:#132F46;">Cosmetics + Olist • fixture cố định • chấm bảng kết quả so với gold • mỗi cấu hình chạy 2 lần</div>
     <div class="text" style="left:5.729167%;top:79.8%;width:88.541667%;font-size:1.34cqw;font-weight:400;color:#526574;">Giới hạn: còn template overlap, chưa có holdout độc lập; kết quả exploratory, không suy ra production accuracy.</div>
+    <div class="text" style="left:5.729167%;top:84.6%;width:88.541667%;font-size:1.34cqw;line-height:1.3;font-weight:400;color:#132F46;"><strong style="color:#087F82;">Bổ sung sau góp ý:</strong> 22,5% của baseline chủ yếu đo việc thiếu định nghĩa nghiệp vụ, nên thêm thang baseline schema → + ví dụ → + định nghĩa Texa (B0G) → + sửa SQL (B0GR) → Texa; số liệu mới: chờ chạy. Bộ test v4 dùng dữ liệu thật, 300 câu, đáp án tính độc lập từ CSV.</div>
   </div>
 </section>
 
@@ -564,14 +566,15 @@
 
     <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:26.5%;width:44.791667%;height:48%;background:#F0F5F8;"></div>
     <div class="text" style="left:5.729167%;top:29.2%;width:41.6%;font-size:1.62cqw;font-weight:700;color:#087F82;">1. QUY TẮC ĐÁNH GIÁ</div>
-    <div class="text" style="left:5.729167%;top:35%;width:41.6%;font-size:1.42cqw;font-weight:400;color:#132F46;">• SQL khác nhau vẫn được tính đúng nếu bảng kết quả khớp gold.<br><br>• Chạy trên cùng fixture/snapshot; so toàn bộ bảng.<br><br>• Khớp cột, dòng, NULL và duplicate; thứ tự dòng chỉ quan trọng khi đề bài yêu cầu.<br><br>• Sai số số học cho phép 1e-6; lỗi hoặc timeout vẫn tính là sai.</div>
+    <div class="text" style="left:5.729167%;top:35%;width:41.6%;font-size:1.42cqw;font-weight:400;color:#132F46;">• SQL khác nhau vẫn được tính đúng nếu bảng kết quả khớp gold.<br><br>• Chạy trên cùng fixture/snapshot; so toàn bộ bảng.<br><br>• Khớp cột, dòng, NULL và duplicate; thứ tự dòng chỉ quan trọng khi đề bài yêu cầu.<br><br>• Sai số số học cho phép 1e-6; lỗi hoặc timeout vẫn tính là sai; tên cột (alias) không cần giống.</div>
 
     <div class="shape roundRect" aria-hidden="true" style="left:51.041667%;top:26.5%;width:44.791667%;height:48%;background:#E7F2F3;"></div>
     <div class="text" style="left:52.604167%;top:29.2%;width:41.6%;font-size:1.62cqw;font-weight:700;color:#087F82;">2. METRIC ĐÁNH GIÁ</div>
     <div class="text" style="left:52.604167%;top:35%;width:41.6%;font-size:1.42cqw;font-weight:400;color:#132F46;">• Business accuracy: tỷ lệ bảng kết quả đúng trên toàn bộ câu hỏi.<br><br>• Clarification: bảng cuối đúng và hệ thống hỏi lại đúng lúc.<br><br>• Hội thoại: độ đúng của từng answer slot, action và tham chiếu.<br><br>• Đo bổ sung: thời gian, số lần gọi model và token.</div>
 
-    <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:80%;width:91.666667%;height:9%;background:#132F46;"></div>
-    <div class="text" style="left:5.729167%;top:82.5%;width:88.5%;font-size:1.52cqw;font-weight:700;color:#FFFFFF;">QuerySpec hoặc JSON đúng chưa đủ: kết quả cuối cùng mới là căn cứ chấm chính.</div>
+    <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:76%;width:91.666667%;height:16%;background:#132F46;"></div>
+    <div class="text" style="left:5.729167%;top:78%;width:88.5%;font-size:1.52cqw;font-weight:700;color:#FFFFFF;">QuerySpec hoặc JSON đúng chưa đủ: kết quả cuối cùng mới là căn cứ chấm chính.</div>
+    <div class="text" style="left:5.729167%;top:83%;width:88.5%;font-size:1.3cqw;line-height:1.3;color:#D4EBED;">Độ chính xác của đáp án chuẩn (bộ v4): tính độc lập từ CSV thật bằng DuckDB; 300 câu, 96 nhóm dạng câu, dev/test không trùng nhóm; 300/300 SQL chuẩn khớp. Chưa có review người nên vẫn là exploratory.</div>
   </div>
 </section>
 

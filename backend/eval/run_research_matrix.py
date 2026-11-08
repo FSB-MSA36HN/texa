@@ -51,7 +51,7 @@ try:
    rows=yaml.safe_load((DATA/filename).read_text())
    if any(x.get('split')==a.split and x.get('fixture_world','base')==world for x in rows):
     for variant in a.variants:
-     if suite!='single' and variant in {'B0','B0R'}:continue
+     if suite!='single' and variant in {'B0','B0R','B0G','B0GR'}:continue
      if suite=='conversation' and variant in {'F','M6','M0'} or suite=='clarification' and variant in {'F','C0'}: pass
      if suite=='single' and variant=='B1':continue
      for shard in range(a.shards):jobs.append((suite,variant,shard))

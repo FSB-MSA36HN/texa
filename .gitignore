@@ -10,3 +10,5 @@ web/dist/
 .claude/
 .runtime/
 backend/eval/results/
+# Large derived real-data benchmark world (regenerate with export_world.py; hash kept in real.sha256)
+data/benchmark/research_v4/worlds/real.sql

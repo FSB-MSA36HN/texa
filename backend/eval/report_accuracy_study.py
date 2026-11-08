@@ -28,6 +28,8 @@ except ImportError:
 V3_INPUT_POLICIES = {
     "B0": "schema_only_direct_sql",
     "B0R": "schema_plus_verified_retrieved_examples",
+    "B0G": "schema_plus_catalog_definitions_direct_sql",
+    "B0GR": "schema_plus_catalog_definitions_direct_sql_one_sql_retry",
     "B1": "schema_only_raw_history_clarification_and_one_sql_retry",
     "T00": "texa_semantic_catalog_and_compiler",
     "T10": "texa_semantic_catalog_and_compiler",

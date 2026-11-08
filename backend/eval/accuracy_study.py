@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-VARIANTS = ("B0", "B0R", "B1", "T00", "T10", "T01", "T11", "F", "M6", "M0", "C0")
+VARIANTS = ("B0", "B0R", "B0G", "B0GR", "B1", "T00", "T10", "T01", "T11", "F", "M6", "M0", "C0")
 
 
 def expected_answer_count(item: dict[str, Any]) -> int:

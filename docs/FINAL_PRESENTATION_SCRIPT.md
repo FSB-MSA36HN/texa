@@ -10,7 +10,7 @@
 | Hiệp | 12–15 | Thiết kế đánh giá và kết quả chính |
 | Đức | 16–18 | Ablation studies, giới hạn và kết luận |
 
-> Các con số benchmark dùng trong script là kết quả research-v3: cùng `gpt-6-luna`, cùng snapshot dữ liệu cố định và hai lần chạy cho mỗi phiên bản. Bộ dữ liệu do nhóm xây dựng; vì vẫn còn các câu cùng dạng và chưa có holdout độc lập, đây là kết quả thăm dò.
+> Các con số benchmark dùng trong script là kết quả research-v3: cùng `gpt-6-luna`, cùng snapshot dữ liệu cố định và hai lần chạy cho mỗi phiên bản. Bộ dữ liệu do nhóm xây dựng; vì vẫn còn các câu cùng dạng và chưa có holdout độc lập, đây là kết quả thăm dò. Sau buổi trình bày, nhóm đã bổ sung bộ test v4 (đáp án tính độc lập từ CSV thật) và thang baseline; các con số của hai phần này **chưa được đo bằng model thật** nên chưa có trong kịch bản. Các chỗ đã sửa theo góp ý nằm ở slide 6, 12 và 13; bản ghi chi tiết cho cô là file Word `docs/TEXA_phan_hoi_gop_y.docx`.
 
 ---
 
@@ -68,7 +68,7 @@
 
 **Lời nói:**
 
-“Slide này mô tả quy trình ELT của Texa. Đầu tiên, hệ thống lấy dữ liệu gốc từ Cosmetics và Olist. Tiếp theo, dữ liệu được nạp vào PostgreSQL để giữ bản ghi theo từng nguồn. Sau đó, lớp transform chuẩn hóa kiểu dữ liệu, ngày, field và event role thành event rows. Cuối cùng, semantic catalog gắn định nghĩa metric, mapping và coverage. Kết quả là một lớp event thống nhất để Texa xử lý, nhưng vẫn giữ được ngữ nghĩa riêng của từng nguồn.”
+“Slide này mô tả quy trình ELT của Texa. Đầu tiên, hệ thống lấy dữ liệu gốc từ Cosmetics và Olist. Tiếp theo, dữ liệu được nạp vào PostgreSQL để giữ bản ghi theo từng nguồn. Sau đó, lớp transform chuẩn hóa kiểu dữ liệu, ngày, field và event role thành event rows. Cuối cùng, semantic catalog gắn định nghĩa metric, mapping và coverage. Kết quả là một lớp event thống nhất để Texa xử lý, nhưng vẫn giữ được ngữ nghĩa riêng của từng nguồn. Khó khăn lớn nhất ở bước này là hai nguồn khác bản chất: Cosmetics là luồng hành vi, Olist là vòng đời đơn hàng, nên user_id, giờ, purchase và revenue khác nghĩa; Olist không có session, giờ Brazil được lưu như UTC, và purchases cùng revenue của Olist gồm cả đơn sau đó bị hủy. Nhóm đã thêm ghi chú theo nguồn hiện cùng kết quả và hai quality check ở bước ETL.”
 
 **Chuyển ý:** “Khi dữ liệu đã được chuẩn hóa, Hải sẽ trình bày kiến trúc và cách Texa xử lý một câu hỏi.”
 
@@ -128,7 +128,7 @@
 
 **Lời nói:**
 
-“Baseline là LLM sinh SQL trực tiếp, dùng cùng gpt-6-luna nhưng chỉ nhận câu hỏi, schema PostgreSQL và nguồn được chọn; baseline không nhận semantic catalog, định nghĩa nghiệp vụ, ví dụ đã xác minh hay workflow QuerySpec. Texa đầy đủ dùng đúng model đó nhưng có thêm semantic catalog, memory, retrieval, consistency khi cần, QuerySpec, compiler và validation. Hai bên cùng chạy trên dữ liệu Cosmetics và Olist với điều kiện chạy cố định, gồm bốn nhóm. Thứ nhất, 300 câu đơn đo độ chính xác: 100 câu dev để phát triển, 200 câu test để đánh giá, chia theo ba mức basic, compositional và semantic. Thứ hai, 60 tình huống clarification gồm 30 câu mơ hồ và 30 câu rõ ràng đối chứng, để đo việc hỏi lại đúng lúc chứ không phải câu nào cũng hỏi. Thứ ba, 40 hội thoại dài 6 đến 12 lượt đo khả năng giữ và cập nhật ngữ cảnh. Thứ tư, 40 câu ngoài scope đo khả năng từ chối thay vì bịa ra câu trả lời. Mỗi cấu hình chạy hai lần; kết quả được so với bảng gold, không yêu cầu câu SQL phải giống nhau. Bộ test vẫn còn một số câu cùng dạng với dev và chưa có holdout độc lập, nên đây là kết quả thăm dò.”
+“Baseline là LLM sinh SQL trực tiếp, dùng cùng gpt-6-luna nhưng chỉ nhận câu hỏi, schema PostgreSQL và nguồn được chọn; baseline không nhận semantic catalog, định nghĩa nghiệp vụ, ví dụ đã xác minh hay workflow QuerySpec. Texa đầy đủ dùng đúng model đó nhưng có thêm semantic catalog, memory, retrieval, consistency khi cần, QuerySpec, compiler và validation. Hai bên cùng chạy trên dữ liệu Cosmetics và Olist với điều kiện chạy cố định, gồm bốn nhóm. Thứ nhất, 300 câu đơn đo độ chính xác: 100 câu dev để phát triển, 200 câu test để đánh giá, chia theo ba mức basic, compositional và semantic. Thứ hai, 60 tình huống clarification gồm 30 câu mơ hồ và 30 câu rõ ràng đối chứng, để đo việc hỏi lại đúng lúc chứ không phải câu nào cũng hỏi. Thứ ba, 40 hội thoại dài 6 đến 12 lượt đo khả năng giữ và cập nhật ngữ cảnh. Thứ tư, 40 câu ngoài scope đo khả năng từ chối thay vì bịa ra câu trả lời. Mỗi cấu hình chạy hai lần; kết quả được so với bảng gold, không yêu cầu câu SQL phải giống nhau. Bộ test vẫn còn một số câu cùng dạng với dev và chưa có holdout độc lập, nên đây là kết quả thăm dò. Sau góp ý, nhóm nhận thấy baseline schema-only chủ yếu đo việc thiếu định nghĩa nghiệp vụ, nên bổ sung thang baseline: thêm ví dụ, thêm đúng định nghĩa Texa đang dùng, thêm một lần sửa SQL, rồi mới đến Texa; số liệu của thang này chưa được chạy. Nhóm cũng xây bộ test v4 trên dữ liệu thật với đáp án tính độc lập từ CSV.”
 
 ### Slide 13 — QUY TẮC ĐÁNH GIÁ (0:55)
 
@@ -136,7 +136,7 @@
 
 **Lời nói:**
 
-“Thứ nhất là quy tắc: hai câu SQL không cần giống nhau; chỉ cần chạy trên cùng snapshot và trả về cùng bảng gold. Bảng phải khớp cột, dòng, NULL và duplicate; thứ tự dòng chỉ quan trọng khi câu hỏi yêu cầu. Sai số số học cho phép là 1e-6 (1x 10 mu -6), còn lỗi hoặc timeout vẫn tính là sai. Thứ hai là metric: câu hỏi đơn dùng tỷ lệ bảng đúng; clarification chấm cả bảng cuối và việc hệ thống có hỏi lại đúng lúc; hội thoại chấm từng lượt có đáp án, cùng với hành động và việc tham chiếu đúng kết quả trước. Thời gian, số lần gọi model và token là các chỉ số bổ sung.”
+“Thứ nhất là quy tắc: hai câu SQL không cần giống nhau; chỉ cần chạy trên cùng snapshot và trả về cùng bảng gold. Bảng phải khớp cột, dòng, NULL và duplicate; thứ tự dòng chỉ quan trọng khi câu hỏi yêu cầu. Tên cột (alias) không bắt buộc giống nhau nhưng số cột phải khớp. Sai số số học cho phép là 1e-6 (1x 10 mu -6), còn lỗi hoặc timeout vẫn tính là sai. Thứ hai là metric: câu hỏi đơn dùng tỷ lệ bảng đúng; clarification chấm cả bảng cuối và việc hệ thống có hỏi lại đúng lúc; hội thoại chấm từng lượt có đáp án, cùng với hành động và việc tham chiếu đúng kết quả trước. Thời gian, số lần gọi model và token là các chỉ số bổ sung. Về độ chính xác của đáp án chuẩn, bộ v4 tính đáp án độc lập từ CSV thật bằng DuckDB: 300 câu, 96 nhóm dạng câu, dev và test không trùng nhóm nào, và cả 300 câu SQL chuẩn đều khớp. Vì chưa có hai người review độc lập nên bộ test vẫn là thăm dò.”
 
 ### Slide 14 — Kết quả benchmark — câu hỏi đơn (0:55)
 
@@ -144,7 +144,7 @@
 
 **Lời nói:**
 
-“Kết quả chính cho thấy khoảng cách lớn giữa baseline schema-only và Texa. Điều này gợi ý rằng định nghĩa nghiệp vụ, QuerySpec, compiler và validation đang giải quyết đúng điểm yếu của việc để LLM tự đoán từ schema. Retrieval có đóng góp tích cực, còn consistency chưa cho thấy hiệu quả ổn định ở mọi cấu hình. 
+“Kết quả chính: baseline schema-only đúng 90 trên 400 lượt, tức 22,5%; Texa đúng 365 trên 400, tức 91,25%. Ba phiên bản ablation nằm giữa: 87,5% khi bỏ cả retrieval và consistency, 87% khi chỉ có consistency và 90,25% khi chỉ có retrieval. Khoảng cách lớn này gợi ý rằng định nghĩa nghiệp vụ, QuerySpec, compiler và validation đang giải quyết đúng điểm yếu của việc để LLM tự đoán từ schema. Retrieval có đóng góp tích cực, còn consistency chưa cho thấy hiệu quả ổn định ở mọi cấu hình. Cần lưu ý baseline này không có định nghĩa nghiệp vụ nên con số 22,5% chủ yếu đo kiến thức; phần này được làm rõ ở slide 12.”
 
 ### Slide 15 — Kết quả theo loại tác vụ (0:55)
 
@@ -152,7 +152,7 @@
 
 **Lời nói:**
 
-“ Hội thoại đo khả năng giữ và cập nhật ngữ cảnh; clarification đo khả năng nhận ra khi nào cần hỏi lại; ngoài scope đo khả năng từ chối hoặc hướng người dùng về phạm vi hỗ trợ. Texa tốt hơn rõ rệt ở việc hỏi lại và xử lý ngoài phạm vi, còn retrieval-only có thể nổi bật ở một số hội thoại. Điều này cho thấy hiệu quả của component phụ thuộc vào loại tác vụ.”
+“Hội thoại đo khả năng giữ và cập nhật ngữ cảnh; clarification đo khả năng nhận ra khi nào cần hỏi lại; ngoài scope đo khả năng từ chối hoặc hướng người dùng về phạm vi hỗ trợ. Về số liệu: hội thoại tăng từ 14,77% lên 94,81%, trong khi retrieval-only đạt 96,10%; hành động hỏi lại đúng tăng từ 67,5% lên 100%; xử lý ngoài phạm vi tăng từ 5% lên 95%. Texa tốt hơn rõ rệt ở việc hỏi lại và xử lý ngoài phạm vi, còn retrieval-only nổi bật ở hội thoại. Điều này cho thấy hiệu quả của component phụ thuộc vào loại tác vụ.”
 
 **Chuyển ý:** “Sau khi xem kết quả chính, Đức sẽ trình bày các ablation và những nhận định nhóm rút ra.”
 
@@ -182,7 +182,7 @@
 
 **Lời nói:**
 
-“Qua kết quả đánh giá, nhóm rút ra ba nhận định. Thứ nhất, semantic layer và workflow kiểm soát giúp LLM trả lời có căn cứ hơn so với việc sinh SQL trực tiếp từ schema. Thứ hai, clarification có vai trò rõ ràng trong việc tránh đoán sai; memory có cấu trúc là nền tảng để xử lý câu hỏi nối tiếp. Thứ ba, retrieval và consistency không phải lúc nào cũng cùng tăng chất lượng, nên cần chọn theo tác vụ và đo bằng ablation. Bước tiếp theo là review đáp án gold độc lập và khóa một bộ holdout mới trước khi mở rộng scope. Cảm ơn cô và mọi người đã lắng nghe.”
+“Qua kết quả đánh giá, nhóm rút ra ba nhận định. Thứ nhất, semantic layer và workflow kiểm soát giúp LLM trả lời có căn cứ hơn so với việc sinh SQL trực tiếp từ schema. Thứ hai, clarification có vai trò rõ ràng trong việc tránh đoán sai; memory có cấu trúc là nền tảng để xử lý câu hỏi nối tiếp. Thứ ba, retrieval và consistency không phải lúc nào cũng cùng tăng chất lượng, nên cần chọn theo tác vụ và đo bằng ablation. Bước tiếp theo là hai người review đáp án gold độc lập, chạy lại benchmark trên bộ v4 với thang baseline, rồi khóa holdout trước khi mở rộng scope. Cảm ơn cô và mọi người đã lắng nghe.”
 
 ---
 
@@ -193,3 +193,4 @@
 - Không nói “Texa đúng trong mọi trường hợp” hoặc “đã chứng minh tổng quát cho mọi database”. Scope chỉ là event e-commerce, PostgreSQL, hai nguồn Cosmetics/Olist.
 - Hai nguồn và nested extension là dữ liệu tổng hợp. Các con số benchmark là mang tính thăm dò, chưa phải holdout độc lập.
 - Các slide 16–17 là hai nhóm ablation khác nhau: slide 16 kiểm tra retrieval/consistency; slide 17 kiểm tra memory/clarification.
+- Khi nói về phần sửa theo góp ý (slide 6, 12, 13) chỉ nêu những gì đã kiểm chứng được: 300/300 SQL chuẩn khớp đáp án tính từ CSV, dev/test không trùng nhóm. Không nói baseline mới hay v4 “đã đo” khi chưa chạy với model thật, và không nói bộ test “đã được review” khi chưa có hai reviewer.

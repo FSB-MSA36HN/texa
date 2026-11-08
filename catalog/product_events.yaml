@@ -306,5 +306,38 @@ data_notes:
   messages:
     vi: Olist chỉ ghi nhận khách đã đặt hàng. Tỷ lệ người mua/người dùng quan sát trong kỳ không phải tỷ lệ chuyển đổi khách truy cập website.
     en: Olist observes ordering customers, not website visitors; this buyer/user ratio is not visitor conversion.
-- scope: One e-commerce event dataset per question; no cross-store totals, currencies,
-    orders, arrays or causal claims.
+- source: olist_marketplace
+  message: Olist timestamps are local Brazilian time stored as if UTC, so a day can shift by up to 3 hours.
+    Cancellation and payment events are dated at the purchase time because Olist has no separate timestamp for them.
+  messages:
+    vi: Thời gian của Olist là giờ địa phương Brazil được lưu như UTC nên một ngày có thể lệch tới 3 giờ. Sự kiện hủy đơn và thanh toán được tính theo thời điểm đặt hàng vì Olist không có mốc thời gian riêng.
+- source: olist_marketplace
+  metric: purchases
+  message: Olist purchases include item lines of orders that were later canceled or unavailable.
+  messages:
+    vi: Sản phẩm đã mua của Olist gồm cả dòng sản phẩm của đơn sau đó bị hủy hoặc không khả dụng.
+- source: olist_marketplace
+  metric: buyers
+  message: Olist buyers include customers whose order was later canceled or unavailable.
+  messages:
+    vi: Người mua của Olist gồm cả khách có đơn sau đó bị hủy hoặc không khả dụng.
+- source: olist_marketplace
+  metric: revenue
+  message: Olist revenue sums item prices of all purchased item lines, including orders later canceled or unavailable.
+  messages:
+    vi: Doanh thu Olist cộng giá của mọi dòng sản phẩm đã đặt, kể cả đơn sau đó bị hủy hoặc không khả dụng.
+- source: olist_marketplace
+  metric: events
+  message: Olist events count lifecycle rows (purchase per item, approval, shipping, delivery, payment, review), so totals are not comparable with a shop event stream.
+  messages:
+    vi: Sự kiện của Olist gồm các dòng vòng đời đơn (mua theo sản phẩm, duyệt, vận chuyển, giao hàng, thanh toán, đánh giá) nên tổng không so sánh được với luồng sự kiện của cửa hàng.
+- source: olist_marketplace
+  metric: users
+  message: Olist users include customers who only had a delivery, payment or review event in the period, possibly for an earlier purchase.
+  messages:
+    vi: Người dùng Olist gồm cả khách chỉ có sự kiện giao hàng, thanh toán hoặc đánh giá trong kỳ, có thể của đơn đặt từ trước.
+- source: cosmetics_shop
+  message: Cosmetics user and session ids are anonymous browsing identifiers, the data covers only the loaded months,
+    and there is no geography.
+  messages:
+    vi: Mã người dùng và phiên của Cosmetics là định danh duyệt web ẩn danh, dữ liệu chỉ gồm các tháng đã nạp và không có thông tin địa lý.

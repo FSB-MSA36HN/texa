@@ -28,6 +28,12 @@ SQL_SCHEMA = {"type": "object", "properties": {"sql": {"type": "string"}},
 SCHEMA_ONLY_SYSTEM = ("You are a PostgreSQL analyst. Generate one read-only SELECT query from the user's request and the supplied database schema. "
                       "Do not assume undocumented business meanings. If the request cannot be determined from the schema and question, make the best direct SQL interpretation. "
                       "Return JSON with exactly one key, sql. No markdown, comments, multiple statements, or writes.")
+# Knowledge-parity baseline: the same business definitions Texa receives, but a plain "write the SQL" workflow
+# (no QuerySpec, binder, compiler, validation or clarification). Separates what the catalog knowledge buys from
+# what the Texa workflow buys.
+SCHEMA_GLOSSARY_SYSTEM = ("You are a PostgreSQL analyst. Generate one read-only SELECT query from the user's request, the supplied database schema "
+                          "and the supplied business definitions. The definitions say what the metrics, event roles, fields and values mean for each source; "
+                          "follow them. Return JSON with exactly one key, sql. No markdown, comments, multiple statements, or writes.")
 CHALLENGE_SCHEMA = """CREATE TABLE analytics.event_activity (
     event_id TEXT NOT NULL,
     source_id TEXT NOT NULL,
@@ -581,6 +587,8 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                "shard": {"index": args.shard_index, "count": args.shard_count},
                "dataset": manifest, "status": "diagnostic_candidate", "fixture_world": args.world,
                "input_policy": ({"B0": "schema_only_direct_sql", "B0R": "schema_plus_verified_retrieved_examples",
+                                 "B0G": "schema_plus_catalog_definitions_direct_sql",
+                                 "B0GR": "schema_plus_catalog_definitions_direct_sql_one_sql_retry",
                                  "B1": "schema_only_raw_history_clarification_and_one_sql_retry"}.get(
                                      args.variant, "texa_semantic_catalog_and_compiler")),
                "confirmatory_requested": args.confirmatory,
@@ -598,8 +606,12 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
             try:
                 raw_sql = None
                 selected_examples = []
-                if args.variant in {"B0", "B0R"}:
+                if args.variant in {"B0", "B0R", "B0G", "B0GR"}:
                     prompt = _schema_only_question(item)
+                    system_prompt = SCHEMA_ONLY_SYSTEM
+                    if args.variant in {"B0G", "B0GR"}:
+                        prompt = "Business definitions (the same semantic catalog Texa receives):\n" + public_context + "\n\n" + prompt
+                        system_prompt = SCHEMA_GLOSSARY_SYSTEM
                     if args.variant == "B0R":
                         from texa.examples import retrieve_examples
                         found = retrieve_examples(bank, item["question"], confirmed_sources=item.get("ui_scope", []))
@@ -612,10 +624,22 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
                                 demos.append(f"Question: {example['question']}\nSQL: {sql}")
                         if demos:
                             prompt = "Verified reference examples (demonstrations only):\n" + "\n\n".join(demos) + "\n\n" + prompt
-                    response = llm.generate_structured(model=args.model, system=SCHEMA_ONLY_SYSTEM, prompt=prompt,
+                    response = llm.generate_structured(model=args.model, system=system_prompt, prompt=prompt,
                                                        schema=SQL_SCHEMA, name="accuracy_b0", max_output_tokens=1200)
                     raw_sql = response["sql"]
-                    cols, values = execute_readonly(dsn, raw_sql)
+                    try:
+                        cols, values = execute_readonly(dsn, raw_sql)
+                    except Exception as first_error:
+                        if args.variant != "B0GR":
+                            raise
+                        # One repair attempt with only the safe error category, matching B1's single retry.
+                        retry = llm.generate_structured(
+                            model=args.model, system=system_prompt, name="accuracy_b0_retry", max_output_tokens=1200,
+                            prompt=prompt + f"\n\nYour previous query failed with a {sql_error_diagnostic(first_error)}. "
+                                            "Return a corrected query as JSON.",
+                            schema=SQL_SCHEMA)
+                        raw_sql = retry["sql"]
+                        cols, values = execute_readonly(dsn, raw_sql)
                     result = _score_rows({"action": "sql", "columns": cols, "rows": values}, item)
                     row = {**result, "sql": raw_sql, "retrieved_example_ids": selected_examples,
                            "retrieval_activated": bool(selected_examples), "success": bool(result["business_result_correct"])}
@@ -731,7 +755,7 @@ def main(argv=None) -> int:
     parser.add_argument("--dataset-dir", type=Path, default=ROOT / "data/benchmark/challenge_v1")
     parser.add_argument("--suite", choices=SUITE_FILES, default="single")
     parser.add_argument("--split", choices=("dev", "test", "diagnostic"), default="dev")
-    parser.add_argument("--world", choices=("base", "grain_counterexample", "coverage_edge"), required=True)
+    parser.add_argument("--world", choices=("base", "grain_counterexample", "coverage_edge", "real"), required=True)
     parser.add_argument("--variant", choices=tuple(sorted({v for values in SUITE_VARIANTS.values() for v in values})), default="B0")
     parser.add_argument("--confirmatory", action="store_true", help="refuse unless a genuinely human-reviewed sealed artifact exists")
     parser.add_argument("--execute", action="store_true", help="live diagnostic execution; requires a supported runner backend")
