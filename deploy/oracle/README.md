@@ -24,19 +24,9 @@ Fill `.env.demo` with a long database password, a random `TEXA_ADMIN_TOKEN`, and
 
 ## 2. Load the demo data once
 
-The runtime compose file initializes the schema. The ETL profile downloads the two public source datasets, loads both marts and refreshes metadata. Run it once before opening the demo:
+The runtime compose file initializes the schema. Load the prepared event fixtures/ETL data before opening the demo to students. The exact ETL commands depend on the available fixture and source files; verify that both `cosmetics_shop` and `olist_marketplace` are present in `/api/bootstrap` before continuing.
 
-```bash
-./deploy/oracle/seed_data.sh
-```
-
-The script starts PostgreSQL, runs the one-shot ETL container, starts API/frontend, and verifies that both `cosmetics_shop` and `olist_marketplace` appear in `/api/bootstrap`. The database volume and downloaded landing files are persistent.
-
-If the data is already loaded, skip this step and start only the demo:
-
-```bash
-./deploy/oracle/deploy.sh
-```
+The database volume is persistent, so restarting the VM does not delete loaded data.
 
 ## 3. Start the demo
 
