@@ -171,7 +171,7 @@ Contract máy đọc được: `data/benchmark/challenge_v1/design.yaml`. Các s
 
 | Nhãn kế hoạch | Cấu hình | Mục đích |
 |---|---|---|
-| B0 | Cùng LLM sinh SQL trực tiếp, schema + định nghĩa nghiệp vụ, không thêm bank mới | Baseline hiện có |
+| B0 | Cùng LLM sinh SQL trực tiếp, schema + định nghĩa nghiệp vụ, không thêm bank mới (**cập nhật 08/11/2026:** từ research-v3, B0 chỉ nhận schema; biến thể có định nghĩa nghiệp vụ là B0G, có sửa SQL một lần là B0GR) | Baseline hiện có |
 | B0+R | B0 thêm Q→SQL demonstrations từ cùng bank approved | Control công bằng về lợi ích thông tin ví dụ |
 | B1 | Cùng LLM sinh SQL, có raw history/kết quả trước, hỏi lại qua schema chung và tối đa một vòng sửa SQL từ lỗi thực thi | Baseline mạnh hơn để đo đóng góp ngoài các công cụ hội thoại/thực thi cơ bản |
 | T00 | Texa sau sửa P0, không retrieval mới, không consistency | Control hệ thống; giữ legacy examples như hiện tại |
@@ -288,7 +288,7 @@ Nếu không đạt gate, kết quả hợp lệ vẫn được giữ và báo c
 - Đã sửa miền nhóm trong catalog/compiler bằng `metric_support`; ratio giữ support của cả tử và mẫu. Có kiểm thử PostgreSQL độc lập cho payment-only groups, zero và NULL.
 - Đã tích hợp retrieval có version/fingerprint, source gating, whole-example packing và trace; bank 45 bản ghi, 42 được agent review, ba draft bị loại. Chỉ bảy ví dụ SQL đã được thực thi kiểm chứng độc lập; nghiên cứu B0R/T10/T11 dùng cùng tập bảy ví dụ này. Không gọi đó là human review.
 - Đã tích hợp selective self-consistency: primary + hai samples tối đa, cùng model/prompt/provider defaults, chuẩn hóa qua reducer/binder/validator không ghi trạng thái. Bounded executor, admission, cancellation, timeout và ledger áp dụng cho mọi call. Clarification hợp lệ không bị hai phương án đoán đủ slot bỏ phiếu lấn át. Không có majority thì từ chối bảo thủ.
-- Hai cờ `TEXA_EXAMPLE_RETRIEVAL` và `TEXA_CONSISTENCY` **mặc định tắt**. Không suy diễn rằng các sample cùng model chắc chắn đa dạng hay voting chắc chắn tốt hơn.
+- [Lịch sử 06/11, trước quyết định sản phẩm ở mục 8: hiện cả hai cờ mặc định bật.] Hai cờ `TEXA_EXAMPLE_RETRIEVAL` và `TEXA_CONSISTENCY` **mặc định tắt**. Không suy diễn rằng các sample cùng model chắc chắn đa dạng hay voting chắc chắn tốt hơn.
 - Candidate hiện có 60 câu đơn (30 dev/30 test), 24 clarification records (12 cặp), chín hội thoại và 12 diagnostic cases. Ba worlds có 120/121/118 dòng; 180 bảng đáp án câu đơn được SQL độc lập tính trên ba worlds. Olist không có viewer/session; nested Olist là synthetic challenge extension. Bộ này chưa đạt cỡ mẫu mục 7, chưa được người thẩm định và chưa phải holdout sealed.
 - Dev matrix dùng `gpt-6-luna`, một repeat tại `81b3d3c`: câu đơn B0/B0R 29/30, B1 25/30, T00 27/30, T10 26/30, T01 28/30, T11 27/30 sau sửa lỗi annotation c19. Raw giữ nguyên; `single-summary-corrected.json` ghi hash và mọi thay đổi điểm. Câu hỏi/gold SQL/đáp án không đổi; prose c19 được chuyển sang `business_note` ở candidate hiện hành.
 - Cross-world replay không gọi model: mọi cấu hình giữ cùng số đúng trên cả ba worlds. Replay áp dụng đúng public-output projection của Texa, không chấm auxiliary sample columns như dữ liệu người dùng. Kiểm tra phụ bỏ qua alias: B0/T00/T01 cùng 29/30; T10/T11 28/30. Đây là phân tích phụ sau quan sát, không thay primary protocol hay chứng minh superiority.
@@ -300,6 +300,6 @@ Việc còn bắt buộc trước nghiên cứu xác nhận: review nghiệp v�
 
 ### Gate sau đo
 
-Không rollout retrieval/consistency: T11 không tăng điểm so với T00 (paired delta 0, CI95% khoảng −9,7…+10,0 điểm % trên dev), p95 câu đơn 22,4 giây so với 15,2 giây (1,48×, vượt gate 1,25×). Chi phí 30 câu đơn T11 khoảng 0,02064 USD, T00 0,01922 USD (1,07×). Retrieval-only có một diagnostic AOV bị đổi thành metric khác. Các số này là dev một lượt; không thay thế gate holdout.
+[Lịch sử: quyết định tại thời điểm dev v2; sau đó T11 được chọn làm mặc định, xem mục 8 và PRODUCT_SCOPE.] Không rollout retrieval/consistency: T11 không tăng điểm so với T00 (paired delta 0, CI95% khoảng −9,7…+10,0 điểm % trên dev), p95 câu đơn 22,4 giây so với 15,2 giây (1,48×, vượt gate 1,25×). Chi phí 30 câu đơn T11 khoảng 0,02064 USD, T00 0,01922 USD (1,07×). Retrieval-only có một diagnostic AOV bị đổi thành metric khác. Các số này là dev một lượt; không thay thế gate holdout.
 
 Tái lập correction trên artifact gốc: dùng `report_accuracy_study.py --compare --annotation-erratum c19-prose-contract-v1 --dataset-dir data/benchmark/results/accuracy-dev-20261106-v2/frozen_dataset` với các `single-*.jsonl`. Replay worlds dùng cùng snapshot, `check_world_robustness.py`, reader không superuser và database cô lập 15433; cần explicit fixture flag, có restore trong finally. Không gọi thêm model khi replay. Hai feature flags cũng được ghi trong `.env.example`.

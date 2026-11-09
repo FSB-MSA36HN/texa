@@ -55,7 +55,7 @@ class _Builder:
         return sql.SQL("({} ->> {})").format(expr, sql.Literal(keys[-1]))
 
     def field(self, f: str, number: bool = False, alias: str = "e") -> sql.Composable:
-        """A catalog field, mapped per store (e.g. cosmetics ep.order_id -> session_id)."""
+        """A catalog field, resolved to the physical column/path each store maps it to."""
         mapped = {s: self.cat.mapped_field(f, s) for s in self.av.sources}
         if len(set(mapped.values())) == 1:
             expr = self.raw_field(next(iter(mapped.values())), alias)

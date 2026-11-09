@@ -284,3 +284,16 @@ Code đo: `abb55a8`; cùng gpt-6-luna, một repeat; candidate test đã đượ
 ## 8. Cấu hình sản phẩm sau v6
 
 Theo quyết định sản phẩm, **T11 (retrieval + adaptive self-consistency)** là Texa mặc định; T00/T10/T01 là ablation bỏ cả hai/bỏ consistency/bỏ retrieval. Runtime và `.env.example` dùng `1/1`, policy `sql_verified` để khớp cấu hình đã đo. Đây là lựa chọn triển khai, không thay score lịch sử, không chứng minh T11 luôn tốt hơn và không đóng các issue ở mục 7. UI 5/6 là lượt đo T00; chưa có lượt UI thật T11 mới.
+
+## 9. Phản hồi sau buổi trình bày (08/11/2026)
+
+Ba yêu cầu của cô và trạng thái. Chi tiết số liệu và lập luận ở [PRODUCT_SCOPE](PRODUCT_SCOPE.md); các chỗ sửa tương ứng nằm ở slide 6, 12, 13 của bộ trình chiếu và trong file Word `docs/TEXA_phan_hoi_gop_y.docx` gửi cô.
+
+| Mã | Yêu cầu | Nguyên nhân gốc | Đã làm | Còn mở |
+|---|---|---|---|---|
+| TEXA-09 | Nêu khó khăn khi mapping hai dataset | Hai mart khác bản chất (hành vi vs vòng đời đơn); khác nghĩa `user_id`, thời gian, purchase và revenue; catalog chỉ nối bằng role `purchase` | `data_notes` theo nguồn/metric, 2 quality check, cập nhật fingerprint example bank, bảng phân tích trong PRODUCT_SCOPE | Đổi định nghĩa (loại đơn hủy, mẫu số conversion, múi giờ, `revenue_usd`) cần đo lại benchmark nên chỉ đề xuất |
+| TEXA-10 | Baseline chênh quá lớn | B0 chỉ có schema nên chênh lệch đo tri thức nghiệp vụ, không đo workflow | Thêm B0G (cùng định nghĩa Texa, dạng văn bản) và B0GR (thêm một lần sửa SQL); runner, report, matrix đã hỗ trợ; kiểm tra end-to-end bằng LLM giả | Chạy bằng model thật và công bố thang kết quả |
+| TEXA-11 | Bộ test phải chính xác, đo theo kết quả | Gold v3 do một tác giả/agent sinh từ template; 164/200 test cùng dạng với dev; fixture tổng hợp nhỏ; chưa review người | Bộ v4: oracle độc lập từ CSV thật (DuckDB), 300 câu, 96 family disjoint, loại gold rỗng/0 và bảng trùng, gate "khác hai cách hiểu sai"; validator 300/300; test metamorphic; bảng audit + thống kê kappa/Wilson | Hai reviewer độc lập điền `AUDIT_A/B.csv`, sau đó mới seal; suite clarification/conversation/unsupported của v4 chưa có |
+
+Ràng buộc giữ nguyên: không sửa gold để làm điểm đẹp hơn; chỉ gọi bộ test là sealed khi `confirmatory_eligibility()` đạt (hai reviewer thật).
+

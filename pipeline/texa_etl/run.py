@@ -167,7 +167,9 @@ def refresh_revenue_usd(source_id):
 def quality_checks(source_id):
     failures = []
     with connect() as conn, conn.cursor() as cur:
-        for path in sorted((SQL_DIR / "quality").glob("*.sql")):
+        # Shared checks first, then checks that only make sense for this source's staging tables.
+        checks = sorted((SQL_DIR / "quality").glob("*.sql")) + sorted((SQL_DIR / "quality" / source_id).glob("*.sql"))
+        for path in checks:
             cur.execute(path.read_text(), {"source_id": source_id})
             rows = cur.fetchall()
             if rows:
