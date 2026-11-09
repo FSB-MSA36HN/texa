@@ -13,9 +13,10 @@ and the two interpretations produce different result tables in the fixture.
 
 The 15 missing-period pairs are preserved with the same questions, intent,
 gold SQL, and expected results. They now include source_id, language, and
-ui_scope: [source_id]. The same selected source is visible to Texa and the
-interactive schema-only baseline, so this clarification suite does not score
-source guessing.
+ui_scope: [source_id]. The selected source is supplied explicitly to Texa, so
+this clarification suite does not score source guessing. The reported results
+compare Texa with its ablations. Baseline is evaluated only on single questions;
+no Baseline result is claimed for this clarification suite.
 
 interactions.yaml contains 180 physical rows: the same 60 logical cases are
 materialized once for each fixture world. The evaluator selects 60 rows per

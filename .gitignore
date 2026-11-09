@@ -12,3 +12,10 @@ web/dist/
 backend/eval/results/
 # Large derived real-data benchmark world (regenerate with export_world.py; hash kept in real.sha256)
 data/benchmark/research_v4/worlds/real.sql
+
+# Local document/slide renders, screenshots and preview QA artifacts
+/tmp/
+/output/previews/
+/output/screenshots/
+/web/test-results/
+/web/playwright-report/

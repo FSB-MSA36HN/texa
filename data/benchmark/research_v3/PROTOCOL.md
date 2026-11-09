@@ -2,7 +2,7 @@
 
 This version expands evaluation coverage; it is an agent-authored synthetic candidate, not a human-reviewed sealed holdout. Do not interpret its score as production accuracy.
 
-## Planned coverage
+## Coverage
 
 - 300 answerable single questions: 100 development, 200 test (40 basic, 100 compositional, 60 semantic).
 - 60 clarification situations: 30 ambiguous questions and 30 matched explicit controls.
@@ -12,15 +12,15 @@ This version expands evaluation coverage; it is an agent-authored synthetic cand
 
 ## Comparison
 
-All configurations use gpt-6-luna, the same authored questions and underlying fixtures. For every single-question case, the user-selected source ID is supplied equally to both systems, avoiding a comparison dominated by guessing source identifiers. The direct SQL baseline receives physical schema and that explicit user-selected source only; it does not receive semantic definitions. The interactive baseline additionally receives its actual chat history and may ask for clarification. Texa receives its managed catalog and its normal workflow. This compares systems with different semantic knowledge, not different models.
+All configurations use gpt-6-luna, the same authored questions and underlying fixtures. For every single-question case, the user-selected source ID is supplied equally to both systems. Baseline receives the question, physical PostgreSQL schema, explicit source selection and the same business definitions supplied to Texa, rendered as text. It generates SQL directly and may repair it once if execution fails, using only a sanitized error category. It does not receive gold answers and does not use Texa's QuerySpec, compiler, semantic validation, retrieval or consistency.
 
-The single-question matrix compares schema-only LLM, Texa, Texa without retrieval and consistency, Texa with only retrieval, and Texa with only consistency. The interactive suites replace schema-only LLM with the raw-history interactive baseline. Retrieval examples remain the existing verified bank; no new test gold is added to it.
+The single-question matrix compares Baseline, Texa, Texa without retrieval and consistency, Texa with only retrieval, and Texa with only consistency. Baseline is evaluated only on single questions. Conversation, clarification and unsupported-request results report Texa and its ablations; these suites do not establish a Baseline comparison. Retrieval examples remain the existing verified bank; no test gold is added to it.
 
 ## Scoring and repetitions
 
 Primary single-question accuracy requires the complete returned table to match independent gold values (aliases may differ); ranked outputs preserve requested ordering. Clarification reports final answer correctness separately from asking for every required field and no extra fields. Conversations report answer-slot correctness and complete-scenario success. Unsupported requests report action correctness, not SQL accuracy. Social/noise turns are not SQL answers.
 
-Target three repeats per configuration, rotating run order. The protected cumulative gateway ledger enforces the previously authorized total USD 10 cap. Complete one full paired repeat before subsequent repeats; retain partial runs as incomplete and exclude them from headline comparisons. Report exact completed coverage and costs rather than claiming missing runs finished.
+The reported single-question comparison has two completed repeats per configuration: 200 unique test cases and 400 executions. Baseline scores 356/400 (89.00%) and Texa scores 365/400 (91.25%). Repeats measure model variation and do not double the number of independent questions. The protected cumulative gateway ledger enforces the authorized total USD 150 cap. Retain partial runs as incomplete and exclude them from headline comparisons; report exact completed coverage and costs.
 
 ## Integrity
 
