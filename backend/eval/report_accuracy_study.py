@@ -41,6 +41,7 @@ V3_INPUT_POLICIES = {
     "C0": "texa_semantic_catalog_and_compiler",
 }
 V3_PROTOCOL = "v3_schema_only_full_table"
+V4_PROTOCOL = "v4_independent_raw_csv_oracle"
 
 
 def _validate_input_policy(manifest: dict[str, Any]) -> None:
@@ -49,14 +50,14 @@ def _validate_input_policy(manifest: dict[str, Any]) -> None:
     protocol = provenance.get("evaluation_protocol")
     if protocol is None:
         return  # historical runs predate explicit evaluation protocol metadata
-    if protocol != V3_PROTOCOL:
+    if protocol not in {V3_PROTOCOL, V4_PROTOCOL}:
         raise ValueError(f"unsupported evaluation protocol: {protocol}")
     expected = V3_INPUT_POLICIES.get(manifest.get("variant"))
     if expected is None:
         raise ValueError(f"v3 input policy is undefined for variant {manifest.get('variant')!r}")
     if manifest.get("input_policy") != expected:
         raise ValueError(f"{manifest.get('variant')}: input_policy does not match the frozen v3 protocol")
-    if not provenance.get("baseline_schema_hash"):
+    if protocol == V3_PROTOCOL and not provenance.get("baseline_schema_hash"):
         raise ValueError("v3 run manifest lacks the shared baseline schema hash")
 
 

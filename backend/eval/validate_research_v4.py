@@ -53,12 +53,24 @@ def structural_errors(cases):
     return errors
 
 
+def validate_load_target(database_name: str, isolated_run: bool) -> None:
+    """Guard the destructive COPY replay to the legacy benchmark DB or explicit run-owned DBs."""
+    if database_name == "texa_benchmark" and not isolated_run:
+        raise SystemExit("refusing to load a world into the shared legacy database without --isolated-run")
+    if not isolated_run and database_name != "texa_benchmark":
+        raise SystemExit("refusing to load a world outside texa_benchmark; pass --isolated-run for a dedicated run DB")
+    if isolated_run and not database_name.startswith("texa_bench_run_"):
+        raise SystemExit("--isolated-run only permits database names beginning texa_bench_run_")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--dataset-dir", type=Path, default=ROOT / "data/benchmark/research_v4")
     ap.add_argument("--dsn", default=os.environ.get("TEXA_DB_DSN"), required=not os.environ.get("TEXA_DB_DSN"))
     ap.add_argument("--landing", type=Path, default=ROOT / "data/landing")
     ap.add_argument("--load-world", action="store_true")
+    ap.add_argument("--isolated-run", action="store_true",
+                    help="allow COPY replay only into a dedicated texa_bench_run_* database")
     ap.add_argument("--output", type=Path)
     args = ap.parse_args()
     directory = args.dataset_dir.resolve()
@@ -72,8 +84,7 @@ def main():
 
     with psycopg.connect(args.dsn, autocommit=True) as conn:
         if args.load_world:
-            if conn.execute("select current_database()").fetchone()[0] != "texa_benchmark":
-                raise SystemExit("refusing to load a world outside texa_benchmark")
+            validate_load_target(conn.execute("select current_database()").fetchone()[0], args.isolated_run)
             world = directory / manifest["fixture_worlds"]["real"]["file"]
             expected_hash = (world.parent / "real.sha256").read_text().split()[0]
             if hashlib.sha256(world.read_bytes()).hexdigest() != expected_hash:

@@ -517,7 +517,8 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
     if args.variant == "B0R":
         from texa import catalog as catalog_mod
         from texa.examples import ExampleBank, load_bank
-        loaded = load_bank(catalog_mod.published(), path=ROOT / "catalog/verified_examples.yaml")
+        bank_path = Path(os.environ.get("TEXA_EXAMPLE_BANK", ROOT / "catalog/verified_examples.yaml")).resolve()
+        loaded = load_bank(catalog_mod.published(), path=bank_path)
         verified = tuple(ex for ex in loaded.examples
                          if ex.get("reference", {}).get("verification_status") == "verified"
                          and ex.get("reference", {}).get("reference_sql"))
@@ -535,14 +536,15 @@ def execute(args, directory: Path, manifest: dict, rows: list[dict]) -> int:
         "backend/texa/runtime_guard.py", "catalog/product_events.yaml", "catalog/verified_examples.yaml")
         if (ROOT / p).exists()]
     provenance = {"dataset_hashes": {str(p.relative_to(directory)): hashlib.sha256(p.read_bytes()).hexdigest() for p in files},
-                  "catalog_hash": hashlib.sha256((ROOT / "catalog/product_events.yaml").read_bytes()).hexdigest(),
-                  "bank_hash": hashlib.sha256((ROOT / "catalog/verified_examples.yaml").read_bytes()).hexdigest(),
+                  "catalog_hash": hashlib.sha256(Path(os.environ.get("TEXA_CATALOG", ROOT / "catalog/product_events.yaml")).resolve().read_bytes()).hexdigest(),
+                  "bank_hash": hashlib.sha256(Path(os.environ.get("TEXA_EXAMPLE_BANK", ROOT / "catalog/verified_examples.yaml")).resolve().read_bytes()).hexdigest(),
         "implementation_hashes": {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
                                              for p in implementation_paths},
                   # This is Texa's catalog snapshot fingerprint, never a direct-baseline prompt input.
                   # Keep the established key because paired reports validate it per fixture world.
                   "public_context_hash": public_context_hash,
-                  "evaluation_protocol": "v3_schema_only_full_table",
+                  "evaluation_protocol": ("v4_independent_raw_csv_oracle" if manifest.get("version") == 4
+                                          else "v3_schema_only_full_table"),
                   "baseline_input_policy": "schema_only_v1",
                   "baseline_schema_hash": hashlib.sha256(CHALLENGE_SCHEMA.encode()).hexdigest(),
                   "baseline_source_scope_policy": "explicit_ui_selection_only",
@@ -762,6 +764,7 @@ def main(argv=None) -> int:
     parser.add_argument("--model")
     parser.add_argument("--max-model-calls", type=int)
     parser.add_argument("--repeat", type=int, default=1)
+    parser.add_argument("--case-id", help="run exactly one frozen case (used by the resumable manager)")
     parser.add_argument("--shard-index", type=int, default=0, help="zero-based shard index")
     parser.add_argument("--shard-count", type=int, default=1, help="number of round-robin shards")
     parser.add_argument("--output", type=Path, default=ROOT / "backend/eval/results" / f"accuracy-{uuid.uuid4().hex}.jsonl")
@@ -772,6 +775,10 @@ def main(argv=None) -> int:
         if (args.suite == "diagnostic" and args.split not in {"diagnostic", "test"}) or (args.suite != "diagnostic" and args.split not in {"dev", "test"}):
             raise ValueError("diagnostic suite requires --split diagnostic or test; answer suites require dev/test")
         manifest, rows = load_suite(args.dataset_dir.resolve(), args.suite, args.split, args.world)
+        if args.case_id:
+            rows = [row for row in rows if row["id"] == args.case_id]
+            if not rows:
+                raise ValueError(f"case id not found in selected suite/split/world: {args.case_id}")
         rows = select_shard(rows, args.shard_index, args.shard_count)
         validate_coverage([{"id": row["id"]} for row in rows], [row["id"] for row in rows],
                           variant=args.variant, suite=args.suite)
