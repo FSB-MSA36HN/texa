@@ -1,6 +1,6 @@
 # Texa — Product scope
 
-Cập nhật 08/11/2026 (thêm mapping, thang baseline và bộ test v4). Kịch bản trình bày hiện hành: [FINAL_PRESENTATION_SCRIPT](FINAL_PRESENTATION_SCRIPT.md).
+Cập nhật 09/11/2026.
 
 ## Sản phẩm và người dùng
 
@@ -64,28 +64,28 @@ Hai nguồn được đưa vào cùng bảng `analytics.event_activity` qua hai 
 
 ## Benchmark và mức bằng chứng
 
-Nghiên cứu v3 dùng cùng `gpt-6-luna`, câu hỏi và fixture trong hai lần chạy độc lập trên mỗi biến thể. Baseline schema-only nhận câu hỏi, schema PostgreSQL vật lý và nguồn UI; không có catalog, định nghĩa nghiệp vụ, enum/source mapping hay ví dụ. Baseline hội thoại có thêm lịch sử và protocol hội thoại. **Texa** có semantic catalog, phân giải ý định, memory cấu trúc, compiler và kiểm tra SQL. Vì baseline thiếu tri thức nguồn/giá trị có trong catalog, chênh lệch đo cả lợi ích thông tin semantic lẫn workflow; không thể quy toàn bộ mức tăng cho workflow hay một component riêng.
+Nghiên cứu v3 dùng cùng `gpt-6-luna`, câu hỏi và fixture. **Baseline** nhận câu hỏi, schema PostgreSQL và cùng các định nghĩa nghiệp vụ dạng văn bản; nếu SQL lỗi khi thực thi, được sửa một lần dựa trên loại lỗi an toàn. Baseline không dùng QuerySpec, compiler hay validator của Texa. **Texa** dùng semantic catalog, phân giải ý định, memory cấu trúc, compiler và kiểm tra SQL. Baseline câu đơn không được chấm trong hội thoại, clarification hay ngoài phạm vi.
 
 Metric chính cho câu hỏi đơn và các lượt có đáp án trong hội thoại là business accuracy: tỷ lệ khớp toàn bộ bảng chuẩn. Hội thoại báo theo answer slots, không dùng legacy scenario-success (chỉ số này bị ảnh hưởng bởi rubric tham chiếu lượt). Câu ngoài phạm vi chấm riêng bằng diagnostic action accuracy. Bộ candidate gồm 300 câu đơn (100 dev/200 test), 60 tình huống clarification, 40 hội thoại dài 6–12 lượt (355 lượt, 308 answer slots) và 40 câu ngoài phạm vi. Có 200 câu single test được chạy hai lần cho mỗi biến thể; mỗi lần dùng 100 case Cosmetics và 100 Olist. Gold SQL được kiểm tra qua 2.004 SQL/world checks trên ba fixture worlds; các lần gọi model chỉ chạy trên world base, không phải ba phép chạy benchmark độc lập. Hai nguồn và nested extensions là synthetic. Bộ do nhóm xây dựng; family/template overlap còn tồn tại, test chưa human-review hay sealed, nên kết quả exploratory chứ chưa phải holdout độc lập hay production guarantee.
 
-| Suite | LLM baseline (schema-only) | LLM baseline (chat) | Texa without retrieval and consistency | Texa with only retrieval | Texa with only consistency | **Texa** |
-|---|---:|---:|---:|---:|---:|---:|
-| Single test (200 unique, 400 executions) | 90/400 (22,5%) | — | 350/400 (87,5%) | 361/400 (90,25%) | 348/400 (87,0%) | 365/400 (91,25%) |
-| Conversation (40 dialogs; 308 answer slots/run) | — | 91/616 (14,8%) | 563/616 (91,4%) | 592/616 (96,1%) | 567/616 (92,0%) | 584/616 (94,8%) |
-| Unsupported (40 cases × 2; action accuracy) | — | 4/80 (5,0%) | 67/80 (83,75%) | 69/80 (86,25%) | 75/80 (93,75%) | 76/80 (95,0%) |
-| Clarification final table (60 cases × 2) | — | 33/120 (27,5%) | 119/120 (99,2%) | 119/120 (99,2%) | 120/120 (100%) | 120/120 (100%) |
+| Suite | Baseline | Texa without retrieval and consistency | Texa with only retrieval | Texa with only consistency | **Texa** |
+|---|---:|---:|---:|---:|---:|
+| Single test (200 unique, 400 executions) | 356/400 (89,0%) | 350/400 (87,5%) | 361/400 (90,25%) | 348/400 (87,0%) | 365/400 (91,25%) |
+| Conversation (40 dialogs; 308 answer slots/run) | Không đo bằng cấu hình này | 563/616 (91,4%) | 592/616 (96,1%) | 567/616 (92,0%) | 584/616 (94,8%) |
+| Unsupported (40 cases × 2; action accuracy) | Không đo bằng cấu hình này | 67/80 (83,75%) | 69/80 (86,25%) | 75/80 (93,75%) | 76/80 (95,0%) |
+| Clarification final table (60 cases × 2) | Không đo bằng cấu hình này | 119/120 (99,2%) | 119/120 (99,2%) | 120/120 (100%) | 120/120 (100%) |
 
-Clarification có thêm metric hành động “có hỏi lại khi thiếu thông tin không”: baseline đạt 81/120 (67,5%); Texa without retrieval and consistency và Texa with only consistency đạt 120/120; Texa with only retrieval đạt 119/120 (99,2%); Texa đạt 120/120. Đây là bộ thay thế đã chạy; các kết quả clarification cũ có lỗi chú giải và không được dùng. Texa đạt business accuracy single cao nhất (91,25%); Texa with only retrieval đạt 90,25%, Texa with only consistency 87%, Texa without retrieval and consistency 87,5%, còn baseline schema-only đạt 22,5%. Trên hội thoại, Texa đạt 94,8%; Texa with only retrieval cao nhất với 96,1%. Kết quả này cho thấy thành phần không cải thiện đồng đều mọi suite. Kiểm tra consistency được gọi có điều kiện, không áp dụng cho mọi câu. Xem [báo cáo benchmark đầy đủ](../data/benchmark/results/research-v3-20261106/REPORT.md) và raw summary tại `data/benchmark/results/research-v3-20261106/summary.json`.
+Clarification có metric hành động riêng (có hỏi lại khi thiếu thông tin không); các số liệu đó chỉ áp dụng cho biến thể Texa được chạy trên suite này. Ở câu đơn, Texa đạt 91,25%, Baseline đạt 89,00%, chênh 2,25 điểm phần trăm. Trên hội thoại, Texa đạt 94,8%; Texa with only retrieval đạt 96,1%. Những kết quả này cho thấy thành phần không cải thiện đồng đều mọi suite. Xem [báo cáo benchmark đầy đủ](../data/benchmark/results/research-v3-20261106/REPORT.md).
 
-### Cách chấm, baseline và bộ test sau phản hồi (cập nhật 08/11/2026)
+### Cách chấm, Baseline và bộ test sau phản hồi (cập nhật 09/11/2026)
 
 **Cách chấm.** Chấm theo bảng kết quả, không so chuỗi SQL: `benchmark.results_equal` so toàn bộ bảng (cùng số cột và thứ tự cột, bỏ qua alias; dòng so như multiset, chỉ so thứ tự khi là top-k; số trong dung sai 1e-6; NULL và duplicate được giữ).
 
 **Điểm yếu của bộ v3 (đã biết).** Gold SQL và oracle Python do cùng một tác giả/agent viết từ cùng đặc tả (`research_v3/generate.py`); chưa có người review (`human_review: pending`); 164/200 câu test cùng mẫu SQL với dev (11 family); fixture khoảng 120 dòng tổng hợp; 20 gold rỗng và 10 gold `[[0]]`; 182/200 gold không đổi giữa ba world nên phép kiểm tra nhiều world ít phân biệt.
 
-**Baseline.** B0 chỉ có schema nên khoảng cách 22,5% so với 91,25% chủ yếu đo việc thiếu định nghĩa nghiệp vụ. Thang baseline mới, cùng model: B0 (schema), B0R (thêm ví dụ đã xác minh), **B0G** (thêm đúng bản catalog Texa nhận, dưới dạng văn bản, không compiler/validation), **B0GR** (B0G cộng một lần sửa SQL khi lỗi), rồi các biến thể Texa. Chênh B0 → B0G là giá trị tri thức; chênh B0GR → Texa là giá trị workflow. **Chưa chạy bằng model thật; chưa có số liệu.**
+**Baseline câu đơn.** Trên 200 câu test × hai lần chạy đạt 356/400 (89,00%); Texa đạt 365/400 (91,25%). Cùng model `gpt-6-luna`, cùng câu hỏi và dữ liệu; Baseline nhận schema và các định nghĩa nghiệp vụ được cung cấp dưới dạng văn bản, với một lần thử sửa SQL nếu truy vấn lỗi. Kết quả v3 là exploratory; bộ test chưa được người độc lập review/seal. Baseline câu đơn không được áp dụng vào suite tương tác.
 
-**Bộ test v4 (`data/benchmark/research_v4/`, chỉ suite câu đơn).** Đáp án tính độc lập từ CSV thật bằng DuckDB (`backend/eval/oracle_csv.py`, định nghĩa trong `GLOSSARY.md`), không dùng mart, catalog hay mã của v3. 300 câu (100 dev/200 test), 96 family (nguồn × metric × dạng câu), dev/test không trùng family, 300 bảng kết quả khác nhau, không có gold rỗng hoặc toàn 0, mỗi gold khác hai cách hiểu sai. Kiểm chứng: SQL gold chạy trên warehouse do ETL nạp từ CSV trả đúng bảng của oracle ở 300/300 câu; khi cố ý sửa sai một đáp án và một câu SQL, validator báo lỗi. Trạng thái vẫn là *unsealed candidate*: câu hỏi còn sinh từ template (3 cách diễn đạt mỗi dạng), cần hai reviewer độc lập (`REVIEW_GUIDE.md`, `AUDIT_A.csv`, `AUDIT_B.csv`, `audit_stats.py` tính tỷ lệ đồng thuận, Cohen's kappa và khoảng Wilson) trước khi gọi là sealed. Dữ liệu thật cũng cho thấy Cosmetics có đúng 100 event mỗi ngày, nên không thể hỏi "số event một ngày" ở nguồn này.
+**Bộ test v4 (`data/benchmark/research_v4/`, chỉ suite câu đơn).** Chưa dùng để báo cáo điểm: hai CSV Cosmetics hiện tại không khớp hash và gold được đóng băng trong v4. Kiểm thử oracle thất bại ít nhất một câu, do đó cần khôi phục dữ liệu đúng hoặc xây lại và kiểm định bộ đáp án trước khi chạy.
 
 ### Ablation riêng cho memory và clarification
 
@@ -99,8 +99,8 @@ Clarification gồm 60 tình huống × 2 repeat (120 answer slots): **Texa with
 - Browser model thật đã đo với cấu hình Texa without retrieval and consistency: các luồng chính được thử trực tiếp; 5/6 câu có đáp án khớp, câu đếm view trả 12 thay vì 24. Chuỗi filter mobile+paid trả 62, bỏ mobile vẫn giữ paid trả 204, đổi sang desktop vẫn giữ paid trả 61; unique viewers 12 và Olist revenue 432 BRL/CSV đã đối chiếu. Đây là smoke/regression test nhỏ, không phải holdout.
 - Diagnostic ngoài phạm vi: Texa đạt action accuracy 95%; các biến thể còn lại đạt 83,75–93,75%. Đây là chẩn đoán hành động (từ chối/hỏi lại/giải thích), không gộp vào SQL accuracy.
 - Browser parity benchmark riêng: Texa without retrieval and consistency 15/15 câu đơn và 18/19 lượt hội thoại; đó là replay hồi quy trên các câu đã biết, không phải kiểm thử UI hay holdout.
-- Với 400 lần chạy single, median latency baseline/Texa là **7,7/13,8 giây**; tổng chi phí ước tính lần lượt **$0,074/$0,401**. Đây là đo trên fixture và mức giá gateway hiện tại, không phải cam kết SLO hoặc dự báo chi phí production.
-- Còn giới hạn: test split v3 chưa được human-review/sealed và có family overlap (v4 khắc phục overlap nhưng cũng chưa có review người); persona chưa xác thực bằng nghiên cứu người dùng; baseline schema-only không biết raw enum/source mappings; diagnostic không phải SQL accuracy. Các quan sát browser cũ là lịch sử, không thuộc benchmark v3 và không xác nhận phiên bản hiện tại. Cần review gold độc lập, holdout mới và load test trước khi khẳng định khả năng triển khai rộng.
+- Với 400 lượt single, median latency Baseline/Texa lần lượt là **6,27/13,79 giây**; tổng chi phí ước tính **$0,208/$0,401**. Đây là đo trên fixture và mức giá gateway tại thời điểm chạy, không phải cam kết SLO hay dự báo chi phí production.
+- Còn giới hạn: test split v3 chưa được human-review/sealed và có family overlap; v4 khắc phục overlap nhưng dữ liệu Cosmetics hiện không khớp đáp án chuẩn và chưa được review độc lập. Persona chưa xác thực bằng nghiên cứu người dùng; diagnostic không phải SQL accuracy. Cần review gold độc lập, holdout mới và load test trước khi khẳng định khả năng triển khai rộng.
 
 Cấu hình mặc định: `TEXA_EXAMPLE_RETRIEVAL=1`, `TEXA_CONSISTENCY=1`, `TEXA_EXAMPLE_POLICY=sql_verified`. Số liệu v3 đo Texa với cả hai thành phần bật; các ablation chỉ dùng để so sánh. Các quan sát browser trước đây là lịch sử và không phải xác nhận E2E cho kết quả v3.
 

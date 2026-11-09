@@ -534,15 +534,15 @@
 </section>
 
 
-<section class="slide" id="slide-12" aria-label="12. Đánh giá: baseline, Texa và bộ benchmark" data-speaker="Người 4">
+<section class="slide" id="slide-12" aria-label="12. Đánh giá: Baseline, Texa và bộ benchmark" data-speaker="Người 4">
   <div class="canvas">
     <div class="text" style="left:4.166667%;top:5.555556%;width:91.666667%;font-size:1.145833cqw;font-weight:700;color:#087F82;">TEXA • BÁO CÁO FINAL • 12</div>
-    <h2 class="text" style="left:4.166667%;top:10.648148%;width:91.666667%;min-height:7%;font-size:3.125000cqw;font-weight:700;color:#132F46;">Đánh giá: baseline, Texa và bộ benchmark</h2>
-    <div class="text" style="left:4.166667%;top:18.981481%;width:91.666667%;font-size:1.62cqw;font-weight:400;color:#526574;">Cùng model, câu hỏi, fixture và cách chấm; khác ở thông tin và workflow được phép dùng.</div>
+    <h2 class="text" style="left:4.166667%;top:10.648148%;width:91.666667%;min-height:7%;font-size:3.125000cqw;font-weight:700;color:#132F46;">Đánh giá: Baseline, Texa và bộ benchmark</h2>
+    <div class="text" style="left:4.166667%;top:18.981481%;width:91.666667%;font-size:1.62cqw;font-weight:400;color:#526574;">Cùng model, câu hỏi, dữ liệu và cách chấm; khác ở quy trình xử lý.</div>
 
     <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:26.388889%;width:44.791667%;height:29.5%;background:#132F46;"></div>
-    <div class="text" style="left:5.729167%;top:29%;width:41.666667%;font-size:1.52cqw;font-weight:700;color:#80D5D5;">BASELINE — LLM SINH SQL TRỰC TIẾP</div>
-    <div class="text" style="left:5.729167%;top:35%;width:41.666667%;font-size:1.52cqw;font-weight:400;color:#FFFFFF;">Cùng gpt-6-luna<br>Nhận: câu hỏi + schema PostgreSQL + source<br>Không nhận: catalog, định nghĩa nghiệp vụ, examples<br>→ Sinh SQL → thực thi</div>
+    <div class="text" style="left:5.729167%;top:29%;width:41.666667%;font-size:1.52cqw;font-weight:700;color:#80D5D5;">BASELINE</div>
+    <div class="text" style="left:5.729167%;top:35%;width:41.666667%;font-size:1.52cqw;font-weight:400;color:#FFFFFF;">Cùng gpt-6-luna<br>Nhận: câu hỏi + schema + định nghĩa nghiệp vụ<br>Sinh SQL; nếu chạy lỗi, sửa một lần rồi chạy lại</div>
 
     <div class="shape roundRect" aria-hidden="true" style="left:51.041667%;top:26.388889%;width:44.791667%;height:29.5%;background:#E7F2F3;"></div>
     <div class="text" style="left:52.604167%;top:29%;width:41.666667%;font-size:1.52cqw;font-weight:700;color:#087F82;">TEXA ĐẦY ĐỦ</div>
@@ -550,10 +550,10 @@
 
     <div class="shape roundRect" aria-hidden="true" style="left:4.166667%;top:61%;width:91.666667%;height:31%;background:#F0F5F8;"></div>
     <div class="text" style="left:5.729167%;top:64%;width:88.541667%;font-size:1.52cqw;font-weight:700;color:#087F82;">BỘ BENCHMARK DÙNG CHUNG</div>
-    <div class="text" style="left:5.729167%;top:68.8%;width:88.541667%;font-size:1.48cqw;font-weight:400;color:#132F46;">300 câu đơn (100 dev / 200 test) • 60 clarification • 40 hội thoại • 40 ngoài scope</div>
+    <div class="text" style="left:5.729167%;top:68.8%;width:88.541667%;font-size:1.48cqw;font-weight:400;color:#132F46;">300 câu đơn (100 dev / 200 test) • 60 câu hỏi làm rõ • 40 hội thoại • 40 câu ngoài phạm vi</div>
     <div class="text" style="left:5.729167%;top:74.2%;width:88.541667%;font-size:1.48cqw;font-weight:400;color:#132F46;">Cosmetics + Olist • fixture cố định • chấm bảng kết quả so với gold • mỗi cấu hình chạy 2 lần</div>
-    <div class="text" style="left:5.729167%;top:79.8%;width:88.541667%;font-size:1.34cqw;font-weight:400;color:#526574;">Giới hạn: còn template overlap, chưa có holdout độc lập; kết quả exploratory, không suy ra production accuracy.</div>
-    <div class="text" style="left:5.729167%;top:84.6%;width:88.541667%;font-size:1.34cqw;line-height:1.3;font-weight:400;color:#132F46;"><strong style="color:#087F82;">Bổ sung sau góp ý:</strong> 22,5% của baseline chủ yếu đo việc thiếu định nghĩa nghiệp vụ, nên thêm thang baseline schema → + ví dụ → + định nghĩa Texa (B0G) → + sửa SQL (B0GR) → Texa; số liệu mới: chờ chạy. Bộ test v4 dùng dữ liệu thật, 300 câu, đáp án tính độc lập từ CSV.</div>
+    <div class="text" style="left:5.729167%;top:79.8%;width:88.541667%;font-size:1.34cqw;font-weight:400;color:#526574;">Đây là bộ dữ liệu tổng hợp; câu hỏi còn có mẫu lặp và chưa có holdout độc lập. Kết quả mang tính thăm dò.</div>
+    <div class="text" style="left:5.729167%;top:85.2%;width:88.541667%;font-size:1.34cqw;line-height:1.3;font-weight:400;color:#132F46;">Baseline chỉ sửa SQL khi thực thi lỗi. Lỗi hiểu sai nhưng SQL vẫn chạy không kích hoạt bước sửa này.</div>
   </div>
 </section>
 
@@ -584,12 +584,12 @@
     <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 14</p><h2>Kết quả benchmark — câu hỏi đơn</h2><p class="subtitle">200 câu test × 2 lần chạy · Business accuracy theo bảng kết quả</p></header>
     <div class="flow-body">
 <table class="evidence-table"><thead><tr><th>Phiên bản</th><th class="numeric">Đúng / 400 lượt</th><th class="numeric">Tỷ lệ</th></tr></thead><tbody>
-<tr><td>LLM baseline · schema-only</td><td class="numeric">90</td><td class="numeric">22,50%</td></tr>
+<tr><td>Baseline</td><td class="numeric">356</td><td class="numeric">89,00%</td></tr>
 <tr><td>Texa without retrieval and consistency</td><td class="numeric">350</td><td class="numeric">87,50%</td></tr>
 <tr><td>Texa with only consistency</td><td class="numeric">348</td><td class="numeric">87,00%</td></tr>
 <tr><td>Texa with only retrieval</td><td class="numeric">361</td><td class="numeric">90,25%</td></tr>
 <tr class="highlight"><td>Texa</td><td class="numeric">365</td><td class="numeric">91,25%</td></tr></tbody></table>
-<p class="note">Texa vượt baseline rõ rệt; retrieval đóng góp tích cực, còn consistency chưa cho thấy lợi ích ổn định. Kết quả vẫn là exploratory.</p>
+<p class="note">Texa đạt cao hơn Baseline 2,25 điểm phần trăm. Vì Baseline đã có định nghĩa nghiệp vụ và một lần sửa lỗi thực thi, kết quả này so sánh hai quy trình dùng cùng thông tin nghiệp vụ. Bằng chứng vẫn mang tính thăm dò.</p>
 <p class="note"><strong>Thuật ngữ.</strong> <em>Retrieval</em>: lấy tối đa 3 ví dụ câu hỏi đã được xác minh, gần với câu đang hỏi, đưa vào prompt để model tham khảo; ví dụ không có quyền cho phép truy vấn. <em>Consistency</em>: với câu dễ sai (từ 2 filter trở lên, tỷ lệ có filter, hỏi tiếp đổi nhiều điều kiện), model hiểu thêm 2 lần; nếu có ít nhất 2 cách hiểu giống nhau thì chọn cách đó.</p>
 </div>
   </div>
@@ -600,13 +600,12 @@
   <div class="canvas flow-canvas">
     <header><p class="eyebrow">TEXA • BÁO CÁO FINAL • 15</p><h2>Kết quả theo loại tác vụ</h2><p class="subtitle">Hội thoại, clarification và ngoài scope được chấm riêng</p></header>
     <div class="flow-body">
-<table class="evidence-table compact"><thead><tr><th>Phiên bản</th><th class="numeric">Hội thoại¹</th><th class="numeric">Clarification (hỏi lại)²</th><th class="numeric">Ngoài scope³</th></tr></thead><tbody>
-<tr><td>LLM baseline · có history</td><td class="numeric">14,77%</td><td class="numeric">67,50%</td><td class="numeric">5,00%</td></tr>
+<table class="evidence-table compact"><thead><tr><th>Phiên bản Texa</th><th class="numeric">Hội thoại¹</th><th class="numeric">Clarification (hỏi lại)²</th><th class="numeric">Ngoài scope³</th></tr></thead><tbody>
 <tr><td>Texa without retrieval and consistency</td><td class="numeric">91,40%</td><td class="numeric">100%</td><td class="numeric">83,75%</td></tr>
 <tr><td>Texa with only consistency</td><td class="numeric">92,05%</td><td class="numeric">100%</td><td class="numeric">93,75%</td></tr>
 <tr><td>Texa with only retrieval</td><td class="numeric"><strong>96,10%</strong></td><td class="numeric">99,17%</td><td class="numeric">86,25%</td></tr>
 <tr class="highlight"><td>Texa</td><td class="numeric">94,81%</td><td class="numeric">100%</td><td class="numeric">95,00%</td></tr></tbody></table>
-<p class="note">¹ Bảng đúng: 308 lượt có đáp án × 2 lần chạy; 40 hội thoại, tổng 355 lượt mỗi lần.<br>² Hỏi lại đúng lúc: 60 tình huống × 2. ³ Hành động xử lý đúng: 40 câu × 2.<br><strong>Thuật ngữ.</strong> <em>Clarification</em>: hỏi lại khi câu thiếu thông tin hoặc mơ hồ, và không hỏi khi câu đã rõ. <em>Hội thoại</em>: các câu hỏi nối tiếp; <em>answer slot</em> là một lượt có đáp án chuẩn. <em>Ngoài scope</em>: câu hệ thống không hỗ trợ, cần từ chối hoặc hướng về phạm vi hỗ trợ.</p>
+<p class="note">¹ Bảng đúng: 308 lượt có đáp án × 2 lần chạy; 40 hội thoại, tổng 355 lượt mỗi lần. ² Hỏi lại đúng lúc: 60 tình huống × 2. ³ Hành động xử lý đúng: 40 câu × 2.<br><strong>Phạm vi đo:</strong> Baseline được đánh giá trên câu hỏi đơn; bảng này chỉ trình bày các phép đo riêng của Texa cho hội thoại, hỏi làm rõ và câu ngoài phạm vi.</p>
 <p class="qa-band"><strong>Cách đọc:</strong> mỗi cột đo một năng lực khác nhau; không gộp thành một accuracy chung.</p>
 </div>
   </div>

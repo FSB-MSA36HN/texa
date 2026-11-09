@@ -1,0 +1,183 @@
+{
+  "dataset": "research_v3",
+  "suite": "single",
+  "split": "test",
+  "world": "base",
+  "model": "gpt-6-luna",
+  "repeats": [
+    1,
+    2
+  ],
+  "cases_per_repeat": 200,
+  "status": "exploratory_unsealed_candidate",
+  "snapshot_commit": "8fbdcefc",
+  "matched_historical_hashes": {
+    "catalog_hash": "2c65c609ae4aded05a99c889293057048faa3a1afa6d95bf0558c43a3c38c5d6",
+    "bank_hash": "bbcc9739767dbf603a28d0dc063d62f3760c0e5b56f5d4706ea5d0e9bed4f888",
+    "public_context_hash": "3e2ebff80e6f6858fc65ff2fbcded3d8e26121c9f575532f78fe61d20f217abd",
+    "baseline_schema_hash": "11d0711995af6a6097719c73eeaee3cd88a3ffbea959e4be5a7bbd32e48ff1e7"
+  },
+  "variants": {
+    "B0R": {
+      "correct": 114,
+      "total": 400,
+      "accuracy": 0.285,
+      "repeat_correct": [
+        54,
+        60
+      ],
+      "by_stratum": {
+        "basic": {
+          "correct": 49,
+          "total": 80,
+          "accuracy": 0.6125
+        },
+        "compositional": {
+          "correct": 32,
+          "total": 200,
+          "accuracy": 0.16
+        },
+        "semantic": {
+          "correct": 33,
+          "total": 120,
+          "accuracy": 0.275
+        }
+      },
+      "by_source": {
+        "cosmetics_shop": {
+          "correct": 67,
+          "total": 200,
+          "accuracy": 0.335
+        },
+        "olist_marketplace": {
+          "correct": 47,
+          "total": 200,
+          "accuracy": 0.235
+        }
+      },
+      "latency_ms_p50": 6838.5,
+      "latency_ms_p95": 11743.0,
+      "estimated_cost_usd": 0.06847420000000003,
+      "model_calls": 400,
+      "error_types": {
+        "UndefinedColumn": 2
+      },
+      "raw_files": {
+        "r1": {
+          "path": "single-test-B0R-base-r1.jsonl",
+          "sha256": "c05b98b8bbeec27b048efd2e4aa6f4ef6943326b45188567f76c14a888c6cb28"
+        },
+        "r2": {
+          "path": "single-test-B0R-base-r2.jsonl",
+          "sha256": "ada026f14cda1a444a967aec82e3d80678c8c6bb9bddb851829744172e4cdc0f"
+        }
+      }
+    },
+    "B0G": {
+      "correct": 355,
+      "total": 400,
+      "accuracy": 0.8875,
+      "repeat_correct": [
+        179,
+        176
+      ],
+      "by_stratum": {
+        "basic": {
+          "correct": 72,
+          "total": 80,
+          "accuracy": 0.9
+        },
+        "compositional": {
+          "correct": 190,
+          "total": 200,
+          "accuracy": 0.95
+        },
+        "semantic": {
+          "correct": 93,
+          "total": 120,
+          "accuracy": 0.775
+        }
+      },
+      "by_source": {
+        "cosmetics_shop": {
+          "correct": 179,
+          "total": 200,
+          "accuracy": 0.895
+        },
+        "olist_marketplace": {
+          "correct": 176,
+          "total": 200,
+          "accuracy": 0.88
+        }
+      },
+      "latency_ms_p50": 6176.5,
+      "latency_ms_p95": 10295.0,
+      "estimated_cost_usd": 0.20607690000000017,
+      "model_calls": 400,
+      "error_types": {},
+      "raw_files": {
+        "r1": {
+          "path": "single-test-B0G-base-r1.jsonl",
+          "sha256": "c75a05850a39690022225ca5e23670751abeb40a52908f8a218bb27874171ea0"
+        },
+        "r2": {
+          "path": "single-test-B0G-base-r2.jsonl",
+          "sha256": "c6c0ffd5c555ed6231eab44114330b03ba0a6de590572078dd922c364f09f46a"
+        }
+      }
+    },
+    "B0GR": {
+      "correct": 356,
+      "total": 400,
+      "accuracy": 0.89,
+      "repeat_correct": [
+        178,
+        178
+      ],
+      "by_stratum": {
+        "basic": {
+          "correct": 71,
+          "total": 80,
+          "accuracy": 0.8875
+        },
+        "compositional": {
+          "correct": 192,
+          "total": 200,
+          "accuracy": 0.96
+        },
+        "semantic": {
+          "correct": 93,
+          "total": 120,
+          "accuracy": 0.775
+        }
+      },
+      "by_source": {
+        "cosmetics_shop": {
+          "correct": 181,
+          "total": 200,
+          "accuracy": 0.905
+        },
+        "olist_marketplace": {
+          "correct": 175,
+          "total": 200,
+          "accuracy": 0.875
+        }
+      },
+      "latency_ms_p50": 6267.5,
+      "latency_ms_p95": 9970.0,
+      "estimated_cost_usd": 0.20761209999999997,
+      "model_calls": 402,
+      "error_types": {},
+      "raw_files": {
+        "r1": {
+          "path": "single-test-B0GR-base-r1.jsonl",
+          "sha256": "4e246301d0e9b9dc103ae09391589a20623b85ed9e286f931030c8e9c1a9449c"
+        },
+        "r2": {
+          "path": "single-test-B0GR-base-r2.jsonl",
+          "sha256": "38e3ef6cfcdc7e7bd02668990eee58f3ed368c547d62cd44f4b799a169d88656"
+        }
+      }
+    }
+  }
+}
