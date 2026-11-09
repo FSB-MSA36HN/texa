@@ -232,7 +232,7 @@ def main(argv=None):
                         "TEXA_SOURCE_PROFILE":"evaluation"}
     pgdata = None
     try:
-        pgdata, dsn, reader = ensure_isolated_database(run_dir, env)
+        pgdata, dsn, reader = ensure_isolated_database(run_dir, env, legacy_database=True)
         env.update(TEXA_DB_DSN=dsn,TEXA_READER_DSN=reader,TEXA_BENCHMARK_DSN=reader)
         shell([PSQL,dsn,"-X","-v","ON_ERROR_STOP=1","-f",ROOT/"pipeline/sql/init/01_init.sql"],env)
         shell([PYTHON,"-c","from texa import db; db.migrate()"],env,capture=True)

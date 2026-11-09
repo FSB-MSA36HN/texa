@@ -137,7 +137,7 @@ def database_name_for_run(run_dir: Path) -> str:
     return f"texa_bench_run_{suffix}"
 
 
-def ensure_isolated_database(run_dir: Path, env: dict[str, str]) -> tuple[Path, str, str]:
+def ensure_isolated_database(run_dir: Path, env: dict[str, str], *, legacy_database: bool = False) -> tuple[Path, str, str]:
     """Create/reuse this run's private Postgres cluster and database; never touch the shared cluster."""
     pgdata = run_dir / ".postgres-data"
     status = subprocess.run([str(PGCTL), "-D", str(pgdata), "status"],
@@ -159,7 +159,7 @@ def ensure_isolated_database(run_dir: Path, env: dict[str, str]) -> tuple[Path, 
     shell([PGCTL, "-D", pgdata, "-l", run_dir / "postgres.log", "-o",
            f"-h 127.0.0.1 -p {PGPORT} -k {socket_dir} -c shared_buffers=64MB -c max_connections=64",
            "start", "-w", "-t", "15"], env, capture=True)
-    db_name = database_name_for_run(run_dir)
+    db_name = "texa_benchmark" if legacy_database else database_name_for_run(run_dir)
     admin_dsn = f"postgresql://postgres@127.0.0.1:{PGPORT}/postgres"
     try:
         exists = shell([PSQL, admin_dsn, "-X", "-tA", "-c",
